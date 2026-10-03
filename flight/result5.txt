@@ -1,0 +1,2 @@
+camNow=(6.720, 11.340, -43.560) orbitCenterVp=(0.486, 0.513, 43.304)
+rendered frames=32 size f008=10913

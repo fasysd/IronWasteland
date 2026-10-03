@@ -1,0 +1,5 @@
+lossyScale=(1.0000, 1.0000, 1.0000) localScale=(1.0000, 1.0000, 1.0000)
+worldBoundsSize=(7.878, 3.623, 11.270)
+localBoundsMin=(6.155, -0.394, -2.850)
+PLANE BOX viewport x -0.220..1.193  y 0.200..0.910
+camPos=(4.200, 9.600, -27.000) fov=40 aspect=1.7778

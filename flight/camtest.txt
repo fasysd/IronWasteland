@@ -1,0 +1,5 @@
+camBefore=(6.720, 11.340, -43.560)
+a=10913
+b_afterReset=10913
+c_movedAndReset=6467 camNow=(0.00, 14.00, -60.00)
+d_restoredWide=10913

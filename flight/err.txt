@@ -1,0 +1,4 @@
+System.InvalidOperationException: This cannot be used during play mode.
+  at (wrapper managed-to-native) UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty_Injected(UnityEngine.SceneManagement.Scene&)
+  at UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty (UnityEngine.SceneManagement.Scene scene) [0x00000] in <4d9c15075af7453a81734c9ade18dc48>:0 
+  at FlightAnim.Build () [0x00756] in <312da0c0458d472aa6792a7cb659a4da>:0 

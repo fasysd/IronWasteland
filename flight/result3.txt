@@ -1,0 +1,3 @@
+R=5.5 Cz=-1 maxPosErr=0.00000 maxYawErrDeg=0.0001
+viewportX 0.177..0.796  viewportY 0.421..0.597
+isPlaying=True

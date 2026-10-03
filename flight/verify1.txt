@@ -1,0 +1,8 @@
+isPlaying=True isPlayingOrWillChange=True isCompiling=False
+plane=True clouds=True clip=True cloudClip=True
+planeAnimator=True ctrl=AirplaneFlight
+cloudAnimator=True ctrl=CloudDrift
+curves=6 cloudCurves=30
+selfTest maxPosErr=0.00000 maxYawErrDeg=0.0001
+loopTime=True len=12.000
+scene=Assets/Scenes/AirplaneShowcase.unity dirty=False
