@@ -15,6 +15,9 @@ namespace IronWasteland.Tanks
         [Tooltip("Level cua Tank, thay doi duoc theo y thich Player.")]
         [SerializeField, Range(TankBrain.MinLevel, TankBrain.MaxLevel)] private int playerLevel = 1;
 
+        [Tooltip("Index trong danh sach Model cua TankBrainFactory.")]
+        [SerializeField] private int modelId;
+
         [SerializeField] private Vector2 spawnPosition = Vector2.zero;
 
         [Header("Look")]
@@ -30,7 +33,7 @@ namespace IronWasteland.Tanks
             if (targetCamera == null) targetCamera = Camera.main;
 
             m_PlayerTank = tankFactory != null
-                ? tankFactory.CreateTank(playerLevel, spawnPosition)
+                ? tankFactory.CreateTank(playerLevel, modelId, spawnPosition)
                 : null;
 
             if (m_PlayerTank == null)

@@ -12,21 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 177f8c4a6c896f444a9671dae17337c8, type: 3}
   m_Name: TankBrainFactory
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankBrainFactory
-  tankPrefab: {fileID: 4791542543589394169, guid: 1ff6176c434bef2479ef939a2316da68, type: 3}
-  baseStats:
-    Attack: 10
-    Defense: 0
-    DamageMultiplier: 1
-    ArmorPenetration: 0
-    MaxHealth: 100
-    MaxEnergy: 50
-    MoveSpeed: 3
-    CooldownReduction: 0
-  attackPerLevel: 1
-  maxHealthPerLevel: 8
-  maxEnergyPerLevel: 4
-  defensePerLevel: 0.4
-  moveSpeedPerLevel: 0.05
-  cooldownReductionPerLevel: 0.004
-  damageMultiplierPerLevel: 0.01
-  armorPenetrationPerLevel: 0.003
+  tankPrefab: {fileID: 2337791876944670423, guid: dd9a410d742d54c4d87ae5d966767971, type: 3}
+  modelPrefabs:
+  - {fileID: 4035724410283292367, guid: 493b60d53e11c6a4fa06bcf98c442a43, type: 3}

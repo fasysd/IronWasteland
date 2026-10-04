@@ -74,7 +74,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5157634025725451099}
   - component: {fileID: 1054886554701225858}
-  - component: {fileID: 6395967071344561642}
   - component: {fileID: 1264366280795951762}
   - component: {fileID: 4035724410283292367}
   m_Layer: 0
@@ -123,33 +122,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!50 &6395967071344561642
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2147206032191955045}
-  m_BodyType: 0
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 10
-  m_AngularDamping: 0.05
-  m_GravityScale: 0
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 4
 --- !u!61 &1264366280795951762
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -212,7 +184,7 @@ MonoBehaviour:
   weaponPivot: {fileID: 7010148085972625029}
   bodyPivot: {fileID: 1605378373184788374}
   lookSmoothing: 720
-  body: {fileID: 6395967071344561642}
+  body: {fileID: 0}
 --- !u!1 &4416177109912046103
 GameObject:
   m_ObjectHideFlags: 0
