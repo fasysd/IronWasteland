@@ -18,7 +18,7 @@ MonoBehaviour:
   - baseLevel: 1
     baseStats:
       Attack: 10
-      Defense: 0
+      Defense: 10
       DamageMultiplier: 1
       ArmorPenetration: 0
       MaxHealth: 100

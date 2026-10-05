@@ -391,7 +391,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.GameController
   tankDefinition: {fileID: 11400000, guid: 8f2b6d4a1c3e5f7a9b1d3f5a7c9e1b34, type: 2}
-  playerLevel: 39
+  playerLevel: 1
   viewId: 0
   spawnPosition: {x: 0, y: 0}
   targetCamera: {fileID: 519420031}

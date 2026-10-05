@@ -58,7 +58,7 @@ Transform:
   m_GameObject: {fileID: 2109673423802838541}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.6, y: 0.15, z: 0}
+  m_LocalPosition: {x: 1.6, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -187,10 +187,6 @@ MonoBehaviour:
   weaponSlot: {fileID: 7010148085972625029}
   hullSlot: {fileID: 2064266134470812089}
   trackSlot: {fileID: 8570832563111783515}
-  defaultSlotVisuals:
-  - {fileID: 148968381065030249}
-  - {fileID: 2869632821962299719}
-  - {fileID: 1711751531534823537}
   lookSmoothing: 900
   body: {fileID: 0}
   owner: {fileID: 0}
@@ -233,8 +229,8 @@ Transform:
   m_GameObject: {fileID: 4416177109912046103}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.2717, y: 0, z: -0.05}
-  m_LocalScale: {x: 2.04345, y: 1.5, z: 1}
+  m_LocalPosition: {x: 0.61, y: 0, z: -0.070805}
+  m_LocalScale: {x: 3.872, y: 3.872, z: 3.872}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1605378373184788374}
@@ -358,8 +354,8 @@ Transform:
   m_GameObject: {fileID: 7725182688446381490}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.4772, y: 0, z: 0}
-  m_LocalScale: {x: 2.1544802, y: 1.2, z: 1}
+  m_LocalPosition: {x: -1.01, y: 0, z: 0.079074}
+  m_LocalScale: {x: 2.9976, y: 2.9976, z: 2.9976}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1605378373184788374}
@@ -450,8 +446,8 @@ Transform:
   m_GameObject: {fileID: 9087772424712858050}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.75, y: 0, z: 0}
-  m_LocalScale: {x: 1.4, y: 0.35, z: 1}
+  m_LocalPosition: {x: 3, y: 0, z: 0}
+  m_LocalScale: {x: 8.05, y: 0.35, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7010148085972625029}

@@ -47,9 +47,6 @@ namespace IronWasteland.Tanks
         [Tooltip("Slot Bo Banh: noi TrackBrain.")]
         [SerializeField] private Transform trackSlot;
 
-        [Tooltip("Sprite mac dinh cua Tank se bi an khi co trang bi that su gan vao cung slot.")]
-        [SerializeField] private SpriteRenderer[] defaultSlotVisuals;
-
         [Header("Look")]
         [Tooltip("Toc do xoay noi sung (do/giay).")]
         [SerializeField] private float lookSmoothing = 900f;
@@ -204,6 +201,9 @@ namespace IronWasteland.Tanks
         /// <summary>
         /// Dua trang bi vao slot tuong ung. TankView la ben QUYET DINH vi tri -
         /// trang bi khong tu "noi" gi vao day.
+        /// Chi gan parent: transform cua slot (Hull/Track/WeaponPivot) KHONG duoc dot,
+        /// va trang bi giu nguyen local pose thiet ke trong he toa do cua slot
+        /// -> hinh anh trang bi de len visual mac dinh (sortingOrder cao hon).
         /// </summary>
         public bool AttachEquipment(EquipmentBrain equipment)
         {
@@ -212,44 +212,23 @@ namespace IronWasteland.Tanks
             Transform slot = GetEquipmentSlot(equipment.Slot);
             if (slot == null) return false;
 
-            Transform t = equipment.transform;
-
-            // Giu nguyen vi tri theo he toa do cua slot (worldPositionStays = false).
-            t.SetParent(slot, false);
-            t.localPosition = Vector3.zero;
-            t.localRotation = Quaternion.identity;
-            t.localScale = Vector3.one;
-
-            // An sprite mac dinh cua slot nay de trang bi khong chong lenhinh.
-            SetDefaultSlotVisual(equipment.Slot, false);
-
+            // SetParent(worldPositionStays = false): giu local position/rotation/scale
+            // da thiet ke cua trang bi, chuyen noi sang he toa do cua slot.
+            equipment.transform.SetParent(slot, false);
             return true;
         }
 
-        /// <summary>Tra trang bi ra khoi TankView va hien lai sprite mac dinh.</summary>
+        /// <summary>
+        /// Tra trang bi ra khoi TankView. Chi cham vao transform cua trang bi,
+        /// khong cham vao slot.
+        /// </summary>
         public bool DetachEquipment(EquipmentBrain equipment)
         {
             if (equipment == null) return false;
 
-            EquipmentSlot slot = equipment.Slot;
-
             // Giu nguyen vi tri world khi bo ra ngoai.
             equipment.transform.SetParent(null, true);
-
-            SetDefaultSlotVisual(slot, true);
             return true;
-        }
-
-        /// <summary>Bat/tat sprite mac dinh cua 1 slot.</summary>
-        private void SetDefaultSlotVisual(EquipmentSlot slot, bool visible)
-        {
-            if (defaultSlotVisuals == null) return;
-
-            for (int i = 0; i < defaultSlotVisuals.Length; i++)
-            {
-                SpriteRenderer sr = defaultSlotVisuals[i];
-                if (sr != null) sr.enabled = visible;
-            }
         }
 
         #endregion

@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingOrder: 3
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 0ec00ba5f4328a44c88b3a497f814e25, type: 3}
-  m_Color: {r: 0.85, g: 0.85, b: 0.9, a: 1}
+  m_Color: {r: 0.00000011920929, g: 0, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -110,13 +110,12 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 0ec00ba5f4328a44c88b3a497f814e25, type: 3}
   spriteRenderer: {fileID: 7193076213582871740}
   statBonus:
-    Attack: 8
+    Attack: 10
     Defense: 0
-    DamageMultiplier: 0.2
-    ArmorPenetration: 0.1
+    DamageMultiplier: 0
+    ArmorPenetration: 0
     MaxHealth: 0
     MaxEnergy: 0
     MoveSpeed: 0
     CooldownReduction: 0
-  passive: 4
-  passiveMagnitude: 10
+  attackPercent: 0.2

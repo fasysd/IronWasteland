@@ -40,7 +40,7 @@ namespace IronWasteland.Tanks
 
         public TankStats Clone() => (TankStats)MemberwiseClone();
 
-        /// <summary>Moi chi so = 0. Dung cho "runtime stats" (buff/debuff chua co).</summary>
+        /// <summary>Moi chi so = 0. Dung cho "bonus stats" (buff/debuff chua co).</summary>
         public static TankStats Zeroed()
         {
             return new TankStats
@@ -56,7 +56,7 @@ namespace IronWasteland.Tanks
             };
         }
 
-        /// <summary>Cong don voi mot bang chi so khac (dung cho base + runtime).</summary>
+        /// <summary>Cong don voi mot bang chi so khac (dung cho base + bonus).</summary>
         public TankStats Add(TankStats other)
         {
             if (other == null) return Clone();

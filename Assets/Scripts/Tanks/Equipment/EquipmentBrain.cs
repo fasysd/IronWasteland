@@ -9,7 +9,12 @@ namespace IronWasteland.Tanks
     ///   1. TankBrain tao instance tu <see cref="EquipmentDatabase"/>.
     ///   2. TankBrain goi <see cref="Equip"/> - trang bi tu cong stat + noi Owner.
     ///   3. Trang bi goi TankView.AttachEquipment - TankView lo vi tri.
-    ///   4. <see cref="UnEquip"/> lam nguoc lai: tru stat, tra lai vi tri.
+    ///   4. <see cref="UnEquip"/> lam nguoc lai: tru stat, goi ClearPassive, tra vi tri.
+    ///
+    /// Diem chung cua moi EquipmentBrain: them chi so (statBonus) + co kha nang bi dong.
+    /// Kha nang bi dong la TRUU TUONG - lop con ghi de de dinh nghia:
+    ///   - <see cref="BuildPassiveBonus"/>: cong them chi so (tinh % tu BaseStats).
+    ///   - <see cref="ClearPassive"/>: xoa ky nang bi dong khi trang bi bi thoa.
     ///
     /// Prefab trang bi chi can 1 <see cref="SpriteRenderer"/> de hien thi hinh anh.
     /// </summary>
@@ -34,17 +39,14 @@ namespace IronWasteland.Tanks
         [Tooltip("Chi so cong them khi trang bi duoc trang bi. Mac dinh moi chi so = 0.")]
         [SerializeField] private TankStats statBonus = TankStats.Zeroed();
 
-        [Header("Passive")]
-        [Tooltip("Hieu ung bi dong dac biet.")]
-        [SerializeField] private EquipmentPassive passive = EquipmentPassive.None;
-
-        [Tooltip("Doi luong cua passive (xem mo ta trong EquipmentPassive).")]
-        [SerializeField] private float passiveMagnitude;
-
         // --- Runtime ---
         private TankBrain m_Owner;
         private bool m_IsEquipped;
         private EquipmentSlot m_Slot = EquipmentSlot.None;
+
+        // Tong chi so da thuc su cong vao tank luc Equip (statBonus + passive).
+        // De UnEquip tru dung chinh so da cong (khong tinh lai).
+        private TankStats m_AppliedBonus;
 
         /// <summary>ID tra cuu trong EquipmentDatabase.</summary>
         public string EquipmentId => equipmentId;
@@ -53,8 +55,6 @@ namespace IronWasteland.Tanks
         public Sprite Icon => icon;
         public SpriteRenderer SpriteRenderer => spriteRenderer;
         public TankStats StatBonus => statBonus;
-        public EquipmentPassive Passive => passive;
-        public float PassiveMagnitude => passiveMagnitude;
 
         /// <summary>Tank dang so huu trang bi nay (null neu chua Equip).</summary>
         public TankBrain Owner => m_Owner;
@@ -94,8 +94,11 @@ namespace IronWasteland.Tanks
             m_Owner = tank;
             m_IsEquipped = true;
 
-            // 1) Cong chi so (ModifyRuntimeStats tu keo lai HP/Energy).
-            tank.ModifyRuntimeStats(BuildBonus());
+            // 1) Cong chi so: statBonus + phan dong tu ky nang bi dong cua lop con.
+            // Luon tinh % tu BaseStats (khong dung bonus lam base).
+            // Cache lai de UnEquip tru dung chinh so da cong.
+            m_AppliedBonus = BuildBonus(tank);
+            tank.ModifyBonusStats(m_AppliedBonus);
 
             // 2) Cho TankView quyet dinh vi tri hien thi.
             TankView view = tank.View;
@@ -110,14 +113,11 @@ namespace IronWasteland.Tanks
                     + $"khong co slot cho {Slot} -> trang bi khong hien thi.", this);
             }
 
-            // 3) Hieu ung mot lan khi gan.
-            ApplyPassiveOnEquip(tank);
-
             return true;
         }
 
         /// <summary>
-        /// TankBrain goi khi thoa trang bi. Tru stat, tra vi tri cho TankView, bo owner.
+        /// TankBrain goi khi thoa trang bi. Tru stat, goi ClearPassive, tra vi tri, bo owner.
         /// Neu <paramref name="tank"/> khong phai owner thi bo qua (tranh thoa nham tren Tank khac).
         /// </summary>
         public bool UnEquip(TankBrain tank)
@@ -137,9 +137,17 @@ namespace IronWasteland.Tanks
 
             if (owner != null)
             {
-                // Tru dung bang chieu stat da cong.
-                owner.ModifyRuntimeStats(BuildBonus().Negated());
+                // Tru dung chinh so da cong (cache tai Equip -> doi xung tuyet doi).
+                if (m_AppliedBonus != null)
+                {
+                    owner.ModifyBonusStats(m_AppliedBonus.Negated());
+                    m_AppliedBonus = null;
+                }
+
                 owner.View?.DetachEquipment(this);
+
+                // Xoa ky nang bi dong (lop con ghi de de don sach trang thai/event).
+                ClearPassive(owner);
             }
 
             return true;
@@ -152,65 +160,47 @@ namespace IronWasteland.Tanks
 
         #region Passive
 
-        /// <summary>Chi so thuc su cong khi Equip = statBonus + phan cong 1 lan cua passive.</summary>
-        private TankStats BuildBonus()
+        /// <summary>Chi so thuc su cong khi Equip = statBonus + phan dong tu ky nang bi dong.</summary>
+        private TankStats BuildBonus(TankBrain owner)
         {
             TankStats bonus = statBonus != null ? statBonus.Clone() : TankStats.Zeroed();
 
-            // CooldownSurge chi cong 1 lan luc Equip -> phai nam trong chinh bonus
-            // de khi UnEquip thi bi tru sach theo dung chieu.
-            if (passive == EquipmentPassive.CooldownSurge) bonus.CooldownReduction += passiveMagnitude;
+            TankStats passiveBonus = BuildPassiveBonus(owner);
+            if (passiveBonus != null) bonus.AddTo(passiveBonus);
 
             return bonus;
         }
 
-        private void ApplyPassiveOnEquip(TankBrain tank)
-        {
-            if (passive != EquipmentPassive.ShieldOnEquip) return;
+        /// <summary>
+        /// Kha nang bi dong - TRUU TUONG, lop con ghi de de dinh nghia.
+        /// Phan chi so tinh % PHAI lay tu owner.BaseStats,
+        /// KHONG dung Stats (da cong bonus) hay statBonus lam base.
+        /// Mac dinh: khong cong gi.
+        /// </summary>
+        protected virtual TankStats BuildPassiveBonus(TankBrain owner) => TankStats.Zeroed();
 
-            float pct = passiveMagnitude * 0.01f;
-            tank.Heal(tank.Stats.MaxHealth * pct);
-            tank.GainEnergy(tank.Stats.MaxEnergy * pct);
-        }
+        /// <summary>
+        /// Xoa ky nang bi dong khi trang bi bi thoa (doi xung voi BuildPassiveBonus).
+        /// Chi so da duoc cache va tu tru o UnEquip - khong can xoa o day.
+        /// Lop con ghi de de don sach trang thai / huy dang ky su kien
+        /// (vi du dang ky event cua TankBrain khi co them cho ben ngoai dang ky).
+        /// </summary>
+        protected virtual void ClearPassive(TankBrain owner) { }
 
         /// <summary>
         /// TankBrain goi khi Tank vua gay sat thuong cho doi phuong.
-        /// Chi dung cho <see cref="EquipmentPassive.DamageLifesteal"/>.
+        /// Hook rong - lop con ghi de de trien khai ky nang bi dong lien quan
+        /// (vi du hoi mau khi danh trung).
         /// </summary>
-        public void OnOwnerDamageDealt(float damage)
-        {
-            if (!m_IsEquipped || m_Owner == null) return;
-            if (passive != EquipmentPassive.DamageLifesteal) return;
-            if (damage <= 0f) return;
-
-            m_Owner.Heal(damage * passiveMagnitude * 0.01f);
-        }
-
-        private void Update()
-        {
-            // Chi tick khi dang that su duoc trang bi (khong dung component.enabled
-            // vi TankView co the tam tat GameObject).
-            if (!m_IsEquipped || m_Owner == null) return;
-
-            switch (passive)
-            {
-                case EquipmentPassive.SelfRepair:
-                    m_Owner.Heal(m_Owner.Stats.MaxHealth * passiveMagnitude * 0.01f * Time.deltaTime);
-                    break;
-
-                case EquipmentPassive.EnergyRegen:
-                    m_Owner.GainEnergy(m_Owner.Stats.MaxEnergy * passiveMagnitude * 0.01f * Time.deltaTime);
-                    break;
-            }
-        }
+        public virtual void OnOwnerDamageDealt(float damage) { }
 
         #endregion
 
         /// <summary>Lop con -> slot. Do chay 1 lan roi ghi nho.</summary>
         private EquipmentSlot ResolveSlot()
         {
-            // GetType() de phan biet chinh xac 3 lop con, khong dung is WeaponBrain
-            // vi 3 lop nay dang duoc viet giong het nhau.
+            // GetType() de phan biet chinh xac cac lop con theo loai trang bi
+            // (lop con ke thua them van dung duoc).
             if (this is WeaponBrain) return EquipmentSlot.Weapon;
             if (this is HullBrain) return EquipmentSlot.Hull;
             if (this is TrackBrain) return EquipmentSlot.Track;
