@@ -10,12 +10,12 @@ namespace IronWasteland.Tanks
     public class GameController : MonoBehaviour
     {
         [Header("Tank Setup")]
-        [SerializeField] private TankBrainFactory tankFactory;
+        [SerializeField] private TankDefinition tankDefinition;
 
-        [Tooltip("Level cua Tank, thay doi duoc theo y thich Player.")]
-        [SerializeField, Range(TankBrain.MinLevel, TankBrain.MaxLevel)] private int playerLevel = 1;
+        [Tooltip("Level cua Tank, thay doi duoc theo y thich Player. Chi doc trong luc khoi tao.")]
+        [SerializeField, Range(TankDefinition.MinLevel, TankDefinition.MaxLevel)] private int playerLevel = 1;
 
-        [Tooltip("Index trong danh sach View cua TankBrainFactory.")]
+        [Tooltip("Index trong danh sach TankView cua TankDefinition.")]
         [SerializeField] private int viewId;
 
         [SerializeField] private Vector2 spawnPosition = Vector2.zero;
@@ -32,13 +32,13 @@ namespace IronWasteland.Tanks
         {
             if (targetCamera == null) targetCamera = Camera.main;
 
-            m_PlayerTank = tankFactory != null
-                ? tankFactory.CreateTank(playerLevel, viewId, spawnPosition)
+            m_PlayerTank = tankDefinition != null
+                ? tankDefinition.CreateTank(playerLevel, viewId, spawnPosition)
                 : null;
 
             if (m_PlayerTank == null)
             {
-                Debug.LogError($"[{nameof(GameController)}] Khong tao duoc Tank. Kiem tra TankBrainFactory.");
+                Debug.LogError($"[{nameof(GameController)}] Khong tao duoc Tank. Kiem tra TankDefinition.");
             }
         }
 

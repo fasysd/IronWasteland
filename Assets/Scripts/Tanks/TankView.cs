@@ -47,7 +47,7 @@ namespace IronWasteland.Tanks
 
         [Header("Owner")]
         [Tooltip("Tank nao dieu khien View nay. Do TankBrain gan luc runtime.")]
-        [SerializeField, HideInInspector] private Object owner;
+        [SerializeField, HideInInspector] private UnityEngine.Object owner;
 
         private readonly List<ColliderOwnerRef> m_OwnerRefs = new List<ColliderOwnerRef>();
 
@@ -72,12 +72,12 @@ namespace IronWasteland.Tanks
         public bool IsLooking => m_IsLooking;
 
         /// <summary>Tank nao dieu khien View nay (do TankBrain dang ky).</summary>
-        public Object Owner => owner;
+        public UnityEngine.Object Owner => owner;
 
         public bool HasOwner => owner != null;
 
         /// <summary>Yeu cau xoa ma doc: TankBrain dang ky lam Owner cua View nay.</summary>
-        public void RegisterOwner(Object value)
+        public void RegisterOwner(UnityEngine.Object value)
         {
             owner = value;
             CollectOwnerRefs();

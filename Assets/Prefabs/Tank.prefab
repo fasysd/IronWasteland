@@ -75,47 +75,25 @@ MonoBehaviour:
   view: {fileID: 0}
   viewPrefab: {fileID: 0}
   level: 1
-  statsTable:
-  - baseLevel: 1
-    baseStats:
-      Attack: 10
-      Defense: 0
-      DamageMultiplier: 1
-      ArmorPenetration: 0
-      MaxHealth: 100
-      MaxEnergy: 50
-      MoveSpeed: 3
-      CooldownReduction: 0
-  - baseLevel: 30
-    baseStats:
-      Attack: 59
-      Defense: 11.6
-      DamageMultiplier: 1.29
-      ArmorPenetration: 0.087
-      MaxHealth: 492
-      MaxEnergy: 242
-      MoveSpeed: 4.45
-      CooldownReduction: 0.116
-  - baseLevel: 60
-    baseStats:
-      Attack: 120
-      Defense: 23.6
-      DamageMultiplier: 1.59
-      ArmorPenetration: 0.177
-      MaxHealth: 940
-      MaxEnergy: 460
-      MoveSpeed: 5.95
-      CooldownReduction: 0.236
-  - baseLevel: 90
-    baseStats:
-      Attack: 180
-      Defense: 35.6
-      DamageMultiplier: 1.89
-      ArmorPenetration: 0.267
-      MaxHealth: 1400
-      MaxEnergy: 680
-      MoveSpeed: 7.45
-      CooldownReduction: 0.356
+  baseStats:
+    Attack: 10
+    Defense: 0
+    DamageMultiplier: 1
+    ArmorPenetration: 0
+    MaxHealth: 100
+    MaxEnergy: 50
+    MoveSpeed: 3
+    CooldownReduction: 0
+  runtimeStats:
+    Attack: 0
+    Defense: 0
+    DamageMultiplier: 0
+    ArmorPenetration: 0
+    MaxHealth: 0
+    MaxEnergy: 0
+    MoveSpeed: 0
+    CooldownReduction: 0
+  definition: {fileID: 0}
   currentHealth: 0
   currentEnergy: 0
   skillCooldowns:

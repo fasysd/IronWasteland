@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace IronWasteland.Tanks
 {
     /// <summary>
     /// Bang chi so cua 1 Tank (chi con khung, chua toi uu hoa theo Level).
-    /// Cac gia tri se duoc gan tu TankBrainFactory ScriptableObject.
+    /// Cac gia tri se duoc gan tu TankDefinition ScriptableObject.
     /// </summary>
     [Serializable]
     public class TankStats
@@ -39,5 +39,53 @@ namespace IronWasteland.Tanks
         public float CooldownReduction;
 
         public TankStats Clone() => (TankStats)MemberwiseClone();
+
+        /// <summary>Moi chi so = 0. Dung cho "runtime stats" (buff/debuff chua co).</summary>
+        public static TankStats Zeroed()
+        {
+            return new TankStats
+            {
+                Attack = 0f,
+                Defense = 0f,
+                DamageMultiplier = 0f,
+                ArmorPenetration = 0f,
+                MaxHealth = 0f,
+                MaxEnergy = 0f,
+                MoveSpeed = 0f,
+                CooldownReduction = 0f,
+            };
+        }
+
+        /// <summary>Cong don voi mot bang chi so khac (dung cho base + runtime).</summary>
+        public TankStats Add(TankStats other)
+        {
+            if (other == null) return Clone();
+
+            TankStats r = Clone();
+            r.Attack += other.Attack;
+            r.Defense += other.Defense;
+            r.DamageMultiplier += other.DamageMultiplier;
+            r.ArmorPenetration += other.ArmorPenetration;
+            r.MaxHealth += other.MaxHealth;
+            r.MaxEnergy += other.MaxEnergy;
+            r.MoveSpeed += other.MoveSpeed;
+            r.CooldownReduction += other.CooldownReduction;
+            return r;
+        }
+
+        /// <summary>Cong truc tiep vao bang hien tai.</summary>
+        public void AddTo(TankStats other)
+        {
+            if (other == null) return;
+
+            Attack += other.Attack;
+            Defense += other.Defense;
+            DamageMultiplier += other.DamageMultiplier;
+            ArmorPenetration += other.ArmorPenetration;
+            MaxHealth += other.MaxHealth;
+            MaxEnergy += other.MaxEnergy;
+            MoveSpeed += other.MoveSpeed;
+            CooldownReduction += other.CooldownReduction;
+        }
     }
 }

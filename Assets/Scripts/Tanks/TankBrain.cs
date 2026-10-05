@@ -1,47 +1,40 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace IronWasteland.Tanks
 {
-    [System.Serializable]
-    public struct StatsEntry
-    {
-        [Tooltip("Cap do co so. Chi chap nhan gia tri trong khoang 1..90.")]
-        public int baseLevel;
-
-        [Tooltip("Chi so tai cap do nay.")]
-        public TankStats baseStats;
-    }
-
     /// <summary>
-    /// Lop dieu khien Tank. Day la noi chua "logic game": chi so, di chuyen, dung 4 ky nang.
-    /// No KHONG cham vao truc tiep sprite/animator, ma chi ra lenh cho TankView.
+    /// Lop dieu khien Tank. Day la noi chua RUNTIME STATE:
+    /// - base stats (do TankDefinition gui vao khi khoi tao)
+    /// - runtime stats (buff/debuff, mac dinh 0)
+    /// - HP / Energy hien tai
+    /// Khong con bang chi co so - phan do thuoc ve TankDefinition.
+    ///
+    /// Chi so cuoi cung = Base stats + Runtime stats.
+    /// Level khong doi duoc sau khi khoi tao.
     /// </summary>
     [DisallowMultipleComponent]
     public class TankBrain : MonoBehaviour
     {
-        public const int MinLevel = 1;
-        public const int MaxLevel = 90;
         public const int SkillCount = 4;
 
         [Header("View")]
-        [Tooltip("View dang chay. Se duoc gan luc runtime tu TankBrainFactory.")]
+        [Tooltip("View dang chay. Se duoc gan luc runtime tu TankDefinition.")]
         [SerializeField] private TankView view;
 
         [Tooltip("Prefab TankView de spawn. Neu rong thi Tank khong co hinh anh.")]
         [SerializeField] private TankView viewPrefab;
 
         [Header("Level")]
-        [SerializeField, Range(MinLevel, MaxLevel)] private int level = MinLevel;
+        [SerializeField] private int level = TankDefinition.MinLevel;
 
         [Header("Stats")]
-        [Tooltip("Bang chi so co so. Level duoc noi suy tu 2 cap ke nhau trong bang nay.")]
-        [SerializeField] private System.Collections.Generic.List<StatsEntry> statsTable = new System.Collections.Generic.List<StatsEntry>
-        {
-            new StatsEntry { baseLevel = 1, baseStats = new TankStats() },
-            new StatsEntry { baseLevel = 30, baseStats = new TankStats() },
-            new StatsEntry { baseLevel = 60, baseStats = new TankStats() },
-            new StatsEntry { baseLevel = 90, baseStats = new TankStats() },
-        };
+        [Tooltip("Chi so co so do TankDefinition gui vao. KHONG sua tay.")]
+        [SerializeField] private TankStats baseStats = new TankStats();
+
+        [Tooltip("Chi so phu sinh runtime (buff/debuff). Mac dinh moi chi so = 0.")]
+        [SerializeField] private TankStats runtimeStats = new TankStats();
+
+        [SerializeField, HideInInspector] private TankDefinition definition;
 
         [Header("Runtime")]
         [SerializeField] private float currentHealth;
@@ -49,110 +42,67 @@ namespace IronWasteland.Tanks
         [SerializeField] private float[] skillCooldowns = new float[SkillCount];
 
         private Rigidbody2D m_Body;
-        private TankStats m_Stats = new TankStats();
+        private TankStats m_FinalStats = new TankStats();
         private Vector2 m_MoveInput;
         private Vector2 m_LookTarget;
         private bool m_HasLookTarget;
 
         public TankView View => view;
         public TankView ViewPrefab => viewPrefab;
+        public TankDefinition Definition => definition;
         public int Level => level;
-        public TankStats Stats => m_Stats;
-        public System.Collections.Generic.List<StatsEntry> StatsTable => statsTable;
+
+        /// <summary>Chi so goc (khong cong runtime).</summary>
+        public TankStats BaseStats => baseStats;
+
+        /// <summary>Chi so phu runtime (buff/debuff).</summary>
+        public TankStats RuntimeStats => runtimeStats;
+
+        /// <summary>Chi so cuoi cung = base + runtime. Dung de tinh toan.</summary>
+        public TankStats Stats => m_FinalStats;
+
         public float CurrentHealth => currentHealth;
         public float CurrentEnergy => currentEnergy;
         public float GetSkillCooldown(int index) => skillCooldowns[Mathf.Clamp(index, 0, SkillCount - 1)];
 
         #region Setup
 
-        /// <summary>Do Factory gan Level. Chi so duoc tinh lai tu baseStats + growth.</summary>
-        public void Initialize(int level)
+        /// <summary>Do TankDefinition goi luc khoi tao. Chi goi 1 lan.</summary>
+        public void Initialize(int level, TankStats stats, TankDefinition definition = null)
         {
-            SetLevel(level);
-            RefreshStats();
+            this.level = Mathf.Clamp(level, TankDefinition.MinLevel, TankDefinition.MaxLevel);
+            this.baseStats = stats != null ? stats.Clone() : new TankStats();
+            this.definition = definition;
+
+            RecalculateStats();
+
+            currentHealth = m_FinalStats.MaxHealth;
+            currentEnergy = m_FinalStats.MaxEnergy;
+            for (int i = 0; i < skillCooldowns.Length; i++) skillCooldowns[i] = 0f;
         }
 
-        public void SetLevel(int level)
+        /// <summary>Tinh lai chi so cuoi cung = base + runtime, va keo lai HP/Energy.</summary>
+        public void RecalculateStats()
         {
-            this.level = Mathf.Clamp(level, MinLevel, MaxLevel);
+            m_FinalStats = baseStats.Add(runtimeStats);
+
+            currentHealth = Mathf.Clamp(currentHealth, 0f, m_FinalStats.MaxHealth);
+            currentEnergy = Mathf.Clamp(currentEnergy, 0f, m_FinalStats.MaxEnergy);
         }
 
-        /// <summary>Tinh lai chi so theo Level hien tai dua tren bang chi so co so.</summary>
-        public void RefreshStats()
+        /// <summary>Them/tru chi so runtime (buff, debuff...). Tu keo lai HP/Energy.</summary>
+        public void ModifyRuntimeStats(TankStats delta)
         {
-            m_Stats = EvaluateStats(level);
-
-            currentHealth = Mathf.Clamp(currentHealth <= 0f ? m_Stats.MaxHealth : currentHealth, 0f, m_Stats.MaxHealth);
-            currentEnergy = Mathf.Clamp(currentEnergy <= 0f ? m_Stats.MaxEnergy : currentEnergy, 0f, m_Stats.MaxEnergy);
+            if (delta == null) return;
+            runtimeStats.AddTo(delta);
+            RecalculateStats();
         }
 
-        /// <summary>
-        /// Lay chi so tai mot level. Chi dung cac muc hop le trong bang
-        /// (muc vi pham se bi bo qua, xem <see cref="ValidateStatsTable"/>).
-        /// - Co cap trung khop: dung nguyen chi so do.
-        /// - Nguoc giua 2 cap: noi suy tuyen tinh giua 2 cap ke nhau.
-        /// - Ngoai khoang: dung chi so cua cap gan nhat.
-        /// </summary>
-        public TankStats EvaluateStats(int level)
+        /// <summary>Xoa toan bo chi so runtime (het buff).</summary>
+        public void ClearRuntimeStats()
         {
-            if (statsTable == null || statsTable.Count == 0) return new TankStats();
-
-            level = Mathf.Clamp(level, MinLevel, MaxLevel);
-
-            System.Collections.Generic.List<StatsEntry> valid = GetValidEntries(out _);
-            if (valid.Count == 0)
-            {
-                Debug.LogWarning($"[{nameof(TankBrain)}] Bang chi so khong co muc hop le nao.", this);
-                return new TankStats();
-            }
-
-            StatsEntry? exact = null;
-            StatsEntry? lower = null;
-            StatsEntry? upper = null;
-
-            for (int i = 0; i < valid.Count; i++)
-            {
-                StatsEntry entry = valid[i];
-
-                if (entry.baseLevel == level) { exact = entry; break; }
-
-                if (entry.baseLevel < level && (!lower.HasValue || entry.baseLevel > lower.Value.baseLevel))
-                    lower = entry;
-
-                if (entry.baseLevel > level && (!upper.HasValue || entry.baseLevel < upper.Value.baseLevel))
-                    upper = entry;
-            }
-
-            if (exact.HasValue) return exact.Value.baseStats.Clone();
-            if (!lower.HasValue) return upper.Value.baseStats.Clone();
-            if (!upper.HasValue) return lower.Value.baseStats.Clone();
-
-            return Interpolate(lower.Value, upper.Value, level);
-        }
-
-        /// <summary>
-        /// noi suy: stats = (statsCao - statsThap) / (capCao - capThap) + statsThap
-        /// </summary>
-        private static TankStats Interpolate(StatsEntry low, StatsEntry high, int level)
-        {
-            int span = high.baseLevel - low.baseLevel;
-            if (span <= 0) return low.baseStats.Clone();
-
-            float t = (float)(level - low.baseLevel) / span;
-            TankStats a = low.baseStats;
-            TankStats b = high.baseStats;
-            TankStats r = a.Clone();
-
-            r.Attack = Mathf.Lerp(a.Attack, b.Attack, t);
-            r.MaxHealth = Mathf.Lerp(a.MaxHealth, b.MaxHealth, t);
-            r.MaxEnergy = Mathf.Lerp(a.MaxEnergy, b.MaxEnergy, t);
-            r.Defense = Mathf.Lerp(a.Defense, b.Defense, t);
-            r.MoveSpeed = Mathf.Lerp(a.MoveSpeed, b.MoveSpeed, t);
-            r.CooldownReduction = Mathf.Lerp(a.CooldownReduction, b.CooldownReduction, t);
-            r.DamageMultiplier = Mathf.Lerp(a.DamageMultiplier, b.DamageMultiplier, t);
-            r.ArmorPenetration = Mathf.Lerp(a.ArmorPenetration, b.ArmorPenetration, t);
-
-            return r;
+            runtimeStats = TankStats.Zeroed();
+            RecalculateStats();
         }
 
         /// <summary>Nhan TankView prefab, tao GameObject con va dung lam View cua Tank nay.</summary>
@@ -184,167 +134,20 @@ namespace IronWasteland.Tanks
         {
             if (view == null) view = GetComponentInChildren<TankView>();
 
-            // View co the da ton tai san trong hierarchy (khong qua factory).
+            // View co the da ton tai san trong hierarchy (khong qua definition).
             RegisterInto(view);
 
-            // Rigidbody2D nam tren chinh TankBrain. Fallback sang child cho
-            // trong hop prefab cu / de an toan.
+            // Rigidbody2D nam tren chinh TankBrain. Fallback sang child cho an toan.
             m_Body = GetComponent<Rigidbody2D>();
             if (m_Body == null) m_Body = GetComponentInChildren<Rigidbody2D>();
 
-            if (m_Stats == null) m_Stats = new TankStats();
-            if (currentHealth <= 0f) currentHealth = m_Stats.MaxHealth;
-            if (currentEnergy <= 0f) currentEnergy = m_Stats.MaxEnergy;
+            if (runtimeStats == null) runtimeStats = TankStats.Zeroed();
+            if (baseStats == null) baseStats = new TankStats();
 
-            // OnValidate khong chay trong build -> canh bao them o runtime.
-            WarnInvalidStatsEntries();
-        }
+            RecalculateStats();
 
-        private void WarnInvalidStatsEntries()
-        {
-            foreach (string issue in GetStatsTableIssues())
-            {
-                Debug.LogWarning($"[{nameof(TankBrain)}] Bang chi so co van de: {issue}", this);
-            }
-        }
-
-        /// <summary>
-        /// KIEM TRA bang chi so trong Inspector (khong tu dong sua du lieu):
-        /// - baseLevel phai nam trong [MinLevel, MaxLevel].
-        /// - baseStats phai tang dan theo cap.
-        /// - baseLevel khong duoc trung nhau.
-        /// Muc vi pham se duoc bo qua khi tinh chi so va ghi log canh bao.
-        /// </summary>
-        private void OnValidate()
-        {
-            ValidateStatsTable();
-        }
-
-        private void ValidateStatsTable()
-        {
-            if (statsTable == null || statsTable.Count == 0) return;
-
-            foreach (string issue in GetStatsTableIssues())
-            {
-                Debug.LogWarning($"[{nameof(TankBrain)}] Bang chi so co van de: {issue}", this);
-            }
-        }
-
-        /// <summary>
-        /// Mo ta loi cua tung muc vi pham trong bang (danh sach rong = khong loi).
-        /// </summary>
-        private System.Collections.Generic.List<string> GetStatsTableIssues()
-        {
-            System.Collections.Generic.List<string> issues = new System.Collections.Generic.List<string>();
-            if (statsTable == null || statsTable.Count == 0) return issues;
-
-            GetValidEntries(out System.Collections.Generic.HashSet<int> validIndices);
-
-            // Lay "muc hop le gan nhat truoc do" theo thu tu sort de gan loi tung muc.
-            int[] order = new int[statsTable.Count];
-            for (int i = 0; i < order.Length; i++) order[i] = i;
-            System.Array.Sort(order, (a, b) =>
-            {
-                int c = statsTable[a].baseLevel.CompareTo(statsTable[b].baseLevel);
-                return c != 0 ? c : a.CompareTo(b);
-            });
-
-            StatsEntry? prevValid = null;
-
-            foreach (int index in order)
-            {
-                StatsEntry entry = statsTable[index];
-
-                if (validIndices.Contains(index)) { prevValid = entry; continue; }
-
-                if (entry.baseLevel < MinLevel || entry.baseLevel > MaxLevel)
-                    issues.Add($"baseLevel {entry.baseLevel} ngoai khoang [{MinLevel}, {MaxLevel}] (muc nay bi bo qua).");
-                else if (entry.baseStats == null)
-                    issues.Add($"baseLevel {entry.baseLevel} thieu baseStats (muc nay bi bo qua).");
-                else if (prevValid.HasValue && prevValid.Value.baseLevel == entry.baseLevel)
-                    issues.Add($"baseLevel {entry.baseLevel} trung nhau (muc o truoc duoc dung, muc nay bi bo qua).");
-                else if (prevValid.HasValue && !IsStatsAtLeast(entry.baseStats, prevValid.Value.baseStats))
-                    issues.Add($"baseLevel {entry.baseLevel} co chi so nho hon muc L{prevValid.Value.baseLevel} "
-                        + $"({DescribeDiff(prevValid.Value.baseStats, entry.baseStats)}) - muc nay bi bo qua.");
-                else
-                    issues.Add($"baseLevel {entry.baseLevel} khong hop le (muc nay bi bo qua).");
-            }
-
-            return issues;
-        }
-
-        /// <summary>Mo ta ngan gon cac chi so bi giam giua 2 muc.</summary>
-        private static string DescribeDiff(TankStats higher, TankStats lower)
-        {
-            System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string>();
-            if (lower.Attack < higher.Attack) parts.Add($"Attack {higher.Attack:0.##}>{lower.Attack:0.##}");
-            if (lower.MaxHealth < higher.MaxHealth) parts.Add($"MaxHealth {higher.MaxHealth:0.##}>{lower.MaxHealth:0.##}");
-            if (lower.MaxEnergy < higher.MaxEnergy) parts.Add($"MaxEnergy {higher.MaxEnergy:0.##}>{lower.MaxEnergy:0.##}");
-            if (lower.Defense < higher.Defense) parts.Add($"Defense {higher.Defense:0.##}>{lower.Defense:0.##}");
-            if (lower.MoveSpeed < higher.MoveSpeed) parts.Add($"MoveSpeed {higher.MoveSpeed:0.##}>{lower.MoveSpeed:0.##}");
-            if (lower.CooldownReduction < higher.CooldownReduction) parts.Add($"CooldownReduction {higher.CooldownReduction:0.###}>{lower.CooldownReduction:0.###}");
-            if (lower.DamageMultiplier < higher.DamageMultiplier) parts.Add($"DamageMultiplier {higher.DamageMultiplier:0.##}>{lower.DamageMultiplier:0.##}");
-            if (lower.ArmorPenetration < higher.ArmorPenetration) parts.Add($"ArmorPenetration {higher.ArmorPenetration:0.###}>{lower.ArmorPenetration:0.###}");
-            return string.Join(", ", parts);
-        }
-
-        /// <summary>
-        /// Lay cac muc hop le cua bang, da sort theo baseLevel tang dan.
-        /// Cac muc vi pham bi bo qua (khong xoa khoi bang goc).
-        /// </summary>
-        private System.Collections.Generic.List<StatsEntry> GetValidEntries(out System.Collections.Generic.HashSet<int> validIndices)
-        {
-            int count = statsTable != null ? statsTable.Count : 0;
-
-            System.Collections.Generic.List<StatsEntry> result =
-                new System.Collections.Generic.List<StatsEntry>(count);
-            validIndices = new System.Collections.Generic.HashSet<int>();
-
-            if (count == 0) return result;
-
-            // Sort ON DINH theo baseLevel: sap xep mang index, key bang nhau thi
-            // giu theo thu tu goc de muc "dung truoc" duoc uu tien.
-            int[] order = new int[count];
-            for (int i = 0; i < count; i++) order[i] = i;
-
-            System.Array.Sort(order, (a, b) =>
-            {
-                int c = statsTable[a].baseLevel.CompareTo(statsTable[b].baseLevel);
-                return c != 0 ? c : a.CompareTo(b);
-            });
-
-            for (int i = 0; i < count; i++)
-            {
-                int index = order[i];
-                StatsEntry entry = statsTable[index];
-
-                if (entry.baseLevel < MinLevel || entry.baseLevel > MaxLevel) continue;
-                if (entry.baseStats == null) continue;
-
-                // Trung baseLevel -> bo qua muc o sau
-                if (result.Count > 0 && result[result.Count - 1].baseLevel == entry.baseLevel) continue;
-
-                // Chi so phai tang dan theo cap
-                if (result.Count > 0 && !IsStatsAtLeast(entry.baseStats, result[result.Count - 1].baseStats)) continue;
-
-                result.Add(entry);
-                validIndices.Add(index);
-            }
-
-            return result;
-        }
-
-        /// <summary>True neu <paramref name="candidate"/> co moi chi so >= <paramref name="reference"/>.</summary>
-        private static bool IsStatsAtLeast(TankStats candidate, TankStats reference)
-        {
-            return candidate.Attack >= reference.Attack
-                && candidate.MaxHealth >= reference.MaxHealth
-                && candidate.MaxEnergy >= reference.MaxEnergy
-                && candidate.Defense >= reference.Defense
-                && candidate.MoveSpeed >= reference.MoveSpeed
-                && candidate.CooldownReduction >= reference.CooldownReduction
-                && candidate.DamageMultiplier >= reference.DamageMultiplier
-                && candidate.ArmorPenetration >= reference.ArmorPenetration;
+            if (currentHealth <= 0f) currentHealth = m_FinalStats.MaxHealth;
+            if (currentEnergy <= 0f) currentEnergy = m_FinalStats.MaxEnergy;
         }
 
         #endregion
@@ -357,7 +160,7 @@ namespace IronWasteland.Tanks
             m_MoveInput = Vector2.ClampMagnitude(input, 1f);
         }
 
-        /// <summary>Nhan lenh huong nhin. Point la vi tri muc tieu trong world (con tro chuot).</summary>
+        /// <summary>Nhan diem nhin trong world (vi du vi tri con tro chuot).</summary>
         public void SetLookTarget(Vector2 worldPoint)
         {
             m_LookTarget = worldPoint;
@@ -385,7 +188,7 @@ namespace IronWasteland.Tanks
             // TODO: thay bang he thong di chuyen that su (dash, do loi, terrain...).
             if (m_Body != null)
             {
-                m_Body.linearVelocity = m_MoveInput * m_Stats.MoveSpeed;
+                m_Body.linearVelocity = m_MoveInput * m_FinalStats.MoveSpeed;
             }
 
             if (view == null) return;
@@ -400,7 +203,7 @@ namespace IronWasteland.Tanks
                 view.Stop();
             }
 
-            // --- Action Look: LUON chay, xoay noi sung ve con tro chuot -------
+            // --- Action Look: LUON chay, xoay noi sung ve muc tieu ------------
             if (m_HasLookTarget)
             {
                 view.Look(m_LookTarget);
@@ -423,24 +226,26 @@ namespace IronWasteland.Tanks
         /// <summary>Nhan sat thuong. TODO: ap dung Defense/ArmorPenetration.</summary>
         public void TakeDamage(float amount)
         {
-            // TODO: tinh damage thuc te bang stats.Defense va stats.ArmorPenetration cua doi phuong.
+            // TODO: tinh damage thuc te bang m_FinalStats.Defense va ArmorPenetration cua doi phuong.
             currentHealth -= amount;
         }
 
         public void Heal(float amount)
         {
-            currentHealth = Mathf.Min(currentHealth + amount, m_Stats.MaxHealth);
+            currentHealth = Mathf.Min(currentHealth + amount, m_FinalStats.MaxHealth);
         }
 
         public void GainEnergy(float amount)
         {
-            currentEnergy = Mathf.Min(currentEnergy + amount, m_Stats.MaxEnergy);
+            currentEnergy = Mathf.Min(currentEnergy + amount, m_FinalStats.MaxEnergy);
         }
 
         public void SpendEnergy(float amount)
         {
             currentEnergy = Mathf.Max(currentEnergy - amount, 0f);
         }
+
+        public bool IsAlive => currentHealth > 0f;
 
         #endregion
 
@@ -459,7 +264,7 @@ namespace IronWasteland.Tanks
 
         private float GetCooldownWithReduction(float baseCooldown)
         {
-            return baseCooldown * (1f - Mathf.Clamp(m_Stats.CooldownReduction, 0f, 1f));
+            return baseCooldown * (1f - Mathf.Clamp(m_FinalStats.CooldownReduction, 0f, 1f));
         }
 
         private float GetBaseCooldown(int index)
