@@ -16,10 +16,10 @@ namespace IronWasteland.Tanks
 
         [Header("Models")]
         [Tooltip("Danh sach TankModel prefab. Index trong mang la Model ID.")]
-        [SerializeField] private TankModel[] modelPrefabs;
+        [SerializeField] private TankView[] modelPrefabs;
 
         public TankBrain TankPrefab => tankPrefab;
-        public TankModel[] ModelPrefabs => modelPrefabs;
+        public TankView[] ModelPrefabs => modelPrefabs;
 
         /// <summary>Tao TankBrain moi theo Level va Model ID.</summary>
         public TankBrain CreateTank(int level, int modelId, Vector3 position, Transform parent = null)
@@ -30,7 +30,7 @@ namespace IronWasteland.Tanks
                 return null;
             }
 
-            TankModel modelPrefab = GetModelPrefab(modelId);
+            TankView modelPrefab = GetModelPrefab(modelId);
             if (modelPrefab == null)
             {
                 Debug.LogError($"[{nameof(TankBrainFactory)}] Model ID {modelId} khong hop le.");
@@ -45,7 +45,7 @@ namespace IronWasteland.Tanks
         }
 
         /// <summary>Lay TankModel prefab theo ID (index trong mang).</summary>
-        public TankModel GetModelPrefab(int modelId)
+        public TankView GetModelPrefab(int modelId)
         {
             if (modelPrefabs == null || modelId < 0 || modelId >= modelPrefabs.Length) return null;
             return modelPrefabs[modelId];

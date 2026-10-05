@@ -5,7 +5,7 @@ namespace IronWasteland.Tanks
     /// <summary>
     /// Hanh dong cua Tank.
     /// - Move va UseSkill la action "dong" (chi mot cai chay tai mot thoi diem).
-    /// - Look la action lien tuc, chay song song voi Move (xem <see cref="TankModel.IsLooking"/>).
+    /// - Look la action lien tuc, chay song song voi Move (xem <see cref="TankView.IsLooking"/>).
     /// </summary>
     public enum TankAction
     {
@@ -24,7 +24,7 @@ namespace IronWasteland.Tanks
     /// Cac ham public day la "hanh dong" cua Tank, moi ham se chay animation tuong ung.
     /// </summary>
     [DisallowMultipleComponent]
-    public class TankModel : MonoBehaviour
+    public class TankView : MonoBehaviour
     {
         [Header("References")]
         [Tooltip("Animator cua Tank ( tren root ).")]

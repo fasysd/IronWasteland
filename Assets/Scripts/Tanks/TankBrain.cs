@@ -25,10 +25,10 @@ namespace IronWasteland.Tanks
 
         [Header("Model")]
         [Tooltip("Model dang chay. Se duoc gan luc runtime tu TankBrainFactory.")]
-        [SerializeField] private TankModel model;
+        [SerializeField] private TankView model;
 
         [Tooltip("Prefab TankModel de spawn. Neu rong thi Tank khong co hinh anh.")]
-        [SerializeField] private TankModel modelPrefab;
+        [SerializeField] private TankView modelPrefab;
 
         [Header("Level")]
         [SerializeField, Range(MinLevel, MaxLevel)] private int level = MinLevel;
@@ -54,8 +54,8 @@ namespace IronWasteland.Tanks
         private Vector2 m_LookTarget;
         private bool m_HasLookTarget;
 
-        public TankModel Model => model;
-        public TankModel ModelPrefab => modelPrefab;
+        public TankView Model => model;
+        public TankView ModelPrefab => modelPrefab;
         public int Level => level;
         public TankStats Stats => m_Stats;
         public System.Collections.Generic.List<StatsEntry> StatsTable => statsTable;
@@ -156,7 +156,7 @@ namespace IronWasteland.Tanks
         }
 
         /// <summary>Nhan TankModel prefab, tao GameObject con va dung lam model cua Tank nay.</summary>
-        public void SetModelPrefab(TankModel prefab)
+        public void SetModelPrefab(TankView prefab)
         {
             modelPrefab = prefab;
             SpawnModel();
@@ -174,7 +174,7 @@ namespace IronWasteland.Tanks
 
         private void Awake()
         {
-            if (model == null) model = GetComponentInChildren<TankModel>();
+            if (model == null) model = GetComponentInChildren<TankView>();
 
             // Rigidbody2D nam tren chinh TankBrain. Fallback sang child cho
             // trong hop prefab cu / de an toan.
