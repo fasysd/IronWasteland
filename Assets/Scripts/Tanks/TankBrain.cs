@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace IronWasteland.Tanks
 {
@@ -46,6 +47,13 @@ namespace IronWasteland.Tanks
         private Vector2 m_MoveInput;
         private Vector2 m_LookTarget;
         private bool m_HasLookTarget;
+
+        // Trang bi dang trang bi: 1 slot -> 1 trang bi.
+        private readonly Dictionary<EquipmentSlot, EquipmentBrain> m_Equipment
+            = new Dictionary<EquipmentSlot, EquipmentBrain>();
+
+        // Trang bi cho doi View co xuat hienh (SetViewPrefab chay sau Initialize).
+        private readonly List<EquipmentBrain> m_PendingEquipment = new List<EquipmentBrain>();
 
         public TankView View => view;
         public TankView ViewPrefab => viewPrefab;
@@ -122,7 +130,121 @@ namespace IronWasteland.Tanks
             view.name = viewPrefab.name;
 
             RegisterInto(view);
+
+            // View vua san -> gan lai cac trang bi cho doi.
+            FlushPendingEquipment();
         }
+
+        #region Equipment
+
+        /// <summary>Trang bi dang trang bi cua 1 slot (null neu rong).</summary>
+        public EquipmentBrain GetEquipment(EquipmentSlot slot)
+        {
+            return m_Equipment.TryGetValue(slot, out EquipmentBrain equipment) ? equipment : null;
+        }
+
+        /// <summary>So trang bi dang trang bi.</summary>
+        public int EquipmentCount => m_Equipment.Count;
+
+        /// <summary>Tat ca trang bi dang trang bi (khong phai ban sao).</summary>
+        public IEnumerable<EquipmentBrain> GetEquipments() => m_Equipment.Values;
+
+        /// <summary>
+        /// Trang bi 1 trang bi. Tu tao instance tu prefab roi goi
+        /// <see cref="EquipmentBrain.Equip"/> - noi dung gi vao TankView.
+        /// Neu View chua co (Tank moi Initialize) thi cho vao hang doi, gan lai
+        /// ngay khi View xuat hienh.
+        /// </summary>
+        public EquipmentBrain EquipEquipment(EquipmentBrain prefab)
+        {
+            if (prefab == null) return null;
+
+            // Slot da co trang bi -> thoa truoc de khong cong chieu stat.
+            EquipmentSlot slot = prefab.Slot;
+            if (m_Equipment.TryGetValue(slot, out EquipmentBrain existing))
+            {
+                UnequipEquipment(slot);
+            }
+
+            EquipmentBrain instance = Instantiate(prefab, transform);
+            instance.name = prefab.name;
+
+            if (view == null)
+            {
+                // Chua co View -> cho doi, chi ghi nho de gan lai sau.
+                m_PendingEquipment.Add(instance);
+            }
+            else
+            {
+                instance.Equip(this);
+            }
+
+            m_Equipment[slot] = instance;
+            return instance;
+        }
+
+        /// <summary>Trang bi 1 trang bi theo ID tra cuu tu <paramref name="database"/>.</summary>
+        public EquipmentBrain EquipEquipmentById(EquipmentDatabase database, EquipmentSlot slot, string id)
+        {
+            if (database == null)
+            {
+                Debug.LogError($"[{nameof(TankBrain)}] Chua gan EquipmentDatabase.", this);
+                return null;
+            }
+
+            return EquipEquipment(database.GetPrefab(slot, id));
+        }
+
+        /// <summary>Thoa trang bi o 1 slot. True neu co trang bi de thoa.</summary>
+        public bool UnequipEquipment(EquipmentSlot slot)
+        {
+            if (!m_Equipment.TryGetValue(slot, out EquipmentBrain equipment)) return false;
+
+            m_Equipment.Remove(slot);
+            m_PendingEquipment.Remove(equipment);
+            equipment.UnEquip(this);
+
+            return true;
+        }
+
+        /// <summary>Thoa het trang bi.</summary>
+        public void UnequipAll()
+        {
+            foreach (EquipmentBrain equipment in m_Equipment.Values)
+            {
+                equipment.UnEquip(this);
+            }
+
+            m_Equipment.Clear();
+            m_PendingEquipment.Clear();
+        }
+
+        /// <summary>
+        /// Thong bao cho trang bi bi dong (DamageLifesteal) khi Tank vua gay sat thuong.
+        /// He thong tan cong se goi ham nay khi biet danh trung.
+        /// </summary>
+        public void NotifyDamageDealt(float damage)
+        {
+            foreach (EquipmentBrain equipment in m_Equipment.Values)
+            {
+                equipment.OnOwnerDamageDealt(damage);
+            }
+        }
+
+        /// <summary>Gan lai trang bi cho doi (chay khi View vua duoc tao).</summary>
+        private void FlushPendingEquipment()
+        {
+            if (m_PendingEquipment.Count == 0) return;
+
+            foreach (EquipmentBrain equipment in m_PendingEquipment)
+            {
+                equipment.Equip(this);
+            }
+
+            m_PendingEquipment.Clear();
+        }
+
+        #endregion
 
         /// <summary>TankBrain dang ky lam Owner cua View (va cac collider ben trong).</summary>
         public void RegisterInto(TankView target)

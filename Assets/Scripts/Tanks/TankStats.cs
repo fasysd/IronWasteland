@@ -87,5 +87,40 @@ namespace IronWasteland.Tanks
             MoveSpeed += other.MoveSpeed;
             CooldownReduction += other.CooldownReduction;
         }
+
+        /// <summary>
+        /// Do lai bang hien tai tru bang khac. Dung khi thoa trang bi
+        /// (tru <c>statBonus</c> da cong) hoac goi y chieu nghich.
+        /// </summary>
+        public TankStats Subtract(TankStats other)
+        {
+            if (other == null) return Clone();
+
+            TankStats r = Clone();
+            r.Attack -= other.Attack;
+            r.Defense -= other.Defense;
+            r.DamageMultiplier -= other.DamageMultiplier;
+            r.ArmorPenetration -= other.ArmorPenetration;
+            r.MaxHealth -= other.MaxHealth;
+            r.MaxEnergy -= other.MaxEnergy;
+            r.MoveSpeed -= other.MoveSpeed;
+            r.CooldownReduction -= other.CooldownReduction;
+            return r;
+        }
+
+        /// <summary>Doi dau moi chi so. Add() + Negated() == Subtract().</summary>
+        public TankStats Negated()
+        {
+            TankStats r = Clone();
+            r.Attack = -r.Attack;
+            r.Defense = -r.Defense;
+            r.DamageMultiplier = -r.DamageMultiplier;
+            r.ArmorPenetration = -r.ArmorPenetration;
+            r.MaxHealth = -r.MaxHealth;
+            r.MaxEnergy = -r.MaxEnergy;
+            r.MoveSpeed = -r.MoveSpeed;
+            r.CooldownReduction = -r.CooldownReduction;
+            return r;
+        }
     }
 }

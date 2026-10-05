@@ -184,6 +184,13 @@ MonoBehaviour:
   animator: {fileID: 1054886554701225858}
   weaponPivot: {fileID: 7010148085972625029}
   bodyPivot: {fileID: 1605378373184788374}
+  weaponSlot: {fileID: 7010148085972625029}
+  hullSlot: {fileID: 2064266134470812089}
+  trackSlot: {fileID: 8570832563111783515}
+  defaultSlotVisuals:
+  - {fileID: 148968381065030249}
+  - {fileID: 2869632821962299719}
+  - {fileID: 1711751531534823537}
   lookSmoothing: 900
   body: {fileID: 0}
   owner: {fileID: 0}
