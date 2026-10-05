@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace IronWasteland.Tanks
@@ -30,7 +31,7 @@ namespace IronWasteland.Tanks
         [Tooltip("Animator cua Tank ( tren root ).")]
         [SerializeField] private Animator animator;
 
-        [Tooltip("Pivot xoay doc lap phia tren (Weapon/Nong sung). Chi Model dung transform nay.")]
+        [Tooltip("Pivot xoay doc lap phia tren (Weapon/Nong sung). Chi View dung transform nay.")]
         [SerializeField] private Transform weaponPivot;
 
         [Tooltip("Pivot xoay theo huong di chuyen (Hull + Track).")]
@@ -41,8 +42,14 @@ namespace IronWasteland.Tanks
         [SerializeField] private float lookSmoothing = 900f;
 
         [Header("References (hitbox)")]
-        [Tooltip("Rigidbody2D dung cho hitbox. TankModel KHONG sua truc tiep, chi de reference.")]
+        [Tooltip("Rigidbody2D dung cho hitbox. TankView KHONG sua truc tiep, chi de reference.")]
         [SerializeField] private Rigidbody2D body;
+
+        [Header("Owner")]
+        [Tooltip("Tank nao dieu khien View nay. Do TankBrain gan luc runtime.")]
+        [SerializeField, HideInInspector] private Object owner;
+
+        private readonly List<ColliderOwnerRef> m_OwnerRefs = new List<ColliderOwnerRef>();
 
         private TankAction m_Action = TankAction.Idle;
         private bool m_IsLooking;
@@ -64,15 +71,51 @@ namespace IronWasteland.Tanks
         /// </summary>
         public bool IsLooking => m_IsLooking;
 
+        /// <summary>Tank nao dieu khien View nay (do TankBrain dang ky).</summary>
+        public Object Owner => owner;
+
+        public bool HasOwner => owner != null;
+
+        /// <summary>Yeu cau xoa ma doc: TankBrain dang ky lam Owner cua View nay.</summary>
+        public void RegisterOwner(Object value)
+        {
+            owner = value;
+            CollectOwnerRefs();
+            PropagateOwner();
+        }
+
+        /// <summary>Quet lai cac collider chua duoc gan OwnerRef.</summary>
+        public void CollectOwnerRefs()
+        {
+            m_OwnerRefs.Clear();
+            m_OwnerRefs.AddRange(GetComponentsInChildren<ColliderOwnerRef>(true));
+        }
+
+        /// <summary>Day Owner xuong moi collider trong View.</summary>
+        public void PropagateOwner()
+        {
+            for (int i = 0; i < m_OwnerRefs.Count; i++)
+            {
+                m_OwnerRefs[i].SetOwner(owner);
+            }
+        }
+
+        /// <summary>Lay ColliderOwnerRef dau tien cua View (ti?n cho raycast).</summary>
+        public ColliderOwnerRef GetOwnerRef() => m_OwnerRefs.Count > 0 ? m_OwnerRefs[0] : null;
+
         private void Awake()
         {
             if (animator == null) animator = GetComponentInChildren<Animator>();
             if (bodyPivot == null) bodyPivot = transform;
             m_LookAngle = bodyPivot.eulerAngles.z;
 
-            // TankModel co the la prefab con cua Tank. Rigidbody2D nam tren Tank
+            // TankView co the la prefab con cua Tank. Rigidbody2D nam tren Tank
             // nen tim o cha khi chua co tren chinh no.
             if (body == null) body = GetComponentInParent<Rigidbody2D>();
+
+            // Gan owner xuong cac collider (truong hop owner da duoc gan san trong prefab).
+            CollectOwnerRefs();
+            PropagateOwner();
         }
 
         private void Update()

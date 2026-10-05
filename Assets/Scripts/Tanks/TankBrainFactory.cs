@@ -4,25 +4,25 @@ namespace IronWasteland.Tanks
 {
     /// <summary>
     /// ScriptableObject tao TankBrain tu prefab.
-    /// Chi "Level" va "Model ID" duoc truyen tu ben ngoi (vd Player);
+    /// Chi "Level" va "View ID" duoc truyen tu ben ngoi (vd Player);
     /// cac chi so khac duoc tinh trong chinh TankBrain prefab.
     /// </summary>
     [CreateAssetMenu(menuName = "IronWasteland/Tank/Tank Brain Factory", fileName = "TankBrainFactory")]
     public class TankBrainFactory : ScriptableObject
     {
         [Header("Prefab")]
-        [Tooltip("Prefab chua TankBrain (khong chua TankModel).")]
+        [Tooltip("Prefab chua TankBrain (khong co TankView).")]
         [SerializeField] private TankBrain tankPrefab;
 
-        [Header("Models")]
-        [Tooltip("Danh sach TankModel prefab. Index trong mang la Model ID.")]
-        [SerializeField] private TankView[] modelPrefabs;
+        [Header("Views")]
+        [Tooltip("Danh sach TankView prefab. Index trong mang la View ID.")]
+        [SerializeField] private TankView[] viewPrefabs;
 
         public TankBrain TankPrefab => tankPrefab;
-        public TankView[] ModelPrefabs => modelPrefabs;
+        public TankView[] ViewPrefabs => viewPrefabs;
 
-        /// <summary>Tao TankBrain moi theo Level va Model ID.</summary>
-        public TankBrain CreateTank(int level, int modelId, Vector3 position, Transform parent = null)
+        /// <summary>Tao TankBrain moi theo Level va View ID.</summary>
+        public TankBrain CreateTank(int level, int viewId, Vector3 position, Transform parent = null)
         {
             if (tankPrefab == null)
             {
@@ -30,27 +30,27 @@ namespace IronWasteland.Tanks
                 return null;
             }
 
-            TankView modelPrefab = GetModelPrefab(modelId);
-            if (modelPrefab == null)
+            TankView viewPrefab = GetViewPrefab(viewId);
+            if (viewPrefab == null)
             {
-                Debug.LogError($"[{nameof(TankBrainFactory)}] Model ID {modelId} khong hop le.");
+                Debug.LogError($"[{nameof(TankBrainFactory)}] View ID {viewId} khong hop le.");
                 return null;
             }
 
             TankBrain brain = Instantiate(tankPrefab, position, Quaternion.identity, parent);
             brain.Initialize(level);
-            brain.SetModelPrefab(modelPrefab);
+            brain.SetViewPrefab(viewPrefab);
 
             return brain;
         }
 
-        /// <summary>Lay TankModel prefab theo ID (index trong mang).</summary>
-        public TankView GetModelPrefab(int modelId)
+        /// <summary>Lay TankView prefab theo ID (index trong mang).</summary>
+        public TankView GetViewPrefab(int viewId)
         {
-            if (modelPrefabs == null || modelId < 0 || modelId >= modelPrefabs.Length) return null;
-            return modelPrefabs[modelId];
+            if (viewPrefabs == null || viewId < 0 || viewId >= viewPrefabs.Length) return null;
+            return viewPrefabs[viewId];
         }
 
-        public int ModelCount => modelPrefabs != null ? modelPrefabs.Length : 0;
+        public int ViewCount => viewPrefabs != null ? viewPrefabs.Length : 0;
     }
 }

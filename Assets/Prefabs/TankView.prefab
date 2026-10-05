@@ -76,8 +76,9 @@ GameObject:
   - component: {fileID: 1054886554701225858}
   - component: {fileID: 1264366280795951762}
   - component: {fileID: 4035724410283292367}
+  - component: {fileID: 7712000000000000001}
   m_Layer: 0
-  m_Name: TankModel
+  m_Name: TankView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -179,12 +180,26 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0461d3f84904be340925379fc787bab4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankModel
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankView
   animator: {fileID: 1054886554701225858}
   weaponPivot: {fileID: 7010148085972625029}
   bodyPivot: {fileID: 1605378373184788374}
-  lookSmoothing: 720
+  lookSmoothing: 900
   body: {fileID: 0}
+  owner: {fileID: 0}
+--- !u!114 &7712000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2147206032191955045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
+  owner: {fileID: 0}
 --- !u!1 &4416177109912046103
 GameObject:
   m_ObjectHideFlags: 0

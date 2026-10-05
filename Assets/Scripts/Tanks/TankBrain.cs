@@ -14,7 +14,7 @@ namespace IronWasteland.Tanks
 
     /// <summary>
     /// Lop dieu khien Tank. Day la noi chua "logic game": chi so, di chuyen, dung 4 ky nang.
-    /// No KHONG cham vao truc tiep sprite/animator, ma chi ra lenh cho TankModel.
+    /// No KHONG cham vao truc tiep sprite/animator, ma chi ra lenh cho TankView.
     /// </summary>
     [DisallowMultipleComponent]
     public class TankBrain : MonoBehaviour
@@ -23,12 +23,12 @@ namespace IronWasteland.Tanks
         public const int MaxLevel = 90;
         public const int SkillCount = 4;
 
-        [Header("Model")]
-        [Tooltip("Model dang chay. Se duoc gan luc runtime tu TankBrainFactory.")]
-        [SerializeField] private TankView model;
+        [Header("View")]
+        [Tooltip("View dang chay. Se duoc gan luc runtime tu TankBrainFactory.")]
+        [SerializeField] private TankView view;
 
-        [Tooltip("Prefab TankModel de spawn. Neu rong thi Tank khong co hinh anh.")]
-        [SerializeField] private TankView modelPrefab;
+        [Tooltip("Prefab TankView de spawn. Neu rong thi Tank khong co hinh anh.")]
+        [SerializeField] private TankView viewPrefab;
 
         [Header("Level")]
         [SerializeField, Range(MinLevel, MaxLevel)] private int level = MinLevel;
@@ -54,8 +54,8 @@ namespace IronWasteland.Tanks
         private Vector2 m_LookTarget;
         private bool m_HasLookTarget;
 
-        public TankView Model => model;
-        public TankView ModelPrefab => modelPrefab;
+        public TankView View => view;
+        public TankView ViewPrefab => viewPrefab;
         public int Level => level;
         public TankStats Stats => m_Stats;
         public System.Collections.Generic.List<StatsEntry> StatsTable => statsTable;
@@ -155,26 +155,37 @@ namespace IronWasteland.Tanks
             return r;
         }
 
-        /// <summary>Nhan TankModel prefab, tao GameObject con va dung lam model cua Tank nay.</summary>
-        public void SetModelPrefab(TankView prefab)
+        /// <summary>Nhan TankView prefab, tao GameObject con va dung lam View cua Tank nay.</summary>
+        public void SetViewPrefab(TankView prefab)
         {
-            modelPrefab = prefab;
-            SpawnModel();
+            viewPrefab = prefab;
+            SpawnView();
         }
 
-        private void SpawnModel()
+        private void SpawnView()
         {
-            if (modelPrefab == null) return;
+            if (viewPrefab == null) return;
 
-            if (model != null) Destroy(model.gameObject);
+            if (view != null) Destroy(view.gameObject);
 
-            model = Instantiate(modelPrefab, transform);
-            model.name = modelPrefab.name;
+            view = Instantiate(viewPrefab, transform);
+            view.name = viewPrefab.name;
+
+            RegisterInto(view);
+        }
+
+        /// <summary>TankBrain dang ky lam Owner cua View (va cac collider ben trong).</summary>
+        public void RegisterInto(TankView target)
+        {
+            target?.RegisterOwner(this);
         }
 
         private void Awake()
         {
-            if (model == null) model = GetComponentInChildren<TankView>();
+            if (view == null) view = GetComponentInChildren<TankView>();
+
+            // View co the da ton tai san trong hierarchy (khong qua factory).
+            RegisterInto(view);
 
             // Rigidbody2D nam tren chinh TankBrain. Fallback sang child cho
             // trong hop prefab cu / de an toan.
@@ -357,7 +368,7 @@ namespace IronWasteland.Tanks
         public void ClearLookTarget()
         {
             m_HasLookTarget = false;
-            model?.StopLook();
+            view?.StopLook();
         }
 
         #endregion
@@ -377,22 +388,22 @@ namespace IronWasteland.Tanks
                 m_Body.linearVelocity = m_MoveInput * m_Stats.MoveSpeed;
             }
 
-            if (model == null) return;
+            if (view == null) return;
 
             // --- Action Move ---------------------------------------------------
             if (m_MoveInput.sqrMagnitude > 0.0001f)
             {
-                model.Move(m_MoveInput.normalized);
+                view.Move(m_MoveInput.normalized);
             }
             else
             {
-                model.Stop();
+                view.Stop();
             }
 
             // --- Action Look: LUON chay, xoay noi sung ve con tro chuot -------
             if (m_HasLookTarget)
             {
-                model.Look(m_LookTarget);
+                view.Look(m_LookTarget);
             }
         }
 
@@ -406,7 +417,7 @@ namespace IronWasteland.Tanks
 
             Debug.Log($"[TankBrain] Level {level} su dung ky nang {index + 1}/{SkillCount}.");
             skillCooldowns[index] = GetCooldownWithReduction(GetBaseCooldown(index));
-            model?.UseSkill(index);
+            view?.UseSkill(index);
         }
 
         /// <summary>Nhan sat thuong. TODO: ap dung Defense/ArmorPenetration.</summary>

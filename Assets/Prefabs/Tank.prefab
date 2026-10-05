@@ -72,8 +72,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f814839f4a369a445975f9b5811f4c62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankBrain
-  model: {fileID: 0}
-  modelPrefab: {fileID: 0}
+  view: {fileID: 0}
+  viewPrefab: {fileID: 0}
   level: 1
   statsTable:
   - baseLevel: 1
