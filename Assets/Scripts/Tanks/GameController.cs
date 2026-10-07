@@ -20,6 +20,15 @@ namespace IronWasteland.Tanks
 
         [SerializeField] private Vector2 spawnPosition = Vector2.zero;
 
+        [Tooltip("ID trang bi sung. De trong = Tank khong co nong phao.")]
+        [SerializeField] private string weaponId;
+
+        [Tooltip("ID trang bi vo xe. De trong = Tank khong co vo xe.")]
+        [SerializeField] private string hullId;
+
+        [Tooltip("ID trang bi bo banh. De trong = Tank khong co bo banh.")]
+        [SerializeField] private string trackId;
+
         [Header("Look")]
         [Tooltip("Camera de tinh huong nhin. Neu rong se dung Camera.main.")]
         [SerializeField] private Camera targetCamera;
@@ -33,7 +42,7 @@ namespace IronWasteland.Tanks
             if (targetCamera == null) targetCamera = Camera.main;
 
             m_PlayerTank = tankDefinition != null
-                ? tankDefinition.CreateTank(playerLevel, viewId, spawnPosition)
+                ? tankDefinition.CreateTank(playerLevel, viewId, spawnPosition, null, weaponId, hullId, trackId)
                 : null;
 
             if (m_PlayerTank == null)

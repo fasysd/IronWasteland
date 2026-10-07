@@ -43,14 +43,6 @@ namespace IronWasteland.Tanks
         [Tooltip("Kho du lieu dung de tra cuu prefab trang bi theo ID.")]
         [SerializeField] private EquipmentDatabase equipmentDatabase;
 
-        [Tooltip("ID trang bi sung. De trong = Tank khong co nong phao.")]
-        [SerializeField] private string weaponId;
-
-        [Tooltip("ID trang bi vo xe. De trong = Tank khong co vo xe.")]
-        [SerializeField] private string hullId;
-
-        [Tooltip("ID trang bi bo banh. De trong = Tank khong co bo banh.")]
-        [SerializeField] private string trackId;
         public string TankName => tankName;
         public string Description => description;
         public List<StatsEntry> StatsTable => statsTable;
@@ -58,36 +50,12 @@ namespace IronWasteland.Tanks
         public TankView[] ViewPrefabs => viewPrefabs;
         public int ViewCount => viewPrefabs != null ? viewPrefabs.Length : 0;
         public EquipmentDatabase EquipmentDatabase => equipmentDatabase;
-        public string WeaponId => weaponId;
-        public string HullId => hullId;
-        public string TrackId => trackId;
-
-        /// <summary>ID trang bi cua 1 slot. De trong = khong gan trang bi.</summary>
-        public string GetEquipmentId(EquipmentSlot slot)
-        {
-            switch (slot)
-            {
-                case EquipmentSlot.Weapon: return weaponId;
-                case EquipmentSlot.Hull: return hullId;
-                case EquipmentSlot.Track: return trackId;
-                default: return null;
-            }
-        }
 
         /// <summary>Lay TankView prefab theo ID (index trong mang).</summary>
         public TankView GetViewPrefab(int viewId)
         {
             if (viewPrefabs == null || viewId < 0 || viewId >= viewPrefabs.Length) return null;
             return viewPrefabs[viewId];
-        }
-
-        /// <summary>
-        /// Tao Tank moi: gan base stats theo Level + gan TankView theo ID
-        /// + gan bo trang bi mac dinh (ID da luu tren asset nay).
-        /// </summary>
-        public TankBrain CreateTank(int level, int viewId, Vector3 position, Transform parent = null)
-        {
-            return CreateTank(level, viewId, position, parent, weaponId, hullId, trackId);
         }
 
         /// <summary>

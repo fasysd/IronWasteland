@@ -116,6 +116,6 @@ MonoBehaviour:
     ArmorPenetration: 0
     MaxHealth: 0
     MaxEnergy: 0
-    MoveSpeed: 100
+    MoveSpeed: 5
     CooldownReduction: 0
   moveSpeedPercent: 0
