@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 569371263267873161}
   - component: {fileID: 2337791876944670423}
   m_Layer: 0
-  m_Name: TankBrain
+  m_Name: Tank
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -76,15 +76,15 @@ MonoBehaviour:
   viewPrefab: {fileID: 0}
   level: 1
   baseStats:
-    Attack: 10
+    Attack: 0
     Defense: 0
     DamageMultiplier: 1
     ArmorPenetration: 0
-    MaxHealth: 100
-    MaxEnergy: 50
-    MoveSpeed: 3
+    MaxHealth: 0
+    MaxEnergy: 0
+    MoveSpeed: 0
     CooldownReduction: 0
-  runtimeStats:
+  bonusStats:
     Attack: 0
     Defense: 0
     DamageMultiplier: 0

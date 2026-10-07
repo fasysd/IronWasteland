@@ -18,7 +18,7 @@ MonoBehaviour:
   - baseLevel: 1
     baseStats:
       Attack: 10
-      Defense: 0
+      Defense: 10
       DamageMultiplier: 1
       ArmorPenetration: 0
       MaxHealth: 100
@@ -58,3 +58,7 @@ MonoBehaviour:
   tankPrefab: {fileID: 2337791876944670423, guid: dd9a410d742d54c4d87ae5d966767971, type: 3}
   viewPrefabs:
   - {fileID: 4035724410283292367, guid: 493b60d53e11c6a4fa06bcf98c442a43, type: 3}
+  equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
+  weaponId: weapon_cannon
+  hullId: hull_heavy
+  trackId: track_heavy

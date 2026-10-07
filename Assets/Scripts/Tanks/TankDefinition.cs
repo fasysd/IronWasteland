@@ -39,12 +39,40 @@ namespace IronWasteland.Tanks
         [Tooltip("Danh sach TankView prefab. Index trong mang la TankView ID.")]
         [SerializeField] private TankView[] viewPrefabs;
 
+[Header("Equipment")]
+        [Tooltip("Kho du lieu dung de tra cuu prefab trang bi theo ID.")]
+        [SerializeField] private EquipmentDatabase equipmentDatabase;
+
+        [Tooltip("ID trang bi sung. De trong = Tank khong co nong phao.")]
+        [SerializeField] private string weaponId;
+
+        [Tooltip("ID trang bi vo xe. De trong = Tank khong co vo xe.")]
+        [SerializeField] private string hullId;
+
+        [Tooltip("ID trang bi bo banh. De trong = Tank khong co bo banh.")]
+        [SerializeField] private string trackId;
         public string TankName => tankName;
         public string Description => description;
         public List<StatsEntry> StatsTable => statsTable;
         public TankBrain TankPrefab => tankPrefab;
         public TankView[] ViewPrefabs => viewPrefabs;
         public int ViewCount => viewPrefabs != null ? viewPrefabs.Length : 0;
+        public EquipmentDatabase EquipmentDatabase => equipmentDatabase;
+        public string WeaponId => weaponId;
+        public string HullId => hullId;
+        public string TrackId => trackId;
+
+        /// <summary>ID trang bi cua 1 slot. De trong = khong gan trang bi.</summary>
+        public string GetEquipmentId(EquipmentSlot slot)
+        {
+            switch (slot)
+            {
+                case EquipmentSlot.Weapon: return weaponId;
+                case EquipmentSlot.Hull: return hullId;
+                case EquipmentSlot.Track: return trackId;
+                default: return null;
+            }
+        }
 
         /// <summary>Lay TankView prefab theo ID (index trong mang).</summary>
         public TankView GetViewPrefab(int viewId)
@@ -54,9 +82,20 @@ namespace IronWasteland.Tanks
         }
 
         /// <summary>
-        /// Tao Tank moi: gan base stats theo Level + gan TankView theo ID.
+        /// Tao Tank moi: gan base stats theo Level + gan TankView theo ID
+        /// + gan bo trang bi mac dinh (ID da luu tren asset nay).
         /// </summary>
         public TankBrain CreateTank(int level, int viewId, Vector3 position, Transform parent = null)
+        {
+            return CreateTank(level, viewId, position, parent, weaponId, hullId, trackId);
+        }
+
+        /// <summary>
+        /// Tao Tank moi voi bo trang bi chi dinh (ghi de ID mac dinh tren asset).
+        /// ID rong / khong ton tai -> Tank van tao duoc, chi khong co trang bi do.
+        /// </summary>
+        public TankBrain CreateTank(int level, int viewId, Vector3 position, Transform parent,
+            string weaponEquipmentId, string hullEquipmentId, string trackEquipmentId)
         {
             if (tankPrefab == null)
             {
@@ -75,7 +114,42 @@ namespace IronWasteland.Tanks
             brain.Initialize(level, GetStatsForLevel(level), this);
             brain.SetViewPrefab(viewPrefab);
 
+            // Trang bi gan sau View: EquipmentBrain can TankView de biet vi tri hien thi.
+            EquipLoadout(brain, weaponEquipmentId, hullEquipmentId, trackEquipmentId);
+
             return brain;
+        }
+
+        /// <summary>
+        /// Gan 3 trang bi theo ID. ID rong hoac khong tra cuo duoc -> bo qua
+        /// (Tank van chay binh thuong, chi khong co trang bi do).
+        /// </summary>
+        private void EquipLoadout(TankBrain brain, string weaponEquipmentId, string hullEquipmentId, string trackEquipmentId)
+        {
+            if (equipmentDatabase == null)
+            {
+                // ID rong het thi khong can database.
+                if (HasAnyEquipmentId(weaponEquipmentId, hullEquipmentId, trackEquipmentId))
+                {
+                    Debug.LogWarning($"[{nameof(TankDefinition)}] Co ID trang bi nhung chua gan EquipmentDatabase.", this);
+                }
+
+                return;
+            }
+
+            brain.EquipEquipmentById(equipmentDatabase, EquipmentSlot.Weapon, weaponEquipmentId);
+            brain.EquipEquipmentById(equipmentDatabase, EquipmentSlot.Hull, hullEquipmentId);
+            brain.EquipEquipmentById(equipmentDatabase, EquipmentSlot.Track, trackEquipmentId);
+        }
+
+        private static bool HasAnyEquipmentId(params string[] ids)
+        {
+            for (int i = 0; i < ids.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(ids[i])) return true;
+            }
+
+            return false;
         }
 
         /// <summary>

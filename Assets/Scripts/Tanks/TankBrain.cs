@@ -1,15 +1,16 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace IronWasteland.Tanks
 {
     /// <summary>
     /// Lop dieu khien Tank. Day la noi chua RUNTIME STATE:
     /// - base stats (do TankDefinition gui vao khi khoi tao)
-    /// - runtime stats (buff/debuff, mac dinh 0)
+    /// - bonus stats - chi so phu cong them tu nguoi khac (buff/debuff, mac dinh 0)
     /// - HP / Energy hien tai
     /// Khong con bang chi co so - phan do thuoc ve TankDefinition.
     ///
-    /// Chi so cuoi cung = Base stats + Runtime stats.
+    /// Chi so cuoi cung = Base stats + Bonus stats.
     /// Level khong doi duoc sau khi khoi tao.
     /// </summary>
     [DisallowMultipleComponent]
@@ -29,10 +30,12 @@ namespace IronWasteland.Tanks
 
         [Header("Stats")]
         [Tooltip("Chi so co so do TankDefinition gui vao. KHONG sua tay.")]
+        [ReadOnly]
         [SerializeField] private TankStats baseStats = new TankStats();
 
-        [Tooltip("Chi so phu sinh runtime (buff/debuff). Mac dinh moi chi so = 0.")]
-        [SerializeField] private TankStats runtimeStats = new TankStats();
+        [Tooltip("Chi so phu cong them tu nguoi khac (buff/debuff...). Mac dinh moi chi so = 0. Luon duoc tinh lai khi Equip/Unequip.")]
+        [ReadOnly]
+        [SerializeField] private TankStats bonusStats = TankStats.Zeroed();
 
         [SerializeField, HideInInspector] private TankDefinition definition;
 
@@ -47,18 +50,25 @@ namespace IronWasteland.Tanks
         private Vector2 m_LookTarget;
         private bool m_HasLookTarget;
 
+        // Trang bi dang trang bi: 1 slot -> 1 trang bi.
+        private readonly Dictionary<EquipmentSlot, EquipmentBrain> m_Equipment
+            = new Dictionary<EquipmentSlot, EquipmentBrain>();
+
+        // Trang bi cho doi View co xuat hienh (SetViewPrefab chay sau Initialize).
+        private readonly List<EquipmentBrain> m_PendingEquipment = new List<EquipmentBrain>();
+
         public TankView View => view;
         public TankView ViewPrefab => viewPrefab;
         public TankDefinition Definition => definition;
         public int Level => level;
 
-        /// <summary>Chi so goc (khong cong runtime).</summary>
+        /// <summary>Chi so goc (chua tinh bonus).</summary>
         public TankStats BaseStats => baseStats;
 
-        /// <summary>Chi so phu runtime (buff/debuff).</summary>
-        public TankStats RuntimeStats => runtimeStats;
+        /// <summary>Chi so phu cong them tu nguoi khac (buff/debuff...).</summary>
+        public TankStats BonusStats => bonusStats;
 
-        /// <summary>Chi so cuoi cung = base + runtime. Dung de tinh toan.</summary>
+        /// <summary>Chi so cuoi cung = base + bonus. Dung de tinh toan.</summary>
         public TankStats Stats => m_FinalStats;
 
         public float CurrentHealth => currentHealth;
@@ -81,27 +91,27 @@ namespace IronWasteland.Tanks
             for (int i = 0; i < skillCooldowns.Length; i++) skillCooldowns[i] = 0f;
         }
 
-        /// <summary>Tinh lai chi so cuoi cung = base + runtime, va keo lai HP/Energy.</summary>
+        /// <summary>Tinh lai chi so cuoi cung = base + bonus, va keo lai HP/Energy.</summary>
         public void RecalculateStats()
         {
-            m_FinalStats = baseStats.Add(runtimeStats);
+            m_FinalStats = baseStats.Add(bonusStats);
 
             currentHealth = Mathf.Clamp(currentHealth, 0f, m_FinalStats.MaxHealth);
             currentEnergy = Mathf.Clamp(currentEnergy, 0f, m_FinalStats.MaxEnergy);
         }
 
-        /// <summary>Them/tru chi so runtime (buff, debuff...). Tu keo lai HP/Energy.</summary>
-        public void ModifyRuntimeStats(TankStats delta)
+        /// <summary>Them/tru chi so bonus tu nguoi khac (buff, debuff...). Tu keo lai HP/Energy.</summary>
+        public void ModifyBonusStats(TankStats delta)
         {
             if (delta == null) return;
-            runtimeStats.AddTo(delta);
+            bonusStats.AddTo(delta);
             RecalculateStats();
         }
 
-        /// <summary>Xoa toan bo chi so runtime (het buff).</summary>
-        public void ClearRuntimeStats()
+        /// <summary>Xoa toan bo chi so bonus (het buff).</summary>
+        public void ClearBonusStats()
         {
-            runtimeStats = TankStats.Zeroed();
+            bonusStats = TankStats.Zeroed();
             RecalculateStats();
         }
 
@@ -122,7 +132,128 @@ namespace IronWasteland.Tanks
             view.name = viewPrefab.name;
 
             RegisterInto(view);
+
+            // View vua san -> gan lai cac trang bi cho doi.
+            FlushPendingEquipment();
         }
+
+        #region Equipment
+
+        /// <summary>Trang bi dang trang bi cua 1 slot (null neu rong).</summary>
+        public EquipmentBrain GetEquipment(EquipmentSlot slot)
+        {
+            return m_Equipment.TryGetValue(slot, out EquipmentBrain equipment) ? equipment : null;
+        }
+
+        /// <summary>So trang bi dang trang bi.</summary>
+        public int EquipmentCount => m_Equipment.Count;
+
+        /// <summary>Tat ca trang bi dang trang bi (khong phai ban sao).</summary>
+        public IEnumerable<EquipmentBrain> GetEquipments() => m_Equipment.Values;
+
+        /// <summary>
+        /// Trang bi 1 trang bi. Tu tao instance tu prefab roi goi
+        /// <see cref="EquipmentBrain.Equip"/> - noi dung gi vao TankView.
+        /// Neu View chua co (Tank moi Initialize) thi cho vao hang doi, gan lai
+        /// ngay khi View xuat hienh.
+        /// </summary>
+        public EquipmentBrain EquipEquipment(EquipmentBrain prefab)
+        {
+            if (prefab == null) return null;
+
+            // Slot da co trang bi -> thoa truoc de khong cong chieu stat.
+            EquipmentSlot slot = prefab.Slot;
+            if (m_Equipment.TryGetValue(slot, out EquipmentBrain existing))
+            {
+                UnequipEquipment(slot);
+            }
+
+            // Khong parent vao tank: giu local pose thiet ke cua prefab.
+            // AttachEquipment sau do dua vao slot voi worldPositionStays = false
+            // -> trang bi dung dung theo he toa do cua slot.
+            EquipmentBrain instance = Instantiate(prefab);
+            instance.name = prefab.name;
+
+            if (view == null)
+            {
+                // Chua co View -> cho doi, chi ghi nho de gan lai sau.
+                // Tat truoc de khong ve ra world origin trong khi cho.
+                instance.gameObject.SetActive(false);
+                m_PendingEquipment.Add(instance);
+            }
+            else
+            {
+                instance.Equip(this);
+            }
+
+            m_Equipment[slot] = instance;
+            return instance;
+        }
+
+        /// <summary>Trang bi 1 trang bi theo ID tra cuu tu <paramref name="database"/>.</summary>
+        public EquipmentBrain EquipEquipmentById(EquipmentDatabase database, EquipmentSlot slot, string id)
+        {
+            if (database == null)
+            {
+                Debug.LogError($"[{nameof(TankBrain)}] Chua gan EquipmentDatabase.", this);
+                return null;
+            }
+
+            return EquipEquipment(database.GetPrefab(slot, id));
+        }
+
+        /// <summary>Thoa trang bi o 1 slot. True neu co trang bi de thoa.</summary>
+        public bool UnequipEquipment(EquipmentSlot slot)
+        {
+            if (!m_Equipment.TryGetValue(slot, out EquipmentBrain equipment)) return false;
+
+            m_Equipment.Remove(slot);
+            m_PendingEquipment.Remove(equipment);
+            equipment.UnEquip(this);
+
+            return true;
+        }
+
+        /// <summary>Thoa het trang bi.</summary>
+        public void UnequipAll()
+        {
+            foreach (EquipmentBrain equipment in m_Equipment.Values)
+            {
+                equipment.UnEquip(this);
+            }
+
+            m_Equipment.Clear();
+            m_PendingEquipment.Clear();
+        }
+
+        /// <summary>
+        /// Thong bao cho trang bi bi dong (DamageLifesteal) khi Tank vua gay sat thuong.
+        /// He thong tan cong se goi ham nay khi biet danh trung.
+        /// </summary>
+        public void NotifyDamageDealt(float damage)
+        {
+            foreach (EquipmentBrain equipment in m_Equipment.Values)
+            {
+                equipment.OnOwnerDamageDealt(damage);
+            }
+        }
+
+        /// <summary>Gan lai trang bi cho doi (chay khi View vua duoc tao).</summary>
+        private void FlushPendingEquipment()
+        {
+            if (m_PendingEquipment.Count == 0) return;
+
+            foreach (EquipmentBrain equipment in m_PendingEquipment)
+            {
+                // Mo lai truoc khi Equip -> AttachEquipment se dua vao slot.
+                equipment.gameObject.SetActive(true);
+                equipment.Equip(this);
+            }
+
+            m_PendingEquipment.Clear();
+        }
+
+        #endregion
 
         /// <summary>TankBrain dang ky lam Owner cua View (va cac collider ben trong).</summary>
         public void RegisterInto(TankView target)
@@ -141,7 +272,7 @@ namespace IronWasteland.Tanks
             m_Body = GetComponent<Rigidbody2D>();
             if (m_Body == null) m_Body = GetComponentInChildren<Rigidbody2D>();
 
-            if (runtimeStats == null) runtimeStats = TankStats.Zeroed();
+            if (bonusStats == null) bonusStats = TankStats.Zeroed();
             if (baseStats == null) baseStats = new TankStats();
 
             RecalculateStats();
