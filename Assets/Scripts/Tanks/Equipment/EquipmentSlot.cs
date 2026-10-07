@@ -2,8 +2,8 @@ namespace IronWasteland.Tanks
 {
     /// <summary>
     /// Loai trang bi, quyet dinh trang bi do "lep" vao vi tri nao cua Tank.
-    /// Chi co 3 loai hien tai, ung 1-1 voi 3 lop con: WeaponBrain, HullBrain, TrackBrain.
-    /// TankView dung enum nay de tim slot tuong ung.
+    /// Chi co 3 loai hien tai, ung 1-1 voi 3 lop con: FirepowerCore, DefenseCore, MobilityCore.
+    /// TankBrain / EquipmentDatabase dung enum nay de xep trang bi vao dung loai.
     /// </summary>
     public enum EquipmentSlot
     {
@@ -11,12 +11,12 @@ namespace IronWasteland.Tanks
         None = 0,
 
         /// <summary>Phu kien sung (o Nong Phao).</summary>
-        Weapon = 1,
+        Firepower = 1,
 
         /// <summary>Vo xe (o Than Xe).</summary>
-        Hull = 2,
+        Defense = 2,
 
         /// <summary>Bo banh / xich (o Bo Banh).</summary>
-        Track = 3,
+        Mobility = 3,
     }
 }

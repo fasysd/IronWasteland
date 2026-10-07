@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da9b50786af9b1b48a3410a6f0b781e4, type: 3}
+  m_Name: EquipmentDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.EquipmentDatabase
+  firepowerPrefabs:
+  - id: firepower_cannon
+    prefab: {fileID: 6247676371906579067, guid: 63c5e76fa11c79442b63873457ef71c4, type: 3}
+  defensePrefabs:
+  - id: defense_heavy
+    prefab: {fileID: 5806655779868895736, guid: e76c275c10504a74aad10550c4bb7a9c, type: 3}
+  mobilityPrefabs:
+  - id: mobility_heavy
+    prefab: {fileID: 6050704993534220470, guid: df056d2a5a09ad241b6c47409211e3a3, type: 3}

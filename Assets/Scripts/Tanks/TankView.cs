@@ -23,6 +23,9 @@ namespace IronWasteland.Tanks
     /// Phan Visual + Physical cua Tank: sprite, animator, collider, rigidbody.
     /// KHONG chua logic game (speed, damage, skill...). No chi day dieu khien hinh anh.
     /// Cac ham public day la "hanh dong" cua Tank, moi ham se chay animation tuong ung.
+    ///
+    /// KHONG quan ly trang bi nua: Equipment chi la logic (stat + passive),
+    /// khong con gan vao slot cua View (khong con AttachEquipment / DetachEquipment).
     /// </summary>
     [DisallowMultipleComponent]
     public class TankView : MonoBehaviour
@@ -31,21 +34,11 @@ namespace IronWasteland.Tanks
         [Tooltip("Animator cua Tank ( tren root ).")]
         [SerializeField] private Animator animator;
 
-        [Tooltip("Pivot xoay doc lap phia tren (Weapon/Nong sung). Chi View dung transform nay.")]
-        [SerializeField] private Transform weaponPivot;
+        [Tooltip("Pivot xoay doc lap phia tren (Nong sung). Chi View dung transform nay.")]
+        [SerializeField] private Transform firepowerPivot;
 
-        [Tooltip("Pivot xoay theo huong di chuyen (Hull + Track).")]
+        [Tooltip("Pivot xoay theo huong di chuyen (Than Xe + Bo Banh).")]
         [SerializeField] private Transform bodyPivot;
-
-        [Header("Equipment Slots")]
-        [Tooltip("Slot Nong Phao: noi WeaponBrain. Mac dinh lay WeaponPivot.")]
-        [SerializeField] private Transform weaponSlot;
-
-        [Tooltip("Slot Than Xe: noi HullBrain.")]
-        [SerializeField] private Transform hullSlot;
-
-        [Tooltip("Slot Bo Banh: noi TrackBrain.")]
-        [SerializeField] private Transform trackSlot;
 
         [Header("Look")]
         [Tooltip("Toc do xoay noi sung (do/giay).")]
@@ -71,7 +64,7 @@ namespace IronWasteland.Tanks
         private static readonly int HashMoveSpeed = Animator.StringToHash("MoveSpeed");
 
         public Rigidbody2D Body => body;
-        public Transform WeaponPivot => weaponPivot;
+        public Transform FirepowerPivot => firepowerPivot;
         public Transform BodyPivot => bodyPivot;
         public TankAction CurrentAction => m_Action;
 
@@ -110,7 +103,7 @@ namespace IronWasteland.Tanks
             }
         }
 
-        /// <summary>Lay ColliderOwnerRef dau tien cua View (ti?n cho raycast).</summary>
+        /// <summary>Lay ColliderOwnerRef dau tien cua View (tien cho raycast).</summary>
         public ColliderOwnerRef GetOwnerRef() => m_OwnerRefs.Count > 0 ? m_OwnerRefs[0] : null;
 
         private void Awake()
@@ -184,61 +177,12 @@ namespace IronWasteland.Tanks
 
         #endregion
 
-        #region Equipment - duoc EquipmentBrain goi
-
-        /// <summary>Transform chua trang bi cua 1 slot. Null neu slot khong ton tai.</summary>
-        public Transform GetEquipmentSlot(EquipmentSlot slot)
-        {
-            switch (slot)
-            {
-                case EquipmentSlot.Weapon: return weaponSlot != null ? weaponSlot : weaponPivot;
-                case EquipmentSlot.Hull: return hullSlot;
-                case EquipmentSlot.Track: return trackSlot;
-                default: return null;
-            }
-        }
-
-        /// <summary>
-        /// Dua trang bi vao slot tuong ung. TankView la ben QUYET DINH vi tri -
-        /// trang bi khong tu "noi" gi vao day.
-        /// Chi gan parent: transform cua slot (Hull/Track/WeaponPivot) KHONG duoc dot,
-        /// va trang bi giu nguyen local pose thiet ke trong he toa do cua slot
-        /// -> hinh anh trang bi de len visual mac dinh (sortingOrder cao hon).
-        /// </summary>
-        public bool AttachEquipment(EquipmentBrain equipment)
-        {
-            if (equipment == null) return false;
-
-            Transform slot = GetEquipmentSlot(equipment.Slot);
-            if (slot == null) return false;
-
-            // SetParent(worldPositionStays = false): giu local position/rotation/scale
-            // da thiet ke cua trang bi, chuyen noi sang he toa do cua slot.
-            equipment.transform.SetParent(slot, false);
-            return true;
-        }
-
-        /// <summary>
-        /// Tra trang bi ra khoi TankView. Chi cham vao transform cua trang bi,
-        /// khong cham vao slot.
-        /// </summary>
-        public bool DetachEquipment(EquipmentBrain equipment)
-        {
-            if (equipment == null) return false;
-
-            // Giu nguyen vi tri world khi bo ra ngoai.
-            equipment.transform.SetParent(null, true);
-            return true;
-        }
-
-        #endregion
-
         /// <summary>
         /// Noi sung luôn huong ve giua thiet ke Tank va muc tieu look tren man hinh.
         /// </summary>
         private void UpdateLookRotation(float deltaTime)
         {
-            if (weaponPivot == null || !m_HasLookTarget) return;
+            if (firepowerPivot == null || !m_HasLookTarget) return;
 
             Vector3 origin = transform.position;
 
@@ -255,7 +199,7 @@ namespace IronWasteland.Tanks
 
             // Gan rotation WORLD: dung du co parent xoay hay khong,
             // noi sung luon chi dung mot huong muc tieu.
-            weaponPivot.rotation = Quaternion.Euler(0f, 0f, m_LookAngle);
+            firepowerPivot.rotation = Quaternion.Euler(0f, 0f, m_LookAngle);
         }
 
         private static float NormalizeAngle(float angle)
@@ -277,42 +221,6 @@ namespace IronWasteland.Tanks
             if (bodyPivot == null) bodyPivot = transform;
             if (body == null) body = GetComponentInParent<Rigidbody2D>();
             lookSmoothing = Mathf.Max(0f, lookSmoothing);
-
-            // Slot mac dinh: gan theo ten trong prefab TankView de designer
-            // khong phai keo tay neu prefab da dung cau truc nay.
-            if (weaponSlot == null) weaponSlot = weaponPivot;
-            if (hullSlot == null) hullSlot = FindChildByName("Hull");
-            if (trackSlot == null) trackSlot = FindChildByName("Track");
-        }
-
-        /// <summary>Tim child truc tiep theo ten. Null neu khong co.</summary>
-        private Transform FindChildByName(string childName)
-        {
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                Transform child = transform.GetChild(i);
-                if (child.name == childName) return child;
-
-                // Tim o cap sau (vi Hull/Track nam duoi Body).
-                Transform deeper = FindChildByName(child, childName);
-                if (deeper != null) return deeper;
-            }
-
-            return null;
-        }
-
-        private static Transform FindChildByName(Transform root, string childName)
-        {
-            for (int i = 0; i < root.childCount; i++)
-            {
-                Transform child = root.GetChild(i);
-                if (child.name == childName) return child;
-
-                Transform deeper = FindChildByName(child, childName);
-                if (deeper != null) return deeper;
-            }
-
-            return null;
         }
     }
 }

@@ -225,7 +225,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -394,6 +394,9 @@ MonoBehaviour:
   playerLevel: 1
   viewId: 0
   spawnPosition: {x: 0, y: 0}
+  firepowerId: firepower_cannon
+  defenseId: defense_heavy
+  mobilityId: mobility_heavy
   targetCamera: {fileID: 519420031}
 --- !u!4 &1238486343
 Transform:

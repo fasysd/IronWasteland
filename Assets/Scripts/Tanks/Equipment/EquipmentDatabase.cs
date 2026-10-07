@@ -6,10 +6,10 @@ namespace IronWasteland.Tanks
 {
     /// <summary>
     /// Kho du lieu trang bi: moi trang bi duoc gan 1 <c>id</c> de tra cuu
-    /// ma khong can biet ten lop (WeaponBrain / HullBrain / TrackBrain).
+    /// ma khong can biet ten lop (FirepowerCore / DefenseCore / MobilityCore).
     ///
     /// ID duoc tach theo loai: 1 ID chi ton tai trong dung loai trang bi do.
-    /// Nho do <c>hull_heavy</c> khong bao gio tra nham sang mot WeaponBrain,
+    /// Nho do <c>defense_heavy</c> khong bao gio tra nham sang mot FirepowerCore,
     /// va nguoc lai TankDefinition chi can mot ID cho moi loai.
     ///
     /// Tap trang bi mac dinh (TankDefinition): trong ID.
@@ -27,30 +27,30 @@ namespace IronWasteland.Tanks
             public EquipmentBrain prefab;
         }
 
-        [Header("Weapon (Nong Phao)")]
-        [SerializeField] private List<Entry> weaponPrefabs = new List<Entry>();
+        [Header("Firepower (Nong Phao)")]
+        [SerializeField] private List<Entry> firepowerPrefabs = new List<Entry>();
 
-        [Header("Hull (Than Xe)")]
-        [SerializeField] private List<Entry> hullPrefabs = new List<Entry>();
+        [Header("Defense (Than Xe)")]
+        [SerializeField] private List<Entry> defensePrefabs = new List<Entry>();
 
-        [Header("Track (Bo Banh)")]
-        [SerializeField] private List<Entry> trackPrefabs = new List<Entry>();
+        [Header("Mobility (Bo Banh)")]
+        [SerializeField] private List<Entry> mobilityPrefabs = new List<Entry>();
 
-        public List<Entry> WeaponPrefabs => weaponPrefabs;
-        public List<Entry> HullPrefabs => hullPrefabs;
-        public List<Entry> TrackPrefabs => trackPrefabs;
+        public List<Entry> FirepowerPrefabs => firepowerPrefabs;
+        public List<Entry> DefensePrefabs => defensePrefabs;
+        public List<Entry> MobilityPrefabs => mobilityPrefabs;
 
         /// <summary>Tong so trang bi dang co trong database.</summary>
-        public int Count => CountOf(EquipmentSlot.Weapon) + CountOf(EquipmentSlot.Hull) + CountOf(EquipmentSlot.Track);
+        public int Count => CountOf(EquipmentSlot.Firepower) + CountOf(EquipmentSlot.Defense) + CountOf(EquipmentSlot.Mobility);
 
         /// <summary>Danh sach cua 1 loai trang bi. None -> rong.</summary>
         private List<Entry> GetList(EquipmentSlot slot)
         {
             switch (slot)
             {
-                case EquipmentSlot.Weapon: return weaponPrefabs;
-                case EquipmentSlot.Hull: return hullPrefabs;
-                case EquipmentSlot.Track: return trackPrefabs;
+                case EquipmentSlot.Firepower: return firepowerPrefabs;
+                case EquipmentSlot.Defense: return defensePrefabs;
+                case EquipmentSlot.Mobility: return mobilityPrefabs;
                 default: return null;
             }
         }
@@ -76,9 +76,9 @@ namespace IronWasteland.Tanks
             return null;
         }
 
-        public EquipmentBrain GetWeapon(string id) => GetPrefab(EquipmentSlot.Weapon, id);
-        public EquipmentBrain GetHull(string id) => GetPrefab(EquipmentSlot.Hull, id);
-        public EquipmentBrain GetTrack(string id) => GetPrefab(EquipmentSlot.Track, id);
+        public EquipmentBrain GetFirepower(string id) => GetPrefab(EquipmentSlot.Firepower, id);
+        public EquipmentBrain GetDefense(string id) => GetPrefab(EquipmentSlot.Defense, id);
+        public EquipmentBrain GetMobility(string id) => GetPrefab(EquipmentSlot.Mobility, id);
 
         /// <summary>True neu ID co trong database (co prefab hop le).</summary>
         public bool Has(EquipmentSlot slot, string id) => GetPrefab(slot, id) != null;
@@ -93,9 +93,9 @@ namespace IronWasteland.Tanks
 
         private void WarnInvalidEntries()
         {
-            foreach (string issue in GetIssues(EquipmentSlot.Weapon, weaponPrefabs)) Warn(issue);
-            foreach (string issue in GetIssues(EquipmentSlot.Hull, hullPrefabs)) Warn(issue);
-            foreach (string issue in GetIssues(EquipmentSlot.Track, trackPrefabs)) Warn(issue);
+            foreach (string issue in GetIssues(EquipmentSlot.Firepower, firepowerPrefabs)) Warn(issue);
+            foreach (string issue in GetIssues(EquipmentSlot.Defense, defensePrefabs)) Warn(issue);
+            foreach (string issue in GetIssues(EquipmentSlot.Mobility, mobilityPrefabs)) Warn(issue);
         }
 
         private void Warn(string issue) => Debug.LogWarning($"[{nameof(EquipmentDatabase)}] {issue}", this);
@@ -118,7 +118,7 @@ namespace IronWasteland.Tanks
                 if (entry.prefab == null)
                     issues.Add($"{slot} '{entry.id}' chua gan prefab.");
 
-                // Prefab phai khop loai: tranh designer nham WeaponBrain vao danh sach Hull.
+                // Prefab phai khop loai: tranh designer nham FirepowerCore vao danh sach Defense.
                 if (entry.prefab != null && entry.prefab.Slot != slot)
                     issues.Add($"{slot} '{entry.id}' dang tro toi prefab "
                         + $"'{entry.prefab.name}' thuoc slot {entry.prefab.Slot} (phai la {slot}).");

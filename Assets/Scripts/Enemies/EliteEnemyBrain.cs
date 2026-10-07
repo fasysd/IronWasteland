@@ -44,10 +44,11 @@ namespace IronWasteland.Enemies
     ///     lam nguoi choi bi suy yeu (<see cref="OnBreakWindowExpired"/>).
     /// - Coop: tung thanh vien cung goi <see cref="BreakCore(int)"/> -> pha nhanh hon.
     ///
-    /// CHI CO KHUNG - chua trien khai logic that.
+    /// CHI CO KHUNG - chua trien khai logic that. Day la lop ABSTRACT (framework) -
+    /// dung lop con cu the (vi du EliteEnemyBrain_Test) de truc tiep dung.
     /// </summary>
     [UnityEngine.DisallowMultipleComponent]
-    public class EliteEnemyBrain : EnemyBrain
+    public abstract class EliteEnemyBrain : EnemyBrain
     {
         [Header("Energy Core")]
         [Tooltip("So luong Mang Nang Luong cua ke dich Tinh anh.")]
@@ -91,7 +92,7 @@ namespace IronWasteland.Enemies
         /// Mo toan bo Mang Nang Luong - goi khi ke dich vao giai doan can pha mach.
         /// Chi goi TRONG lop nay (tu logic noi bo), khong cho phep ben ngoai kich hoat.
         /// </summary>
-        protected void OpenCores()
+        protected virtual void OpenCores()
         {
             EnsureCores();
 
@@ -114,7 +115,7 @@ namespace IronWasteland.Enemies
         /// cac lan goi den tu su kien ma EnemyModel chuyen len. Chi goi TRONG lop nay.
         /// Tra ve true neu mang bi pha thanh cong o lan goi nay.
         /// </summary>
-        protected bool BreakCore(int index)
+        protected virtual bool BreakCore(int index)
         {
             EnsureCores();
             if (index < 0 || index >= m_Cores.Count) return false;
@@ -215,10 +216,6 @@ namespace IronWasteland.Enemies
             }
         }
 
-        protected override void OnDeath()
-        {
-            // TODO: hieuung chet Tinh anh, drop pham, tinh tien/kinh nghiem.
-        }
 
         #endregion
 

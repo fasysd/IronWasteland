@@ -240,9 +240,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 7772003062153151634}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f58cd114d93e9b4687b54ee56a89eb3, type: 3}
+  m_Script: {fileID: 11500000, guid: adbbdee375a54c24b8cf70eb6bebcce1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.NormalEnemyBrain
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.NormalEnemyBrain_Test
   model: {fileID: 5142329324616559193}
   displayName: Enemy Normal
   stats:

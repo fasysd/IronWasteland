@@ -3,20 +3,22 @@ using UnityEngine;
 namespace IronWasteland.Tanks
 {
     /// <summary>
-    /// Lop co so cua moi trang bi Tank.
+    /// Lop co so cua moi trang bi Tank - chi xu ly LOGIC (stat + passive),
+    /// KHONG xu ly visual: khong con SpriteRenderer va khong con gan vao TankView nua.
     ///
     /// Goc cua he thong: trang bi KHONG tu "no" gi vao TankView, ma noi:
     ///   1. TankBrain tao instance tu <see cref="EquipmentDatabase"/>.
-    ///   2. TankBrain goi <see cref="Equip"/> - trang bi tu cong stat + noi Owner.
-    ///   3. Trang bi goi TankView.AttachEquipment - TankView lo vi tri.
-    ///   4. <see cref="UnEquip"/> lam nguoc lai: tru stat, goi ClearPassive, tra vi tri.
+    ///   2. TankBrain goi <see cref="Equip"/> - trang bi cong stat + gan Owner.
+    ///   3. <see cref="UnEquip"/> nguoc lai: tru stat, goi ClearPassive, bo owner.
     ///
     /// Diem chung cua moi EquipmentBrain: them chi so (statBonus) + co kha nang bi dong.
     /// Kha nang bi dong la TRUU TUONG - lop con ghi de de dinh nghia:
     ///   - <see cref="BuildPassiveBonus"/>: cong them chi so (tinh % tu BaseStats).
     ///   - <see cref="ClearPassive"/>: xoa ky nang bi dong khi trang bi bi thoa.
     ///
-    /// Prefab trang bi chi can 1 <see cref="SpriteRenderer"/> de hien thi hinh anh.
+    /// 3 lop con abstract (framework): <see cref="DefenseCore"/> (Than Xe),
+    /// <see cref="MobilityCore"/> (Bo Banh), <see cref="FirepowerCore"/> (Nong Phao) -
+    /// dung lop con cu the (vi du ..._Test) de truc tiep dung.
     /// </summary>
     [DisallowMultipleComponent]
     public class EquipmentBrain : MonoBehaviour
@@ -30,10 +32,6 @@ namespace IronWasteland.Tanks
 
         [Tooltip("Anh nho cho UI (khong bat buoc).")]
         [SerializeField] private Sprite icon;
-
-        [Header("Visual")]
-        [Tooltip("SpriteRenderer hien thi hinh anh cua trang bi trong TankView.")]
-        [SerializeField] private SpriteRenderer spriteRenderer;
 
         [Header("Stats")]
         [Tooltip("Chi so cong them khi trang bi duoc trang bi. Mac dinh moi chi so = 0.")]
@@ -53,7 +51,6 @@ namespace IronWasteland.Tanks
 
         public string DisplayName => displayName;
         public Sprite Icon => icon;
-        public SpriteRenderer SpriteRenderer => spriteRenderer;
         public TankStats StatBonus => statBonus;
 
         /// <summary>Tank dang so huu trang bi nay (null neu chua Equip).</summary>
@@ -62,8 +59,8 @@ namespace IronWasteland.Tanks
         public bool IsEquipped => m_IsEquipped;
 
         /// <summary>
-        /// Loai trang bi -> slot se gan vao TankView.
-        /// Xac dinh theo LOP dang chay (WeaponBrain -> Weapon...), nen 3 lop con
+        /// Loai trang bi -> slot tuong ung (dua vao EquipmentSlot).
+        /// Xac dinh theo LOP dang chay (FirepowerCore -> Firepower...), nen 3 lop con
         /// khong can viet gi them. Them loai moi = them 1 lop con + 1 nhanh trong ResolveSlot().
         /// </summary>
         public EquipmentSlot Slot
@@ -78,10 +75,9 @@ namespace IronWasteland.Tanks
         #region Equip / UnEquip
 
         /// <summary>
-        /// TankBrain goi khi trang bi duoc gan. Gan owner, cong stat, noi TankView.
-        /// KHONG tu gan vi tri - TankView moi la ben quyet dinh trang bi nam o dau.
+        /// TankBrain goi khi trang bi duoc gan. Gan owner + cong stat (chi logic).
         /// </summary>
-        public bool Equip(TankBrain tank)
+        public virtual bool Equip(TankBrain tank)
         {
             if (tank == null)
             {
@@ -94,33 +90,20 @@ namespace IronWasteland.Tanks
             m_Owner = tank;
             m_IsEquipped = true;
 
-            // 1) Cong chi so: statBonus + phan dong tu ky nang bi dong cua lop con.
+            // Cong chi so: statBonus + phan dong tu ky nang bi dong cua lop con.
             // Luon tinh % tu BaseStats (khong dung bonus lam base).
             // Cache lai de UnEquip tru dung chinh so da cong.
             m_AppliedBonus = BuildBonus(tank);
             tank.ModifyBonusStats(m_AppliedBonus);
 
-            // 2) Cho TankView quyet dinh vi tri hien thi.
-            TankView view = tank.View;
-            if (view == null)
-            {
-                Debug.LogWarning($"[{nameof(EquipmentBrain)}] Tank '{tank.name}' chua co View, "
-                    + "trang bi se khong hien thi.", this);
-            }
-            else if (!view.AttachEquipment(this))
-            {
-                Debug.LogWarning($"[{nameof(EquipmentBrain)}] TankView cua Tank '{tank.name}' "
-                    + $"khong co slot cho {Slot} -> trang bi khong hien thi.", this);
-            }
-
             return true;
         }
 
         /// <summary>
-        /// TankBrain goi khi thoa trang bi. Tru stat, goi ClearPassive, tra vi tri, bo owner.
+        /// TankBrain goi khi thoa trang bi. Tru stat, goi ClearPassive, bo owner.
         /// Neu <paramref name="tank"/> khong phai owner thi bo qua (tranh thoa nham tren Tank khac).
         /// </summary>
-        public bool UnEquip(TankBrain tank)
+        public virtual bool UnEquip(TankBrain tank)
         {
             if (!m_IsEquipped) return false;
 
@@ -143,8 +126,6 @@ namespace IronWasteland.Tanks
                     owner.ModifyBonusStats(m_AppliedBonus.Negated());
                     m_AppliedBonus = null;
                 }
-
-                owner.View?.DetachEquipment(this);
 
                 // Xoa ky nang bi dong (lop con ghi de de don sach trang thai/event).
                 ClearPassive(owner);
@@ -201,9 +182,9 @@ namespace IronWasteland.Tanks
         {
             // GetType() de phan biet chinh xac cac lop con theo loai trang bi
             // (lop con ke thua them van dung duoc).
-            if (this is WeaponBrain) return EquipmentSlot.Weapon;
-            if (this is HullBrain) return EquipmentSlot.Hull;
-            if (this is TrackBrain) return EquipmentSlot.Track;
+            if (this is FirepowerCore) return EquipmentSlot.Firepower;
+            if (this is DefenseCore) return EquipmentSlot.Defense;
+            if (this is MobilityCore) return EquipmentSlot.Mobility;
 
             Debug.LogError($"[{nameof(EquipmentBrain)}] Lop '{GetType().Name}' chua khai bao slot. "
                 + "Hay khai bao trong ResolveSlot().", this);
@@ -219,7 +200,6 @@ namespace IronWasteland.Tanks
 
         private void OnValidate()
         {
-            if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
             if (string.IsNullOrEmpty(displayName)) displayName = name;
             if (statBonus == null) statBonus = TankStats.Zeroed();
         }

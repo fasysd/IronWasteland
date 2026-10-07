@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a7d3e9f1c2b4d6e8f0a1b3c5d7e9f21, type: 3}
+  m_Name: WaterB
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankDefinition
+  tankName: Water B
+  description: "\u0110\u01B0\u1EE3c t\u1EA1o ra trong th\xE0nh ph\u1ED1 ng\u1EA7m,
+    sau khi t\xECm ra ng\u01B0\u1EDDi l\xE1i \u0111\u01B0\u1EE3c xe tank ma ph\xE1p,
+    c\xE1c th\u1EBF h\u1EC7 ti\u1EBFp theo \u0111\xE3 \u0111\u01B0\u1EE3c t\u1EA1o
+    ra trong \u0111\xF3 c\xF3 Water B."
+  statsTable:
+  - baseLevel: 1
+    baseStats:
+      Attack: 10
+      Defense: 10
+      DamageMultiplier: 1
+      ArmorPenetration: 0
+      MaxHealth: 100
+      MaxEnergy: 50
+      MoveSpeed: 3
+      CooldownReduction: 0
+  - baseLevel: 30
+    baseStats:
+      Attack: 59
+      Defense: 11.6
+      DamageMultiplier: 1.29
+      ArmorPenetration: 0.087
+      MaxHealth: 492
+      MaxEnergy: 242
+      MoveSpeed: 4.45
+      CooldownReduction: 0.116
+  - baseLevel: 60
+    baseStats:
+      Attack: 120
+      Defense: 23.6
+      DamageMultiplier: 1.59
+      ArmorPenetration: 0.177
+      MaxHealth: 940
+      MaxEnergy: 460
+      MoveSpeed: 5.95
+      CooldownReduction: 0.236
+  - baseLevel: 90
+    baseStats:
+      Attack: 180
+      Defense: 35.6
+      DamageMultiplier: 1.89
+      ArmorPenetration: 0.267
+      MaxHealth: 1400
+      MaxEnergy: 680
+      MoveSpeed: 7.45
+      CooldownReduction: 0.356
+  tankPrefab: {fileID: 2337791876944670423, guid: dd9a410d742d54c4d87ae5d966767971, type: 3}
+  viewPrefabs:
+  - {fileID: 4035724410283292367, guid: ed057437020163f44be6371512632c58, type: 3}
+  equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}

@@ -1,24 +1,19 @@
 namespace IronWasteland.Enemies
 {
     /// <summary>
-    /// Ke dich THUONG - ke dich binh thuong, chi co khung logic.
+    /// Ke dich THUONG - ke dich binh thuong (lop ABSTRACT, dung lam base/framework).
+    ///
+    /// Khong trien khai truc tiep: cac hook core ke thua tu <see cref="EnemyBrain"/>
+    /// (<see cref="EnemyBrain.OnBrainTick(float)"/>, <see cref="EnemyBrain.OnDeath"/> )
+    /// de trong cho lop con cu the (vi du NormalEnemyBrain_Test) trien khai.
     ///
     /// TODO (giai doan sau, chua lam):
     /// - Di chuyen / truy duoi muc tieu (dung Stats.MoveSpeed).
     /// - Tan cong Tank khi den gan.
-    /// - Ky nang: tu tao field CD / timer va method thi trien rieng trong lop nay.
+    /// - Ky nang: tu tao field CD / timer va method thi trien rieng trong lop con.
     /// </summary>
     [UnityEngine.DisallowMultipleComponent]
-    public class NormalEnemyBrain : EnemyBrain
+    public abstract class NormalEnemyBrain : EnemyBrain
     {
-        protected override void OnBrainTick(float deltaTime)
-        {
-            // TODO: di chuyen + hanh vi AI cua ke dich thuong.
-        }
-
-        protected override void OnDeath()
-        {
-            // TODO: hieu ung chet, drop pham, tru di muc tren man choi.
-        }
     }
 }

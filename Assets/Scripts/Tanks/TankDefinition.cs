@@ -63,7 +63,7 @@ namespace IronWasteland.Tanks
         /// ID rong / khong ton tai -> Tank van tao duoc, chi khong co trang bi do.
         /// </summary>
         public TankBrain CreateTank(int level, int viewId, Vector3 position, Transform parent,
-            string weaponEquipmentId, string hullEquipmentId, string trackEquipmentId)
+            string firepowerEquipmentId, string defenseEquipmentId, string mobilityEquipmentId)
         {
             if (tankPrefab == null)
             {
@@ -82,8 +82,8 @@ namespace IronWasteland.Tanks
             brain.Initialize(level, GetStatsForLevel(level), this);
             brain.SetViewPrefab(viewPrefab);
 
-            // Trang bi gan sau View: EquipmentBrain can TankView de biet vi tri hien thi.
-            EquipLoadout(brain, weaponEquipmentId, hullEquipmentId, trackEquipmentId);
+            // Trang bi gan sau khi khoi tao View (giu thu tu cho runtime on dinh).
+            EquipLoadout(brain, firepowerEquipmentId, defenseEquipmentId, mobilityEquipmentId);
 
             return brain;
         }
@@ -92,12 +92,12 @@ namespace IronWasteland.Tanks
         /// Gan 3 trang bi theo ID. ID rong hoac khong tra cuo duoc -> bo qua
         /// (Tank van chay binh thuong, chi khong co trang bi do).
         /// </summary>
-        private void EquipLoadout(TankBrain brain, string weaponEquipmentId, string hullEquipmentId, string trackEquipmentId)
+        private void EquipLoadout(TankBrain brain, string firepowerEquipmentId, string defenseEquipmentId, string mobilityEquipmentId)
         {
             if (equipmentDatabase == null)
             {
                 // ID rong het thi khong can database.
-                if (HasAnyEquipmentId(weaponEquipmentId, hullEquipmentId, trackEquipmentId))
+                if (HasAnyEquipmentId(firepowerEquipmentId, defenseEquipmentId, mobilityEquipmentId))
                 {
                     Debug.LogWarning($"[{nameof(TankDefinition)}] Co ID trang bi nhung chua gan EquipmentDatabase.", this);
                 }
@@ -105,9 +105,9 @@ namespace IronWasteland.Tanks
                 return;
             }
 
-            brain.EquipEquipmentById(equipmentDatabase, EquipmentSlot.Weapon, weaponEquipmentId);
-            brain.EquipEquipmentById(equipmentDatabase, EquipmentSlot.Hull, hullEquipmentId);
-            brain.EquipEquipmentById(equipmentDatabase, EquipmentSlot.Track, trackEquipmentId);
+            brain.EquipEquipmentById(equipmentDatabase, EquipmentSlot.Firepower, firepowerEquipmentId);
+            brain.EquipEquipmentById(equipmentDatabase, EquipmentSlot.Defense, defenseEquipmentId);
+            brain.EquipEquipmentById(equipmentDatabase, EquipmentSlot.Mobility, mobilityEquipmentId);
         }
 
         private static bool HasAnyEquipmentId(params string[] ids)

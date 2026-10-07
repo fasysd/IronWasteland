@@ -70,9 +70,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2997488555990479441}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 79202e93cee642745af4bbf142f64703, type: 3}
+  m_Script: {fileID: 11500000, guid: 754e8f47107c4b8bba7de55c9baa4e1a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.EliteEnemyBrain
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.EliteEnemyBrain_Test
   model: {fileID: 1805891303938877128}
   displayName: Enemy Elite
   stats:
