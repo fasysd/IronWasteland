@@ -10,13 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5a7d3e9f1c2b4d6e8f0a1b3c5d7e9f21, type: 3}
-  m_Name: GreenFox
+  m_Name: RedNova
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankDefinition
-  tankName: Black Shadow
-  description: "\u0110\u01B0\u1EE3c t\u1EA1o ra trong th\xE0nh ph\u1ED1 ng\u1EA7m,
-    sau khi t\xECm ra ng\u01B0\u1EDDi l\xE1i \u0111\u01B0\u1EE3c xe tank ma ph\xE1p,
-    c\xE1c th\u1EBF h\u1EC7 ti\u1EBFp theo \u0111\xE3 \u0111\u01B0\u1EE3c t\u1EA1o
-    ra trong \u0111\xF3 c\xF3 Green Fox."
+  tankName: Red Nova
+  description: "C\u1ED7 xe tank tinh anh ma ph\xE1p  \u0111\u1EA7u ti\xEAn xu\u1EA5t
+    hi\u1EC7n sau khi \u0111\xE1nh b\u1EA1i Seau Bearus, \u0111\u01B0\u1EE3c ch\u1EBF
+    t\u1EA1o v\u1EDBi s\u1EF1 gi\xFAp \u0111\u1EE1 c\u1EE7a Mones."
   statsTable:
   - baseLevel: 1
     baseStats:
@@ -58,7 +57,7 @@ MonoBehaviour:
       MaxEnergy: 680
       MoveSpeed: 7.45
       CooldownReduction: 0.356
-  tankPrefab: {fileID: 2337791876944670423, guid: dd9a410d742d54c4d87ae5d966767971, type: 3}
+  tankPrefab: {fileID: 2337791876944670423, guid: d7abe239519376749b6303f6197df9d8, type: 3}
   viewPrefabs:
-  - {fileID: 4035724410283292367, guid: ddc4e644e8cff1a44869ec53a4c9a698, type: 3}
+  - {fileID: 4035724410283292367, guid: ce283254f52e72c4ea1b39034ee5282e, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}

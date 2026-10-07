@@ -10,12 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5a7d3e9f1c2b4d6e8f0a1b3c5d7e9f21, type: 3}
-  m_Name: RedNova
+  m_Name: WallTitan
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankDefinition
-  tankName: Red Nova
-  description: "C\u1ED7 xe tank tinh anh ma ph\xE1p  \u0111\u1EA7u ti\xEAn xu\u1EA5t
-    hi\u1EC7n sau khi \u0111\xE1nh b\u1EA1i Seau Bearus, \u0111\u01B0\u1EE3c ch\u1EBF
-    t\u1EA1o v\u1EDBi s\u1EF1 gi\xFAp \u0111\u1EE1 c\u1EE7a Mones."
+  tankName: Wall Titan
+  description: "C\u1ED7 xe tank ma ph\xE1p h\u1EA1ng n\u1EB7ng \u0111\u1EA7u ti\xEAn
+    c\u1EE7a nh\xE2n lo\u1EA1i, \u0111\u01B0\u1EE3c t\u1EA1o ra b\xEAn trong th\xE0nh
+    ph\u1ED1 ng\u1EA7m, k\u1EBFt h\u1EE3p gi\u1EEFa xe tank v\xE0 tinh th\u1EC3 
+    ma ph\xE1p \u0111\u1EA5t."
   statsTable:
   - baseLevel: 1
     baseStats:
@@ -57,7 +58,7 @@ MonoBehaviour:
       MaxEnergy: 680
       MoveSpeed: 7.45
       CooldownReduction: 0.356
-  tankPrefab: {fileID: 2337791876944670423, guid: dd9a410d742d54c4d87ae5d966767971, type: 3}
+  tankPrefab: {fileID: 2337791876944670423, guid: 71be0061614f89346b73238783ed38d6, type: 3}
   viewPrefabs:
-  - {fileID: 4035724410283292367, guid: ce283254f52e72c4ea1b39034ee5282e, type: 3}
+  - {fileID: 4035724410283292367, guid: 17e0ba5ded53e4249937d7fbcee98fef, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}

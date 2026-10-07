@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 569371263267873161}
   - component: {fileID: 2337791876944670423}
   m_Layer: 0
-  m_Name: BlackShadow
+  m_Name: Leviathan
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -69,11 +69,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2007533005529995649}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49d1052e65bb433db18f3aae90aedfe0, type: 3}
+  m_Script: {fileID: 11500000, guid: 53aef90e5fc441a5aaa72799167cca8b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankBrain_Test
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankBrain_Leviathan
   view: {fileID: 0}
-  viewPrefab: {fileID: 0}
+  viewPrefab: {fileID: 4035724410283292367, guid: cac13e460e67f7f40876455c0df39994, type: 3}
   level: 1
   baseStats:
     Attack: 0

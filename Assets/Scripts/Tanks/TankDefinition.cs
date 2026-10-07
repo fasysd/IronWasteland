@@ -43,6 +43,10 @@ namespace IronWasteland.Tanks
         [Tooltip("Kho du lieu dung de tra cuu prefab trang bi theo ID.")]
         [SerializeField] private EquipmentDatabase equipmentDatabase;
 
+        [Header("Context")]
+        [Tooltip("Context khởi tạo cho TankBrain khi CreateTank.")]
+        [SerializeField] private TankBrainContext context;
+
         public string TankName => tankName;
         public string Description => description;
         public List<StatsEntry> StatsTable => statsTable;
@@ -62,8 +66,7 @@ namespace IronWasteland.Tanks
         /// Tao Tank moi voi bo trang bi chi dinh (ghi de ID mac dinh tren asset).
         /// ID rong / khong ton tai -> Tank van tao duoc, chi khong co trang bi do.
         /// </summary>
-        public TankBrain CreateTank(int level, int viewId, Vector3 position, Transform parent,
-            string firepowerEquipmentId, string defenseEquipmentId, string mobilityEquipmentId)
+        public TankBrain CreateTank(TankBrainContext context)
         {
             if (tankPrefab == null)
             {
@@ -71,19 +74,18 @@ namespace IronWasteland.Tanks
                 return null;
             }
 
-            TankView viewPrefab = GetViewPrefab(viewId);
+            TankView viewPrefab = GetViewPrefab(context.IdView);
             if (viewPrefab == null)
             {
-                Debug.LogError($"[{nameof(TankDefinition)}] TankView ID {viewId} khong hop le.", this);
+                Debug.LogError($"[{nameof(TankDefinition)}] TankView ID {context.IdView} khong hop le.", this);
                 return null;
             }
 
-            TankBrain brain = Instantiate(tankPrefab, position, Quaternion.identity, parent);
-            brain.Initialize(level, GetStatsForLevel(level), this);
+            TankBrain brain = Instantiate(tankPrefab, Vector3.zero, Quaternion.identity, null);
+            brain.Initialize(context, GetStatsForLevel(context.Level));
             brain.SetViewPrefab(viewPrefab);
 
-            // Trang bi gan sau khi khoi tao View (giu thu tu cho runtime on dinh).
-            EquipLoadout(brain, firepowerEquipmentId, defenseEquipmentId, mobilityEquipmentId);
+            EquipLoadout(brain, context.FirepowerEquipmentId, context.DefenseEquipmentId, context.MobilityEquipmentId);
 
             return brain;
         }
@@ -96,7 +98,6 @@ namespace IronWasteland.Tanks
         {
             if (equipmentDatabase == null)
             {
-                // ID rong het thi khong can database.
                 if (HasAnyEquipmentId(firepowerEquipmentId, defenseEquipmentId, mobilityEquipmentId))
                 {
                     Debug.LogWarning($"[{nameof(TankDefinition)}] Co ID trang bi nhung chua gan EquipmentDatabase.", this);

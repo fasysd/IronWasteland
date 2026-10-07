@@ -94,7 +94,7 @@ namespace IronWasteland.Tanks
             // Luon tinh % tu BaseStats (khong dung bonus lam base).
             // Cache lai de UnEquip tru dung chinh so da cong.
             m_AppliedBonus = BuildBonus(tank);
-            tank.ModifyBonusStats(m_AppliedBonus);
+            tank.AddBonusStats(equipmentId, m_AppliedBonus);
 
             return true;
         }
@@ -123,7 +123,7 @@ namespace IronWasteland.Tanks
                 // Tru dung chinh so da cong (cache tai Equip -> doi xung tuyet doi).
                 if (m_AppliedBonus != null)
                 {
-                    owner.ModifyBonusStats(m_AppliedBonus.Negated());
+                    owner.RemoveBonusStats(equipmentId);
                     m_AppliedBonus = null;
                 }
 

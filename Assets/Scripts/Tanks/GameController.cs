@@ -41,14 +41,30 @@ namespace IronWasteland.Tanks
         {
             if (targetCamera == null) targetCamera = Camera.main;
 
-            m_PlayerTank = tankDefinition != null
-                ? tankDefinition.CreateTank(playerLevel, viewId, spawnPosition, null, firepowerId, defenseId, mobilityId)
-                : null;
+            // Xây TankBrainContext từ fields hiện có (level, viewId, ids trang bi).
+            var context = new TankBrainContext
+            {
+                Level = playerLevel,
+                IdView = viewId,
+                FirepowerEquipmentId = firepowerId,
+                DefenseEquipmentId = defenseId,
+                MobilityEquipmentId = mobilityId,
+                OptionSkill1 = 0,
+                OptionSkill2 = 0
+            };
+
+            // Khởi tạo 1 lần duy nhất (guard).
+            if (m_PlayerTank == null && tankDefinition != null)
+            {
+                m_PlayerTank = tankDefinition.CreateTank(context);
+            }
 
             if (m_PlayerTank == null)
             {
                 Debug.LogError($"[{nameof(GameController)}] Khong tao duoc Tank. Kiem tra TankDefinition.");
             }
+
+            m_PlayerTank.transform.position.Set(spawnPosition.x, spawnPosition.y, m_PlayerTank.transform.position.z);
         }
 
         // === INPUT TAM THOI: chi if/else trong Update ===

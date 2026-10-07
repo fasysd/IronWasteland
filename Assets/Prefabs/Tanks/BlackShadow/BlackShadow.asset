@@ -10,13 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5a7d3e9f1c2b4d6e8f0a1b3c5d7e9f21, type: 3}
-  m_Name: Leviathan
+  m_Name: BlackShadow
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankDefinition
-  tankName: Leviathan
-  description: "\u0110\u01B0\u1EE3c t\u1EA1o ra trong nh\u1EEFng tr\u1EADn chi\u1EBFn
-    t\u1EA1i v\xF9ng \u0111\u1EA5t  nguy\xEAn t\u1ED1,d\u1EF1a tr\xEAn nh\u1EEFng
-    v\u1EADt li\u1EC7u xe tank c\xF3 s\u1EB5n l\u1EA5y t\u1EEB Black Shadow v\xE0
-    Water B."
+  tankName: Black Shadow
+  description: "L\xE0 m\u1ED9t c\u1ED7 xe t\u0103ng ma ph\xE1p \u0111\xE3 t\u1EEBng
+    b\u1ECB th\u1EA5t b\u1EA1i trong v\xE0i \u0111\u1EE3t th\u1EED nghi\u1EC7m ch\u1EBF
+    t\u1EA1o si\xEAu c\u01A1 khi ma ph\xE1p, nh\u01B0ng trong qu\xE1 tr\xECnh kh\xE1m
+    ph\xE1 l\u1EE5c \u0111\u1ECBa \u0111en nh\u1EDD vi\u1EC7c t\xECm th\u1EA5y nh\u1EEFng
+    nguy\xEAn li\u1EC7u ph\xF9 h\u1EE3p, chi\u1EBFc xe tank \u0111\xE3 c\xF3 th\u1EC3
+    tr\u1EDF l\u1EA1i k\u1EBFt h\u1EE3p v\u1EDBi ma ph\xE1p b\xF3ng t\u1ED1i."
   statsTable:
   - baseLevel: 1
     baseStats:
@@ -58,7 +60,7 @@ MonoBehaviour:
       MaxEnergy: 680
       MoveSpeed: 7.45
       CooldownReduction: 0.356
-  tankPrefab: {fileID: 2337791876944670423, guid: dd9a410d742d54c4d87ae5d966767971, type: 3}
+  tankPrefab: {fileID: 2337791876944670423, guid: 2a9b8b3f649717540bf1b6f7af3aec5b, type: 3}
   viewPrefabs:
-  - {fileID: 4035724410283292367, guid: cac13e460e67f7f40876455c0df39994, type: 3}
+  - {fileID: 4035724410283292367, guid: 493b60d53e11c6a4fa06bcf98c442a43, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}

@@ -69,11 +69,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 2007533005529995649}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49d1052e65bb433db18f3aae90aedfe0, type: 3}
+  m_Script: {fileID: 11500000, guid: bde09b59f388415db2952520da6bea4a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankBrain_Test
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankBrain_GreenFox
   view: {fileID: 0}
-  viewPrefab: {fileID: 0}
+  viewPrefab: {fileID: 4035724410283292367, guid: ddc4e644e8cff1a44869ec53a4c9a698, type: 3}
   level: 1
   baseStats:
     Attack: 0

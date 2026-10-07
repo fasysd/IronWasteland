@@ -38,8 +38,6 @@ namespace IronWasteland.Tanks
         [ReadOnly]
         [SerializeField] private TankStats bonusStats = TankStats.Zeroed();
 
-        [SerializeField, HideInInspector] private TankDefinition definition;
-
         [Header("Runtime")]
         [SerializeField] private float currentHealth;
         [SerializeField] private float currentEnergy;
@@ -55,10 +53,17 @@ namespace IronWasteland.Tanks
         private readonly Dictionary<EquipmentSlot, EquipmentBrain> m_Equipment
             = new Dictionary<EquipmentSlot, EquipmentBrain>();
 
+        [Header("Context")]
+        [SerializeField] private TankBrainContext context;
+
+        [Header("Stats")]
+        [SerializeField] private TankStats stats;
+
+        protected bool _initialized = false;
+
 
         public TankView View => view;
         public TankView ViewPrefab => viewPrefab;
-        public TankDefinition Definition => definition;
         public int Level => level;
 
         /// <summary>Chi so goc (chua tinh bonus).</summary>
@@ -77,11 +82,16 @@ namespace IronWasteland.Tanks
         #region Setup
 
         /// <summary>Do TankDefinition goi luc khoi tao. Chi goi 1 lan.</summary>
-        public virtual void Initialize(int level, TankStats stats, TankDefinition definition = null)
+        public virtual void Initialize(TankBrainContext context, TankStats stats)
         {
-            this.level = Mathf.Clamp(level, TankDefinition.MinLevel, TankDefinition.MaxLevel);
+            if (_initialized) return;
+            _initialized = true;
+
+            this.context = context;
+            this.stats = stats;
+
+            this.level = Mathf.Clamp(context.Level, TankDefinition.MinLevel, TankDefinition.MaxLevel);
             this.baseStats = stats != null ? stats.Clone() : new TankStats();
-            this.definition = definition;
 
             RecalculateStats();
 
@@ -99,19 +109,62 @@ namespace IronWasteland.Tanks
             currentEnergy = Mathf.Clamp(currentEnergy, 0f, m_FinalStats.MaxEnergy);
         }
 
-        /// <summary>Them/tru chi so bonus tu nguoi khac (buff, debuff...). Tu keo lai HP/Energy.</summary>
-        public virtual void ModifyBonusStats(TankStats delta)
+        /// <summary>
+        /// Danh sach chi so bonus theo key (buff/debuff trung tam).
+        /// </summary>
+        private Dictionary<string, TankStats> m_BonusStatsByKey
+            = new Dictionary<string, TankStats>();
+
+        /// <summary>
+        /// Cong 1 chi so bonus vao khoi danh sach (theo key).
+        /// Neu key da ton tai thi thay the bock (hon cong hoac tru).
+        /// </summary>
+        public virtual void AddBonusStats(string key, TankStats delta)
         {
             if (delta == null) return;
-            bonusStats.AddTo(delta);
+
+            if (m_BonusStatsByKey.ContainsKey(key))
+            {
+                m_BonusStatsByKey[key] = delta;
+            }
+            else
+            {
+                m_BonusStatsByKey[key] = delta;
+            }
+
+            // Tinh lai bonusStats = tong cua tat ca keys.
+            RecalculateBonusStats();
+        }
+
+        /// <summary>
+        /// Xoa 1 chi so bonus khoi danh sach (theo key).
+        /// </summary>
+        public virtual void RemoveBonusStats(string key)
+        {
+            if (m_BonusStatsByKey.Remove(key))
+            {
+                RecalculateBonusStats();
+            }
+        }
+
+        /// <summary>
+        /// Tinh lai bonusStats = tong cua tat ca cac chi so theo key.
+        /// </summary>
+        private void RecalculateBonusStats()
+        {
+            bonusStats = TankStats.Zeroed();
+            foreach (var entry in m_BonusStatsByKey.Values)
+            {
+                bonusStats = bonusStats.Add(entry);
+            }
             RecalculateStats();
         }
 
         /// <summary>Xoa toan bo chi so bonus (het buff).</summary>
         public virtual void ClearBonusStats()
         {
-            bonusStats = TankStats.Zeroed();
-            RecalculateStats();
+            m_BonusStatsByKey.Clear();
+            RecalculateBonusStats();
         }
 
         /// <summary>Nhan TankView prefab, tao GameObject con va dung lam View cua Tank nay.</summary>
