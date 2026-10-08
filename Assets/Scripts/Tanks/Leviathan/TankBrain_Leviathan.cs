@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace IronWasteland.Tanks
+namespace IronWasteland.Tanks.Leviathan
 {
     /// <summary>
     /// TankBrain cu the cho tank "Leviathan" - doi tuong thuc te ke thua <see cref="TankBrain"/>.

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace IronWasteland.Tanks
+namespace IronWasteland.Tanks.Test
 {
     /// <summary>
     /// Tank cu the (doi tuong thuc te) ke thua framework <see cref="TankBrain"/>.

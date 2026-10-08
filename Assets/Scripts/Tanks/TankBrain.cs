@@ -21,10 +21,7 @@ namespace IronWasteland.Tanks
 
         [Header("View")]
         [Tooltip("View dang chay. Se duoc gan luc runtime tu TankDefinition.")]
-        [SerializeField] private TankView view;
-
-        [Tooltip("Prefab TankView de spawn. Neu rong thi Tank khong co hinh anh.")]
-        [SerializeField] private TankView viewPrefab;
+        [SerializeField, ReadOnly] private TankView view;
 
         [Header("Level")]
         [SerializeField] private int level = TankDefinition.MinLevel;
@@ -41,30 +38,28 @@ namespace IronWasteland.Tanks
         [Header("Runtime")]
         [SerializeField] private float currentHealth;
         [SerializeField] private float currentEnergy;
-        [SerializeField] private float[] skillCooldowns = new float[SkillCount];
+        [SerializeField, ReadOnly] private float[] skillCooldowns = new float[SkillCount];
+
 
         private Rigidbody2D m_Body;
         private TankStats m_FinalStats = new TankStats();
         private Vector2 m_MoveInput;
         private Vector2 m_LookTarget;
         private bool m_HasLookTarget;
+        private Dictionary<string, TankStats> m_BonusStatsByKey = new Dictionary<string, TankStats>();
 
         // Trang bi dang trang bi: 1 slot -> 1 trang bi.
-        private readonly Dictionary<EquipmentSlot, EquipmentBrain> m_Equipment
-            = new Dictionary<EquipmentSlot, EquipmentBrain>();
+        private readonly Dictionary<EquipmentSlot, EquipmentBrain> m_Equipment = new Dictionary<EquipmentSlot, EquipmentBrain>();
 
         [Header("Context")]
-        [SerializeField] private TankBrainContext context;
-
-        [Header("Stats")]
-        [SerializeField] private TankStats stats;
+        [SerializeField, ReadOnly] private TankBrainContext m_context;
 
         protected bool _initialized = false;
-
+        private TankView viewPrefab;
+        private TankStats stats;
 
         public TankView View => view;
-        public TankView ViewPrefab => viewPrefab;
-        public int Level => level;
+        public TankBrainContext Context => m_context;
 
         /// <summary>Chi so goc (chua tinh bonus).</summary>
         public TankStats BaseStats => baseStats;
@@ -87,7 +82,7 @@ namespace IronWasteland.Tanks
             if (_initialized) return;
             _initialized = true;
 
-            this.context = context;
+            this.m_context = context;
             this.stats = stats;
 
             this.level = Mathf.Clamp(context.Level, TankDefinition.MinLevel, TankDefinition.MaxLevel);
@@ -101,19 +96,13 @@ namespace IronWasteland.Tanks
         }
 
         /// <summary>Tinh lai chi so cuoi cung = base + bonus, va keo lai HP/Energy.</summary>
-        public virtual void RecalculateStats()
+        protected virtual void RecalculateStats()
         {
             m_FinalStats = baseStats.Add(bonusStats);
 
             currentHealth = Mathf.Clamp(currentHealth, 0f, m_FinalStats.MaxHealth);
             currentEnergy = Mathf.Clamp(currentEnergy, 0f, m_FinalStats.MaxEnergy);
         }
-
-        /// <summary>
-        /// Danh sach chi so bonus theo key (buff/debuff trung tam).
-        /// </summary>
-        private Dictionary<string, TankStats> m_BonusStatsByKey
-            = new Dictionary<string, TankStats>();
 
         /// <summary>
         /// Cong 1 chi so bonus vao khoi danh sach (theo key).
@@ -161,7 +150,7 @@ namespace IronWasteland.Tanks
         }
 
         /// <summary>Xoa toan bo chi so bonus (het buff).</summary>
-        public virtual void ClearBonusStats()
+        protected virtual void ClearBonusStats()
         {
             m_BonusStatsByKey.Clear();
             RecalculateBonusStats();
@@ -183,57 +172,90 @@ namespace IronWasteland.Tanks
             view = Instantiate(viewPrefab, transform);
             view.name = viewPrefab.name;
 
-            RegisterInto(view);
+            view.RegisterOwner(this);
         }
 
         #region Equipment
-
-        /// <summary>Trang bi dang trang bi cua 1 slot (null neu rong).</summary>
-        public EquipmentBrain GetEquipment(EquipmentSlot slot)
+        
+        /// <summary>Nong phao dang trang bi (slot Firepower).</summary>
+        public virtual FirepowerCore GetFirepowerCore()
         {
-            return m_Equipment.TryGetValue(slot, out EquipmentBrain equipment) ? equipment : null;
+            return m_Equipment.TryGetValue(EquipmentSlot.Firepower, out EquipmentBrain equipment)
+                ? equipment as FirepowerCore
+                : null;
         }
 
-        /// <summary>So trang bi dang trang bi.</summary>
-        public int EquipmentCount => m_Equipment.Count;
+        /// <summary>Bo banh dang trang bi (slot Mobility).</summary>
+        public virtual MobilityCore GetMobilityCore()
+        {
+            return m_Equipment.TryGetValue(EquipmentSlot.Mobility, out EquipmentBrain equipment)
+                ? equipment as MobilityCore
+                : null;
+        }
 
-        /// <summary>Tat ca trang bi dang trang bi (khong phai ban sao).</summary>
-        public IEnumerable<EquipmentBrain> GetEquipments() => m_Equipment.Values;
+        /// <summary>Vo xe dang trang bi (slot Defense).</summary>
+        public virtual DefenseCore GetDefenseCore()
+        {
+            return m_Equipment.TryGetValue(EquipmentSlot.Defense, out EquipmentBrain equipment)
+                ? equipment as DefenseCore
+                : null;
+        }
 
-        /// <summary>
-        /// Trang bi 1 trang bi. Tu tao instance tu prefab (parentUnder tank) roi goi
-        /// <see cref="EquipmentBrain.Equip"/> - chi cong stat + gan Owner (khong quan ly visual).
-        /// </summary>
-        public virtual EquipmentBrain EquipEquipment(EquipmentBrain prefab)
+        /// <summary>Nong phao: cong stat + gan Owner (slot Firepower).</summary>
+        public virtual FirepowerCore EquipFirepowerCore(FirepowerCore prefab)
         {
             if (prefab == null) return null;
-
-            // Slot da co trang bi -> thoa truoc de khong cong chieu stat.
-            EquipmentSlot slot = prefab.Slot;
-            if (m_Equipment.TryGetValue(slot, out EquipmentBrain existing))
+            if (!typeof(FirepowerCore).IsAssignableFrom(prefab.GetType()))
             {
-                UnequipEquipment(slot);
-            }
-
-            // Parent vao tank: trang bi la object logic cua tank (khong con visual/slot).
-            EquipmentBrain instance = Instantiate(prefab, transform);
-            instance.name = prefab.name;
-            instance.Equip(this);
-
-            m_Equipment[slot] = instance;
-            return instance;
-        }
-
-        /// <summary>Trang bi 1 trang bi theo ID tra cuu tu <paramref name="database"/>.</summary>
-        public virtual EquipmentBrain EquipEquipmentById(EquipmentDatabase database, EquipmentSlot slot, string id)
-        {
-            if (database == null)
-            {
-                Debug.LogError($"[{nameof(TankBrain)}] Chua gan EquipmentDatabase.", this);
+                Debug.LogError("[" + "TankBrain" + "] Can pass FirepowerCore prefab, get " + prefab.GetType().Name + ".", this);
                 return null;
             }
 
-            return EquipEquipment(database.GetPrefab(slot, id));
+            FirepowerCore instance = Instantiate(prefab, transform);
+            instance.name = prefab.name;
+            instance.Equip(this);
+
+            m_Equipment[EquipmentSlot.Firepower] = instance;
+
+            return instance;
+        }
+
+        /// <summary>Bo banh: cong stat + gan Owner (slot Mobility).</summary>
+        public virtual MobilityCore EquipMobilityCore(MobilityCore prefab)
+        {
+            if (prefab == null) return null;
+            if (!typeof(MobilityCore).IsAssignableFrom(prefab.GetType()))
+            {
+                Debug.LogError("[" + "TankBrain" + "] Can pass MobilityCore prefab, get " + prefab.GetType().Name + ".", this);
+                return null;
+            }
+
+            MobilityCore instance = Instantiate(prefab, transform);
+            instance.name = prefab.name;
+            instance.Equip(this);
+
+            m_Equipment[EquipmentSlot.Mobility] = instance;
+
+            return instance;
+        }
+
+        /// <summary>Vo xe: cong stat + gan Owner (slot Defense).</summary>
+        public virtual DefenseCore EquipDefenseCore(DefenseCore prefab)
+        {
+            if (prefab == null) return null;
+            if (!typeof(DefenseCore).IsAssignableFrom(prefab.GetType()))
+            {
+                Debug.LogError("[" + "TankBrain" + "] Can pass DefenseCore prefab, get " + prefab.GetType().Name + ".", this);
+                return null;
+            }
+
+            DefenseCore instance = Instantiate(prefab, transform);
+            instance.name = prefab.name;
+            instance.Equip(this);
+
+            m_Equipment[EquipmentSlot.Defense] = instance;
+
+            return instance;
         }
 
         /// <summary>Thoa trang bi o 1 slot. True neu co trang bi de thoa.</summary>
@@ -247,45 +269,10 @@ namespace IronWasteland.Tanks
             return true;
         }
 
-        /// <summary>Thoa het trang bi.</summary>
-        public virtual void UnequipAll()
-        {
-            foreach (EquipmentBrain equipment in m_Equipment.Values)
-            {
-                equipment.UnEquip(this);
-            }
-
-            m_Equipment.Clear();
-        }
-
-        /// <summary>
-        /// Thong bao cho trang bi bi dong (DamageLifesteal) khi Tank vua gay sat thuong.
-        /// He thong tan cong se goi ham nay khi biet danh trung.
-        /// </summary>
-        public virtual void NotifyDamageDealt(float damage)
-        {
-            foreach (EquipmentBrain equipment in m_Equipment.Values)
-            {
-                equipment.OnOwnerDamageDealt(damage);
-            }
-        }
-
-
         #endregion
-
-        /// <summary>TankBrain dang ky lam Owner cua View (va cac collider ben trong).</summary>
-        public virtual void RegisterInto(TankView target)
-        {
-            target?.RegisterOwner(this);
-        }
 
         private void Awake()
         {
-            if (view == null) view = GetComponentInChildren<TankView>();
-
-            // View co the da ton tai san trong hierarchy (khong qua definition).
-            RegisterInto(view);
-
             // Rigidbody2D nam tren chinh TankBrain. Fallback sang child cho an toan.
             m_Body = GetComponent<Rigidbody2D>();
             if (m_Body == null) m_Body = GetComponentInChildren<Rigidbody2D>();
@@ -314,6 +301,16 @@ namespace IronWasteland.Tanks
         {
             m_LookTarget = worldPoint;
             m_HasLookTarget = true;
+        }
+
+
+        /// <summary>Dung 1 trong 4 ky nang. Chi tai thoi diem nay moi co Debug.Log.</summary>
+        public virtual void UseSkill(int index)
+        {
+            if (index < 0 || index >= SkillCount) return;
+            if (skillCooldowns[index] > 0f) return;
+
+            Debug.Log($"[TankBrain] Level {level} su dung ky nang {index + 1}/{SkillCount}.");
         }
 
         /// <summary>Tat action Look. Noi sung giu nguyen huong hien tai.</summary>
@@ -359,19 +356,6 @@ namespace IronWasteland.Tanks
             }
         }
 
-        /// <summary>Dung 1 trong 4 ky nang. Chi tai thoi diem nay moi co Debug.Log.</summary>
-        public virtual void UseSkill(int index)
-        {
-            if (index < 0 || index >= SkillCount) return;
-            if (skillCooldowns[index] > 0f) return;
-
-            // TODO: them logic tung ky nang (damage, buff, heal, dash...).
-
-            Debug.Log($"[TankBrain] Level {level} su dung ky nang {index + 1}/{SkillCount}.");
-            skillCooldowns[index] = GetCooldownWithReduction(GetBaseCooldown(index));
-            view?.UseSkill(index);
-        }
-
         /// <summary>Nhan sat thuong. TODO: ap dung Defense/ArmorPenetration.</summary>
         public virtual void TakeDamage(float amount)
         {
@@ -411,15 +395,20 @@ namespace IronWasteland.Tanks
             }
         }
 
-        private float GetCooldownWithReduction(float baseCooldown)
+        protected float GetCooldownWithReduction(float baseCooldown)
         {
             return baseCooldown * (1f - Mathf.Clamp(m_FinalStats.CooldownReduction, 0f, 1f));
         }
 
-        private float GetBaseCooldown(int index)
+        protected virtual float GetBaseCooldown(int index)
         {
             // TODO: thay bang bang cooldown tung ky nang.
             return 5f;
+        }
+
+        protected float GetCooldown(int index)
+        {
+            return GetCooldownWithReduction(GetBaseCooldown(index));
         }
 
         #endregion

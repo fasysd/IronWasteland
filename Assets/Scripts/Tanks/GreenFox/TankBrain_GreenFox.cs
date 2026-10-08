@@ -1,13 +1,13 @@
 using UnityEngine;
 
-namespace IronWasteland.Tanks
+namespace IronWasteland.Tanks.GreenFox
 {
     /// <summary>
-    /// TankBrain cu the cho tank "BlackShadow" - doi tuong thuc te ke thua <see cref="TankBrain"/>.
+    /// TankBrain cu the cho tank "GreenFox" - doi tuong thuc te ke thua <see cref="TankBrain"/>.
     /// Khong con lam base - logic rieng cua tank nay se duoc trien khai o day.
     /// </summary>
     [DisallowMultipleComponent]
-    public class TankBrain_BlackShadow : TankBrain
+    public class TankBrain_GreenFox : TankBrain
     {
     }
 }

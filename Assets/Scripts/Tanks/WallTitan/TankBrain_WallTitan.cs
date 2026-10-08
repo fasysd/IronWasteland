@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace IronWasteland.Tanks
+namespace IronWasteland.Tanks.WallTitan
 {
     /// <summary>
     /// TankBrain cu the cho tank "WallTitan" - doi tuong thuc te ke thua <see cref="TankBrain"/>.

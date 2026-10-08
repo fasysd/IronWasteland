@@ -1,135 +1,147 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace IronWasteland.Tanks
 {
     /// <summary>
-    /// Kho du lieu trang bi: moi trang bi duoc gan 1 <c>id</c> de tra cuu
-    /// ma khong can biet ten lop (FirepowerCore / DefenseCore / MobilityCore).
+    /// Kho du lieu trang bi.
     ///
-    /// ID duoc tach theo loai: 1 ID chi ton tai trong dung loai trang bi do.
-    /// Nho do <c>defense_heavy</c> khong bao gio tra nham sang mot FirepowerCore,
-    /// va nguoc lai TankDefinition chi can mot ID cho moi loai.
+    /// Moi trang bi duoc dinh danh bang int, trong do ID chinh la index
+    /// cua trang bi trong danh sach tuong ung voi EquipmentSlot.
     ///
-    /// Tap trang bi mac dinh (TankDefinition): trong ID.
+    /// Vi du:
+    /// Firepower ID = 0 -> firepowerPrefabs[0]
+    /// Defense ID    = 2 -> defensePrefabs[2]
+    /// Mobility ID   = 1 -> mobilityPrefabs[1]
     /// </summary>
-    [CreateAssetMenu(menuName = "IronWasteland/Tank/Equipment Database", fileName = "EquipmentDatabase")]
+    [CreateAssetMenu(
+        menuName = "IronWasteland/Tank/Equipment Database",
+        fileName = "EquipmentDatabase")]
     public class EquipmentDatabase : ScriptableObject
     {
-        [Serializable]
-        public struct Entry
+        [Header("Firepower")]
+        [SerializeField] private List<FirepowerCore> firepowerPrefabs = new List<FirepowerCore>();
+
+        [Header("Defense")]
+        [SerializeField] private List<DefenseCore> defensePrefabs = new List<DefenseCore>();
+
+        [Header("Mobility")]
+        [SerializeField] private List<MobilityCore> mobilityPrefabs = new List<MobilityCore>();
+
+        public List<FirepowerCore> FirepowerPrefabs => firepowerPrefabs;
+        public List<DefenseCore> DefensePrefabs => defensePrefabs;
+        public List<MobilityCore> MobilityPrefabs => mobilityPrefabs;
+
+        /// <summary>
+        /// Tong so trang bi dang co trong database.
+        /// </summary>
+        public int Count =>
+            firepowerPrefabs.Count +
+            defensePrefabs.Count +
+            mobilityPrefabs.Count;
+
+        /// <summary>
+        /// Lay trang bi theo slot va ID.
+        /// ID chinh la index trong list cua slot tuong ung.
+        ///
+        /// Tra null neu ID khong hop le.
+        /// </summary>
+        public EquipmentBrain GetPrefab(EquipmentSlot slot, int id)
         {
-            [Tooltip("ID tra cuu trong TankDefinition. Phai duy nhat trong loai trang bi nay.")]
-            public string id;
+            if (id < 0) return null;
 
-            [Tooltip("Prefab EquipmentBrain tuong ung.")]
-            public EquipmentBrain prefab;
-        }
-
-        [Header("Firepower (Nong Phao)")]
-        [SerializeField] private List<Entry> firepowerPrefabs = new List<Entry>();
-
-        [Header("Defense (Than Xe)")]
-        [SerializeField] private List<Entry> defensePrefabs = new List<Entry>();
-
-        [Header("Mobility (Bo Banh)")]
-        [SerializeField] private List<Entry> mobilityPrefabs = new List<Entry>();
-
-        public List<Entry> FirepowerPrefabs => firepowerPrefabs;
-        public List<Entry> DefensePrefabs => defensePrefabs;
-        public List<Entry> MobilityPrefabs => mobilityPrefabs;
-
-        /// <summary>Tong so trang bi dang co trong database.</summary>
-        public int Count => CountOf(EquipmentSlot.Firepower) + CountOf(EquipmentSlot.Defense) + CountOf(EquipmentSlot.Mobility);
-
-        /// <summary>Danh sach cua 1 loai trang bi. None -> rong.</summary>
-        private List<Entry> GetList(EquipmentSlot slot)
-        {
             switch (slot)
             {
-                case EquipmentSlot.Firepower: return firepowerPrefabs;
-                case EquipmentSlot.Defense: return defensePrefabs;
-                case EquipmentSlot.Mobility: return mobilityPrefabs;
-                default: return null;
+                case EquipmentSlot.Firepower:
+                    return GetAt(firepowerPrefabs, id);
+
+                case EquipmentSlot.Defense:
+                    return GetAt(defensePrefabs, id);
+
+                case EquipmentSlot.Mobility:
+                    return GetAt(mobilityPrefabs, id);
+
+                default:
+                    return null;
             }
         }
 
-        private int CountOf(EquipmentSlot slot) => GetList(slot)?.Count ?? 0;
+        public FirepowerCore GetFirepower(int id) =>
+            GetAt(firepowerPrefabs, id);
+
+        public DefenseCore GetDefense(int id) =>
+            GetAt(defensePrefabs, id);
+
+        public MobilityCore GetMobility(int id) =>
+            GetAt(mobilityPrefabs, id);
 
         /// <summary>
-        /// Prefab trang bi theo ID. Tra null neu ID rong / khong ton tai.
-        /// Can dung ID rong thi tra null (khong phai loi) de Tank bo trang bi.
+        /// True neu ID nam trong danh sach va prefab tai vi tri do khong null.
         /// </summary>
-        public EquipmentBrain GetPrefab(EquipmentSlot slot, string id)
+        public bool Has(EquipmentSlot slot, int id) =>
+            GetPrefab(slot, id) != null;
+
+        private static T GetAt<T>(List<T> list, int index)
+            where T : EquipmentBrain
         {
-            if (string.IsNullOrEmpty(id)) return null;
+            if (list == null || index < 0 || index >= list.Count)
+                return null;
 
-            List<Entry> list = GetList(slot);
-            if (list == null) return null;
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                if (string.Equals(list[i].id, id, StringComparison.Ordinal)) return list[i].prefab;
-            }
-
-            return null;
+            return list[index];
         }
 
-        public EquipmentBrain GetFirepower(string id) => GetPrefab(EquipmentSlot.Firepower, id);
-        public EquipmentBrain GetDefense(string id) => GetPrefab(EquipmentSlot.Defense, id);
-        public EquipmentBrain GetMobility(string id) => GetPrefab(EquipmentSlot.Mobility, id);
+        private void Awake()
+        {
+            WarnInvalidEntries();
+        }
 
-        /// <summary>True neu ID co trong database (co prefab hop le).</summary>
-        public bool Has(EquipmentSlot slot, string id) => GetPrefab(slot, id) != null;
-
-        private void Awake() => WarnInvalidEntries();
+        private void OnValidate()
+        {
+            WarnInvalidEntries();
+        }
 
         /// <summary>
-        /// KIEM TRA du lieu (khong tu dong sua): muc loi se bi bo qua khi tra cuu
-        /// va ghi log canh bao - cung phong cach voi TankDefinition.
+        /// Kiem tra du lieu trong database.
+        /// Khong tu dong sua du lieu.
         /// </summary>
-        private void OnValidate() => WarnInvalidEntries();
-
         private void WarnInvalidEntries()
         {
-            foreach (string issue in GetIssues(EquipmentSlot.Firepower, firepowerPrefabs)) Warn(issue);
-            foreach (string issue in GetIssues(EquipmentSlot.Defense, defensePrefabs)) Warn(issue);
-            foreach (string issue in GetIssues(EquipmentSlot.Mobility, mobilityPrefabs)) Warn(issue);
+            WarnInvalidList(EquipmentSlot.Firepower, firepowerPrefabs);
+            WarnInvalidList(EquipmentSlot.Defense, defensePrefabs);
+            WarnInvalidList(EquipmentSlot.Mobility, mobilityPrefabs);
         }
 
-        private void Warn(string issue) => Debug.LogWarning($"[{nameof(EquipmentDatabase)}] {issue}", this);
-
-        /// <summary>Moi tao trong 1 loai trang bi (rong = khong loi).</summary>
-        private static List<string> GetIssues(EquipmentSlot slot, List<Entry> list)
+        private void WarnInvalidList<T>(
+            EquipmentSlot slot,
+            List<T> list)
+            where T : EquipmentBrain
         {
-            List<string> issues = new List<string>();
-            if (list == null) return issues;
-
-            HashSet<string> seen = new HashSet<string>(StringComparer.Ordinal);
+            if (list == null) return;
 
             for (int i = 0; i < list.Count; i++)
             {
-                Entry entry = list[i];
+                T prefab = list[i];
 
-                if (string.IsNullOrEmpty(entry.id))
-                    issues.Add($"{slot}[{i}] thieu id.");
+                if (prefab == null)
+                {
+                    Warn($"{slot}[{i}] chua gan prefab.");
+                    continue;
+                }
 
-                if (entry.prefab == null)
-                    issues.Add($"{slot} '{entry.id}' chua gan prefab.");
-
-                // Prefab phai khop loai: tranh designer nham FirepowerCore vao danh sach Defense.
-                if (entry.prefab != null && entry.prefab.Slot != slot)
-                    issues.Add($"{slot} '{entry.id}' dang tro toi prefab "
-                        + $"'{entry.prefab.name}' thuoc slot {entry.prefab.Slot} (phai la {slot}).");
-
-                if (string.IsNullOrEmpty(entry.id)) continue;
-
-                if (!seen.Add(entry.id))
-                    issues.Add($"{slot} '{entry.id}' trung ID (muc truoc duoc dung).");
+                if (prefab.Slot != slot)
+                {
+                    Warn(
+                        $"{slot}[{i}] dang tro toi prefab '{prefab.name}' "
+                        + $"thuoc slot {prefab.Slot} (phai la {slot}).");
+                }
             }
+        }
 
-            return issues;
+        private void Warn(string issue)
+        {
+            Debug.LogWarning(
+                $"[{nameof(EquipmentDatabase)}] {issue}",
+                this);
         }
     }
 }

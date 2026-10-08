@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 987192533526621700}
   - component: {fileID: 569371263267873161}
   - component: {fileID: 2337791876944670423}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BlackShadow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,9 +71,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 054a5f94bf2141b69eacdd56a2428d17, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankBrain_BlackShadow
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.BlackShadow.TankBrain_BlackShadow
   view: {fileID: 0}
-  viewPrefab: {fileID: 4035724410283292367, guid: 493b60d53e11c6a4fa06bcf98c442a43, type: 3}
   level: 1
   baseStats:
     Attack: 0
@@ -93,7 +92,6 @@ MonoBehaviour:
     MaxEnergy: 0
     MoveSpeed: 0
     CooldownReduction: 0
-  definition: {fileID: 0}
   currentHealth: 0
   currentEnergy: 0
   skillCooldowns:
@@ -101,3 +99,11 @@ MonoBehaviour:
   - 0
   - 0
   - 0
+  m_context:
+    Level: 0
+    IdView: 0
+    FirepowerEquipmentId: 0
+    DefenseEquipmentId: 0
+    MobilityEquipmentId: 0
+    OptionSkill1: 0
+    OptionSkill2: 0

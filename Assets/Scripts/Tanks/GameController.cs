@@ -21,13 +21,13 @@ namespace IronWasteland.Tanks
         [SerializeField] private Vector2 spawnPosition = Vector2.zero;
 
         [Tooltip("ID trang bi sung. De trong = Tank khong co nong phao.")]
-        [SerializeField] private string firepowerId;
+        [SerializeField] private int firepowerId;
 
         [Tooltip("ID trang bi vo xe. De trong = Tank khong co vo xe.")]
-        [SerializeField] private string defenseId;
+        [SerializeField] private int defenseId;
 
         [Tooltip("ID trang bi bo banh. De trong = Tank khong co bo banh.")]
-        [SerializeField] private string mobilityId;
+        [SerializeField] private int mobilityId;
 
         [Header("Look")]
         [Tooltip("Camera de tinh huong nhin. Neu rong se dung Camera.main.")]

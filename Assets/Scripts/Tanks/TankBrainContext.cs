@@ -7,9 +7,9 @@ namespace IronWasteland.Tanks
     {
         public int Level;
         public int IdView;
-        public string FirepowerEquipmentId;
-        public string DefenseEquipmentId;
-        public string MobilityEquipmentId;
+        public int FirepowerEquipmentId;
+        public int DefenseEquipmentId;
+        public int MobilityEquipmentId;
         public int OptionSkill1;
         public int OptionSkill2;
     }

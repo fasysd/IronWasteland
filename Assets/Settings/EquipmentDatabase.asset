@@ -13,11 +13,8 @@ MonoBehaviour:
   m_Name: EquipmentDatabase
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.EquipmentDatabase
   firepowerPrefabs:
-  - id: firepower_cannon
-    prefab: {fileID: 6247676371906579067, guid: 63c5e76fa11c79442b63873457ef71c4, type: 3}
+  - {fileID: 6247676371906579067, guid: 63c5e76fa11c79442b63873457ef71c4, type: 3}
   defensePrefabs:
-  - id: defense_heavy
-    prefab: {fileID: 5806655779868895736, guid: e76c275c10504a74aad10550c4bb7a9c, type: 3}
+  - {fileID: 5806655779868895736, guid: e76c275c10504a74aad10550c4bb7a9c, type: 3}
   mobilityPrefabs:
-  - id: mobility_heavy
-    prefab: {fileID: 6050704993534220470, guid: df056d2a5a09ad241b6c47409211e3a3, type: 3}
+  - {fileID: 6050704993534220470, guid: df056d2a5a09ad241b6c47409211e3a3, type: 3}

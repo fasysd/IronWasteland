@@ -94,31 +94,17 @@ namespace IronWasteland.Tanks
         /// Gan 3 trang bi theo ID. ID rong hoac khong tra cuo duoc -> bo qua
         /// (Tank van chay binh thuong, chi khong co trang bi do).
         /// </summary>
-        private void EquipLoadout(TankBrain brain, string firepowerEquipmentId, string defenseEquipmentId, string mobilityEquipmentId)
+        private void EquipLoadout(TankBrain brain, int firepowerEquipmentId, int defenseEquipmentId, int mobilityEquipmentId)
         {
             if (equipmentDatabase == null)
             {
-                if (HasAnyEquipmentId(firepowerEquipmentId, defenseEquipmentId, mobilityEquipmentId))
-                {
-                    Debug.LogWarning($"[{nameof(TankDefinition)}] Co ID trang bi nhung chua gan EquipmentDatabase.", this);
-                }
-
+                Debug.LogWarning($"[{nameof(TankDefinition)}] Co ID trang bi nhung chua gan EquipmentDatabase.", this);
                 return;
             }
 
-            brain.EquipEquipmentById(equipmentDatabase, EquipmentSlot.Firepower, firepowerEquipmentId);
-            brain.EquipEquipmentById(equipmentDatabase, EquipmentSlot.Defense, defenseEquipmentId);
-            brain.EquipEquipmentById(equipmentDatabase, EquipmentSlot.Mobility, mobilityEquipmentId);
-        }
-
-        private static bool HasAnyEquipmentId(params string[] ids)
-        {
-            for (int i = 0; i < ids.Length; i++)
-            {
-                if (!string.IsNullOrEmpty(ids[i])) return true;
-            }
-
-            return false;
+            brain.EquipFirepowerCore(equipmentDatabase.GetFirepower(firepowerEquipmentId));
+            brain.EquipDefenseCore(equipmentDatabase.GetDefense(defenseEquipmentId));
+            brain.EquipMobilityCore(equipmentDatabase.GetMobility(mobilityEquipmentId));
         }
 
         /// <summary>

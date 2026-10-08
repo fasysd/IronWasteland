@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace IronWasteland.Tanks
+namespace IronWasteland.Tanks.RedNova
 {
     /// <summary>
     /// TankBrain cu the cho tank "RedNova" - doi tuong thuc te ke thua <see cref="TankBrain"/>.

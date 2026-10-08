@@ -394,9 +394,9 @@ MonoBehaviour:
   playerLevel: 1
   viewId: 0
   spawnPosition: {x: 0, y: 0}
-  firepowerId: firepower_cannon
-  defenseId: defense_heavy
-  mobilityId: mobility_heavy
+  firepowerId: 0
+  defenseId: 0
+  mobilityId: 0
   targetCamera: {fileID: 519420031}
 --- !u!4 &1238486343
 Transform:
