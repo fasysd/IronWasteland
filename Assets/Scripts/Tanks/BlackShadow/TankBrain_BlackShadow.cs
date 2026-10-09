@@ -315,9 +315,13 @@ namespace IronWasteland.Tanks.BlackShadow
 
             enemy.TakeDamage(skillTest2Damage);
 
-            TextDamageManager.Instance?.Show(
-                skillTest2Damage,
-                skill.transform.position);
+            Collider2D enemyCollider = enemy.Model.BodyCollider;
+
+            if (Collider2DUtility.TryGetRandomOverlapPoint(skill.ColliderRef.Collider, enemyCollider, out Vector2 center))
+                TextDamageManager.Instance?.Show(skillTest2Damage, center);
+            else
+                TextDamageManager.Instance?.Show(skillTest2Damage, skill.transform.position);
+
         }
 
         #endregion

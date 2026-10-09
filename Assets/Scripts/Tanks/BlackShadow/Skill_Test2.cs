@@ -30,6 +30,8 @@ namespace IronWasteland.Tanks.BlackShadow
 
         private Action<Skill_Test2> m_ReturnToPool;
 
+        public ColliderOwnerRef ColliderRef => m_OwnerRef;
+
         private void Awake()
         {
             m_AreaCollider = GetComponent<CircleCollider2D>();

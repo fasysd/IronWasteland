@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using UnityEngine;
 
 namespace IronWasteland
@@ -346,6 +347,33 @@ namespace IronWasteland
             return otherRef != null &&
                    otherRef.TryGetOwner(out result);
         }
+
+
+        /// <summary>
+        /// Ước lượng tâm diện tích giao nhau giữa Collider này và Collider khác.
+        /// Dùng để đặt Damage Text, VFX,...
+        ///
+        /// samplesPerAxis càng cao thì kết quả càng ổn định,
+        /// nhưng cần kiểm tra nhiều điểm hơn.
+        /// </summary>
+        public bool TryGetApproximateOverlapCenter(
+            Collider2D other,
+            out Vector2 center,
+            int samplesPerAxis = 5)
+            => Collider2DUtility.TryGetApproximateOverlapCenter(Collider, other, out center, samplesPerAxis);
+
+
+        /// <summary>
+        /// Lấy ngẫu nhiên một điểm nằm trong vùng giao nhau
+        /// thực tế giữa Collider này và Collider đối phương.
+        ///
+        /// Trả về false nếu không tìm được điểm hợp lệ.
+        /// </summary>
+        public bool TryGetRandomOverlapPoint(
+            Collider2D other,
+            out Vector2 point,
+            int maxAttempts = 50)
+            => Collider2DUtility.TryGetRandomOverlapPoint(Collider, other, out point, maxAttempts);
 
         // ============================================================
         // CLEAR

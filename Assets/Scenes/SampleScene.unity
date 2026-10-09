@@ -628,8 +628,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.TextDamageManager
   prewarmCount: 20
   maxActiveCount: 64
-  spawnRadius: 1
-  moveSpeed: 5
+  spawnRadius: 0.5
+  moveSpeed: 1
   lifetime: 0.5
   font: {fileID: 11400000, guid: 8a89fa14b10d46a99122fd4f73fca9a2, type: 2}
   fontSize: 14

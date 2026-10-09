@@ -112,11 +112,11 @@ MonoBehaviour:
   skillTest1Design: {fileID: 8559100081587975653}
   initialPoolSize: 4
   skillTest1Damage: 36
-  skillTest1Cooldown: 5
+  skillTest1Cooldown: 0.5
   skillTest2Design: {fileID: 4818479036049069876}
   skillTest2InitialPoolSize: 2
-  skillTest2Damage: 10
-  skillTest2Cooldown: 5
+  skillTest2Damage: 1
+  skillTest2Cooldown: 3
 --- !u!1 &2135877214114015531
 GameObject:
   m_ObjectHideFlags: 0
@@ -471,4 +471,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.BlackShadow.Skill_Test2
   duration: 3
-  interval: 0.5
+  interval: 0.1
