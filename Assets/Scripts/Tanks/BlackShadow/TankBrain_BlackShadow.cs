@@ -17,9 +17,9 @@ namespace IronWasteland.Tanks.BlackShadow
 
         [Header("Skill Test 1 - Combat")]
         [SerializeField, Min(0f)] private float skillTest1Damage = 36f;
+        [SerializeField, Min(0.01f)] private float skillTest1Cooldown = 5f;
 
         private const int SkillTest1Index = 0;
-        private const float SkillTest1Cooldown = 1f;
 
         private readonly Stack<Skill_Test1> m_SkillPool =
             new Stack<Skill_Test1>();
@@ -27,10 +27,31 @@ namespace IronWasteland.Tanks.BlackShadow
         private readonly HashSet<Skill_Test1> m_AllSkills =
             new HashSet<Skill_Test1>();
 
+        [Header("Skill Test 2 - Design")]
+        [SerializeField] private Skill_Test2 skillTest2Design;
+
+        [Header("Skill Test 2 - Pool")]
+        [SerializeField, Min(0)] private int skillTest2InitialPoolSize = 2;
+
+        [Header("Skill Test 2 - Combat")]
+        [SerializeField, Min(0f)] private float skillTest2Damage = 10f;
+        [SerializeField, Min(0.01f)] private float skillTest2Cooldown = 5f;
+
+        private const int SkillTest2Index = 1;
+
+        private readonly Stack<Skill_Test2> m_SkillTest2Pool =
+            new Stack<Skill_Test2>();
+
+        private readonly HashSet<Skill_Test2> m_AllSkillTest2 =
+            new HashSet<Skill_Test2>();
+
         protected override float GetBaseCooldown(int index)
         {
             if (index == SkillTest1Index)
-                return SkillTest1Cooldown;
+                return skillTest1Cooldown;
+
+            if (index == SkillTest2Index)
+                return skillTest2Cooldown;
 
             return base.GetBaseCooldown(index);
         }
@@ -38,19 +59,27 @@ namespace IronWasteland.Tanks.BlackShadow
         private void Start()
         {
             PrewarmSkillPool();
+            PrewarmSkillTest2Pool();
         }
 
         protected override void OnUseSkill(int index)
         {
-            if (index != SkillTest1Index)
+            if (index == SkillTest1Index)
             {
-                base.OnUseSkill(index);
+                FireSkillTest1();
                 return;
             }
 
-            FireSkillTest1();
+            if (index == SkillTest2Index)
+            {
+                FireSkillTest2();
+                return;
+            }
+
+            base.OnUseSkill(index);
         }
 
+        #region Skill 1
         private void PrewarmSkillPool()
         {
             if (skillTest1Design == null)
@@ -186,6 +215,112 @@ namespace IronWasteland.Tanks.BlackShadow
             enemy.TakeDamage(skillTest1Damage);
             TextDamageManager.Instance?.Show(skillTest1Damage, skill.transform.position);
         }
+        #endregion
+
+        #region Skill 2
+        private void PrewarmSkillTest2Pool()
+        {
+            if (skillTest2Design == null)
+            {
+                Debug.LogWarning("Chưa gán Skill_Test2 Design.", this);
+                return;
+            }
+
+            for (int i = 0; i < skillTest2InitialPoolSize; i++)
+            {
+                Skill_Test2 skill = CreateSkillTest2Instance();
+
+                if (skill != null)
+                    m_SkillTest2Pool.Push(skill);
+            }
+        }
+
+        private Skill_Test2 CreateSkillTest2Instance()
+        {
+            if (skillTest2Design == null)
+                return null;
+
+            Skill_Test2 skill = Instantiate(
+                skillTest2Design,
+                transform.position,
+                Quaternion.identity);
+
+            skill.transform.SetParent(null);
+            skill.gameObject.SetActive(true);
+            skill.Clear();
+            skill.gameObject.SetActive(false);
+
+            m_AllSkillTest2.Add(skill);
+            return skill;
+        }
+
+        private Skill_Test2 GetSkillTest2FromPool()
+        {
+            while (m_SkillTest2Pool.Count > 0)
+            {
+                Skill_Test2 skill = m_SkillTest2Pool.Pop();
+
+                if (skill != null)
+                    return skill;
+            }
+
+            return CreateSkillTest2Instance();
+        }
+
+        private void ReturnSkillTest2ToPool(Skill_Test2 skill)
+        {
+            if (skill == null)
+                return;
+
+            skill.Clear();
+            skill.gameObject.SetActive(false);
+
+            if (!m_SkillTest2Pool.Contains(skill))
+                m_SkillTest2Pool.Push(skill);
+        }
+
+        private void FireSkillTest2()
+        {
+            if (skillTest2Design == null)
+                return;
+
+            if (!HasLookTarget)
+                return;
+
+            Skill_Test2 skill = GetSkillTest2FromPool();
+
+            if (skill == null)
+                return;
+
+            // Vị trí Look là tâm vùng sát thương.
+            Vector2 spawnPosition = LookTarget;
+
+            skill.transform.SetParent(null);
+            skill.transform.position = spawnPosition;
+            skill.gameObject.SetActive(true);
+
+            skill.Initialize(spawnPosition, ReturnSkillTest2ToPool);
+            skill.TargetFound += OnSkillTest2TargetFound;
+
+            // Khởi động vòng lặp sau khi đăng ký event.
+            skill.StartSkill();
+        }
+
+        private void OnSkillTest2TargetFound(
+            Skill_Test2 skill,
+            EnemyBrain enemy)
+        {
+            if (enemy == null)
+                return;
+
+            enemy.TakeDamage(skillTest2Damage);
+
+            TextDamageManager.Instance?.Show(
+                skillTest2Damage,
+                skill.transform.position);
+        }
+
+        #endregion
 
         private void OnDestroy()
         {
@@ -197,6 +332,15 @@ namespace IronWasteland.Tanks.BlackShadow
 
             m_AllSkills.Clear();
             m_SkillPool.Clear();
+
+            foreach (Skill_Test2 skill in m_AllSkillTest2)
+            {
+                if (skill != null)
+                    Destroy(skill.gameObject);
+            }
+
+            m_AllSkillTest2.Clear();
+            m_SkillTest2Pool.Clear();
         }
     }
 }

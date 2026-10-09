@@ -14,7 +14,7 @@ namespace IronWasteland.Enemies
 
         protected override void OnDeath()
         {
-            // TODO: hieu ung chet, drop pham, tru di muc tren man choi.
+            Destroy(this.gameObject);
         }
     }
 }

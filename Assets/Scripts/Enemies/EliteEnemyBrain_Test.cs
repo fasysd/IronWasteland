@@ -9,7 +9,7 @@ namespace IronWasteland.Enemies
     {
         protected override void OnDeath()
         {
-            // TODO: hieuung chet Tinh anh, drop pham, tinh tien/kinh nghiem.
+            Destroy(this.gameObject);
         }
     }
 }
