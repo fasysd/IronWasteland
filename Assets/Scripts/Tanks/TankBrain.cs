@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace IronWasteland.Tanks
@@ -24,7 +25,7 @@ namespace IronWasteland.Tanks
         [SerializeField, ReadOnly] private TankView view;
 
         [Header("Level")]
-        [SerializeField] private int level = TankDefinition.MinLevel;
+        [SerializeField, ReadOnly] private int level = TankDefinition.MinLevel;
 
         [Header("Stats")]
         [Tooltip("Chi so co so do TankDefinition gui vao. KHONG sua tay.")]
@@ -69,6 +70,9 @@ namespace IronWasteland.Tanks
 
         /// <summary>Chi so cuoi cung = base + bonus. Dung de tinh toan.</summary>
         public TankStats Stats => m_FinalStats;
+
+        public Vector2 LookTarget => m_LookTarget;
+        public bool HasLookTarget => m_HasLookTarget;
 
         public float CurrentHealth => currentHealth;
         public float CurrentEnergy => currentEnergy;
@@ -291,13 +295,13 @@ namespace IronWasteland.Tanks
         #region Input commands
 
         /// <summary>Nhan lenh di chuyen (Vector2) tu GameController.</summary>
-        public virtual void SetMoveInput(Vector2 input)
+        public void SetMoveInput(Vector2 input)
         {
             m_MoveInput = Vector2.ClampMagnitude(input, 1f);
         }
 
         /// <summary>Nhan diem nhin trong world (vi du vi tri con tro chuot).</summary>
-        public virtual void SetLookTarget(Vector2 worldPoint)
+        public void SetLookTarget(Vector2 worldPoint)
         {
             m_LookTarget = worldPoint;
             m_HasLookTarget = true;
@@ -305,12 +309,23 @@ namespace IronWasteland.Tanks
 
 
         /// <summary>Dung 1 trong 4 ky nang. Chi tai thoi diem nay moi co Debug.Log.</summary>
-        public virtual void UseSkill(int index)
-        {
-            if (index < 0 || index >= SkillCount) return;
-            if (skillCooldowns[index] > 0f) return;
 
+        public void UseSkill(int index)
+        {
+            if (index < 0 || index >= SkillCount)
+                return;
+
+            if (skillCooldowns[index] > 0f)
+                return;
+
+            skillCooldowns[index] = GetCooldown(index);
+            OnUseSkill(index);
+        }
+
+        protected virtual void OnUseSkill(int index)
+        {
             Debug.Log($"[TankBrain] Level {level} su dung ky nang {index + 1}/{SkillCount}.");
+            TextDamageManager.Instance?.Show(36, this.view.Muzzle.position);
         }
 
         /// <summary>Tat action Look. Noi sung giu nguyen huong hien tai.</summary>

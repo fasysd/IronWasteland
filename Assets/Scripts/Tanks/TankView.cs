@@ -40,6 +40,8 @@ namespace IronWasteland.Tanks
         [Tooltip("Pivot xoay theo huong di chuyen (Than Xe + Bo Banh).")]
         [SerializeField] private Transform bodyPivot;
 
+        [SerializeField] private Transform muzzle;
+
         [Header("Look")]
         [Tooltip("Toc do xoay noi sung (do/giay).")]
         [SerializeField] private float lookSmoothing = 900f;
@@ -66,6 +68,7 @@ namespace IronWasteland.Tanks
         public Rigidbody2D Body => body;
         public Transform FirepowerPivot => firepowerPivot;
         public Transform BodyPivot => bodyPivot;
+        public Transform Muzzle => muzzle;
         public TankAction CurrentAction => m_Action;
 
         /// <summary>
