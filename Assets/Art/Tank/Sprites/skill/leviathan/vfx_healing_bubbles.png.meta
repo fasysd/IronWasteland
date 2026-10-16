@@ -1,0 +1,455 @@
+fileFormatVersion: 2
+guid: 6c1f54425a277324eabe18c3c0bc781e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4679271020922498956
+    second: vfx_healing_bubbles_0
+  - first:
+      213: -8031505500931328956
+    second: vfx_healing_bubbles_1
+  - first:
+      213: 8927379560166035008
+    second: vfx_healing_bubbles_2
+  - first:
+      213: 2673332572076970040
+    second: vfx_healing_bubbles_3
+  - first:
+      213: -1780660013769271392
+    second: vfx_healing_bubbles_4
+  - first:
+      213: 5391497999375721474
+    second: vfx_healing_bubbles_5
+  - first:
+      213: -5107386100757180379
+    second: vfx_healing_bubbles_6
+  - first:
+      213: -8996041101115253988
+    second: vfx_healing_bubbles_7
+  - first:
+      213: -7341083826075583362
+    second: vfx_healing_bubbles_8
+  - first:
+      213: -4524827262760828795
+    second: vfx_healing_bubbles_9
+  - first:
+      213: -6609589089611959020
+    second: vfx_healing_bubbles_10
+  - first:
+      213: 810986053947776579
+    second: vfx_healing_bubbles_11
+  - first:
+      213: -5018098771648584546
+    second: vfx_healing_bubbles_12
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_0
+      rect:
+        serializedVersion: 2
+        x: 238
+        y: 690
+        width: 141
+        height: 141
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 470922e5cc3ef0fb0800000000000000
+      internalID: -4679271020922498956
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_1
+      rect:
+        serializedVersion: 2
+        x: 491
+        y: 777
+        width: 113
+        height: 143
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4447465bc4c5a8090800000000000000
+      internalID: -8031505500931328956
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_2
+      rect:
+        serializedVersion: 2
+        x: 254
+        y: 637
+        width: 53
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04e87c2296c64eb70800000000000000
+      internalID: 8927379560166035008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_3
+      rect:
+        serializedVersion: 2
+        x: 709
+        y: 624
+        width: 113
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83011257fc5991520800000000000000
+      internalID: 2673332572076970040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_4
+      rect:
+        serializedVersion: 2
+        x: 853
+        y: 632
+        width: 53
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a75a8dd623d947e0800000000000000
+      internalID: -1780660013769271392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_5
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 481
+        width: 131
+        height: 131
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 204e4047dd272da40800000000000000
+      internalID: 5391497999375721474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_6
+      rect:
+        serializedVersion: 2
+        x: 864
+        y: 572
+        width: 45
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 520d995c66bee19b0800000000000000
+      internalID: -5107386100757180379
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_7
+      rect:
+        serializedVersion: 2
+        x: 775
+        y: 400
+        width: 141
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1b16371844a72380800000000000000
+      internalID: -8996041101115253988
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_8
+      rect:
+        serializedVersion: 2
+        x: 194
+        y: 239
+        width: 137
+        height: 137
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7c3668a72b3f1a90800000000000000
+      internalID: -7341083826075583362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_9
+      rect:
+        serializedVersion: 2
+        x: 615
+        y: 178
+        width: 182
+        height: 127
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 580432df3959431c0800000000000000
+      internalID: -4524827262760828795
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_10
+      rect:
+        serializedVersion: 2
+        x: 787
+        y: 277
+        width: 49
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 415b16afdb50644a0800000000000000
+      internalID: -6609589089611959020
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_11
+      rect:
+        serializedVersion: 2
+        x: 357
+        y: 106
+        width: 178
+        height: 137
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 34e5a5fe483314b00800000000000000
+      internalID: 810986053947776579
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_healing_bubbles_12
+      rect:
+        serializedVersion: 2
+        x: 645
+        y: 111
+        width: 57
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e94ef0411c12c5ab0800000000000000
+      internalID: -5018098771648584546
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      vfx_healing_bubbles_0: -4679271020922498956
+      vfx_healing_bubbles_1: -8031505500931328956
+      vfx_healing_bubbles_10: -6609589089611959020
+      vfx_healing_bubbles_11: 810986053947776579
+      vfx_healing_bubbles_12: -5018098771648584546
+      vfx_healing_bubbles_2: 8927379560166035008
+      vfx_healing_bubbles_3: 2673332572076970040
+      vfx_healing_bubbles_4: -1780660013769271392
+      vfx_healing_bubbles_5: 5391497999375721474
+      vfx_healing_bubbles_6: -5107386100757180379
+      vfx_healing_bubbles_7: -8996041101115253988
+      vfx_healing_bubbles_8: -7341083826075583362
+      vfx_healing_bubbles_9: -4524827262760828795
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

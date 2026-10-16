@@ -1,0 +1,533 @@
+fileFormatVersion: 2
+guid: a26602c8f1e681147808f11c09de302e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2653920886441569238
+    second: asset_water_bubble_0
+  - first:
+      213: 4984491739147090743
+    second: asset_water_bubble_1
+  - first:
+      213: -7321789333828376939
+    second: asset_water_bubble_2
+  - first:
+      213: -4622717500266177712
+    second: asset_water_bubble_3
+  - first:
+      213: 6124231734360861898
+    second: asset_water_bubble_4
+  - first:
+      213: 5877900223760431784
+    second: asset_water_bubble_5
+  - first:
+      213: 7445821004052073548
+    second: asset_water_bubble_6
+  - first:
+      213: -128364435040721943
+    second: asset_water_bubble_7
+  - first:
+      213: -928034547370798772
+    second: asset_water_bubble_8
+  - first:
+      213: 4553500020794856605
+    second: asset_water_bubble_9
+  - first:
+      213: 1147511748490887273
+    second: asset_water_bubble_10
+  - first:
+      213: -4253958502778803887
+    second: asset_water_bubble_11
+  - first:
+      213: 1063832043928217328
+    second: asset_water_bubble_12
+  - first:
+      213: 795141885921556147
+    second: asset_water_bubble_13
+  - first:
+      213: -2272340723120201694
+    second: asset_water_bubble_14
+  - first:
+      213: -9220268240669188302
+    second: asset_water_bubble_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: asset_water_bubble_0
+      rect:
+        serializedVersion: 2
+        x: 632
+        y: 866
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6dbe6523cfe94d420800000000000000
+      internalID: 2653920886441569238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_1
+      rect:
+        serializedVersion: 2
+        x: 713
+        y: 834
+        width: 43
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 73b3bb9e3d87c2540800000000000000
+      internalID: 4984491739147090743
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_2
+      rect:
+        serializedVersion: 2
+        x: 805
+        y: 851
+        width: 27
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5966ae4b467c36a90800000000000000
+      internalID: -7321789333828376939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_3
+      rect:
+        serializedVersion: 2
+        x: 869
+        y: 876
+        width: 18
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05b17abfceec8dfb0800000000000000
+      internalID: -4622717500266177712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_4
+      rect:
+        serializedVersion: 2
+        x: 151
+        y: 153
+        width: 720
+        height: 718
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: acce0c89054adf450800000000000000
+      internalID: 6124231734360861898
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_5
+      rect:
+        serializedVersion: 2
+        x: 857
+        y: 810
+        width: 21
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8aafd6e6c1f729150800000000000000
+      internalID: 5877900223760431784
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_6
+      rect:
+        serializedVersion: 2
+        x: 872
+        y: 716
+        width: 21
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c4c8aa7e0ced45760800000000000000
+      internalID: 7445821004052073548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_7
+      rect:
+        serializedVersion: 2
+        x: 857
+        y: 644
+        width: 32
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9e3aa97f935f73ef0800000000000000
+      internalID: -128364435040721943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_8
+      rect:
+        serializedVersion: 2
+        x: 870
+        y: 581
+        width: 18
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c415ca00f75fe13f0800000000000000
+      internalID: -928034547370798772
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_9
+      rect:
+        serializedVersion: 2
+        x: 131
+        y: 430
+        width: 20
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d941638b428413f30800000000000000
+      internalID: 4553500020794856605
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_10
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 395
+        width: 19
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 96003600bd7ccef00800000000000000
+      internalID: 1147511748490887273
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_11
+      rect:
+        serializedVersion: 2
+        x: 123
+        y: 320
+        width: 35
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 159ed98b747e6f4c0800000000000000
+      internalID: -4253958502778803887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_12
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 230
+        width: 18
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f6e4078b9d73ce00800000000000000
+      internalID: 1063832043928217328
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_13
+      rect:
+        serializedVersion: 2
+        x: 604
+        y: 135
+        width: 21
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b673681559e80b00800000000000000
+      internalID: 795141885921556147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_14
+      rect:
+        serializedVersion: 2
+        x: 647
+        y: 141
+        width: 29
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22024c5d6260770e0800000000000000
+      internalID: -2272340723120201694
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_bubble_15
+      rect:
+        serializedVersion: 2
+        x: 699
+        y: 135
+        width: 37
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23fd81dd2e60b0080800000000000000
+      internalID: -9220268240669188302
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      asset_water_bubble_0: 2653920886441569238
+      asset_water_bubble_1: 4984491739147090743
+      asset_water_bubble_10: 1147511748490887273
+      asset_water_bubble_11: -4253958502778803887
+      asset_water_bubble_12: 1063832043928217328
+      asset_water_bubble_13: 795141885921556147
+      asset_water_bubble_14: -2272340723120201694
+      asset_water_bubble_15: -9220268240669188302
+      asset_water_bubble_2: -7321789333828376939
+      asset_water_bubble_3: -4622717500266177712
+      asset_water_bubble_4: 6124231734360861898
+      asset_water_bubble_5: 5877900223760431784
+      asset_water_bubble_6: 7445821004052073548
+      asset_water_bubble_7: -128364435040721943
+      asset_water_bubble_8: -928034547370798772
+      asset_water_bubble_9: 4553500020794856605
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

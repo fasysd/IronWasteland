@@ -60,7 +60,15 @@ MonoBehaviour:
       MaxEnergy: 680
       MoveSpeed: 7.45
       CooldownReduction: 0.356
-  tankPrefab: {fileID: 2337791876944670423, guid: 2a9b8b3f649717540bf1b6f7af3aec5b, type: 3}
+  tankPrefab: {fileID: 2227958259566636204, guid: 2a9b8b3f649717540bf1b6f7af3aec5b, type: 3}
   viewPrefabs:
   - {fileID: 4035724410283292367, guid: 493b60d53e11c6a4fa06bcf98c442a43, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
+  context:
+    Level: 0
+    IdView: 0
+    FirepowerEquipmentId: 0
+    DefenseEquipmentId: 0
+    MobilityEquipmentId: 0
+    OptionSkill1: 0
+    OptionSkill2: 0
