@@ -1,0 +1,624 @@
+fileFormatVersion: 2
+guid: cbd3d6aec58a5fc47860ef53a4fff2cf
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -6982081393089355738
+    second: TuThanNguyenTo_BoPhan_0
+  - first:
+      213: -6852633176611035034
+    second: TuThanNguyenTo_BoPhan_1
+  - first:
+      213: -758024979514447207
+    second: TuThanNguyenTo_BoPhan_2
+  - first:
+      213: 8705425703811163190
+    second: TuThanNguyenTo_BoPhan_3
+  - first:
+      213: 7283515857275356893
+    second: TuThanNguyenTo_BoPhan_4
+  - first:
+      213: 5372210033620751024
+    second: TuThanNguyenTo_BoPhan_5
+  - first:
+      213: 8589404513720711515
+    second: TuThanNguyenTo_BoPhan_6
+  - first:
+      213: -5070445258495349238
+    second: TuThanNguyenTo_BoPhan_7
+  - first:
+      213: -5663356338500285075
+    second: TuThanNguyenTo_BoPhan_8
+  - first:
+      213: -6665863165831058384
+    second: TuThanNguyenTo_BoPhan_9
+  - first:
+      213: -2263772717531575393
+    second: TuThanNguyenTo_BoPhan_10
+  - first:
+      213: 1838504654343062758
+    second: TuThanNguyenTo_BoPhan_11
+  - first:
+      213: 2395757875691916465
+    second: TuThanNguyenTo_BoPhan_12
+  - first:
+      213: 4303002447566421741
+    second: TuThanNguyenTo_BoPhan_13
+  - first:
+      213: -1318859754834984532
+    second: TuThanNguyenTo_BoPhan_14
+  - first:
+      213: 2380575351862799779
+    second: TuThanNguyenTo_BoPhan_15
+  - first:
+      213: 598669034905943224
+    second: TuThanNguyenTo_BoPhan_16
+  - first:
+      213: 5650316598713401402
+    second: TuThanNguyenTo_BoPhan_17
+  - first:
+      213: 7008559347906562856
+    second: TuThanNguyenTo_BoPhan_18
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1544
+        width: 1013
+        height: 498
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6206b0437f9aa1f90800000000000000
+      internalID: -6982081393089355738
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_1
+      rect:
+        serializedVersion: 2
+        x: 985
+        y: 1637
+        width: 397
+        height: 338
+      alignment: 9
+      pivot: {x: 0.20804194, y: 0.7510044}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 668ea04ce6e86e0a0800000000000000
+      internalID: -6852633176611035034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_2
+      rect:
+        serializedVersion: 2
+        x: 1376
+        y: 1557
+        width: 671
+        height: 452
+      alignment: 9
+      pivot: {x: 0.17232653, y: 0.15104094}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 99a2b2d1c44fa75f0800000000000000
+      internalID: -758024979514447207
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_3
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 1233
+        width: 414
+        height: 270
+      alignment: 9
+      pivot: {x: 0.07282996, y: 0.2875696}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6342836ed82efc870800000000000000
+      internalID: 8705425703811163190
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_4
+      rect:
+        serializedVersion: 2
+        x: 604
+        y: 1350
+        width: 179
+        height: 164
+      alignment: 9
+      pivot: {x: 0.44659594, y: 0.14298081}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd682dc151f341560800000000000000
+      internalID: 7283515857275356893
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_5
+      rect:
+        serializedVersion: 2
+        x: 872
+        y: 1369
+        width: 173
+        height: 158
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b211c8ff8ced8a40800000000000000
+      internalID: 5372210033620751024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_6
+      rect:
+        serializedVersion: 2
+        x: 1111
+        y: 1396
+        width: 271
+        height: 115
+      alignment: 9
+      pivot: {x: 0.1340278, y: 0.47921938}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b59b57885e1b33770800000000000000
+      internalID: 8589404513720711515
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_7
+      rect:
+        serializedVersion: 2
+        x: 1465
+        y: 1329
+        width: 233
+        height: 183
+      alignment: 9
+      pivot: {x: 0.17178227, y: 0.27799347}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a0e225ad6e822a9b0800000000000000
+      internalID: -5070445258495349238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_8
+      rect:
+        serializedVersion: 2
+        x: 1744
+        y: 1233
+        width: 205
+        height: 274
+      alignment: 9
+      pivot: {x: 0.23770186, y: 0.15984038}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d6dcb377a67b761b0800000000000000
+      internalID: -5663356338500285075
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_9
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 797
+        width: 139
+        height: 251
+      alignment: 9
+      pivot: {x: 0.42560494, y: 0.17487691}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03c674794c81e73a0800000000000000
+      internalID: -6665863165831058384
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_10
+      rect:
+        serializedVersion: 2
+        x: 356
+        y: 789
+        width: 183
+        height: 242
+      alignment: 9
+      pivot: {x: 0.7230288, y: 0.17399509}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9b4f4715b67590e0800000000000000
+      internalID: -2263772717531575393
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_11
+      rect:
+        serializedVersion: 2
+        x: 664
+        y: 677
+        width: 242
+        height: 302
+      alignment: 9
+      pivot: {x: 0.90624774, y: 0.0642009}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e445080e3ea38910800000000000000
+      internalID: 1838504654343062758
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_12
+      rect:
+        serializedVersion: 2
+        x: 1015
+        y: 708
+        width: 181
+        height: 275
+      alignment: 9
+      pivot: {x: 0.43867484, y: 0.0733081}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1bc067c38117f3120800000000000000
+      internalID: 2395757875691916465
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_13
+      rect:
+        serializedVersion: 2
+        x: 1344
+        y: 819
+        width: 451
+        height: 170
+      alignment: 9
+      pivot: {x: 0.9289418, y: 0.17353623}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dee35d28de557bb30800000000000000
+      internalID: 4303002447566421741
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_14
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 285
+        width: 320
+        height: 294
+      alignment: 9
+      pivot: {x: 0.26855794, y: 0.68619376}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca180846a0872bde0800000000000000
+      internalID: -1318859754834984532
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_15
+      rect:
+        serializedVersion: 2
+        x: 458
+        y: 363
+        width: 472
+        height: 179
+      alignment: 9
+      pivot: {x: 0.9457148, y: 0.82380444}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3ad25d07ba0890120800000000000000
+      internalID: 2380575351862799779
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_16
+      rect:
+        serializedVersion: 2
+        x: 1049
+        y: 124
+        width: 194
+        height: 435
+      alignment: 9
+      pivot: {x: 0.82089895, y: 0.92440647}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8bc389bb056ee4800800000000000000
+      internalID: 598669034905943224
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_17
+      rect:
+        serializedVersion: 2
+        x: 1376
+        y: 170
+        width: 194
+        height: 380
+      alignment: 9
+      pivot: {x: 0.17356637, y: 0.9095692}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a304ec68205f96e40800000000000000
+      internalID: 5650316598713401402
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TuThanNguyenTo_BoPhan_18
+      rect:
+        serializedVersion: 2
+        x: 1623
+        y: 353
+        width: 317
+        height: 242
+      alignment: 9
+      pivot: {x: 0.38886094, y: 0.6890042}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82bc63f0897634160800000000000000
+      internalID: 7008559347906562856
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 25c4fefd36630764c9aeb0c7ea6f1721
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      TuThanNguyenTo_BoPhan_0: -6982081393089355738
+      TuThanNguyenTo_BoPhan_1: -6852633176611035034
+      TuThanNguyenTo_BoPhan_10: -2263772717531575393
+      TuThanNguyenTo_BoPhan_11: 1838504654343062758
+      TuThanNguyenTo_BoPhan_12: 2395757875691916465
+      TuThanNguyenTo_BoPhan_13: 4303002447566421741
+      TuThanNguyenTo_BoPhan_14: -1318859754834984532
+      TuThanNguyenTo_BoPhan_15: 2380575351862799779
+      TuThanNguyenTo_BoPhan_16: 598669034905943224
+      TuThanNguyenTo_BoPhan_17: 5650316598713401402
+      TuThanNguyenTo_BoPhan_18: 7008559347906562856
+      TuThanNguyenTo_BoPhan_2: -758024979514447207
+      TuThanNguyenTo_BoPhan_3: 8705425703811163190
+      TuThanNguyenTo_BoPhan_4: 7283515857275356893
+      TuThanNguyenTo_BoPhan_5: 5372210033620751024
+      TuThanNguyenTo_BoPhan_6: 8589404513720711515
+      TuThanNguyenTo_BoPhan_7: -5070445258495349238
+      TuThanNguyenTo_BoPhan_8: -5663356338500285075
+      TuThanNguyenTo_BoPhan_9: -6665863165831058384
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
