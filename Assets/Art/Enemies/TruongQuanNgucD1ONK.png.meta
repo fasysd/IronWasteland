@@ -1,0 +1,364 @@
+fileFormatVersion: 2
+guid: e4ddd6d3f9f8a20428491479c42049cc
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -971168154930020941
+    second: TruongQuanNgucD1ONK _0
+  - first:
+      213: 2367899840175745149
+    second: TruongQuanNgucD1ONK _1
+  - first:
+      213: 2402069223549281550
+    second: TruongQuanNgucD1ONK _2
+  - first:
+      213: -941388654664109093
+    second: TruongQuanNgucD1ONK _3
+  - first:
+      213: -791662927369706882
+    second: TruongQuanNgucD1ONK _4
+  - first:
+      213: 6932388347442841839
+    second: TruongQuanNgucD1ONK _5
+  - first:
+      213: 2764202593636303827
+    second: TruongQuanNgucD1ONK _6
+  - first:
+      213: 8773689637290435272
+    second: TruongQuanNgucD1ONK _7
+  - first:
+      213: -7532354565405032535
+    second: TruongQuanNgucD1ONK _8
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: TruongQuanNgucD1ONK _0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 2049
+        height: 2048
+      alignment: 9
+      pivot: {x: 0.50150484, y: 0.58130085}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bd793465b7b582f0800000000000000
+      internalID: -971168154930020941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TruongQuanNgucD1ONK _1
+      rect:
+        serializedVersion: 2
+        x: 2170
+        y: 1815
+        width: 200
+        height: 127
+      alignment: 9
+      pivot: {x: 0.6893604, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d782165eb587cd020800000000000000
+      internalID: 2367899840175745149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TruongQuanNgucD1ONK _2
+      rect:
+        serializedVersion: 2
+        x: 2534
+        y: 1304
+        width: 305
+        height: 632
+      alignment: 9
+      pivot: {x: 0.71503025, y: 0.8561241}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e05ad8b6b3dd55120800000000000000
+      internalID: 2402069223549281550
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TruongQuanNgucD1ONK _3
+      rect:
+        serializedVersion: 2
+        x: 2164
+        y: 1577
+        width: 221
+        height: 127
+      alignment: 9
+      pivot: {x: 0.67078465, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd3b92b91048fe2f0800000000000000
+      internalID: -941388654664109093
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TruongQuanNgucD1ONK _4
+      rect:
+        serializedVersion: 2
+        x: 2162
+        y: 1364
+        width: 261
+        height: 141
+      alignment: 9
+      pivot: {x: 0.67389923, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e72684013c27305f0800000000000000
+      internalID: -791662927369706882
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TruongQuanNgucD1ONK _5
+      rect:
+        serializedVersion: 2
+        x: 2351
+        y: 473
+        width: 426
+        height: 650
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe8436ef87ac43060800000000000000
+      internalID: 6932388347442841839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TruongQuanNgucD1ONK _6
+      rect:
+        serializedVersion: 2
+        x: 2128
+        y: 83
+        width: 231
+        height: 245
+      alignment: 9
+      pivot: {x: 0.7678973, y: 0.17407943}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d3c7e01d9b6c5620800000000000000
+      internalID: 2764202593636303827
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TruongQuanNgucD1ONK _7
+      rect:
+        serializedVersion: 2
+        x: 2484
+        y: 43
+        width: 159
+        height: 217
+      alignment: 9
+      pivot: {x: 0.5062786, y: 0.24701732}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c2e8387d3862c970800000000000000
+      internalID: 8773689637290435272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TruongQuanNgucD1ONK _8
+      rect:
+        serializedVersion: 2
+        x: 2824
+        y: 74
+        width: 66
+        height: 146
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9afbdbe4e63b77790800000000000000
+      internalID: -7532354565405032535
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 0ca7b94749fe6904191c8605750931db
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      TruongQuanNgucD1ONK _0: -971168154930020941
+      TruongQuanNgucD1ONK _1: 2367899840175745149
+      TruongQuanNgucD1ONK _2: 2402069223549281550
+      TruongQuanNgucD1ONK _3: -941388654664109093
+      TruongQuanNgucD1ONK _4: -791662927369706882
+      TruongQuanNgucD1ONK _5: 6932388347442841839
+      TruongQuanNgucD1ONK _6: 2764202593636303827
+      TruongQuanNgucD1ONK _7: 8773689637290435272
+      TruongQuanNgucD1ONK _8: -7532354565405032535
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
