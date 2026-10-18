@@ -70,7 +70,7 @@ namespace IronWasteland.Enemies
         private void Awake()
         {
             // Tu noi neu designer khong keo tay (giong OnValidate cua TankView).
-            if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             if (bodyCollider == null) bodyCollider = GetComponent<BoxCollider2D>();
             if (ownerRef == null) ownerRef = GetComponent<ColliderOwnerRef>();
 
@@ -100,7 +100,7 @@ namespace IronWasteland.Enemies
 
         private void OnValidate()
         {
-            if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             if (bodyCollider == null) bodyCollider = GetComponent<BoxCollider2D>();
             if (ownerRef == null) ownerRef = GetComponent<ColliderOwnerRef>();
         }
