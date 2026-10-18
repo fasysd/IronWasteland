@@ -339,7 +339,7 @@ namespace IronWasteland.Tanks
 
         #region Gameplay
 
-        private void Update()
+        protected virtual void Update()
         {
             TickCooldowns(Time.deltaTime);
         }
@@ -424,6 +424,12 @@ namespace IronWasteland.Tanks
         protected float GetCooldown(int index)
         {
             return GetCooldownWithReduction(GetBaseCooldown(index));
+        }
+
+        protected void ReduceSkillCooldown(int index,float amount)
+        {
+            if (index < 0 || index >= SkillCount) return;
+            skillCooldowns[index] = Mathf.Max(0f, skillCooldowns[index] - amount);
         }
 
         #endregion

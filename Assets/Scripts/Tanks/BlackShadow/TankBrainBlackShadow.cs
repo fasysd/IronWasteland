@@ -18,7 +18,7 @@ public class TankBrainBlackShadow : TankBrain
 
     [Header("Normal Skill - Combat")]
     [Tooltip("Sát thương gây ra khi trúng mục tiêu.")]
-    [SerializeField, Min(0f)] private float normalSkillDmg = 1f;
+    [SerializeField, Min(0f)] private float normalSkillDmg = 50f;
 
     [Tooltip("Thời gian hồi chiêu của Normal Skill (giây).")]
     [SerializeField, Min(0.01f)] private float normalSkillCooldown = 0.5f;
@@ -36,13 +36,25 @@ public class TankBrainBlackShadow : TankBrain
     [SerializeField, Min(0f)] private float specializedSkillDmg = 50f;
 
     [Tooltip("Thời gian hồi chiêu của Specialized Skill (giây).")]
-    [SerializeField, Min(0.01f)] private float specializedSkillCooldown = 5f;
+    [SerializeField, Min(0.01f)] private float specializedSkillCooldown = 10f;
 
     [Tooltip("Khoảng trễ tối thiểu giữa lần đặt ảo ảnh và lần bấm đổi chỗ (giây).")]
     [SerializeField, Min(0.05f)] private float recastDelay = 0.2f;
 
+    [SerializeField, Min(0f)] private float optionalSkill1Cooldown = 5f;
+    [SerializeField, Min(0f)] private float cooldownReductionKillingInEnhanced = 10f;    
+    
+
+    
+
     private const int normalSkillIndex = 0;
     private const int specializedSkillIndex = 1;
+
+    private const int optionalSkill1Index = 2;
+
+    private bool isEnhanced = false;
+
+    private float enhancedTime = 0f;
 
     // Pool NormalSkill
     private readonly Stack<NormalSkill> skillPool = new Stack<NormalSkill>();
@@ -73,6 +85,8 @@ public class TankBrainBlackShadow : TankBrain
             // Nếu chưa có ảo ảnh -> lần bấm này là đặt ảo ảnh -> cho phép bấm lần 2 sau recastDelay
             return recastDelay;
         }
+        if (index == optionalSkill1Index)
+            return optionalSkill1Cooldown;
 
         return base.GetBaseCooldown(index);
     }
@@ -81,7 +95,7 @@ public class TankBrainBlackShadow : TankBrain
     {
         if (index == normalSkillIndex)
         {
-            FireNormalSkill();
+            FireNormalSkill(isEnhanced);
             return;
         }
 
@@ -90,8 +104,17 @@ public class TankBrainBlackShadow : TankBrain
             UseSpecializedSkill();
             return;
         }
-
+        if (index == optionalSkill1Index)
+        {
+            UseEnhancedSkill(10f);
+            return;
+        }
         base.OnUseSkill(index);
+    }
+    private void UseEnhancedSkill(float enhancedTime)
+    {
+        isEnhanced = true;
+        this.enhancedTime = enhancedTime;
     }
 
     #region Normal Skill Logic
@@ -153,7 +176,7 @@ public class TankBrainBlackShadow : TankBrain
             skillPool.Push(skillInstance);
     }
 
-    private void FireNormalSkill()
+    private void FireNormalSkill(bool isEnhanced = false)
     {
         if (normalSkill == null)
         {
@@ -188,7 +211,7 @@ public class TankBrainBlackShadow : TankBrain
         skillInstance.transform.SetParent(null);
         skillInstance.transform.SetPositionAndRotation(muzzle.position, rotation);
 
-        skillInstance.Initialize(direction, ReturnNormalSkillToPool);
+        skillInstance.Initialize(direction, ReturnNormalSkillToPool,isEnhanced);
         skillInstance.TargetFound += OnNormalSkillTargetFound;
 
         skillInstance.gameObject.SetActive(true);
@@ -200,6 +223,11 @@ public class TankBrainBlackShadow : TankBrain
             return;
 
         enemy.TakeDamage(normalSkillDmg);
+
+        if (!enemy.IsAlive && isEnhanced)
+        {
+            ReduceSkillCooldown(specializedSkillIndex, cooldownReductionKillingInEnhanced);
+        }
         TextDamageManager.Instance?.Show(normalSkillDmg, skillInstance.transform.position);
     }
     #endregion
@@ -279,6 +307,7 @@ public class TankBrainBlackShadow : TankBrain
         // GIAI ĐOẠN 2: Ảo ảnh đang ở State 0 (chờ đổi chỗ) -> Đổi vị trí và kích nổ
         if (activeSpecializedSkill != null && activeSpecializedSkill.SkillState == 0)
         {
+            Vector2 oldPosition = transform.position;
             Vector2 targetPosition = activeSpecializedSkill.CopyPosition;
 
             // Đổi vị trí xe tăng tới vị trí ảo ảnh
@@ -288,6 +317,16 @@ public class TankBrainBlackShadow : TankBrain
             SpecializedSkill explodingSkill = activeSpecializedSkill;
             activeSpecializedSkill = null;
             explodingSkill.Explode();
+
+            SpecializedSkill tankSmoke = GetSpecializedSkillFromPool();
+            if(tankSmoke != null)
+            {
+                tankSmoke.transform.SetParent(null);
+                tankSmoke.transform.position =oldPosition;
+                tankSmoke.Initialize(oldPosition, ReturnSpecializedSkillToPool);
+                tankSmoke.gameObject.SetActive(true);
+                tankSmoke.Explode();
+            }
             return;
         }
 
@@ -337,5 +376,18 @@ public class TankBrainBlackShadow : TankBrain
         }
         allSpecializedSkills.Clear();
         specializedSkillPool.Clear();
+    }
+    protected override void Update()
+    {
+        base.Update();
+        if (isEnhanced)
+        {
+            enhancedTime -= Time.deltaTime;
+            if (enhancedTime <= 0)
+            {
+                enhancedTime = 0;
+                isEnhanced = false;
+            }
+        }
     }
 }

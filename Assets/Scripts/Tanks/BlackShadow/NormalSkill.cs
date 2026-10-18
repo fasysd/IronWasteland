@@ -17,6 +17,11 @@ public class NormalSkill : MonoBehaviour
 
     [SerializeField, Min(0f)] private float lifeTime = 10f;
 
+    [SerializeField] private Sprite defaultSprite;
+    [SerializeField] private Sprite enhancedSprite;
+
+
+    [SerializeField] private float enhancedLifeTime = 15f;
     private Rigidbody2D body;
 
     private ColliderOwnerRef colliderOwnerRef;
@@ -27,14 +32,22 @@ public class NormalSkill : MonoBehaviour
 
     private bool initialized;
 
+    private SpriteRenderer spriteRenderer;
 
     private Coroutine hitCheckCoroutine;
     private Action<NormalSkill> returnToPool;
+
+    private readonly HashSet<EnemyBrain> damagedEnemies = new HashSet<EnemyBrain>();
 
     private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
         colliderOwnerRef = GetComponent<ColliderOwnerRef>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        }
     }
     private void OnEnable()
     {
@@ -50,44 +63,58 @@ public class NormalSkill : MonoBehaviour
         if (!this || !gameObject.activeInHierarchy || !initialized)
             yield break;
         var enemies = new HashSet<EnemyBrain>();
-        foreach(Collider2D collider in colliderOwnerRef.GetTriggerColliders())
+        foreach (Collider2D collider in colliderOwnerRef.GetTriggerColliders())
         {
-            if(collider == null) continue;
+            if (collider == null) continue;
             ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collider);
-            if(targetRef == null) continue;
+            if (targetRef == null) continue;
             EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
-            if(enemy != null) enemies.Add(enemy);
+            if (enemy != null) enemies.Add(enemy);
         }
-        if(enemies.Count == 0)
+        if (enemies.Count == 0)
         {
             yield break;
         }
 
         foreach (EnemyBrain enemy in enemies)
         {
-            if (enemy != null)
+            // Chỉ gây sát thương nếu kẻ địch chưa từng trúng đạn của lần bắn này
+            if (enemy != null && damagedEnemies.Add(enemy))
+            {
                 TargetFound?.Invoke(this, enemy);
+            }
         }
     }
     private void ColliderOwnerRef_TriggerEnter(Collider2D obj)
     {
-        if (!initialized)
+        if (!initialized || obj == null)
+            return;
+
+        // Lọc bỏ xe tank của mình hoặc các vật thể không phải Enemy
+        ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(obj);
+        if (targetRef == null) return;
+
+        EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
+        if (enemy == null) return;
+
+        // Bỏ qua nếu kẻ địch này đã bị viên đạn này gây sát thương rồi
+        if (damagedEnemies.Contains(enemy))
             return;
 
         hitCheckCoroutine = StartCoroutine(CheckTargetsAfterDelay());
     }
     public void Clear()
     {
-        if(hitCheckCoroutine != null)
+        if (hitCheckCoroutine != null)
         {
             StopCoroutine(hitCheckCoroutine);
             hitCheckCoroutine = null;
         }
-        if(colliderOwnerRef != null)
+        if (colliderOwnerRef != null)
         {
             colliderOwnerRef.TriggerEnter -= ColliderOwnerRef_TriggerEnter;
         }
-        if(body != null)
+        if (body != null)
         {
             body.linearVelocity = Vector2.zero;
         }
@@ -96,6 +123,7 @@ public class NormalSkill : MonoBehaviour
         initialized = false;
         returnToPool = null;
         TargetFound = null;
+        damagedEnemies.Clear();
     }
     private void OnDisable()
     {
@@ -112,10 +140,11 @@ public class NormalSkill : MonoBehaviour
         else if (gameObject.activeSelf)
             gameObject.SetActive(false);
     }
-    public void Initialize(Vector2 direction, Action<NormalSkill> returnToPool)
+    public void Initialize(Vector2 direction, Action<NormalSkill> returnToPool, bool isEnhanced = false)
     {
         Clear();
-
+        spriteRenderer.sprite = isEnhanced && enhancedSprite != null ? enhancedSprite : defaultSprite;
+        this.lifeTime = isEnhanced ? enhancedLifeTime : lifeTime;
         this.direction = direction.normalized;
         this.returnToPool = returnToPool;
         this.initialized = direction.sqrMagnitude > 0.001f;
@@ -130,6 +159,7 @@ public class NormalSkill : MonoBehaviour
         {
             body.linearVelocity = direction * speed;
         }
+        
         if(colliderOwnerRef != null && isActiveAndEnabled)
         {
             colliderOwnerRef.TriggerEnter += ColliderOwnerRef_TriggerEnter;
