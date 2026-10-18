@@ -702,7 +702,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c8844ea6213030498913f116120d1cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.EnemyModel
-  spriteRenderer: {fileID: 0}
+  spriteRenderer: {fileID: 5173279526781090577}
   bodyCollider: {fileID: 0}
   ownerRef: {fileID: 2866841465632675977}
   owner: {fileID: 0}
