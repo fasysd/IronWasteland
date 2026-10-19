@@ -179,24 +179,41 @@ namespace IronWasteland.Enemies.Normal
 
         protected virtual void HandleTargetTracking(Vector2 currentPos, Vector2 targetPos)
         {
+            if (movementAgent == null) movementAgent = GetComponent<EnemyMovementAgent>();
             awayFromHomeTimer = 0f;
             float distToTarget = Vector2.Distance(currentPos, targetPos);
 
-            // TH1: Mục tiêu đã nằm trong bán kính A
+            // 1. Khi mục tiêu đã ở trong phạm vi A: dừng lại và chuyển sang trạng thái đứng yên trong B
             if (distToTarget <= radiusA)
             {
                 currentState = NormalEnemyState.StandStillInB;
-                movementAgent.Stop();
+                movementAgent?.Stop();
                 return;
             }
 
-            // TH2: Mục tiêu nằm ngoài bán kính B -> Tìm đường đưa mục tiêu vào trong bán kính A
+            // 2. Nếu đối tượng ĐÃ DỪNG và đang ở trạng thái StandStillInB:
+            // "Kể cả mục tiêu ra khỏi A nhưng vẫn nằm trong B thì vẫn không đi tìm đường. Chỉ khi nào mục tiêu ra khỏi B thì mới đi tìm đường."
+            if (currentState == NormalEnemyState.StandStillInB)
+            {
+                if (distToTarget <= radiusB)
+                {
+                    // Mục tiêu vẫn nằm trong phạm vi B: TIẾP TỤC ĐỨNG YÊN, KHÔNG ĐI TÌM ĐƯỜNG
+                    movementAgent?.Stop();
+                    return;
+                }
+
+                // Mục tiêu đã di chuyển vượt ra khỏi phạm vi B (distToTarget > radiusB):
+                // Thoát khỏi trạng thái đứng yên, bắt đầu tìm lại đường để đưa mục tiêu vào lại A!
+            }
+
+            // 3. Khi mục tiêu nằm ngoài bán kính B (distToTarget > radiusB):
+            // Bắt buộc tìm đường để đưa mục tiêu vào lại trong bán kính A
             if (distToTarget > radiusB)
             {
                 if (repathTimer <= 0f)
                 {
                     repathTimer = repathInterval;
-                    var path = pathfinder.FindPathToRadiusA(
+                    var path = pathfinder != null ? pathfinder.FindPathToRadiusA(
                         currentPos,
                         targetPos,
                         radiusA,
@@ -204,29 +221,30 @@ namespace IronWasteland.Enemies.Normal
                         radiusC,
                         Model != null ? Model.BodyCollider : null,
                         agentRadius: agentPathRadius
-                    );
+                    ) : null;
 
                     if (path != null)
                     {
                         currentState = NormalEnemyState.Chasing;
-                        movementAgent.SetPath(path);
+                        movementAgent?.SetPath(path);
                     }
                     else
                     {
-                        // Không tìm thấy đường đi hoàn toàn trong C -> Mất dấu mục tiêu
+                        // Không tìm thấy đường đi hoàn toàn trong C -> Coi như mất dấu mục tiêu
                         currentTarget = null;
-                        movementAgent.Stop();
+                        movementAgent?.Stop();
                     }
                 }
                 return;
             }
 
-            // TH3: Mục tiêu nằm trong khoảng (A, B]
-            // "Khi mục tiêu nằm trong phạm vi B nhưng không tìm thấy đường đi để mục tiêu nằm trong phạm vi A thì có thể dừng tìm đường và đứng yên."
+            // 4. Trường hợp mục tiêu nằm trong khoảng (A, B]:
+            // Chỉ xảy ra khi đối tượng đang trong quá trình đuổi theo (Chasing) để vào A (chưa dừng lại thành StandStillInB),
+            // hoặc khi đối tượng mới phát hiện mục tiêu ban đầu từ trạng thái chưa dừng (vd: từ Idle/Return).
             if (repathTimer <= 0f)
             {
                 repathTimer = repathInterval;
-                var path = pathfinder.FindPathToRadiusA(
+                var path = pathfinder != null ? pathfinder.FindPathToRadiusA(
                     currentPos,
                     targetPos,
                     radiusA,
@@ -234,18 +252,18 @@ namespace IronWasteland.Enemies.Normal
                     radiusC,
                     Model != null ? Model.BodyCollider : null,
                     agentRadius: agentPathRadius
-                );
+                ) : null;
 
                 if (path != null)
                 {
                     currentState = NormalEnemyState.Chasing;
-                    movementAgent.SetPath(path);
+                    movementAgent?.SetPath(path);
                 }
                 else
                 {
-                    // Dừng tìm đường và đứng yên
+                    // "Khi mục tiêu nằm trong phạm vi B nhưng không tìm thấy đường đi để mục tiêu nằm trong phạm vi A thì có thể dừng tìm đường và đứng yên."
                     currentState = NormalEnemyState.StandStillInB;
-                    movementAgent.Stop();
+                    movementAgent?.Stop();
                 }
             }
         }
