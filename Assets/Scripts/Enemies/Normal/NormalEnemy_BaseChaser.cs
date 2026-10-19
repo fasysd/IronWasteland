@@ -77,7 +77,6 @@ namespace IronWasteland.Enemies.Normal
         [SerializeField, ReadOnly] protected Transform currentTarget;
 
         protected EnemyMovementAgent movementAgent;
-        protected EnemyPathfinder2D pathfinder;
         protected float repathTimer;
 
         public Vector2 AnchorPointD { get => anchorPointD; set => anchorPointD = value; }
@@ -115,11 +114,6 @@ namespace IronWasteland.Enemies.Normal
                     movementAgent.SetSpeed(Stats.MoveSpeed);
                 }
             }
-
-            if (pathfinder == null)
-            {
-                pathfinder = new EnemyPathfinder2D(pathNodeSize, terrainLayer, enemyLayer, enemyAvoidancePenalty);
-            }
         }
 
         protected override void Awake()
@@ -137,8 +131,6 @@ namespace IronWasteland.Enemies.Normal
 
             if (movementAgent == null) movementAgent = GetComponent<EnemyMovementAgent>();
             if (movementAgent == null) movementAgent = gameObject.AddComponent<EnemyMovementAgent>();
-
-            pathfinder = new EnemyPathfinder2D(pathNodeSize, terrainLayer, enemyLayer, enemyAvoidancePenalty);
 
             base.Awake();
         }
@@ -213,14 +205,14 @@ namespace IronWasteland.Enemies.Normal
                 if (repathTimer <= 0f)
                 {
                     repathTimer = repathInterval;
-                    var path = pathfinder != null ? pathfinder.FindPathToRadiusA(
+                    var path = PathfindingGrid2D.Instance != null ? PathfindingGrid2D.Instance.FindPathToRadiusA(
                         currentPos,
                         targetPos,
                         radiusA,
                         anchorPointD,
                         radiusC,
-                        Model != null ? Model.BodyCollider : null,
-                        agentRadius: agentPathRadius
+                        agentRadius: agentPathRadius,
+                        penaltyMultiplier: enemyAvoidancePenalty
                     ) : null;
 
                     if (path != null)
@@ -244,14 +236,14 @@ namespace IronWasteland.Enemies.Normal
             if (repathTimer <= 0f)
             {
                 repathTimer = repathInterval;
-                var path = pathfinder != null ? pathfinder.FindPathToRadiusA(
+                var path = PathfindingGrid2D.Instance != null ? PathfindingGrid2D.Instance.FindPathToRadiusA(
                     currentPos,
                     targetPos,
                     radiusA,
                     anchorPointD,
                     radiusC,
-                    Model != null ? Model.BodyCollider : null,
-                    agentRadius: agentPathRadius
+                    agentRadius: agentPathRadius,
+                    penaltyMultiplier: enemyAvoidancePenalty
                 ) : null;
 
                 if (path != null)
@@ -298,15 +290,15 @@ namespace IronWasteland.Enemies.Normal
                 if (!movementAgent.IsMoving || repathTimer <= 0f)
                 {
                     repathTimer = repathInterval;
-                    var path = pathfinder.FindPathToPoint(
+                    var path = PathfindingGrid2D.Instance != null ? PathfindingGrid2D.Instance.FindPathToPoint(
                         currentPos,
                         anchorPointD,
                         anchorPointD,
                         radiusC,
-                        Model != null ? Model.BodyCollider : null,
                         stopDistance: homeStopDistance,
-                        agentRadius: agentPathRadius
-                    );
+                        agentRadius: agentPathRadius,
+                        penaltyMultiplier: enemyAvoidancePenalty
+                    ) : null;
 
                     if (path != null && path.Count > 0)
                     {

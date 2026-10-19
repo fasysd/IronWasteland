@@ -50,8 +50,7 @@ namespace IronWasteland.Enemies.Navigation
         private readonly List<Vector2> m_Path = new List<Vector2>();
         private int m_CurrentWaypointIndex;
         private bool m_IsMoving;
-
-        private static readonly Collider2D[] s_OverlapResults = new Collider2D[16];
+        private Vector2Int m_CurrentGridCoord = new Vector2Int(-1, -1);
 
         public bool IsMoving => m_IsMoving;
         public IReadOnlyList<Vector2> CurrentPath => m_Path;
@@ -142,6 +141,7 @@ namespace IronWasteland.Enemies.Navigation
                 body.position = destination;
                 body.linearVelocity = Vector2.zero;
             }
+            PathfindingGrid2D.Instance?.UpdateEnemyPosition(ref m_CurrentGridCoord, destination);
         }
 
         private void Awake()
@@ -155,8 +155,22 @@ namespace IronWasteland.Enemies.Navigation
             }
         }
 
+        private void OnEnable()
+        {
+            Vector2 currentPos = body != null ? body.position : (Vector2)transform.position;
+            m_CurrentGridCoord = PathfindingGrid2D.Instance?.RegisterEnemy(currentPos) ?? new Vector2Int(-1, -1);
+        }
+
+        private void OnDisable()
+        {
+            PathfindingGrid2D.Instance?.UnregisterEnemy(m_CurrentGridCoord);
+            m_CurrentGridCoord = new Vector2Int(-1, -1);
+        }
+
         private void FixedUpdate()
         {
+            Vector2 currentPos = body != null ? body.position : (Vector2)transform.position;
+
             // Di chuyển theo đường đi nếu đang có waypoint
             if (!m_IsMoving || m_Path.Count == 0)
             {
@@ -167,7 +181,9 @@ namespace IronWasteland.Enemies.Navigation
                 return;
             }
 
-            Vector2 currentPos = body != null ? body.position : (Vector2)transform.position;
+            // Cập nhật vị trí ô lưới cho EnemyPresence chỉ khi di chuyển
+            PathfindingGrid2D.Instance?.UpdateEnemyPosition(ref m_CurrentGridCoord, currentPos);
+
             Vector2 targetWaypoint = m_Path[m_CurrentWaypointIndex];
 
             float distToWaypoint = Vector2.Distance(currentPos, targetWaypoint);
