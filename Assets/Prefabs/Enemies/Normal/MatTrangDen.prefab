@@ -122,7 +122,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 0.26455554, y: 0.26455554, z: 0.5291111}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1891194592083533965}
@@ -156,6 +156,7 @@ MonoBehaviour:
   spriteRenderer: {fileID: 3435131862498235420}
   bodyCollider: {fileID: 0}
   ownerRef: {fileID: 3869885683464400315}
+  animator: {fileID: 5868982947504181573}
   owner: {fileID: 0}
 --- !u!95 &5868982947504181573
 Animator:
@@ -226,6 +227,7 @@ GameObject:
   - component: {fileID: 5754795644133279903}
   - component: {fileID: 8420907976510360087}
   - component: {fileID: 8430088118289894666}
+  - component: {fileID: 1667638887353187510}
   m_Layer: 7
   m_Name: MatTrangDen
   m_TagString: Untagged
@@ -258,9 +260,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 8529011875415925671}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adbbdee375a54c24b8cf70eb6bebcce1, type: 3}
+  m_Script: {fileID: 11500000, guid: cc3d76225ec901b448d2299c724f7995, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.NormalEnemyBrain_Test
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.Normal.NormalEnemy_MatTrangDen
   model: {fileID: 3544012859745960153}
   displayName: MatTrangDen
   stats:
@@ -269,6 +271,26 @@ MonoBehaviour:
     MaxHealth: 50
     MoveSpeed: 2
   currentHealth: 0
+  anchorPointD: {x: 0, y: 0}
+  radiusC: 10
+  radiusA: 2
+  radiusB: 5
+  returnHomeDelayX: 3
+  teleportHomeDelayY: 8
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  tankLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  pathNodeSize: 0.5
+  repathInterval: 0.25
+  currentState: 0
+  awayFromHomeTimer: 0
+  currentTarget: {fileID: 0}
 --- !u!50 &8430088118289894666
 Rigidbody2D:
   serializedVersion: 5
@@ -296,3 +318,23 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &1667638887353187510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8529011875415925671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a9f038beb5e9994ebf514a8ef36e5dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.Navigation.EnemyMovementAgent
+  body: {fileID: 0}
+  model: {fileID: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  separationRadius: 1.2
+  separationForce: 2.5
+  waypointTolerance: 0.25

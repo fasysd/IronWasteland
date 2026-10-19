@@ -1,20 +1,14 @@
+using IronWasteland.Enemies.Normal;
+using UnityEngine;
+
 namespace IronWasteland.Enemies
 {
     /// <summary>
-    /// Ke dich THUONG cu the (doi tuong thuc te) ke thua <see cref="NormalEnemyBrain"/>.
-    /// Logic chua trien khai - de trong / khong lam gi.
+    /// Giữ lại để tương thích ngược tạm thời nếu còn tham chiếu cũ.
+    /// Khuyến khích dùng các class cụ thể trong namespace IronWasteland.Enemies.Normal.
     /// </summary>
-    [UnityEngine.DisallowMultipleComponent]
-    public class NormalEnemyBrain_Test : NormalEnemyBrain
+    [DisallowMultipleComponent]
+    public class NormalEnemyBrain_Test : NormalEnemy_BaseChaser
     {
-        protected override void OnBrainTick(float deltaTime)
-        {
-            // TODO: di chuyen + hanh vi AI cua ke dich thuong.
-        }
-
-        protected override void OnDeath()
-        {
-            Destroy(this.gameObject);
-        }
     }
 }

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &642387880194417101
+--- !u!1 &1219376077449480298
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,8 +8,133 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5325868753472489375}
-  - component: {fileID: 4207896292346307242}
+  - component: {fileID: 540193887096300002}
+  - component: {fileID: 2227866231023619111}
+  - component: {fileID: 8465340967268825342}
+  - component: {fileID: 389006214821772607}
+  m_Layer: 7
+  m_Name: QuaiVatDamLay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &540193887096300002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219376077449480298}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5404211283555485038}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2227866231023619111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219376077449480298}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efdd52d32ae6378448fcca0823ab6fa6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.Normal.NormalEnemy_QuaiVatDamLay
+  model: {fileID: 4402753513937810429}
+  displayName: QuaiVatDamLay
+  stats:
+    Attack: 10
+    Defense: 0
+    MaxHealth: 50
+    MoveSpeed: 2
+  currentHealth: 0
+  anchorPointD: {x: 0, y: 0}
+  radiusC: 10
+  radiusA: 2
+  radiusB: 5
+  returnHomeDelayX: 3
+  teleportHomeDelayY: 8
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  tankLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  pathNodeSize: 0.5
+  repathInterval: 0.25
+  currentState: 0
+  awayFromHomeTimer: 0
+  currentTarget: {fileID: 0}
+--- !u!50 &8465340967268825342
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219376077449480298}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
+--- !u!114 &389006214821772607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219376077449480298}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a9f038beb5e9994ebf514a8ef36e5dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.Navigation.EnemyMovementAgent
+  body: {fileID: 0}
+  model: {fileID: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  separationRadius: 1.2
+  separationForce: 2.5
+  waypointTolerance: 0.25
+  rotateTowardsMovement: 1
+  rotationOffset: 90
+  rotationSpeed: 720
+--- !u!1 &1817341048438420623
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9078022699113975068}
+  - component: {fileID: 8722856129757544653}
   m_Layer: 7
   m_Name: Visual
   m_TagString: Untagged
@@ -17,29 +142,29 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5325868753472489375
+--- !u!4 &9078022699113975068
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 642387880194417101}
+  m_GameObject: {fileID: 1817341048438420623}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2857653197355284655}
+  m_Father: {fileID: 5404211283555485038}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &4207896292346307242
+--- !u!212 &8722856129757544653
 SpriteRenderer:
   serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 642387880194417101}
+  m_GameObject: {fileID: 1817341048438420623}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -81,18 +206,18 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2220622173937254362, guid: 4300a6641e768604ba4371611251706a, type: 3}
+  m_Sprite: {fileID: -8661367288198617412, guid: f8f92b35558f6ff4bbfba6e36bb04336, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 9.97, y: 10.24}
+  m_Size: {x: 7.68, y: 10.24}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
---- !u!1 &2217499507354383179
+--- !u!1 &7023693323807318689
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -100,92 +225,11 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4618339747244472164}
-  - component: {fileID: 6438814824446025724}
-  - component: {fileID: 894335969520627437}
-  m_Layer: 7
-  m_Name: QuaiVatTinhThach
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4618339747244472164
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2217499507354383179}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 2857653197355284655}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6438814824446025724
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2217499507354383179}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adbbdee375a54c24b8cf70eb6bebcce1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.NormalEnemyBrain_Test
-  model: {fileID: 6714497270518856939}
-  displayName: QuaiVatTinhThach
-  stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
-  currentHealth: 0
---- !u!50 &894335969520627437
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2217499507354383179}
-  m_BodyType: 1
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
---- !u!1 &7955076876102880842
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2857653197355284655}
-  - component: {fileID: 1820650712222410321}
-  - component: {fileID: 6249605979970788990}
-  - component: {fileID: 6714497270518856939}
-  - component: {fileID: 4671021720156592331}
+  - component: {fileID: 5404211283555485038}
+  - component: {fileID: 4572406649973885626}
+  - component: {fileID: 7707478734201016279}
+  - component: {fileID: 4402753513937810429}
+  - component: {fileID: 2795070656077034890}
   m_Layer: 7
   m_Name: EnemyModel
   m_TagString: Untagged
@@ -193,29 +237,29 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2857653197355284655
+--- !u!4 &5404211283555485038
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7955076876102880842}
+  m_GameObject: {fileID: 7023693323807318689}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 0.27159846, y: 0.27159846, z: 0.5431969}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5325868753472489375}
-  m_Father: {fileID: 4618339747244472164}
+  - {fileID: 9078022699113975068}
+  m_Father: {fileID: 540193887096300002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &1820650712222410321
+--- !u!61 &4572406649973885626
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7955076876102880842}
+  m_GameObject: {fileID: 7023693323807318689}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -243,7 +287,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.13214469, y: -0.60786533}
+  m_Offset: {x: -0.15597677, y: 0.6977897}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -253,48 +297,49 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2.0042987, y: 6.338643}
+  m_Size: {x: 5.3509245, y: 4.13595}
   m_EdgeRadius: 0
---- !u!114 &6249605979970788990
+--- !u!114 &7707478734201016279
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7955076876102880842}
+  m_GameObject: {fileID: 7023693323807318689}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
   owner: {fileID: 0}
---- !u!114 &6714497270518856939
+--- !u!114 &4402753513937810429
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7955076876102880842}
+  m_GameObject: {fileID: 7023693323807318689}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8c8844ea6213030498913f116120d1cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.EnemyModel
-  spriteRenderer: {fileID: 4207896292346307242}
-  bodyCollider: {fileID: 1820650712222410321}
-  ownerRef: {fileID: 6249605979970788990}
+  spriteRenderer: {fileID: 8722856129757544653}
+  bodyCollider: {fileID: 4572406649973885626}
+  ownerRef: {fileID: 7707478734201016279}
+  animator: {fileID: 2795070656077034890}
   owner: {fileID: 0}
---- !u!95 &4671021720156592331
+--- !u!95 &2795070656077034890
 Animator:
   serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7955076876102880842}
+  m_GameObject: {fileID: 7023693323807318689}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 0e2619e158e65cb45960576783cb403e, type: 2}
+  m_Controller: {fileID: 9100000, guid: 9f48f7bc755bffe46a671192fed7f52d, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

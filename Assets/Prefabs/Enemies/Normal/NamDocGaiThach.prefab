@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.3, y: 0.3, z: 1}
+  m_LocalScale: {x: 0.16286138, y: 0.16286138, z: 0.54287124}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4620199530796286854}
@@ -64,6 +64,7 @@ MonoBehaviour:
   spriteRenderer: {fileID: 2008238069079285519}
   bodyCollider: {fileID: 0}
   ownerRef: {fileID: 7785372217385021382}
+  animator: {fileID: 3118171527163158794}
   owner: {fileID: 0}
 --- !u!95 &3118171527163158794
 Animator:
@@ -258,9 +259,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 5180357702814489762}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adbbdee375a54c24b8cf70eb6bebcce1, type: 3}
+  m_Script: {fileID: 11500000, guid: fbe1aa6bb83dbc848a5699e0287a8930, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.NormalEnemyBrain_Test
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.Normal.NormalEnemy_NamDocGaiThach
   model: {fileID: 8227576074421998604}
   displayName: NamDocGaiThach
   stats:
@@ -269,6 +270,13 @@ MonoBehaviour:
     MaxHealth: 50
     MoveSpeed: 2
   currentHealth: 0
+  anchorPointD: {x: 0, y: 0}
+  autoSetAnchorDFromSpawnPosition: 0
+  radiusC: 10
+  tankLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  currentTarget: {fileID: 0}
 --- !u!50 &1834200046295134080
 Rigidbody2D:
   serializedVersion: 5

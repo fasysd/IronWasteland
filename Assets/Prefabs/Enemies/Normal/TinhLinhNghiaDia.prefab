@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &2191416951487824985
+--- !u!1 &394228019473800208
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,92 +8,11 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 9070992259549291770}
-  - component: {fileID: 805287383237241067}
-  - component: {fileID: 3162892946091150546}
-  m_Layer: 7
-  m_Name: XenNuoc
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &9070992259549291770
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2191416951487824985}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 9031973815269632945}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &805287383237241067
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2191416951487824985}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adbbdee375a54c24b8cf70eb6bebcce1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.NormalEnemyBrain_Test
-  model: {fileID: 2874064844783536822}
-  displayName: XenNuoc
-  stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
-  currentHealth: 0
---- !u!50 &3162892946091150546
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2191416951487824985}
-  m_BodyType: 1
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
---- !u!1 &2215390785097099234
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 9031973815269632945}
-  - component: {fileID: 7953235665014895850}
-  - component: {fileID: 2874064844783536822}
-  - component: {fileID: 2594644945956437722}
-  - component: {fileID: 3298321038304344065}
+  - component: {fileID: 3505766678081247133}
+  - component: {fileID: 361118278996844523}
+  - component: {fileID: 2061590832746270502}
+  - component: {fileID: 1766043229153121417}
+  - component: {fileID: 1837742585957611004}
   m_Layer: 7
   m_Name: EnemyModel
   m_TagString: Untagged
@@ -101,62 +20,63 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &9031973815269632945
+--- !u!4 &3505766678081247133
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2215390785097099234}
+  m_GameObject: {fileID: 394228019473800208}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.3, y: 0.3, z: 1}
+  m_LocalScale: {x: 0.18347913, y: 0.18347913, z: 0.4586978}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8594261865258470333}
-  m_Father: {fileID: 9070992259549291770}
+  - {fileID: 7310950362386212133}
+  m_Father: {fileID: 2617280500391877213}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7953235665014895850
+--- !u!114 &361118278996844523
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2215390785097099234}
+  m_GameObject: {fileID: 394228019473800208}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
   owner: {fileID: 0}
---- !u!114 &2874064844783536822
+--- !u!114 &2061590832746270502
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2215390785097099234}
+  m_GameObject: {fileID: 394228019473800208}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8c8844ea6213030498913f116120d1cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.EnemyModel
-  spriteRenderer: {fileID: 7937299510090211214}
+  spriteRenderer: {fileID: 7980809575247738778}
   bodyCollider: {fileID: 0}
-  ownerRef: {fileID: 7953235665014895850}
+  ownerRef: {fileID: 361118278996844523}
+  animator: {fileID: 1766043229153121417}
   owner: {fileID: 0}
---- !u!95 &2594644945956437722
+--- !u!95 &1766043229153121417
 Animator:
   serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2215390785097099234}
+  m_GameObject: {fileID: 394228019473800208}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 65005af096c455e499c7e85a1dfcef07, type: 2}
+  m_Controller: {fileID: 9100000, guid: cd6fbf44be1993b44bd8b4141401f88b, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -168,13 +88,13 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!58 &3298321038304344065
+--- !u!58 &1837742585957611004
 CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2215390785097099234}
+  m_GameObject: {fileID: 394228019473800208}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -202,9 +122,9 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 3.8
---- !u!1 &7204511562311950507
+  m_Offset: {x: 0, y: 1.5262761}
+  m_Radius: 1.7576506
+--- !u!1 &773281319276612513
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -212,8 +132,133 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8594261865258470333}
-  - component: {fileID: 7937299510090211214}
+  - component: {fileID: 2617280500391877213}
+  - component: {fileID: 6086734558255793529}
+  - component: {fileID: 4980442500498015261}
+  - component: {fileID: 6450608418605304050}
+  m_Layer: 7
+  m_Name: TinhLinhNghiaDia
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2617280500391877213
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 773281319276612513}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3505766678081247133}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6086734558255793529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 773281319276612513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a0fd1035e7a1474bbd58ea84db02547, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.Normal.NormalEnemy_TinhLinhNghiaDia
+  model: {fileID: 2061590832746270502}
+  displayName: TinhLinhNghiaDia
+  stats:
+    Attack: 10
+    Defense: 0
+    MaxHealth: 50
+    MoveSpeed: 2
+  currentHealth: 0
+  anchorPointD: {x: 0, y: 0}
+  radiusC: 10
+  radiusA: 2
+  radiusB: 5
+  returnHomeDelayX: 3
+  teleportHomeDelayY: 8
+  terrainLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  tankLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  pathNodeSize: 0.5
+  repathInterval: 0.25
+  currentState: 0
+  awayFromHomeTimer: 0
+  currentTarget: {fileID: 0}
+--- !u!50 &4980442500498015261
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 773281319276612513}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
+--- !u!114 &6450608418605304050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 773281319276612513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a9f038beb5e9994ebf514a8ef36e5dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.Navigation.EnemyMovementAgent
+  body: {fileID: 0}
+  model: {fileID: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  separationRadius: 1.2
+  separationForce: 2.5
+  waypointTolerance: 0.25
+  rotateTowardsMovement: 1
+  rotationOffset: -90
+  rotationSpeed: 720
+--- !u!1 &4479114263302588524
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7310950362386212133}
+  - component: {fileID: 7980809575247738778}
   m_Layer: 7
   m_Name: Visual
   m_TagString: Untagged
@@ -221,29 +266,29 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8594261865258470333
+--- !u!4 &7310950362386212133
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7204511562311950507}
+  m_GameObject: {fileID: 4479114263302588524}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9031973815269632945}
+  m_Father: {fileID: 3505766678081247133}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &7937299510090211214
+--- !u!212 &7980809575247738778
 SpriteRenderer:
   serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7204511562311950507}
+  m_GameObject: {fileID: 4479114263302588524}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -285,7 +330,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 6901478179918581367, guid: d773f7e8d2db23b4b9538654e51d5c4e, type: 3}
+  m_Sprite: {fileID: 681566162, guid: a2890746fcb90cc4ea5867dc50bb3699, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
