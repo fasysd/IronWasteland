@@ -339,7 +339,7 @@ namespace IronWasteland.Tanks
 
         #region Gameplay
 
-        protected virtual void Update()
+        private void Update()
         {
             TickCooldowns(Time.deltaTime);
         }

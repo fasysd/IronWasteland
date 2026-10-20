@@ -41,11 +41,17 @@ public class TankBrainBlackShadow : TankBrain
     [Tooltip("Khoảng trễ tối thiểu giữa lần đặt ảo ảnh và lần bấm đổi chỗ (giây).")]
     [SerializeField, Min(0.05f)] private float recastDelay = 0.2f;
 
+    [SerializeField] OptionalSkill1 optionalSkill1;
     [SerializeField, Min(0f)] private float optionalSkill1Cooldown = 5f;
-    [SerializeField, Min(0f)] private float cooldownReductionKillingInEnhanced = 10f;    
-    
+    [SerializeField, Min(0f)] private float cooldownReductionKillingInEnhanced = 10f;
 
-    
+
+    [Header("Optional Skill 1 - Orb VFX")]
+    [Tooltip("Prefab của tàn hỏa đen (OptionalSkill1Orb) hút về thân xe.")]
+    [SerializeField] private OptionalSkill1Orb optionalSkill1OrbPrefab;
+
+    [Tooltip("Số lượng tàn hỏa đen khởi tạo sẵn trong Pool.")]
+    [SerializeField, Min(0)] private int orbPoolSize = 6;
 
     private const int normalSkillIndex = 0;
     private const int specializedSkillIndex = 1;
@@ -53,8 +59,6 @@ public class TankBrainBlackShadow : TankBrain
     private const int optionalSkill1Index = 2;
 
     private bool isEnhanced = false;
-
-    private float enhancedTime = 0f;
 
     // Pool NormalSkill
     private readonly Stack<NormalSkill> skillPool = new Stack<NormalSkill>();
@@ -65,10 +69,21 @@ public class TankBrainBlackShadow : TankBrain
     private readonly HashSet<SpecializedSkill> allSpecializedSkills = new HashSet<SpecializedSkill>();
     private SpecializedSkill activeSpecializedSkill;
 
+    // Pool OptionalSkill1Orb
+    private readonly Stack<OptionalSkill1Orb> orbPool = new Stack<OptionalSkill1Orb>();
+    private readonly HashSet<OptionalSkill1Orb> allOrbs = new HashSet<OptionalSkill1Orb>();
+
     private void Start()
     {
         PrewarmNormalSkillPool();
         PrewarmSpecializedSkillPool();
+        PrewarmOrbPool();
+        optionalSkill1.OnIsEnhancedChange += OptionalSkill1_OnTimeEnhancedRunOut;
+    }
+
+    private void OptionalSkill1_OnTimeEnhancedRunOut(bool obj)
+    {
+        isEnhanced = obj;
     }
 
     protected override float GetBaseCooldown(int index)
@@ -106,15 +121,14 @@ public class TankBrainBlackShadow : TankBrain
         }
         if (index == optionalSkill1Index)
         {
-            UseEnhancedSkill(10f);
+            UseEnhancedSkill();
             return;
         }
         base.OnUseSkill(index);
     }
-    private void UseEnhancedSkill(float enhancedTime)
+    private void UseEnhancedSkill()
     {
-        isEnhanced = true;
-        this.enhancedTime = enhancedTime;
+        optionalSkill1.Initialize();
     }
 
     #region Normal Skill Logic
@@ -227,6 +241,7 @@ public class TankBrainBlackShadow : TankBrain
         if (!enemy.IsAlive && isEnhanced)
         {
             ReduceSkillCooldown(specializedSkillIndex, cooldownReductionKillingInEnhanced);
+            SpawnOptionalSkill1Orb(enemy.transform.position);
         }
         TextDamageManager.Instance?.Show(normalSkillDmg, skillInstance.transform.position);
     }
@@ -356,6 +371,96 @@ public class TankBrainBlackShadow : TankBrain
 
         enemy.TakeDamage(specializedSkillDmg);
         TextDamageManager.Instance?.Show(specializedSkillDmg, enemy.transform.position);
+
+        if (!enemy.IsAlive && isEnhanced)
+        {
+            SpawnOptionalSkill1Orb(enemy.transform.position);
+        }
+    }
+    #endregion
+
+    #region Optional Skill 1 Orb Logic
+    /// <summary>
+    /// Khởi tạo sẵn một lượng đốm tàn hỏa đen trong Object Pool.
+    /// </summary>
+    private void PrewarmOrbPool()
+    {
+        if (optionalSkill1OrbPrefab == null)
+            return;
+
+        for (int i = 0; i < orbPoolSize; i++)
+        {
+            OptionalSkill1Orb orbInstance = CreateOrbInstance();
+            if (orbInstance != null)
+                orbPool.Push(orbInstance);
+        }
+    }
+
+    /// <summary>
+    /// Tạo instance mới cho OptionalSkill1Orb và đưa vào danh sách quản lý.
+    /// </summary>
+    private OptionalSkill1Orb CreateOrbInstance()
+    {
+        if (optionalSkill1OrbPrefab == null)
+            return null;
+
+        OptionalSkill1Orb orbInstance = Instantiate(optionalSkill1OrbPrefab, transform.position, Quaternion.identity);
+        if (orbInstance == null)
+            return null;
+
+        orbInstance.transform.SetParent(null);
+        orbInstance.gameObject.SetActive(true);
+        orbInstance.Clear();
+        orbInstance.gameObject.SetActive(false);
+
+        allOrbs.Add(orbInstance);
+        return orbInstance;
+    }
+
+    /// <summary>
+    /// Lấy một đốm tàn hỏa đen khả dụng từ Pool (hoặc tạo mới nếu rỗng).
+    /// </summary>
+    private OptionalSkill1Orb GetOrbFromPool()
+    {
+        while (orbPool.Count > 0)
+        {
+            OptionalSkill1Orb orb = orbPool.Pop();
+            if (orb != null)
+                return orb;
+        }
+
+        return CreateOrbInstance();
+    }
+
+    /// <summary>
+    /// Thu hồi đốm tàn hỏa đen về Pool sau khi đã chạm vào thân xe.
+    /// </summary>
+    private void ReturnOrbToPool(OptionalSkill1Orb orb)
+    {
+        if (orb == null)
+            return;
+
+        orb.Clear();
+        orb.gameObject.SetActive(false);
+
+        if (!orbPool.Contains(orb))
+            orbPool.Push(orb);
+    }
+
+    /// <summary>
+    /// Sinh tàn hỏa đen tại vị trí kẻ địch chết và bắt đầu bay hút về thân xe tank.
+    /// </summary>
+    private void SpawnOptionalSkill1Orb(Vector2 spawnPosition)
+    {
+        if (optionalSkill1OrbPrefab == null)
+            return;
+
+        OptionalSkill1Orb orb = GetOrbFromPool();
+        if (orb == null)
+            return;
+
+        orb.transform.SetParent(null);
+        orb.Initialize(spawnPosition, transform, ReturnOrbToPool);
     }
     #endregion
 
@@ -376,18 +481,14 @@ public class TankBrainBlackShadow : TankBrain
         }
         allSpecializedSkills.Clear();
         specializedSkillPool.Clear();
-    }
-    protected override void Update()
-    {
-        base.Update();
-        if (isEnhanced)
+
+        foreach (OptionalSkill1Orb orb in allOrbs)
         {
-            enhancedTime -= Time.deltaTime;
-            if (enhancedTime <= 0)
-            {
-                enhancedTime = 0;
-                isEnhanced = false;
-            }
+            if (orb != null)
+                Destroy(orb.gameObject);
         }
+        allOrbs.Clear();
+        orbPool.Clear();
+        optionalSkill1.OnIsEnhancedChange -= OptionalSkill1_OnTimeEnhancedRunOut;
     }
 }
