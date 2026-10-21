@@ -29,6 +29,13 @@ namespace IronWasteland.Tanks
         [Tooltip("ID trang bi bo banh. De trong = Tank khong co bo banh.")]
         [SerializeField] private int mobilityId;
 
+        [Header("Optional Skills Selection")]
+        [Tooltip("Lựa chọn biến thể kỹ năng OptionSkill1 (0 = Cường hóa, 1 = Shadow Link).")]
+        [SerializeField] private int optionSkill1 = 0;
+
+        [Tooltip("Lựa chọn biến thể kỹ năng OptionSkill2.")]
+        [SerializeField] private int optionSkill2 = 0;
+
         [Header("Look")]
         [Tooltip("Camera de tinh huong nhin. Neu rong se dung Camera.main.")]
         [SerializeField] private Camera targetCamera;
@@ -49,8 +56,8 @@ namespace IronWasteland.Tanks
                 FirepowerEquipmentId = firepowerId,
                 DefenseEquipmentId = defenseId,
                 MobilityEquipmentId = mobilityId,
-                OptionSkill1 = 0,
-                OptionSkill2 = 0
+                OptionSkill1 = optionSkill1,
+                OptionSkill2 = optionSkill2
             };
 
             // Khởi tạo 1 lần duy nhất (guard).

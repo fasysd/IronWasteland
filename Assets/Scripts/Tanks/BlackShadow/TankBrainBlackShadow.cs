@@ -41,8 +41,17 @@ public class TankBrainBlackShadow : TankBrain
     [Tooltip("Khoảng trễ tối thiểu giữa lần đặt ảo ảnh và lần bấm đổi chỗ (giây).")]
     [SerializeField, Min(0.05f)] private float recastDelay = 0.2f;
 
-    [SerializeField] OptionalSkill1 optionalSkill1;
+    [Header("Optional Skill 1 - Design")]
+    [Tooltip("Kỹ năng tùy chọn 1 - Biến thể 1: Cường hóa đao khí.")]
+    [SerializeField] private OptionalSkill1 optionalSkill1;
+
+    [Tooltip("Kỹ năng tùy chọn 1 - Biến thể 2: Shadow Link (Liên kết bóng tối).")]
+    [SerializeField] private OptionalSkill1_2 optionalSkill1_2;
+    [Tooltip("Thời gian hồi chiêu của Optional Skill 1 (giây).")]
     [SerializeField, Min(0f)] private float optionalSkill1Cooldown = 5f;
+
+    [Tooltip("Thời gian hồi chiêu của Optional Skill 1_2 (giây).")]
+    [SerializeField, Min(0f)] private float optionalSkill1_2Cooldown = 6f;
     [SerializeField, Min(0f)] private float cooldownReductionKillingInEnhanced = 10f;
 
 
@@ -78,7 +87,8 @@ public class TankBrainBlackShadow : TankBrain
         PrewarmNormalSkillPool();
         PrewarmSpecializedSkillPool();
         PrewarmOrbPool();
-        optionalSkill1.OnIsEnhancedChange += OptionalSkill1_OnTimeEnhancedRunOut;
+        if (optionalSkill1 != null)
+            optionalSkill1.OnIsEnhancedChange += OptionalSkill1_OnTimeEnhancedRunOut;
     }
 
     private void OptionalSkill1_OnTimeEnhancedRunOut(bool obj)
@@ -101,7 +111,7 @@ public class TankBrainBlackShadow : TankBrain
             return recastDelay;
         }
         if (index == optionalSkill1Index)
-            return optionalSkill1Cooldown;
+            return Context.OptionSkill1 == 1 ? optionalSkill1_2Cooldown : optionalSkill1Cooldown;
 
         return base.GetBaseCooldown(index);
     }
@@ -121,14 +131,30 @@ public class TankBrainBlackShadow : TankBrain
         }
         if (index == optionalSkill1Index)
         {
-            UseEnhancedSkill();
+            UseOptionalSkill1();
             return;
         }
         base.OnUseSkill(index);
     }
-    private void UseEnhancedSkill()
+    private void UseOptionalSkill1()
     {
-        optionalSkill1.Initialize();
+        if (Context.OptionSkill1 == 1)
+        {
+            if (optionalSkill1_2 != null)
+            {
+                bool isLinked = optionalSkill1_2.Initialize(this, LookTarget);
+                if (!isLinked)
+            {
+                // Không tìm thấy xe đồng minh hợp lệ dưới con trỏ chuột -> hoàn lại hồi chiêu
+                ReduceSkillCooldown(optionalSkill1Index, GetCooldown(optionalSkill1Index));
+            }
+        }
+
+        }
+        else
+        {
+            optionalSkill1?.Initialize();
+        }
     }
 
     #region Normal Skill Logic
@@ -489,6 +515,7 @@ public class TankBrainBlackShadow : TankBrain
         }
         allOrbs.Clear();
         orbPool.Clear();
-        optionalSkill1.OnIsEnhancedChange -= OptionalSkill1_OnTimeEnhancedRunOut;
+        if (optionalSkill1 != null)
+            optionalSkill1.OnIsEnhancedChange -= OptionalSkill1_OnTimeEnhancedRunOut;
     }
 }
