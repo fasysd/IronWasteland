@@ -30,7 +30,7 @@ namespace IronWasteland.Tanks
         [SerializeField] private int mobilityId;
 
         [Header("Optional Skills Selection")]
-        [Tooltip("Lựa chọn biến thể kỹ năng OptionSkill1 (0 = Cường hóa, 1 = Shadow Link).")]
+        [Tooltip("Lựa chọn biến thể kỹ năng OptionSkill1 (0 = Cường hóa, 1 = Shadow Link, 2 = Shadow Guard).")]
         [SerializeField] private int optionSkill1 = 0;
 
         [Tooltip("Lựa chọn biến thể kỹ năng OptionSkill2.")]

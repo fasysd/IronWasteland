@@ -47,11 +47,18 @@ public class TankBrainBlackShadow : TankBrain
 
     [Tooltip("Kỹ năng tùy chọn 1 - Biến thể 2: Shadow Link (Liên kết bóng tối).")]
     [SerializeField] private OptionalSkill1_2 optionalSkill1_2;
+
+    [Tooltip("Kỹ năng tùy chọn 1 - Biến thể 3: Shadow Guard (Bóng vệ tinh bảo vệ).")]
+    [SerializeField] private OptionalSkill1_3 optionalSkill1_3;
+
     [Tooltip("Thời gian hồi chiêu của Optional Skill 1 (giây).")]
     [SerializeField, Min(0f)] private float optionalSkill1Cooldown = 5f;
 
     [Tooltip("Thời gian hồi chiêu của Optional Skill 1_2 (giây).")]
     [SerializeField, Min(0f)] private float optionalSkill1_2Cooldown = 6f;
+
+    [Tooltip("Thời gian hồi chiêu của Optional Skill 1_3 (giây).")]
+    [SerializeField, Min(0f)] private float optionalSkill1_3Cooldown = 10f;
     [SerializeField, Min(0f)] private float cooldownReductionKillingInEnhanced = 10f;
 
 
@@ -111,7 +118,11 @@ public class TankBrainBlackShadow : TankBrain
             return recastDelay;
         }
         if (index == optionalSkill1Index)
-            return Context.OptionSkill1 == 1 ? optionalSkill1_2Cooldown : optionalSkill1Cooldown;
+        {
+            if (Context.OptionSkill1 == 1) return optionalSkill1_2Cooldown;
+            if (Context.OptionSkill1 == 2) return optionalSkill1_3Cooldown;
+            return optionalSkill1Cooldown;
+        }
 
         return base.GetBaseCooldown(index);
     }
@@ -144,12 +155,23 @@ public class TankBrainBlackShadow : TankBrain
             {
                 bool isLinked = optionalSkill1_2.Initialize(this, LookTarget);
                 if (!isLinked)
-            {
-                // Không tìm thấy xe đồng minh hợp lệ dưới con trỏ chuột -> hoàn lại hồi chiêu
-                ReduceSkillCooldown(optionalSkill1Index, GetCooldown(optionalSkill1Index));
+                {
+                    // Không tìm thấy xe đồng minh hợp lệ dưới con trỏ chuột -> hoàn lại hồi chiêu
+                    ReduceSkillCooldown(optionalSkill1Index, GetCooldown(optionalSkill1Index));
+                }
             }
         }
-
+        else if (Context.OptionSkill1 == 2)
+        {
+            if (optionalSkill1_3 != null)
+            {
+                bool isShielded = optionalSkill1_3.Initialize(this, LookTarget);
+                if (!isShielded)
+                {
+                    // Không tìm thấy xe đồng minh hợp lệ dưới con trỏ chuột -> hoàn lại hồi chiêu
+                    ReduceSkillCooldown(optionalSkill1Index, GetCooldown(optionalSkill1Index));
+                }
+            }
         }
         else
         {

@@ -26,17 +26,14 @@ public class OptionalSkill1_2 : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float cooldownReductionBonus = 0.3f;
 
     [Header("Hình Ảnh (Visuals)")]
-    [Tooltip("Sprite hình ảnh sợi xích bóng tối.")]
-    [SerializeField] private Sprite chainSprite;
+    [Tooltip("Kéo thả GameObject hiển thị dải xích bóng tối vào đây (VisualChain).")]
+    [SerializeField] private GameObject visualChain;
 
-    [Tooltip("Thứ tự hiển thị (Sorting Order) của dây xích.")]
-    [SerializeField] private int chainSortingOrder = 1;
-
-    [Tooltip("Sprite khói đen tỏa ra dưới thân mỗi xe (asset_shadow_guard_satellite).")]
+    [Tooltip("Sprite khói đen tỏa ra dưới thân mỗi xe (vfx_shadow_burst).")]
     [SerializeField] private Sprite smokeSprite;
 
     [Tooltip("Kích thước khói đen dưới thân xe.")]
-    [SerializeField] private Vector3 smokeScale = new Vector3(0.8f, 0.8f, 1f);
+    [SerializeField] private Vector3 smokeScale = new Vector3(0.25f, 0.25f, 1f);
 
     [Tooltip("Thứ tự hiển thị (Sorting Order) của khói đen.")]
     [SerializeField] private int smokeSortingOrder = -2;
@@ -47,6 +44,7 @@ public class OptionalSkill1_2 : MonoBehaviour
     public bool IsLinked => isLinked;
     public TankBrain LinkedAlly => allyTank;
     public float RemainingDuration => remainingDuration;
+    public GameObject VisualChain => visualChain;
 
     private const string SelfBonusKey = "ShadowLink_Self";
     private const string AllyBonusKey = "ShadowLink_Ally";
@@ -56,32 +54,30 @@ public class OptionalSkill1_2 : MonoBehaviour
     private bool isLinked;
     private float remainingDuration;
 
+    private SpriteRenderer chainRenderer;
     private GameObject vfxRoot;
-    private GameObject chainGo;
     private GameObject ownerSmokeGo;
     private GameObject allySmokeGo;
 
     private void Awake()
     {
-        // Tắt SpriteRenderer gắn sẵn trên GameObject này (nếu có) để tránh hiện xích thừa trên xe
-        SpriteRenderer selfSr = GetComponent<SpriteRenderer>();
-        if (selfSr != null)
+        if (visualChain != null)
         {
-            if (chainSprite == null && selfSr.sprite != null)
-            {
-                chainSprite = selfSr.sprite;
-            }
-            selfSr.enabled = false;
+            chainRenderer = visualChain.GetComponent<SpriteRenderer>();
+            visualChain.SetActive(false);
         }
 
-        vfxRoot = new GameObject($"{gameObject.name}_Visuals");
-        vfxRoot.transform.SetParent(null);
+        if (smokeSprite != null)
+        {
+            vfxRoot = new GameObject($"{gameObject.name}_Visuals");
+            vfxRoot.transform.SetParent(null);
 
-        chainGo = CreateVfxObject("ShadowChain", chainSprite, chainSortingOrder, Vector3.one);
-        ownerSmokeGo = CreateVfxObject("OwnerSmoke", smokeSprite, smokeSortingOrder, smokeScale);
-        allySmokeGo = CreateVfxObject("AllySmoke", smokeSprite, smokeSortingOrder, smokeScale);
+            ownerSmokeGo = CreateVfxObject("OwnerSmoke", smokeSprite, smokeSortingOrder, smokeScale);
+            allySmokeGo = CreateVfxObject("AllySmoke", smokeSprite, smokeSortingOrder, smokeScale);
 
-        SetVisualsActive(false);
+            ownerSmokeGo.SetActive(false);
+            allySmokeGo.SetActive(false);
+        }
     }
 
     private GameObject CreateVfxObject(string objName, Sprite sprite, int sortingOrder, Vector3 scale)
@@ -211,7 +207,7 @@ public class OptionalSkill1_2 : MonoBehaviour
         Vector3 end = allyTank.transform.position;
 
         // 1. Cập nhật sợi xích nối 2 xe
-        if (chainGo != null)
+        if (visualChain != null)
         {
             Vector3 diff = end - start;
             float dist = diff.magnitude;
@@ -219,18 +215,19 @@ public class OptionalSkill1_2 : MonoBehaviour
             if (dist > 0.01f)
             {
                 // Vì pivot của sprite asset_shadow_chain nằm ở đầu bên trái (x = 33.38px),
-                // nên đặt vị trí của chainGo ngay tại start để sợi xích bắt đầu từ xe Black Shadow vươn tới đồng minh
-                chainGo.transform.position = start;
-                chainGo.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg);
+                // nên đặt vị trí của visualChain ngay tại start để sợi xích bắt đầu từ xe Black Shadow vươn tới đồng minh
+                visualChain.transform.position = start;
+                visualChain.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg);
 
                 // Chiều dài thực tế từ pivot tới đuôi xích
                 float baseLength = 9.9f;
-                if (chainSprite != null && chainSprite.rect.width > 0f)
+                Sprite sprite = chainRenderer != null ? chainRenderer.sprite : null;
+                if (sprite != null && sprite.rect.width > 0f)
                 {
-                    baseLength = (chainSprite.rect.width - chainSprite.pivot.x) / chainSprite.pixelsPerUnit;
+                    baseLength = (sprite.rect.width - sprite.pivot.x) / sprite.pixelsPerUnit;
                 }
 
-                chainGo.transform.localScale = new Vector3(dist / Mathf.Max(0.01f, baseLength), 1f, 1f);
+                visualChain.transform.localScale = new Vector3(dist / Mathf.Max(0.01f, baseLength), 1f, 1f);
             }
         }
 
@@ -241,7 +238,7 @@ public class OptionalSkill1_2 : MonoBehaviour
 
     private void SetVisualsActive(bool isActive)
     {
-        if (chainGo != null) chainGo.SetActive(isActive);
+        if (visualChain != null) visualChain.SetActive(isActive);
         if (ownerSmokeGo != null) ownerSmokeGo.SetActive(isActive);
         if (allySmokeGo != null) allySmokeGo.SetActive(isActive);
     }
@@ -280,18 +277,4 @@ public class OptionalSkill1_2 : MonoBehaviour
             Destroy(vfxRoot);
         }
     }
-
-#if UNITY_EDITOR
-    private void Reset()
-    {
-        if (chainSprite == null)
-        {
-            chainSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/Tank/Sprites/skill/blackShadow/asset_shadow_chain.png");
-        }
-        if (smokeSprite == null)
-        {
-            smokeSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/Tank/Sprites/skill/blackShadow/asset_shadow_guard_satellite.png");
-        }
-    }
-#endif
 }

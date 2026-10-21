@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -41,6 +41,9 @@ namespace IronWasteland.Tanks
         [SerializeField] private float currentEnergy;
         [SerializeField, ReadOnly] private float[] skillCooldowns = new float[SkillCount];
 
+        [Header("Defense & Shield")]
+        private readonly List<ITankShield> m_Shields = new List<ITankShield>();
+
 
         private Rigidbody2D m_Body;
         private TankStats m_FinalStats = new TankStats();
@@ -77,6 +80,38 @@ namespace IronWasteland.Tanks
         public float CurrentHealth => currentHealth;
         public float CurrentEnergy => currentEnergy;
         public float GetSkillCooldown(int index) => skillCooldowns[Mathf.Clamp(index, 0, SkillCount - 1)];
+
+        /// <summary>Khiên bảo vệ hiện tại của xe tank (nếu có). Gán mới sẽ thay thế khiên hiện tại.</summary>
+        public ITankShield Shield
+        {
+            get => m_Shields.Count > 0 ? m_Shields[m_Shields.Count - 1] : null;
+            set
+            {
+                m_Shields.Clear();
+                if (value != null)
+                {
+                    m_Shields.Add(value);
+                }
+            }
+        }
+
+        /// <summary>Thêm một khiên bảo vệ vào danh sách khiên đang hoạt động.</summary>
+        public void AddShield(ITankShield shield)
+        {
+            if (shield != null && !m_Shields.Contains(shield))
+            {
+                m_Shields.Add(shield);
+            }
+        }
+
+        /// <summary>Gỡ một khiên bảo vệ khỏi danh sách khiên đang hoạt động.</summary>
+        public void RemoveShield(ITankShield shield)
+        {
+            if (shield != null)
+            {
+                m_Shields.Remove(shield);
+            }
+        }
 
         #region Setup
 
@@ -371,9 +406,37 @@ namespace IronWasteland.Tanks
             }
         }
 
-        /// <summary>Nhan sat thuong. TODO: ap dung Defense/ArmorPenetration.</summary>
+        /// <summary>Nhận sát thương. Nếu có khiên bảo vệ (Shield), khiên sẽ can thiệp triệt tiêu hoặc giảm trừ sát thương.</summary>
         public virtual void TakeDamage(float amount)
         {
+            if (m_Shields.Count > 0)
+            {
+                for (int i = m_Shields.Count - 1; i >= 0; i--)
+                {
+                    var activeShield = m_Shields[i];
+                    if (activeShield == null || !activeShield.IsActive)
+                    {
+                        m_Shields.RemoveAt(i);
+                        continue;
+                    }
+
+                    if (activeShield.TryAbsorbDamage(ref amount))
+                    {
+                        return; // Hoàn toàn triệt tiêu đòn đánh
+                    }
+
+                    if (!activeShield.IsActive)
+                    {
+                        m_Shields.RemoveAt(i);
+                    }
+
+                    if (amount <= 0f)
+                    {
+                        return;
+                    }
+                }
+            }
+
             // TODO: tinh damage thuc te bang m_FinalStats.Defense va ArmorPenetration cua doi phuong.
             currentHealth -= amount;
         }
