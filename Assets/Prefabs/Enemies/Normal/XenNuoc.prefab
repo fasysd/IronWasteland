@@ -56,11 +56,14 @@ MonoBehaviour:
     MoveSpeed: 2
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
+  autoSetAnchorDFromSpawnPosition: 1
   radiusC: 10
-  radiusA: 2
-  radiusB: 5
+  radiusA: 4
+  radiusB: 6
   returnHomeDelayX: 3
   teleportHomeDelayY: 8
+  homeArrivalTolerance: 0.35
+  homeStopDistance: 0.2
   terrainLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -72,9 +75,23 @@ MonoBehaviour:
     m_Bits: 64
   pathNodeSize: 0.5
   repathInterval: 0.25
+  enemyAvoidancePenalty: 1.5
+  agentPathRadius: 0.3
   currentState: 0
   awayFromHomeTimer: 0
   currentTarget: {fileID: 0}
+  chargeColliderRef: {fileID: 7953235665014895850}
+  chargeSpeed: 12
+  maxChargeDistance: 7
+  chargeWindup: 0.25
+  recoilDistance: 1.2
+  recoilSpeed: 5
+  knockbackDistance: 2.5
+  damageMultiplier: 1
+  skillCooldown: 4.5
+  currentCooldownTimer: 0
+  isCharging: 0
+  isRecoiling: 0
 --- !u!50 &3162892946091150546
 Rigidbody2D:
   serializedVersion: 5
@@ -85,7 +102,7 @@ Rigidbody2D:
   m_GameObject: {fileID: 2191416951487824985}
   m_BodyType: 1
   m_Simulated: 1
-  m_UseFullKinematicContacts: 0
+  m_UseFullKinematicContacts: 1
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDamping: 0
@@ -121,7 +138,12 @@ MonoBehaviour:
     m_Bits: 0
   separationRadius: 1.2
   separationForce: 2.5
+  maxSeparationInfluence: 0.35
   waypointTolerance: 0.25
+  rotateTowardsMovement: 0
+  rotationOffset: -90
+  rotationSpeed: 720
+  moveSpeed: 2
 --- !u!1 &2215390785097099234
 GameObject:
   m_ObjectHideFlags: 0
@@ -170,7 +192,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
-  owner: {fileID: 0}
+  owner: {fileID: 805287383237241067}
 --- !u!114 &2874064844783536822
 MonoBehaviour:
   m_ObjectHideFlags: 0

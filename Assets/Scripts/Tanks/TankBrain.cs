@@ -376,6 +376,10 @@ namespace IronWasteland.Tanks
         {
             // TODO: tinh damage thuc te bang m_FinalStats.Defense va ArmorPenetration cua doi phuong.
             currentHealth -= amount;
+            if(currentHealth < 0)
+            {
+                Destroy(this.gameObject);
+            }
         }
 
         public virtual void Heal(float amount)

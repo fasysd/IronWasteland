@@ -83,14 +83,7 @@ namespace IronWasteland.Enemies.Normal
                 {
                     if (col == null) continue;
 
-                    ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(col);
-                    TankBrain tank = targetRef != null ? targetRef.GetOwner<TankBrain>() : null;
-
-                    if (tank == null)
-                    {
-                        tank = col.GetComponentInParent<TankBrain>();
-                    }
-
+                    TankBrain tank = ResolveTankBrain(col);
                     if (tank != null && tank.IsAlive)
                     {
                         targets.Add(tank);
@@ -106,6 +99,33 @@ namespace IronWasteland.Enemies.Normal
             m_CastCoroutine = null;
             gameObject.SetActive(false);
             onCompleted?.Invoke();
+        }
+
+        private TankBrain ResolveTankBrain(Collider2D col)
+        {
+            if (col == null) return null;
+
+            ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(col);
+            if (targetRef != null && targetRef.Owner != null)
+            {
+                if (targetRef.Owner is TankBrain directBrain)
+                {
+                    return directBrain;
+                }
+
+                if (targetRef.Owner is Component comp)
+                {
+                    TankBrain brain = comp.GetComponent<TankBrain>() ?? comp.GetComponentInParent<TankBrain>();
+                    if (brain != null) return brain;
+                }
+                else if (targetRef.Owner is GameObject go)
+                {
+                    TankBrain brain = go.GetComponent<TankBrain>() ?? go.GetComponentInParent<TankBrain>();
+                    if (brain != null) return brain;
+                }
+            }
+
+            return col.GetComponentInParent<TankBrain>();
         }
     }
 }
