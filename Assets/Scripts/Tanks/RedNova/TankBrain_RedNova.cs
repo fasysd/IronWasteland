@@ -94,6 +94,8 @@ namespace IronWasteland.Tanks.RedNova
         [SerializeField] private GameObject novaRushVisual;
         [SerializeField, Min(0.5f)] private float novaRushMaxDistance = 4f;
         [SerializeField, Min(0f)] private float novaRushBonusDamage = 25f;
+        [SerializeField, Range(3, 10)] private int novaRushShadowCount = 6;
+        [SerializeField, Min(0.1f)] private float novaRushShadowFadeDuration = 0.35f;
         #endregion
 
         // --- Pools ---
@@ -701,23 +703,77 @@ namespace IronWasteland.Tanks.RedNova
 
             Vector2 currentPos = transform.position;
             Vector2 delta = LookTarget - currentPos;
+            if (delta.sqrMagnitude <= 0.0001f)
+                return;
+
             Vector2 targetPos = delta.magnitude > novaRushMaxDistance
                 ? currentPos + delta.normalized * novaRushMaxDistance
                 : LookTarget;
 
+            // Clone ra nhiều cái bóng của tank trên đường lướt rồi dần biến mất
+            SpawnNovaRushShadows(currentPos, targetPos);
+
             transform.position = new Vector3(targetPos.x, targetPos.y, transform.position.z);
             m_HasNovaRushEmpoweredShot = true;
-
-            if (novaRushVisual != null)
-                StartCoroutine(FlashRushVisualRoutine());
         }
 
-        private IEnumerator FlashRushVisualRoutine()
+        private void SpawnNovaRushShadows(Vector2 startPos, Vector2 endPos)
         {
-            novaRushVisual.SetActive(true);
-            yield return new WaitForSeconds(0.35f);
-            if (novaRushVisual != null)
-                novaRushVisual.SetActive(false);
+            if (novaRushVisual == null)
+                return;
+
+            Vector2 dir = endPos - startPos;
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            Quaternion rot = Quaternion.Euler(0f, 0f, angle);
+
+            int count = Mathf.Clamp(novaRushShadowCount, 2, 10);
+            for (int i = 0; i < count; i++)
+            {
+                float t = (float)i / (count - 1);
+                Vector2 spawnPos = Vector2.Lerp(startPos, endPos, t);
+
+                GameObject shadow = Instantiate(novaRushVisual, spawnPos, rot);
+                shadow.transform.SetParent(null);
+                shadow.SetActive(true);
+
+                StartCoroutine(FadeAndDestroyShadowRoutine(shadow, novaRushShadowFadeDuration));
+            }
+        }
+
+        private IEnumerator FadeAndDestroyShadowRoutine(GameObject shadow, float duration)
+        {
+            if (shadow == null)
+                yield break;
+
+            SpriteRenderer[] renderers = shadow.GetComponentsInChildren<SpriteRenderer>(true);
+            Color[] initialColors = new Color[renderers.Length];
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i] != null)
+                    initialColors[i] = renderers[i].color;
+            }
+
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float norm = Mathf.Clamp01(elapsed / duration);
+
+                for (int i = 0; i < renderers.Length; i++)
+                {
+                    if (renderers[i] != null)
+                    {
+                        Color c = initialColors[i];
+                        c.a = Mathf.Lerp(initialColors[i].a, 0f, norm);
+                        renderers[i].color = c;
+                    }
+                }
+
+                yield return null;
+            }
+
+            if (shadow != null)
+                Destroy(shadow);
         }
         #endregion
 
