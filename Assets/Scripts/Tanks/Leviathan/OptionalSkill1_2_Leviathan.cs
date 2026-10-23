@@ -66,6 +66,11 @@ namespace IronWasteland.Tanks.Leviathan
         private bool isLinked = false;
         private float remainingTime = 0f;
 
+        // Cờ chống đệ quy sát thương: bật lên trong lúc Leviathan đang gánh sát thương hộ.
+        // Nếu chính Leviathan lại nhận sát thương được chuyển hướng từ một liên kết khác
+        // thì cờ này chặn vòng lặp A -> B -> A gây tràn stack.
+        private bool isRedirectingDamage;
+
         private SpriteRenderer currentRenderer;
         private Vector3 bubbleInitialScale = Vector3.one;
 
@@ -121,6 +126,10 @@ namespace IronWasteland.Tanks.Leviathan
         public bool Initialize(TankBrain owner, Vector2 targetWorldPos, float healRate = -1f, float shareRatio = -1f, float dur = -1f)
         {
             if (owner == null) return false;
+
+            // Dọn dẹp trạng thái của lần kích hoạt trước trước khi áp cấu hình mới
+            Clear();
+
             this.ownerTank = owner;
 
             if (healRate >= 0f) this.healPerSecond = healRate;
@@ -137,10 +146,11 @@ namespace IronWasteland.Tanks.Leviathan
                 return false;
             }
 
-            // Nếu đang liên kết với xe khác thì ngắt liên kết cũ trước
-            if (isLinked)
+            // Chặn tự liên kết với chính mình: nếu Leviathan vừa là chủ vừa là đích
+            // thì sát thương sẽ chuyển hướng vòng tròn vô hạn.
+            if (foundAlly == owner)
             {
-                BreakLink();
+                return false;
             }
 
             this.allyTank = foundAlly;
@@ -306,7 +316,9 @@ namespace IronWasteland.Tanks.Leviathan
         /// </summary>
         public bool TryAbsorbDamage(ref float incomingDamage)
         {
-            if (!isLinked || incomingDamage <= 0f)
+            // Cờ chống đệ quy: nếu đang trong quá trình chuyển hướng sát thương thì bỏ qua,
+            // tránh vòng lặp A -> B -> A gây tràn stack.
+            if (!isLinked || incomingDamage <= 0f || isRedirectingDamage)
             {
                 return false;
             }
@@ -318,9 +330,18 @@ namespace IronWasteland.Tanks.Leviathan
             // Leviathan gánh chịu phần sát thương này
             if (ownerTank != null && ownerTank.IsAlive)
             {
-                ownerTank.TakeDamage(sharedAmount);
-                TextDamageManager.Instance?.Show(sharedAmount, ownerTank.transform.position);
-                OnDamageShared?.Invoke(sharedAmount);
+                isRedirectingDamage = true;
+                try
+                {
+                    ownerTank.TakeDamage(sharedAmount);
+                    TextDamageManager.Instance?.Show(sharedAmount, ownerTank.transform.position);
+                    OnDamageShared?.Invoke(sharedAmount);
+                }
+                finally
+                {
+                    // Luôn hạ cờ, kể cả khi TakeDamage ném exception giữa chừng
+                    isRedirectingDamage = false;
+                }
             }
 
             return incomingDamage <= 0f;
@@ -336,11 +357,18 @@ namespace IronWasteland.Tanks.Leviathan
         #endregion
 
         /// <summary>
-        /// Ngắt dòng chảy liên kết, gỡ khiên chia sẻ sát thương khỏi đồng minh và ẩn hình ảnh.
+        /// Đặt lại toàn bộ trạng thái runtime của liên kết về mặc định.
+        /// CHỈ reset state: không phát event, không tắt GameObject.
+        /// Trả về true nếu đang thực sự có liên kết mở và vừa được ngắt.
         /// </summary>
-        public void BreakLink()
+        private bool ResetRuntimeState(out TankBrain prevAlly)
         {
-            if (!isLinked) return;
+            prevAlly = null;
+
+            if (!isLinked)
+            {
+                return false;
+            }
 
             isLinked = false;
             remainingTime = 0f;
@@ -358,19 +386,32 @@ namespace IronWasteland.Tanks.Leviathan
 
             SetVisualsActive(false);
 
-            TankBrain prevAlly = allyTank;
+            prevAlly = allyTank;
             allyTank = null;
-
-            OnLinkEnded?.Invoke(prevAlly);
+            return true;
         }
 
+        /// <summary>
+        /// Ngắt dòng chảy liên kết, gỡ khiên chia sẻ sát thương khỏi đồng minh và ẩn hình ảnh.
+        /// </summary>
+        public void BreakLink()
+        {
+            if (ResetRuntimeState(out TankBrain prevAlly))
+            {
+                OnLinkEnded?.Invoke(prevAlly);
+            }
+        }
+
+        /// <summary>
+        /// Dọn dẹp để tái sử dụng: reset state và gỡ owner.
+        /// Không phát event, không tắt GameObject, KHÔNG xoá subscriber —
+        /// người nghe tự gỡ đăng ký của mình trong OnDisable/OnDestroy.
+        /// Initialize gọi hàm này trước tiên.
+        /// </summary>
         public void Clear()
         {
-            BreakLink();
+            ResetRuntimeState(out _);
             ownerTank = null;
-            OnLinkStarted = null;
-            OnLinkEnded = null;
-            OnDamageShared = null;
         }
 
         private void OnDisable()

@@ -343,8 +343,20 @@ namespace IronWasteland.Tanks
         }
 
 
-        /// <summary>Dung 1 trong 4 ky nang. Chi tai thoi diem nay moi co Debug.Log.</summary>
-
+        /// <summary>Dùng 1 trong 4 kỹ năng. Chỉ tại thời điểm này mới có Debug.Log.</summary>
+        /// <remarks>
+        /// Hợp đồng vòng đời bắt buộc của mọi skill script (xem .agent/memory/framework-map.md):
+        /// 1. Initialize() phải gọi Clear() trước tiên để bắt đầu từ trạng thái sạch.
+        /// 2. Clear() chỉ reset trạng thái runtime và gỡ ownerTank. KHÔNG phát event,
+        ///    KHÔNG tắt GameObject, KHÔNG xoá subscriber, KHÔNG ghi đè tham số cấu hình
+        ///    (duration, damage...) vì Initialize có thể truyền giá trị tạm cho từng lần dùng.
+        /// 3. Người nghe tự quản lý đăng ký của mình: += trong OnEnable, -= trong OnDisable
+        ///    hoặc OnDestroy. Skill không bao giờ tự xoá subscriber của người khác.
+        /// 4. Cancel* / Finish* là hàm kết thúc thật: reset state, phát event báo kết thúc,
+        ///    rồi tắt GameObject. Kết thúc bất thường (xe chết, component bị tắt) dùng Cancel*;
+        ///    kết thúc tự nhiên có hiệu ứng cuối (nổ, gầm...) dùng Finish* hoặc Explode.
+        /// 5. Trả về pool: cache callback, gọi Clear(), rồi gọi callback.
+        /// </remarks>
         public void UseSkill(int index)
         {
             if (index < 0 || index >= SkillCount)

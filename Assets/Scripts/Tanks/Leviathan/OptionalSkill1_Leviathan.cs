@@ -61,6 +61,7 @@ namespace IronWasteland.Tanks.Leviathan
         private Vector3 burstInitialScale = Vector3.one;
         private Color burstInitialColor = Color.white;
 
+        public TankBrain OwnerTank => ownerTank;
         public bool IsActive => isArmorActive && remainingTime > 0f;
         public float RemainingTime => remainingTime;
         public float Duration => duration;
@@ -96,18 +97,16 @@ namespace IronWasteland.Tanks.Leviathan
         public void Initialize(TankBrain owner, float explosionDmg = -1f, float defBonus = -1f, float dmgPenalty = -1f, float dur = -1f)
         {
             if (owner == null) return;
+
+            // Dọn dẹp trạng thái của lần kích hoạt trước trước khi áp cấu hình mới
+            Clear();
+
             this.ownerTank = owner;
 
             if (explosionDmg >= 0f) this.explosionDamage = explosionDmg;
             if (defBonus >= 0f) this.bonusDefense = defBonus;
             if (dmgPenalty >= 0f) this.damageReductionPenalty = dmgPenalty;
             if (dur >= 0f) this.duration = dur;
-
-            // Nếu giáp đang hoạt động thì gỡ bỏ trạng thái cũ trước khi kích hoạt mới
-            if (isArmorActive)
-            {
-                RemoveArmorBonus();
-            }
 
             remainingTime = duration;
             isArmorActive = true;
@@ -276,9 +275,11 @@ namespace IronWasteland.Tanks.Leviathan
         }
 
         /// <summary>
-        /// Hủy giáp nước mà không kích nổ (dùng khi xe chết hoặc tắt component).
+        /// Đặt lại toàn bộ trạng thái runtime của giáp nước về mặc định.
+        /// CHỈ reset state: không phát event, không tắt GameObject.
+        /// Dùng chung cho CancelArmor (kết thúc trong trận) và Clear (dọn dẹp khi tái sử dụng).
         /// </summary>
-        public void CancelArmor()
+        private void ResetRuntimeState()
         {
             if (burstCoroutine != null)
             {
@@ -305,16 +306,27 @@ namespace IronWasteland.Tanks.Leviathan
                 }
                 visualBurst.SetActive(false);
             }
+        }
 
+        /// <summary>
+        /// Hủy giáp nước mà không kích nổ (dùng khi xe chết hoặc tắt component).
+        /// </summary>
+        public void CancelArmor()
+        {
+            ResetRuntimeState();
             OnArmorStateChange?.Invoke(false);
         }
 
+        /// <summary>
+        /// Dọn dẹp để tái sử dụng: reset state và gỡ owner.
+        /// Không phát event, không tắt GameObject, KHÔNG xoá subscriber —
+        /// người nghe tự gỡ đăng ký của mình trong OnDisable/OnDestroy.
+        /// Initialize gọi hàm này trước tiên.
+        /// </summary>
         public void Clear()
         {
-            CancelArmor();
+            ResetRuntimeState();
             ownerTank = null;
-            OnArmorStateChange = null;
-            OnExploded = null;
         }
 
         private void OnDisable()

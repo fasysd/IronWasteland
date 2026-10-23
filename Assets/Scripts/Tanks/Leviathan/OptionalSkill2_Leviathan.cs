@@ -73,6 +73,7 @@ namespace IronWasteland.Tanks.Leviathan
         private Color burstInitialColor = Color.white;
 
         // Thuộc tính công khai (Read-only Getters & UI)
+        public TankBrain OwnerTank => ownerTank;
         public bool IsActive => currentState != SkillState.Idle;
         public float DelayDuration => delayDuration;
         public float ZoneRadius => zoneRadius;
@@ -119,15 +120,13 @@ namespace IronWasteland.Tanks.Leviathan
         public void Initialize(TankBrain owner, Vector2 targetWorldPos, float damageAmount = -1f)
         {
             if (owner == null) return;
+
+            // Dọn dẹp trạng thái của lần kích hoạt trước trước khi áp cấu hình mới
+            Clear();
+
             this.ownerTank = owner;
 
             if (damageAmount >= 0f) this.damage = damageAmount;
-
-            // Nếu đang trong đợt xoáy trước thì dọn dẹp trước khi bắt đầu đợt mới
-            if (currentState != SkillState.Idle)
-            {
-                CancelSkill();
-            }
 
             centerPosition = targetWorldPos;
             remainingDelay = delayDuration;
@@ -352,9 +351,11 @@ namespace IronWasteland.Tanks.Leviathan
         }
 
         /// <summary>
-        /// Hủy bỏ kỹ năng khi xe tăng tử trận hoặc tắt game.
+        /// Đặt lại toàn bộ trạng thái runtime của vùng nước xoáy về mặc định.
+        /// CHỈ reset state: không phát event, không tắt GameObject.
+        /// Dùng chung cho CancelSkill (kết thúc trong trận) và Clear (dọn dẹp khi tái sử dụng).
         /// </summary>
-        public void CancelSkill()
+        private void ResetRuntimeState()
         {
             StopAllCoroutines();
             activeSkillCoroutine = null;
@@ -382,16 +383,27 @@ namespace IronWasteland.Tanks.Leviathan
                 transform.SetParent(originalParent);
                 transform.localPosition = Vector3.zero;
             }
+        }
 
+        /// <summary>
+        /// Hủy bỏ kỹ năng khi xe tăng tử trận hoặc tắt game.
+        /// </summary>
+        public void CancelSkill()
+        {
+            ResetRuntimeState();
             gameObject.SetActive(false);
         }
 
+        /// <summary>
+        /// Dọn dẹp để tái sử dụng: reset state và gỡ owner.
+        /// Không phát event, không tắt GameObject, KHÔNG xoá subscriber —
+        /// người nghe tự gỡ đăng ký của mình trong OnDisable/OnDestroy.
+        /// Initialize gọi hàm này trước tiên.
+        /// </summary>
         public void Clear()
         {
-            CancelSkill();
+            ResetRuntimeState();
             ownerTank = null;
-            OnTideZonePlaced = null;
-            OnTidalReturnTriggered = null;
         }
 
         private void OnDisable()

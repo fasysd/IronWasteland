@@ -2,114 +2,169 @@ using IronWasteland;
 using IronWasteland.Tanks;
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace IronWasteland.Tanks.Leviathan
 {
     /// <summary>
-    /// Kỹ năng Tùy Chọn 2 - Biến Thể 3 của Leviathan: Tide Commander (Chỉ Huy Thủy Triều).
+    /// Kỹ năng Tùy Chọn 2 - Biến Thể 2 của Leviathan: Leviathan Form (Dạng Thủy Quái).
+    /// Triển khai giao diện <see cref="ITankShield"/> để cung cấp khả năng miễn nhiễm sát thương tạm thời.
     /// 
     /// Hiệu quả:
-    /// - Tạo ra một vùng thủy triều lan rộng dưới bánh xe và di chuyển đồng bộ bám sát theo vị trí xe tăng Leviathan.
-    /// - Toàn bộ đồng minh (và bản thân nếu bật includeSelf) di chuyển trong vùng được gia tăng tốc độ di chuyển (MoveSpeed)
-    ///   và nhận một lớp giáp nước hấp thụ sát thương (TideWaterShield).
-    /// - Khi đồng minh rời khỏi vùng, bùa tăng tốc độ di chuyển sẽ tự động được gỡ bỏ.
+    /// - Chuyển sang dạng thủy quái phòng thủ: tăng mạnh giới hạn máu (MaxHealth),
+    ///   hồi máu liên tục mỗi giây và nhận khoảng thời gian ngắn miễn hoàn toàn sát thương (Invulnerability) khi vừa chuyển dạng.
+    /// - Đổi lại, chỉ số tấn công (DamageMultiplier) và giảm hồi chiêu (CooldownReduction) bị giảm (phạt).
     /// 
     /// Hiển thị trực quan:
-    /// - Vùng nước xoáy cuộn sóng lan rộng dưới bánh xe (VisualZone, sprite asset_tide_zone_0) xoay tròn liên tục.
-    /// - Sóng nước bùng nổ khi mở vùng thủy triều (VisualBurst, sprite vfx_water_burst_0).
+    /// - Cơ thể xe tăng phình to (View scale phóng to 1.25x).
+    /// - Linh ảnh đầu rồng nước xanh đậm bao phủ lấy thân xe (VisualDragonSpirit) rống lên chấn động toàn bộ khung hình (VisualRoarBurst + Screen Shake).
     /// </summary>
     [DisallowMultipleComponent]
-    public class OptionalSkill2_2_Leviathan : MonoBehaviour
+    public class OptionalSkill2_2_Leviathan : MonoBehaviour, ITankShield
     {
-        public event Action<TankBrain> OnAllyEnteredZone;
-        public event Action<TankBrain> OnAllyExitedZone;
-        public event Action<bool> OnZoneStateChange;
+        public event Action<bool> OnFormStateChange;
+        public event Action OnRoarTriggered;
+        public event Action<float> OnDamageImmunityAbsorbed;
 
-        [Header("Thông Số Vùng & Thời Gian")]
-        [Tooltip("Thời gian duy trì vùng thủy triều (giây).")]
+        [Header("Thông Số Thời Gian")]
+        [Tooltip("Thời gian duy trì dạng thủy quái phòng thủ (giây).")]
         [SerializeField, Min(1.0f)] private float duration = 8.0f;
 
-        [Tooltip("Bán kính vùng thủy triều di chuyển theo xe (đơn vị).")]
-        [SerializeField, Min(1.0f)] private float zoneRadius = 4.0f;
+        [Tooltip("Khoảng thời gian ngắn miễn nhiễm hoàn toàn sát thương khi vừa chuyển dạng (giây).")]
+        [SerializeField, Min(0.1f)] private float invulnerabilityDuration = 1.2f;
 
-        [Tooltip("Chu kỳ quét tìm đồng minh trong vùng (giây).")]
-        [SerializeField, Min(0.02f)] private float scanInterval = 0.08f;
+        [Header("Chỉ Số Buff Sinh Tồn")]
+        [Tooltip("Lượng máu tối đa (MaxHealth) cộng thêm khi chuyển sang dạng thủy quái.")]
+        [SerializeField, Min(0f)] private float bonusMaxHealth = 300.0f;
 
-        [Header("Chỉ Số Hỗ Trợ (Combat Buffs)")]
-        [Tooltip("Tốc độ di chuyển cộng thêm cho đồng minh khi đứng trong vùng (đơn vị/giây).")]
-        [SerializeField, Min(0f)] private float bonusMoveSpeed = 2.0f;
+        [Tooltip("Lượng máu hồi phục liên tục mỗi giây trong suốt thời gian biến dạng.")]
+        [SerializeField, Min(0f)] private float healPerSecond = 20.0f;
 
-        [Tooltip("Lượng sát thương tối đa lớp giáp nước có thể hấp thụ cho mỗi đồng minh.")]
-        [SerializeField, Min(0f)] private float shieldCapacity = 120.0f;
+        [Header("Chỉ Số Phạt (Trade-off)")]
+        [Tooltip("Phần trăm sát thương của đòn đánh thường bị giảm trong khi ở dạng thủy quái (0.25 = giảm 25% sát thương đòn đánh thường).")]
+        [SerializeField, Range(0f, 1f)] private float damagePenalty = 0.25f;
 
-        [Tooltip("Áp dụng hiệu ứng bùa lợi thủy triều lên cả bản thân xe tăng Leviathan.")]
-        [SerializeField] private bool includeSelf = true;
+        [Tooltip("Phần trăm thời gian hồi chiêu của đòn đánh thường bị tăng thêm trong khi ở dạng thủy quái (0.2 = tăng 20% thời gian hồi chiêu đòn đánh thường).")]
+        [SerializeField, Range(0f, 1f)] private float cooldownPenalty = 0.2f;
 
         [Header("Hình Ảnh & Hiệu Ứng (Visuals)")]
-        [Tooltip("GameObject hiển thị vùng nước cuộn sóng dưới bánh xe (VisualZone).")]
-        [SerializeField] private GameObject visualZone;
+        [Tooltip("GameObject hiển thị linh ảnh đầu rồng nước bao phủ thân xe (VisualDragonSpirit).")]
+        [SerializeField] private GameObject visualDragonSpirit;
 
-        [Tooltip("GameObject hiển thị sóng nước bùng nổ lan tỏa khi mở vùng thủy triều (VisualBurst).")]
-        [SerializeField] private GameObject visualBurst;
+        [Tooltip("GameObject hiển thị sóng nước bùng nổ khi đầu rồng gầm thét (VisualRoarBurst).")]
+        [SerializeField] private GameObject visualRoarBurst;
 
-        [Tooltip("Tốc độ xoay của vùng nước cuộn sóng (độ/giây).")]
-        [SerializeField] private float rotationSpeed = 70.0f;
+        [Tooltip("Tỷ lệ phóng to cơ thể xe tăng khi biến dạng (1.25 = to hơn 25%).")]
+        [SerializeField, Range(1.0f, 1.5f)] private float bodyExpansionScale = 1.25f;
 
-        [Tooltip("Thời gian hiển thị hiệu ứng sóng nước bùng nổ khi kích hoạt (giây).")]
-        [SerializeField, Min(0.05f)] private float burstDuration = 0.35f;
+        [Tooltip("Thời gian chuyển đổi phóng to/thu nhỏ thân xe tăng (giây).")]
+        [SerializeField, Min(0.05f)] private float transformTransitionDuration = 0.35f;
 
-        private const string TideCommanderSpeedBuffKey = "Leviathan_TideCommander_MoveSpeed";
+        [Tooltip("Biên độ nhấp nhô uy dũng của linh ảnh đầu rồng (0 = không nhấp nhô, 0.05 = 5%).")]
+        [SerializeField, Range(0f, 0.2f)] private float dragonPulseScale = 0.04f;
+
+        [Tooltip("Tần số nhấp nhô của linh ảnh đầu rồng (chu kỳ/giây).")]
+        [SerializeField, Min(0.1f)] private float dragonPulseSpeed = 2.0f;
+
+        [Header("Rung Lắc Màn Hình (Screen Shake)")]
+        [Tooltip("Thời gian rung màn hình khi đầu rồng gầm thét (giây).")]
+        [SerializeField, Min(0.05f)] private float roarShakeDuration = 0.4f;
+
+        [Tooltip("Cường độ rung màn hình.")]
+        [SerializeField, Min(0.01f)] private float roarShakeMagnitude = 0.16f;
+
+        private const string FormBonusStatsKey = "Leviathan_LeviathanForm";
 
         // Trạng thái nội bộ (Runtime State)
         private TankBrain ownerTank;
-        private bool isZoneActive = false;
+        private bool isFormActive = false;
         private float remainingTime = 0f;
-        private float scanTimer = 0f;
+        private float remainingInvulnerableTime = 0f;
 
-        // Quản lý đồng minh và khiên trong vùng
-        private readonly HashSet<TankBrain> alliesInZone = new HashSet<TankBrain>();
-        private readonly Dictionary<TankBrain, TideWaterShield> activeShields = new Dictionary<TankBrain, TideWaterShield>();
-
+        private SpriteRenderer dragonRenderer;
         private SpriteRenderer burstRenderer;
+
+        private Vector3 dragonInitialScale = Vector3.one;
         private Vector3 burstInitialScale = Vector3.one;
+        private Color dragonInitialColor = Color.white;
         private Color burstInitialColor = Color.white;
+
+        private Vector3 originalViewScale = Vector3.one;
+        private Coroutine viewScaleCoroutine;
         private Coroutine burstCoroutine;
+        private Coroutine shakeCoroutine;
+
+        // Triển khai ITankShield (Miễn sát thương trong cửa sổ invulnerabilityDuration)
+        bool ITankShield.IsActive => isFormActive && remainingInvulnerableTime > 0f && ownerTank != null && ownerTank.IsAlive;
+
+        public bool TryAbsorbDamage(ref float incomingDamage)
+        {
+            if (!isFormActive || remainingInvulnerableTime <= 0f)
+                return false;
+
+            float absorbed = incomingDamage;
+            incomingDamage = 0f;
+
+            OnDamageImmunityAbsorbed?.Invoke(absorbed);
+            return true;
+        }
+
+        public void BreakShield()
+        {
+            remainingInvulnerableTime = 0f;
+            if (ownerTank != null)
+            {
+                ownerTank.RemoveShield(this);
+            }
+        }
 
         // Thuộc tính công khai (Read-only Getters & UI)
-        public bool IsActive => isZoneActive && remainingTime > 0f;
+        public bool IsActive => isFormActive && remainingTime > 0f;
+        public bool IsInvulnerable => isFormActive && remainingInvulnerableTime > 0f;
         public float RemainingTime => remainingTime;
         public float Duration => duration;
-        public float ZoneRadius => zoneRadius;
-        public float BonusMoveSpeed => bonusMoveSpeed;
-        public float ShieldCapacity => shieldCapacity;
-        public int AlliesCount => alliesInZone.Count;
+        public float RemainingInvulnerableTime => remainingInvulnerableTime;
+        public float InvulnerabilityDuration => invulnerabilityDuration;
+        public float BonusMaxHealth => bonusMaxHealth;
+        public float HealPerSecond => healPerSecond;
+        public float DamagePenalty => damagePenalty;
+        public float CooldownPenalty => cooldownPenalty;
         public TankBrain OwnerTank => ownerTank;
 
         private void Awake()
         {
-            if (visualZone != null)
+            if (visualDragonSpirit != null)
             {
-                visualZone.SetActive(false);
-            }
-
-            if (visualBurst != null)
-            {
-                burstRenderer = visualBurst.GetComponent<SpriteRenderer>();
-                if (burstRenderer == null)
+                dragonRenderer = visualDragonSpirit.GetComponent<SpriteRenderer>();
+                if (dragonRenderer == null)
                 {
-                    burstRenderer = visualBurst.GetComponentInChildren<SpriteRenderer>();
+                    dragonRenderer = visualDragonSpirit.GetComponentInChildren<SpriteRenderer>();
                 }
 
-                burstInitialScale = visualBurst.transform.localScale;
+                dragonInitialScale = visualDragonSpirit.transform.localScale;
+                if (dragonRenderer != null)
+                {
+                    dragonInitialColor = dragonRenderer.color;
+                }
+
+                visualDragonSpirit.SetActive(false);
+            }
+
+            if (visualRoarBurst != null)
+            {
+                burstRenderer = visualRoarBurst.GetComponent<SpriteRenderer>();
+                if (burstRenderer == null)
+                {
+                    burstRenderer = visualRoarBurst.GetComponentInChildren<SpriteRenderer>();
+                }
+
+                burstInitialScale = visualRoarBurst.transform.localScale;
                 if (burstRenderer != null)
                 {
                     burstInitialColor = burstRenderer.color;
                 }
 
-                visualBurst.SetActive(false);
+                visualRoarBurst.SetActive(false);
             }
 
             // Tắt SpriteRenderer thừa trên chính GameObject này (nếu có)
@@ -121,209 +176,199 @@ namespace IronWasteland.Tanks.Leviathan
         }
 
         /// <summary>
-        /// Kích hoạt kỹ năng Tide Commander cho xe tăng Leviathan.
-        /// Cho phép truyền đè các thông số chiến đấu từ TankBrain.
+        /// Kích hoạt kỹ năng Leviathan Form cho xe tăng chủ thể.
+        /// Cho phép truyền đè các thông số tính toán từ TankBrain.
         /// </summary>
         public void Initialize(
             TankBrain owner,
             float customDuration = -1f,
-            float customMoveSpeed = -1f,
-            float customShield = -1f)
+            float customInvulDuration = -1f,
+            float customBonusMaxHp = -1f,
+            float customHealRate = -1f,
+            float customDmgPenalty = -1f,
+            float customCdrPenalty = -1f)
         {
             if (owner == null) return;
+
+            // Dọn dẹp trạng thái của lần kích hoạt trước trước khi áp cấu hình mới
+            Clear();
+
             this.ownerTank = owner;
 
             if (customDuration >= 0f) this.duration = customDuration;
-            if (customMoveSpeed >= 0f) this.bonusMoveSpeed = customMoveSpeed;
-            if (customShield >= 0f) this.shieldCapacity = customShield;
-
-            // Nếu vùng đang hoạt động thì làm mới trạng thái
-            if (isZoneActive)
-            {
-                CancelSkill();
-            }
+            if (customInvulDuration >= 0f) this.invulnerabilityDuration = customInvulDuration;
+            if (customBonusMaxHp >= 0f) this.bonusMaxHealth = customBonusMaxHp;
+            if (customHealRate >= 0f) this.healPerSecond = customHealRate;
+            if (customDmgPenalty >= 0f) this.damagePenalty = customDmgPenalty;
+            if (customCdrPenalty >= 0f) this.cooldownPenalty = customCdrPenalty;
 
             remainingTime = duration;
-            scanTimer = 0f;
-            isZoneActive = true;
+            remainingInvulnerableTime = invulnerabilityDuration;
+            isFormActive = true;
 
-            transform.position = ownerTank.transform.position;
+            // 1. Áp dụng Bonus Stats: Tăng MaxHealth, giảm DamageMultiplier & CooldownReduction
+            ApplyFormBonus();
+
+            // 2. Đăng ký khiên miễn sát thương lên xe tăng chủ thể
+            ownerTank.AddShield(this);
 
             if (!gameObject.activeSelf)
             {
                 gameObject.SetActive(true);
             }
 
-            if (visualZone != null)
+            // 3. Phóng to cơ thể xe tăng (View)
+            if (ownerTank.View != null)
             {
-                visualZone.transform.localPosition = Vector3.zero;
-                visualZone.SetActive(true);
+                originalViewScale = ownerTank.View.transform.localScale;
+                if (viewScaleCoroutine != null) StopCoroutine(viewScaleCoroutine);
+                viewScaleCoroutine = StartCoroutine(AnimateViewScale(originalViewScale, originalViewScale * bodyExpansionScale, transformTransitionDuration));
             }
 
-            // Hiệu ứng sóng nước lan tỏa khi mở vùng thủy triều
+            // 4. Kích hoạt linh ảnh đầu rồng nước
+            if (visualDragonSpirit != null)
+            {
+                visualDragonSpirit.transform.localPosition = Vector3.zero;
+                visualDragonSpirit.transform.localScale = dragonInitialScale;
+                if (dragonRenderer != null)
+                {
+                    dragonRenderer.color = dragonInitialColor;
+                }
+                visualDragonSpirit.SetActive(true);
+            }
+
+            // 5. Hiệu ứng gầm thét: Sóng nước bùng nổ + Rung màn hình
             if (burstCoroutine != null) StopCoroutine(burstCoroutine);
-            burstCoroutine = StartCoroutine(AnimateBurst());
+            burstCoroutine = StartCoroutine(AnimateRoarBurst());
 
-            // Quét lần đầu tiên ngay khi vừa kích hoạt
-            UpdateAlliesInZone();
+            if (shakeCoroutine != null) StopCoroutine(shakeCoroutine);
+            shakeCoroutine = StartCoroutine(AnimateScreenShake(roarShakeDuration, roarShakeMagnitude));
 
-            OnZoneStateChange?.Invoke(true);
+            OnRoarTriggered?.Invoke();
+            OnFormStateChange?.Invoke(true);
+        }
+
+        private void ApplyFormBonus()
+        {
+            if (ownerTank == null) return;
+
+            TankStats bonus = TankStats.Zeroed();
+            bonus.MaxHealth = bonusMaxHealth;
+            // Lưu ý: Cả sát thương phạt (damagePenalty) và thời gian hồi chiêu phạt (cooldownPenalty)
+            // đều được áp dụng riêng biệt cho đòn đánh thường (Normal Attack) bên trong TankBrain_Leviathan.
+
+            ownerTank.AddBonusStats(FormBonusStatsKey, bonus);
+
+            // Hồi phục ngay lập tức một lượng máu bằng bonusMaxHealth để việc gia tăng thanh máu có ý nghĩa tức thì
+            if (bonusMaxHealth > 0f)
+            {
+                ownerTank.Heal(bonusMaxHealth);
+            }
+        }
+
+        private void RemoveFormBonus()
+        {
+            if (ownerTank != null)
+            {
+                ownerTank.RemoveBonusStats(FormBonusStatsKey);
+            }
         }
 
         private void Update()
         {
-            if (!isZoneActive) return;
+            if (!isFormActive) return;
 
             // Kiểm tra xe tăng chủ thể
             if (ownerTank == null || !ownerTank.IsAlive)
             {
-                CancelSkill();
+                CancelForm();
                 return;
             }
 
-            // Di chuyển đồng bộ bám sát theo vị trí xe tăng Leviathan
+            // Đồng bộ vị trí linh ảnh theo xe tăng
             transform.position = ownerTank.transform.position;
 
-            // Xoay tròn cuộn sóng của vùng nước
-            if (visualZone != null && rotationSpeed != 0f)
+            // 1. Quản lý thời gian miễn sát thương
+            if (remainingInvulnerableTime > 0f)
             {
-                visualZone.transform.Rotate(0f, 0f, rotationSpeed * Time.deltaTime);
+                remainingInvulnerableTime -= Time.deltaTime;
+                if (remainingInvulnerableTime <= 0f)
+                {
+                    remainingInvulnerableTime = 0f;
+                    ownerTank.RemoveShield(this);
+                }
             }
 
-            // Quét tìm và cập nhật các đồng minh đứng trong vùng
-            scanTimer -= Time.deltaTime;
-            if (scanTimer <= 0f)
+            // 2. Hồi máu liên tục mỗi giây
+            if (healPerSecond > 0f)
             {
-                scanTimer = scanInterval;
-                UpdateAlliesInZone();
+                ownerTank.Heal(healPerSecond * Time.deltaTime);
             }
 
-            // Đếm ngược thời gian duy trì
+            // 3. Hiệu ứng nhấp nhô uy dũng của linh ảnh đầu rồng
+            if (visualDragonSpirit != null && dragonPulseScale > 0f && dragonPulseSpeed > 0f)
+            {
+                float pulse = 1f + Mathf.Sin(Time.time * dragonPulseSpeed * Mathf.PI * 2f) * dragonPulseScale;
+                visualDragonSpirit.transform.localScale = dragonInitialScale * pulse;
+            }
+
+            // 4. Đếm ngược thời gian duy trì dạng thủy quái
             remainingTime -= Time.deltaTime;
             if (remainingTime <= 0f)
             {
-                FinishSkill();
+                FinishForm();
             }
         }
 
-        /// <summary>
-        /// Quét tìm toàn bộ xe tăng đồng minh trong bán kính vùng thủy triều thuần túy qua ColliderOwnerRef.
-        /// Áp dụng buff tốc chạy và trao khiên giáp nước cho đồng minh mới vào vùng,
-        /// và gỡ bùa tăng tốc khi đồng minh bước ra ngoài.
-        /// </summary>
-        private void UpdateAlliesInZone()
+        private IEnumerator AnimateViewScale(Vector3 startScale, Vector3 targetScale, float dur)
         {
-            if (ownerTank == null) return;
+            if (ownerTank == null || ownerTank.View == null) yield break;
 
-            Physics2D.SyncTransforms();
-            Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, zoneRadius);
-            var currentAlliesFound = new HashSet<TankBrain>();
+            Transform viewTransform = ownerTank.View.transform;
+            float elapsed = 0f;
 
-            // Bản thân luôn nằm trong vùng nếu bật includeSelf
-            if (includeSelf && ownerTank != null && ownerTank.IsAlive)
+            while (elapsed < dur)
             {
-                currentAlliesFound.Add(ownerTank);
+                if (ownerTank == null || ownerTank.View == null) yield break;
+
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / dur);
+                // Ease Out Quad
+                float easeOut = 1f - (1f - t) * (1f - t);
+
+                viewTransform.localScale = Vector3.Lerp(startScale, targetScale, easeOut);
+                yield return null;
             }
 
-            for (int i = 0; i < colliders.Length; i++)
+            if (ownerTank != null && ownerTank.View != null)
             {
-                Collider2D col = colliders[i];
-                if (col == null) continue;
-
-                ColliderOwnerRef ownerRef = ColliderOwnerRef.FromCollider(col);
-                if (ownerRef != null && ownerRef.TryGetOwner<TankBrain>(out var tank) && tank.IsAlive)
-                {
-                    if (tank == ownerTank)
-                        continue;
-
-                    currentAlliesFound.Add(tank);
-                }
-            }
-
-            // 1. Xử lý các đồng minh mới bước vào vùng thủy triều
-            foreach (TankBrain ally in currentAlliesFound)
-            {
-                if (!alliesInZone.Contains(ally))
-                {
-                    alliesInZone.Add(ally);
-                    ApplyMoveSpeedBuff(ally);
-                    GrantWaterShield(ally);
-                    OnAllyEnteredZone?.Invoke(ally);
-                }
-            }
-
-            // 2. Xử lý các đồng minh đã rời khỏi vùng hoặc tử trận
-            var exitedAllies = new List<TankBrain>();
-            foreach (TankBrain ally in alliesInZone)
-            {
-                if (!currentAlliesFound.Contains(ally) || !ally.IsAlive)
-                {
-                    exitedAllies.Add(ally);
-                }
-            }
-
-            for (int i = 0; i < exitedAllies.Count; i++)
-            {
-                TankBrain ally = exitedAllies[i];
-                alliesInZone.Remove(ally);
-                RemoveMoveSpeedBuff(ally);
-                OnAllyExitedZone?.Invoke(ally);
+                ownerTank.View.transform.localScale = targetScale;
             }
         }
 
-        private void ApplyMoveSpeedBuff(TankBrain tank)
+        private IEnumerator AnimateRoarBurst()
         {
-            if (tank == null || bonusMoveSpeed <= 0f) return;
+            if (visualRoarBurst == null) yield break;
 
-            TankStats speedBonus = TankStats.Zeroed();
-            speedBonus.MoveSpeed = bonusMoveSpeed;
-
-            tank.AddBonusStats(TideCommanderSpeedBuffKey, speedBonus);
-        }
-
-        private void RemoveMoveSpeedBuff(TankBrain tank)
-        {
-            if (tank != null)
-            {
-                tank.RemoveBonusStats(TideCommanderSpeedBuffKey);
-            }
-        }
-
-        private void GrantWaterShield(TankBrain tank)
-        {
-            if (tank == null || shieldCapacity <= 0f) return;
-
-            // Nếu đồng minh chưa có khiên hoặc khiên cũ đã vỡ hoàn toàn -> cấp khiên mới
-            if (!activeShields.TryGetValue(tank, out var shield) || !shield.IsActive)
-            {
-                var newShield = new TideWaterShield(tank, shieldCapacity);
-                activeShields[tank] = newShield;
-                tank.AddShield(newShield);
-            }
-        }
-
-        private IEnumerator AnimateBurst()
-        {
-            if (visualBurst == null) yield break;
-
-            visualBurst.transform.localPosition = Vector3.zero;
-            visualBurst.transform.localScale = burstInitialScale;
+            visualRoarBurst.transform.localPosition = Vector3.zero;
+            visualRoarBurst.transform.localScale = burstInitialScale;
             if (burstRenderer != null)
             {
                 burstRenderer.color = burstInitialColor;
             }
-            visualBurst.SetActive(true);
+            visualRoarBurst.SetActive(true);
 
             Vector3 startScale = burstInitialScale;
-            Vector3 targetScale = burstInitialScale * 1.4f;
-
+            Vector3 targetScale = burstInitialScale * 1.5f;
+            float dur = 0.45f;
             float elapsed = 0f;
-            while (elapsed < burstDuration)
+
+            while (elapsed < dur)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / burstDuration);
+                float t = Mathf.Clamp01(elapsed / dur);
 
-                visualBurst.transform.localScale = Vector3.Lerp(startScale, targetScale, t);
+                visualRoarBurst.transform.localScale = Vector3.Lerp(startScale, targetScale, t);
 
                 if (burstRenderer != null)
                 {
@@ -335,176 +380,164 @@ namespace IronWasteland.Tanks.Leviathan
                 yield return null;
             }
 
-            visualBurst.transform.localScale = burstInitialScale;
+            visualRoarBurst.transform.localScale = burstInitialScale;
             if (burstRenderer != null)
             {
                 burstRenderer.color = burstInitialColor;
             }
-            visualBurst.SetActive(false);
+            visualRoarBurst.SetActive(false);
         }
 
-        private void FinishSkill()
+        private IEnumerator AnimateScreenShake(float dur, float magnitude)
         {
-            isZoneActive = false;
+            Camera cam = Camera.main;
+            if (cam == null) yield break;
+
+            Transform camTransform = cam.transform;
+            Vector3 originalCamPos = camTransform.position;
+            float elapsed = 0f;
+
+            while (elapsed < dur)
+            {
+                if (cam == null) yield break;
+
+                elapsed += Time.deltaTime;
+                float progress = Mathf.Clamp01(elapsed / dur);
+                float strength = (1f - progress) * magnitude;
+
+                Vector2 offset = UnityEngine.Random.insideUnitCircle * strength;
+                camTransform.position = new Vector3(originalCamPos.x + offset.x, originalCamPos.y + offset.y, originalCamPos.z);
+                yield return null;
+            }
+
+            if (cam != null)
+            {
+                camTransform.position = originalCamPos;
+            }
+        }
+
+        private void FinishForm()
+        {
+            isFormActive = false;
             remainingTime = 0f;
+            remainingInvulnerableTime = 0f;
 
-            // Gỡ bỏ bùa tăng tốc khỏi toàn bộ đồng minh đang ở trong vùng
-            foreach (TankBrain ally in alliesInZone)
+            // Gỡ bỏ khiên miễn sát thương nếu còn
+            if (ownerTank != null)
             {
-                RemoveMoveSpeedBuff(ally);
-            }
-            alliesInZone.Clear();
-
-            // Gỡ bỏ các khiên giáp nước đang kích hoạt
-            foreach (var kvp in activeShields)
-            {
-                TankBrain ally = kvp.Key;
-                TideWaterShield shield = kvp.Value;
-                if (ally != null && shield != null)
-                {
-                    shield.BreakShield();
-                    ally.RemoveShield(shield);
-                }
-            }
-            activeShields.Clear();
-
-            if (visualZone != null)
-            {
-                visualZone.SetActive(false);
+                ownerTank.RemoveShield(this);
             }
 
-            if (visualBurst != null)
+            // Gỡ bỏ chỉ số buff/debuff
+            RemoveFormBonus();
+
+            // Thu nhỏ View của xe tăng về lại kích thước ban đầu
+            if (ownerTank != null && ownerTank.View != null)
             {
-                visualBurst.SetActive(false);
+                if (viewScaleCoroutine != null) StopCoroutine(viewScaleCoroutine);
+                viewScaleCoroutine = StartCoroutine(AnimateViewScale(ownerTank.View.transform.localScale, originalViewScale, transformTransitionDuration));
             }
 
-            gameObject.SetActive(false);
-            OnZoneStateChange?.Invoke(false);
+            // Tắt linh ảnh đầu rồng
+            if (visualDragonSpirit != null)
+            {
+                visualDragonSpirit.transform.localScale = dragonInitialScale;
+                visualDragonSpirit.SetActive(false);
+            }
+
+            if (visualRoarBurst != null)
+            {
+                visualRoarBurst.transform.localScale = burstInitialScale;
+                visualRoarBurst.SetActive(false);
+            }
+
+            OnFormStateChange?.Invoke(false);
         }
 
         /// <summary>
-        /// Hủy bỏ kỹ năng khi xe tăng tử trận hoặc kết thúc trận đấu.
+        /// Đặt lại toàn bộ trạng thái runtime của Dạng Thủy Quái về mặc định.
+        /// CHỈ reset state: không phát event, không tắt GameObject.
+        /// Dùng chung cho CancelForm (kết thúc trong trận) và Clear (dọn dẹp khi tái sử dụng).
         /// </summary>
-        public void CancelSkill()
+        private void ResetRuntimeState()
         {
             StopAllCoroutines();
+            viewScaleCoroutine = null;
             burstCoroutine = null;
+            shakeCoroutine = null;
 
-            if (isZoneActive)
+            if (isFormActive)
             {
-                foreach (TankBrain ally in alliesInZone)
+                if (ownerTank != null)
                 {
-                    RemoveMoveSpeedBuff(ally);
+                    ownerTank.RemoveShield(this);
                 }
-                alliesInZone.Clear();
-
-                foreach (var kvp in activeShields)
-                {
-                    TankBrain ally = kvp.Key;
-                    TideWaterShield shield = kvp.Value;
-                    if (ally != null && shield != null)
-                    {
-                        shield.BreakShield();
-                        ally.RemoveShield(shield);
-                    }
-                }
-                activeShields.Clear();
+                RemoveFormBonus();
             }
 
-            isZoneActive = false;
+            isFormActive = false;
             remainingTime = 0f;
+            remainingInvulnerableTime = 0f;
 
-            if (visualZone != null)
+            if (ownerTank != null && ownerTank.View != null && originalViewScale != Vector3.zero)
             {
-                visualZone.SetActive(false);
+                ownerTank.View.transform.localScale = originalViewScale;
             }
 
-            if (visualBurst != null)
+            if (visualDragonSpirit != null)
             {
-                visualBurst.transform.localScale = burstInitialScale;
-                if (burstRenderer != null)
-                {
-                    burstRenderer.color = burstInitialColor;
-                }
-                visualBurst.SetActive(false);
+                visualDragonSpirit.transform.localScale = dragonInitialScale;
+                visualDragonSpirit.SetActive(false);
             }
 
-            gameObject.SetActive(false);
-            OnZoneStateChange?.Invoke(false);
+            if (visualRoarBurst != null)
+            {
+                visualRoarBurst.transform.localScale = burstInitialScale;
+                visualRoarBurst.SetActive(false);
+            }
         }
 
+        /// <summary>
+        /// Hủy bỏ dạng thủy quái khi xe tử trận hoặc tắt game.
+        /// </summary>
+        public void CancelForm()
+        {
+            ResetRuntimeState();
+            gameObject.SetActive(false);
+            OnFormStateChange?.Invoke(false);
+        }
+
+        /// <summary>
+        /// Dọn dẹp để tái sử dụng: reset state và gỡ owner.
+        /// Không phát event, không tắt GameObject, KHÔNG xoá subscriber —
+        /// người nghe tự gỡ đăng ký của mình trong OnDisable/OnDestroy.
+        /// Initialize gọi hàm này trước tiên.
+        /// </summary>
         public void Clear()
         {
-            CancelSkill();
+            ResetRuntimeState();
             ownerTank = null;
-            OnAllyEnteredZone = null;
-            OnAllyExitedZone = null;
-            OnZoneStateChange = null;
         }
 
         private void OnDisable()
         {
-            CancelSkill();
+            CancelForm();
         }
 
         private void OnDestroy()
         {
-            CancelSkill();
+            CancelForm();
         }
 
         private void OnValidate()
         {
             duration = Mathf.Max(1.0f, duration);
-            zoneRadius = Mathf.Max(1.0f, zoneRadius);
-            scanInterval = Mathf.Max(0.02f, scanInterval);
-            bonusMoveSpeed = Mathf.Max(0f, bonusMoveSpeed);
-            shieldCapacity = Mathf.Max(0f, shieldCapacity);
-            burstDuration = Mathf.Max(0.05f, burstDuration);
-        }
-    }
-
-    /// <summary>
-    /// Lớp khiên giáp nước hấp thụ sát thương bảo vệ cho đồng minh đi trong vùng Tide Commander.
-    /// Triển khai giao diện <see cref="ITankShield"/>.
-    /// </summary>
-    public class TideWaterShield : ITankShield
-    {
-        private readonly float maxCapacity;
-        private float currentShield;
-        private readonly TankBrain targetTank;
-
-        public bool IsActive => currentShield > 0f && targetTank != null && targetTank.IsAlive;
-        public float CurrentShield => currentShield;
-        public float MaxCapacity => maxCapacity;
-
-        public TideWaterShield(TankBrain tank, float capacity)
-        {
-            this.targetTank = tank;
-            this.maxCapacity = capacity;
-            this.currentShield = capacity;
-        }
-
-        public bool TryAbsorbDamage(ref float incomingDamage)
-        {
-            if (currentShield <= 0f) return false;
-
-            if (incomingDamage <= currentShield)
-            {
-                currentShield -= incomingDamage;
-                incomingDamage = 0f;
-                return true;
-            }
-            else
-            {
-                incomingDamage -= currentShield;
-                currentShield = 0f;
-                return false;
-            }
-        }
-
-        public void BreakShield()
-        {
-            currentShield = 0f;
+            invulnerabilityDuration = Mathf.Max(0.1f, invulnerabilityDuration);
+            bonusMaxHealth = Mathf.Max(0f, bonusMaxHealth);
+            healPerSecond = Mathf.Max(0f, healPerSecond);
+            transformTransitionDuration = Mathf.Max(0.05f, transformTransitionDuration);
+            roarShakeDuration = Mathf.Max(0.05f, roarShakeDuration);
+            roarShakeMagnitude = Mathf.Max(0.01f, roarShakeMagnitude);
         }
     }
 }

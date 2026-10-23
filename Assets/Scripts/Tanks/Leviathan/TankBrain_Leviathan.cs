@@ -106,10 +106,10 @@ namespace IronWasteland.Tanks.Leviathan
         [SerializeField] private OptionalSkill2_Leviathan optionalSkill2;
 
         [Tooltip("Kỹ năng tùy chọn 2 - Biến thể 2: Leviathan Form (Dạng Thủy Quái).")]
-        [SerializeField] private OptionalSkill2_1_Leviathan optionalSkill2_1;
+        [SerializeField] private OptionalSkill2_2_Leviathan optionalSkill2_2;
 
         [Tooltip("Kỹ năng tùy chọn 2 - Biến thể 3: Tide Commander (Chỉ Huy Thủy Triều).")]
-        [SerializeField] private OptionalSkill2_2_Leviathan optionalSkill2_2;
+        [SerializeField] private OptionalSkill2_3_Leviathan optionalSkill2_3;
 
         [Header("Optional Skill 2 (Tidal Return) - Combat & Scaling")]
         [Tooltip("Sát thương diện rộng cơ bản khi kéo kẻ địch về tâm xoáy.")]
@@ -118,40 +118,40 @@ namespace IronWasteland.Tanks.Leviathan
         [Tooltip("Thời gian hồi chiêu của Optional Skill 2 (giây).")]
         [SerializeField, Min(0.01f)] private float optionalSkill2Cooldown = 10f;
 
-        [Header("Optional Skill 2_1 (Leviathan Form) - Combat & Scaling")]
+        [Header("Optional Skill 2_2 (Leviathan Form) - Combat & Scaling")]
         [Tooltip("Thời gian duy trì dạng thủy quái (giây).")]
-        [SerializeField, Min(1.0f)] private float optionalSkill2_1Duration = 8f;
-
-        [Tooltip("Thời gian miễn nhiễm sát thương khi chuyển dạng (giây).")]
-        [SerializeField, Min(0.1f)] private float optionalSkill2_1InvulnerabilityDuration = 1.2f;
-
-        [Tooltip("Lượng máu tối đa cộng thêm khi ở dạng thủy quái.")]
-        [SerializeField, Min(0f)] private float optionalSkill2_1BonusMaxHealth = 300f;
-
-        [Tooltip("Lượng máu hồi phục mỗi giây trong suốt thời gian biến dạng.")]
-        [SerializeField, Min(0f)] private float optionalSkill2_1HealPerSecond = 20f;
-
-        [Tooltip("Phần trăm sát thương của đòn đánh thường bị giảm khi ở dạng thủy quái (0.25 = giảm 25% sát thương đòn đánh thường).")]
-        [SerializeField, Range(0f, 1f)] private float optionalSkill2_1DamagePenalty = 0.25f;
-
-        [Tooltip("Phần trăm thời gian hồi chiêu của đòn đánh thường bị tăng thêm khi ở dạng thủy quái (0.2 = tăng 20% hồi chiêu đòn đánh thường).")]
-        [SerializeField, Range(0f, 1f)] private float optionalSkill2_1CooldownPenalty = 0.2f;
-
-        [Tooltip("Thời gian hồi chiêu của Optional Skill 2_1 (giây).")]
-        [SerializeField, Min(0.01f)] private float optionalSkill2_1Cooldown = 15f;
-
-        [Header("Optional Skill 2_2 (Tide Commander) - Combat & Scaling")]
-        [Tooltip("Thời gian duy trì của vùng thủy triều (giây).")]
         [SerializeField, Min(1.0f)] private float optionalSkill2_2Duration = 8f;
 
-        [Tooltip("Tốc độ di chuyển cộng thêm cho đồng minh khi đứng trong vùng (đơn vị/giây).")]
-        [SerializeField, Min(0f)] private float optionalSkill2_2BonusMoveSpeed = 2.0f;
+        [Tooltip("Thời gian miễn nhiễm sát thương khi chuyển dạng (giây).")]
+        [SerializeField, Min(0.1f)] private float optionalSkill2_2InvulnerabilityDuration = 1.2f;
 
-        [Tooltip("Lượng sát thương tối đa lớp giáp nước có thể hấp thụ cho mỗi đồng minh.")]
-        [SerializeField, Min(0f)] private float optionalSkill2_2ShieldCapacity = 120f;
+        [Tooltip("Lượng máu tối đa cộng thêm khi ở dạng thủy quái.")]
+        [SerializeField, Min(0f)] private float optionalSkill2_2BonusMaxHealth = 300f;
+
+        [Tooltip("Lượng máu hồi phục mỗi giây trong suốt thời gian biến dạng.")]
+        [SerializeField, Min(0f)] private float optionalSkill2_2HealPerSecond = 20f;
+
+        [Tooltip("Phần trăm sát thương của đòn đánh thường bị giảm khi ở dạng thủy quái (0.25 = giảm 25% sát thương đòn đánh thường).")]
+        [SerializeField, Range(0f, 1f)] private float optionalSkill2_2DamagePenalty = 0.25f;
+
+        [Tooltip("Phần trăm thời gian hồi chiêu của đòn đánh thường bị tăng thêm khi ở dạng thủy quái (0.2 = tăng 20% hồi chiêu đòn đánh thường).")]
+        [SerializeField, Range(0f, 1f)] private float optionalSkill2_2CooldownPenalty = 0.2f;
 
         [Tooltip("Thời gian hồi chiêu của Optional Skill 2_2 (giây).")]
-        [SerializeField, Min(0.01f)] private float optionalSkill2_2Cooldown = 12f;
+        [SerializeField, Min(0.01f)] private float optionalSkill2_2Cooldown = 15f;
+
+        [Header("Optional Skill 2_3 (Tide Commander) - Combat & Scaling")]
+        [Tooltip("Thời gian duy trì của vùng thủy triều (giây).")]
+        [SerializeField, Min(1.0f)] private float optionalSkill2_3Duration = 8f;
+
+        [Tooltip("Tốc độ di chuyển cộng thêm cho đồng minh khi đứng trong vùng (đơn vị/giây).")]
+        [SerializeField, Min(0f)] private float optionalSkill2_3BonusMoveSpeed = 2.0f;
+
+        [Tooltip("Lượng sát thương tối đa lớp giáp nước có thể hấp thụ cho mỗi đồng minh.")]
+        [SerializeField, Min(0f)] private float optionalSkill2_3ShieldCapacity = 120f;
+
+        [Tooltip("Thời gian hồi chiêu của Optional Skill 2_3 (giây).")]
+        [SerializeField, Min(0.01f)] private float optionalSkill2_3Cooldown = 12f;
 
         private const int normalSkillIndex = 0;
         private const int specializedSkillIndex = 1;
@@ -177,9 +177,9 @@ namespace IronWasteland.Tanks.Leviathan
             if (index == normalSkillIndex)
             {
                 float cd = normalSkillCooldown;
-                if (optionalSkill2_1 != null && optionalSkill2_1.IsActive)
+                if (optionalSkill2_2 != null && optionalSkill2_2.IsActive)
                 {
-                    cd *= (1f + optionalSkill2_1.CooldownPenalty);
+                    cd *= (1f + optionalSkill2_2.CooldownPenalty);
                 }
                 return cd;
             }
@@ -206,11 +206,11 @@ namespace IronWasteland.Tanks.Leviathan
             {
                 if (Context.OptionSkill2 == 1)
                 {
-                    return optionalSkill2_1Cooldown;
+                    return optionalSkill2_2Cooldown;
                 }
                 if (Context.OptionSkill2 == 2)
                 {
-                    return optionalSkill2_2Cooldown;
+                    return optionalSkill2_3Cooldown;
                 }
                 return optionalSkill2Cooldown;
             }
@@ -315,39 +315,39 @@ namespace IronWasteland.Tanks.Leviathan
         {
             if (Context.OptionSkill2 == 1)
             {
-                if (optionalSkill2_1 != null)
-                {
-                    optionalSkill2_1.gameObject.SetActive(true);
-                    optionalSkill2_1.Initialize(
-                        this,
-                        optionalSkill2_1Duration,
-                        optionalSkill2_1InvulnerabilityDuration,
-                        optionalSkill2_1BonusMaxHealth,
-                        optionalSkill2_1HealPerSecond,
-                        optionalSkill2_1DamagePenalty,
-                        optionalSkill2_1CooldownPenalty);
-                }
-                else
-                {
-                    Debug.LogWarning($"[{nameof(TankBrain_Leviathan)}] Chưa gán OptionalSkill2_1_Leviathan.", this);
-                }
-                return;
-            }
-
-            if (Context.OptionSkill2 == 2)
-            {
                 if (optionalSkill2_2 != null)
                 {
                     optionalSkill2_2.gameObject.SetActive(true);
                     optionalSkill2_2.Initialize(
                         this,
                         optionalSkill2_2Duration,
-                        optionalSkill2_2BonusMoveSpeed,
-                        optionalSkill2_2ShieldCapacity);
+                        optionalSkill2_2InvulnerabilityDuration,
+                        optionalSkill2_2BonusMaxHealth,
+                        optionalSkill2_2HealPerSecond,
+                        optionalSkill2_2DamagePenalty,
+                        optionalSkill2_2CooldownPenalty);
                 }
                 else
                 {
                     Debug.LogWarning($"[{nameof(TankBrain_Leviathan)}] Chưa gán OptionalSkill2_2_Leviathan.", this);
+                }
+                return;
+            }
+
+            if (Context.OptionSkill2 == 2)
+            {
+                if (optionalSkill2_3 != null)
+                {
+                    optionalSkill2_3.gameObject.SetActive(true);
+                    optionalSkill2_3.Initialize(
+                        this,
+                        optionalSkill2_3Duration,
+                        optionalSkill2_3BonusMoveSpeed,
+                        optionalSkill2_3ShieldCapacity);
+                }
+                else
+                {
+                    Debug.LogWarning($"[{nameof(TankBrain_Leviathan)}] Chưa gán OptionalSkill2_3_Leviathan.", this);
                 }
                 return;
             }
@@ -473,9 +473,9 @@ namespace IronWasteland.Tanks.Leviathan
 
             // Tính hệ số sát thương (kèm hình phạt giảm sát thương nếu đang ở dạng Leviathan Form)
             float multiplier = Stats.DamageMultiplier;
-            if (optionalSkill2_1 != null && optionalSkill2_1.IsActive)
+            if (optionalSkill2_2 != null && optionalSkill2_2.IsActive)
             {
-                multiplier *= Mathf.Max(0f, 1f - optionalSkill2_1.DamagePenalty);
+                multiplier *= Mathf.Max(0f, 1f - optionalSkill2_2.DamagePenalty);
             }
 
             // Gây sát thương lên kẻ địch
@@ -646,14 +646,14 @@ namespace IronWasteland.Tanks.Leviathan
                 optionalSkill2.Clear();
             }
 
-            if (optionalSkill2_1 != null)
-            {
-                optionalSkill2_1.Clear();
-            }
-
             if (optionalSkill2_2 != null)
             {
                 optionalSkill2_2.Clear();
+            }
+
+            if (optionalSkill2_3 != null)
+            {
+                optionalSkill2_3.Clear();
             }
         }
 

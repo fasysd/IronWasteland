@@ -125,17 +125,15 @@ namespace IronWasteland.Tanks.Leviathan
         public void Initialize(TankBrain owner, float baseHealRate = -1f, float bonusHeal = -1f, float dur = -1f)
         {
             if (owner == null) return;
+
+            // Dọn dẹp trạng thái của lần kích hoạt trước trước khi áp cấu hình mới
+            Clear();
+
             this.ownerTank = owner;
 
             if (baseHealRate >= 0f) this.baseHealPerSecond = baseHealRate;
             if (bonusHeal >= 0f) this.bonusCompletionHeal = bonusHeal;
             if (dur >= 0f) this.duration = dur;
-
-            // Nếu kén đang hoạt động thì làm mới trạng thái
-            if (isShellActive)
-            {
-                CancelShell();
-            }
 
             remainingTime = duration;
             isShellActive = true;
@@ -322,9 +320,11 @@ namespace IronWasteland.Tanks.Leviathan
         }
 
         /// <summary>
-        /// Hủy bỏ kén nước mà không kích hoạt thưởng hoàn tất.
+        /// Đặt lại toàn bộ trạng thái runtime của kén nước về mặc định.
+        /// CHỈ reset state: không phát event, không tắt GameObject.
+        /// Dùng chung cho CancelShell (kết thúc trong trận) và Clear (dọn dẹp khi tái sử dụng).
         /// </summary>
-        public void CancelShell()
+        private void ResetRuntimeState()
         {
             if (burstCoroutine != null)
             {
@@ -355,18 +355,28 @@ namespace IronWasteland.Tanks.Leviathan
                 }
                 visualBurst.SetActive(false);
             }
+        }
 
+        /// <summary>
+        /// Hủy bỏ kén nước mà không kích hoạt thưởng hoàn tất.
+        /// </summary>
+        public void CancelShell()
+        {
+            ResetRuntimeState();
             OnShellStateChange?.Invoke(false);
             gameObject.SetActive(false);
         }
 
+        /// <summary>
+        /// Dọn dẹp để tái sử dụng: reset state và gỡ owner.
+        /// Không phát event, không tắt GameObject, KHÔNG xoá subscriber —
+        /// người nghe tự gỡ đăng ký của mình trong OnDisable/OnDestroy.
+        /// Initialize gọi hàm này trước tiên.
+        /// </summary>
         public void Clear()
         {
-            CancelShell();
+            ResetRuntimeState();
             ownerTank = null;
-            OnShellStateChange = null;
-            OnBonusHealTriggered = null;
-            OnDamagedDuringShell = null;
         }
 
         private void OnDisable()
