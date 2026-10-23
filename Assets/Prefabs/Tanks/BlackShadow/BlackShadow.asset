@@ -56,7 +56,7 @@ MonoBehaviour:
       Defense: 35.6
       DamageMultiplier: 1.89
       ArmorPenetration: 0.267
-      MaxHealth: 1400
+      MaxHealth: 5167
       MaxEnergy: 680
       MoveSpeed: 7.45
       CooldownReduction: 0.356
@@ -64,3 +64,11 @@ MonoBehaviour:
   viewPrefabs:
   - {fileID: 4035724410283292367, guid: 493b60d53e11c6a4fa06bcf98c442a43, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
+  context:
+    Level: 0
+    IdView: 0
+    FirepowerEquipmentId: 0
+    DefenseEquipmentId: 0
+    MobilityEquipmentId: 0
+    OptionSkill1: 0
+    OptionSkill2: 0

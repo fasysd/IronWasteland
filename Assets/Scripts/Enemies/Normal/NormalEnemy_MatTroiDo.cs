@@ -42,6 +42,9 @@ namespace IronWasteland.Enemies.Normal
         [Tooltip("Tỷ lệ bán kính vùng nổ dùng để phân tán vị trí xuất hiện của KSTT.")]
         [SerializeField, Range(0.1f, 1f)] private float spawnRadiusRatio = 0.7f;
 
+        [Tooltip("Thời gian tồn tại của Ký Sinh Thiên Thạch từ khi xuất hiện đến khi tự chết và phát nổ (giây).")]
+        [SerializeField, Min(1f)] private float kySinhThienThachLifespan = 5.0f;
+
         [Header("Runtime Info")]
         [SerializeField, ReadOnly] private float currentCooldownTimer;
         [SerializeField, ReadOnly] private bool isCasting;
@@ -59,6 +62,8 @@ namespace IronWasteland.Enemies.Normal
         public int MinSpawnCount { get => minSpawnCount; set => minSpawnCount = value; }
         public int MaxSpawnCount { get => maxSpawnCount; set => maxSpawnCount = value; }
         public float SpawnRadiusRatio { get => spawnRadiusRatio; set => spawnRadiusRatio = value; }
+
+        public float KySinhThienThachLifespan { get => kySinhThienThachLifespan; set => kySinhThienThachLifespan = value; }
         public float CurrentCooldownTimer => currentCooldownTimer;
         public bool IsCasting => isCasting;
         public int ActiveZoneCount => m_ActiveZones.Count;
@@ -232,6 +237,7 @@ namespace IronWasteland.Enemies.Normal
                 {
                     ksttInstance.gameObject.SetActive(true);
                     ksttInstance.AnchorPointD = spawnPos;
+                    ksttInstance.SetLifespan(kySinhThienThachLifespan);
                 }
             }
         }

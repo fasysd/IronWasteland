@@ -32,6 +32,7 @@ namespace IronWasteland.Enemies.Normal
 
         [Tooltip("Danh sách các điểm tọa độ World Space tạo thành quỹ đạo di chuyển.")]
         [ContextMenuItem("Thêm tọa độ hiện tại của đối tượng", nameof(AddWaypointAtCurrentPosition))]
+        [ContextMenuItem("Dịch chuyển quỹ đạo về vị trí hiện tại", nameof(ShiftWaypointsToCurrentPosition))]
         [SerializeField] protected List<Vector2> waypoints = new List<Vector2>();
 
         [Tooltip("Khoảng cách tiếp cận được tính là đã chạm tới điểm quỹ đạo để chuyển sang điểm tiếp theo.")]
@@ -259,26 +260,36 @@ namespace IronWasteland.Enemies.Normal
 #endif
         }
 
-        [ContextMenu("Tạo mẫu quỹ đạo hình vuông quanh vị trí hiện tại")]
-        public void CreateSampleSquareWaypoints()
+        [ContextMenu("Dịch chuyển quỹ đạo về vị trí hiện tại")]
+        [ContextMenu("Shift Waypoints To Current Position")]
+        public void ShiftWaypointsToCurrentPosition()
         {
-#if UNITY_EDITOR
-            Undo.RecordObject(this, "Create Sample Square Waypoints");
-#endif
-            Vector2 pos = transform.position;
-            float r = 3f;
-            waypoints = new List<Vector2>
+            if (waypoints == null || waypoints.Count == 0)
             {
-                pos + new Vector2(-r, -r),
-                pos + new Vector2(r, -r),
-                pos + new Vector2(r, r),
-                pos + new Vector2(-r, r)
-            };
-            currentWaypointIndex = 0;
-            patrolDirection = 1;
+                Debug.LogWarning($"[{name}] Danh sách điểm quỹ đạo rỗng, không có điểm nào để dịch chuyển.", this);
+                return;
+            }
+
+#if UNITY_EDITOR
+            Undo.RecordObject(this, "Shift Waypoints To Current Position");
+#endif
+            Vector2 currentPos = transform.position;
+            Vector2 delta = currentPos - waypoints[0];
+
+            for (int i = 0; i < waypoints.Count; i++)
+            {
+                waypoints[i] += delta;
+            }
+
+            if (Application.isPlaying && movementAgent != null && waypoints.Count > 0)
+            {
+                currentWaypointIndex = Mathf.Clamp(currentWaypointIndex, 0, waypoints.Count - 1);
+                movementAgent.SetPath(new List<Vector2> { waypoints[currentWaypointIndex] });
+            }
+
 #if UNITY_EDITOR
             EditorUtility.SetDirty(this);
-            Debug.Log($"[{name}] Đã tạo 4 điểm quỹ đạo mẫu hình vuông quanh {pos}.", this);
+            Debug.Log($"[{name}] Đã dịch chuyển {waypoints.Count} điểm quỹ đạo theo vector {delta}. Điểm đầu tiên (index 0) hiện ở vị trí hiện tại: {waypoints[0]}.", this);
 #endif
         }
 

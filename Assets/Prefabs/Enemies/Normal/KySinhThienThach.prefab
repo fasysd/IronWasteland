@@ -175,6 +175,8 @@ MonoBehaviour:
   skill: {fileID: 7164576974939703006}
   slowPercent: 0.5
   slowDuration: 3
+  lifespan: 0
+  currentLifespanTimer: 0
   isCastingSkill: 0
   isInvulnerable: 0
   hasDetonated: 0
@@ -436,7 +438,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 2.5
+  m_Radius: 0.5
 --- !u!114 &7164576974939703005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -463,7 +465,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.Normal.Skill_KySinhThienThach
   detonationDelay: 0.5
-  explosionRadius: 2.5
   hitCheckDelay: 0.05
 --- !u!212 &5679143078334665776
 SpriteRenderer:

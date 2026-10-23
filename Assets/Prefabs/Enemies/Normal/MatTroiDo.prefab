@@ -175,6 +175,8 @@ MonoBehaviour:
   skill: {fileID: 7789190670464160620}
   slowPercent: 0.5
   slowDuration: 3
+  lifespan: 5
+  currentLifespanTimer: 0
   isCastingSkill: 0
   isInvulnerable: 0
   hasDetonated: 0
@@ -1030,6 +1032,7 @@ MonoBehaviour:
   minSpawnCount: 2
   maxSpawnCount: 5
   spawnRadiusRatio: 0.7
+  kySinhThienThachLifespan: 5
   currentCooldownTimer: 0
   isCasting: 0
   activeZoneCount: 0

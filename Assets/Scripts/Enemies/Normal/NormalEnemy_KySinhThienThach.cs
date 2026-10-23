@@ -21,6 +21,12 @@ namespace IronWasteland.Enemies.Normal
         [Tooltip("Thời gian hiệu lực của hiệu ứng làm chậm (giây).")]
         [SerializeField, Min(0.5f)] private float slowDuration = 3f;
 
+        [Header("Lifespan Settings")]
+        [Tooltip("Thời gian tồn tại tối đa từ khi xuất hiện (giây). 0 = không giới hạn thời gian. Khi tồn tại quá lâu sẽ tự chết và phát nổ.")]
+        [SerializeField, Min(0f)] private float lifespan = 0f;
+
+        [SerializeField, ReadOnly] private float currentLifespanTimer = 0f;
+
         [Header("Runtime State")]
         [SerializeField, ReadOnly] private bool isCastingSkill = false;
         [SerializeField, ReadOnly] private bool isInvulnerable = false;
@@ -35,6 +41,22 @@ namespace IronWasteland.Enemies.Normal
         public bool IsCastingSkill => isCastingSkill;
         public bool IsInvulnerable => isInvulnerable;
         public bool HasDetonated => hasDetonated;
+
+        public float Lifespan { get => lifespan; set => lifespan = value; }
+
+        public float CurrentLifespanTimer => currentLifespanTimer;
+
+
+
+        public void SetLifespan(float duration)
+
+        {
+
+            lifespan = Mathf.Max(0f, duration);
+
+            currentLifespanTimer = 0f;
+
+        }
 
         protected override void Awake()
         {
@@ -72,6 +94,19 @@ namespace IronWasteland.Enemies.Normal
                 movementAgent?.Stop();
                 return;
             }
+
+            // Kiểm tra thời gian tồn tại từ khi xuất hiện: khi tồn tại quá lâu sẽ tự chết và kích hoạt kỹ năng tự nổ
+            if (lifespan > 0f)
+            {
+                currentLifespanTimer += deltaTime;
+                if (currentLifespanTimer >= lifespan)
+                {
+                    movementAgent?.Stop();
+                    Die();
+                    return;
+                }
+            }
+
 
             repathTimer -= deltaTime;
             if (movementAgent != null && Stats != null)

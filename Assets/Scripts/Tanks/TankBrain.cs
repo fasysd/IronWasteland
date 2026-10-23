@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -347,17 +347,30 @@ namespace IronWasteland.Tanks
         private void FixedUpdate()
         {
             // TODO: thay bang he thong di chuyen that su (dash, do loi, terrain...).
+            float moveSpeed = m_FinalStats.MoveSpeed;
+            bool canMove = moveSpeed > 0f;
+
             if (m_Body != null)
             {
-                m_Body.linearVelocity = m_MoveInput * m_FinalStats.MoveSpeed;
+                // Khi toc do di chuyen <= 0 thi Tank khong di chuyen duoc
+                m_Body.linearVelocity = canMove ? m_MoveInput * moveSpeed : Vector2.zero;
             }
 
             if (view == null) return;
 
-            // --- Action Move ---------------------------------------------------
+            // --- Action Move / Rotate -----------------------------------------
+            // Khi co input di chuyen: van xoay duoc huong (than xe xoay theo huong input).
+            // Neu MoveSpeed <= 0 thi chi xoay huong ma khong di chuyen hay bat animation chay banh.
             if (m_MoveInput.sqrMagnitude > 0.0001f)
             {
-                view.Move(m_MoveInput.normalized);
+                if (canMove)
+                {
+                    view.Move(m_MoveInput.normalized);
+                }
+                else
+                {
+                    view.RotateBody(m_MoveInput.normalized);
+                }
             }
             else
             {
