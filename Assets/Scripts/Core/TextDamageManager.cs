@@ -34,17 +34,17 @@ namespace IronWasteland
 
         [Header("Movement")]
         [Tooltip("Toc do di chuyen ra khoi tam (don vi / giay).")]
-        [SerializeField, Min(0f)] private float moveSpeed = 2f;
+        [SerializeField, Min(0f)] private float moveSpeed = 1f;
 
         [Tooltip("Thoi gian TextDamage hien thi truoc khi tra ve pool (giay).")]
-        [SerializeField, Min(0.01f)] private float lifetime = 0.75f;
+        [SerializeField, Min(0.01f)] private float lifetime = 0.5f;
 
         [Header("Text")]
         [Tooltip("Font hien thi. De trong se dung default font cua TMP Settings (LiberationSans SDF).")]
         [SerializeField] private TMP_FontAsset font;
 
         [Tooltip("Co chu (world space).")]
-        [SerializeField, Min(1)] private int fontSize = 48;
+        [SerializeField, Min(1)] private int fontSize = 14;
 
         [Tooltip("Mau chu. Alpha thuc te = color.a nhan voi alphaOverLifetime.")]
         [SerializeField] private Color color = Color.white;

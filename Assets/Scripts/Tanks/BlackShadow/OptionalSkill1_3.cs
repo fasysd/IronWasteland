@@ -1,3 +1,4 @@
+using IronWasteland;
 using IronWasteland.Tanks;
 using System;
 using System.Collections;
@@ -25,14 +26,6 @@ public class OptionalSkill1_3 : MonoBehaviour, ITankShield
     [Tooltip("Cho phép tự tạo khiên cho bản thân nếu không trỏ vào đồng minh nào.")]
     [SerializeField] private bool canTargetSelf = true;
 
-    [Header("Trạng Thái Khiên")]
-    [Tooltip("Trạng thái khiên có đang hoạt động hay không.")]
-    public bool isShield = false;
-
-    private float remainingTime = 0f;
-    private bool isInvoke = false;
-    private TankBrain targetTank;
-
     [Header("Hiển Thị Hình Ảnh (Visuals)")]
     [Tooltip("Kéo thả GameObject hiển thị bóng ma bảo vệ vào đây (VisualGuard).")]
     [SerializeField] private GameObject visualGuard;
@@ -49,15 +42,18 @@ public class OptionalSkill1_3 : MonoBehaviour, ITankShield
     [Tooltip("Thời gian hiển thị làn khói bùng tan khi đỡ đòn (giây).")]
     [SerializeField, Min(0.05f)] private float burstDuration = 0.4f;
 
+    // Trạng thái nội bộ (Runtime State)
+    private bool isShield = false;
+    private float remainingTime = 0f;
+    private bool isInvoke = false;
+    private TankBrain targetTank;
+    private float currentAngle;
+
+    // Thuộc tính công khai (Read-only Getters & ITankShield)
+    public bool IsActive => isShield && remainingTime > 0f;
     public float RemainingTime => remainingTime;
     public float Duration => duration;
-    public bool IsShield => isShield;
-    public bool IsActive => isShield && remainingTime > 0f;
     public TankBrain TargetTank => targetTank;
-    public GameObject VisualGuard => visualGuard;
-    public GameObject VisualBurst => visualBurst;
-
-    private float currentAngle;
 
     private void Awake()
     {
@@ -80,9 +76,9 @@ public class OptionalSkill1_3 : MonoBehaviour, ITankShield
         if (target == null) return;
 
         // Gỡ khiên cũ nếu mục tiêu trước đó còn khiên của kỹ năng này
-        if (targetTank != null && ReferenceEquals(targetTank.Shield, this))
+        if (targetTank != null)
         {
-            targetTank.Shield = null;
+            targetTank.RemoveShield(this);
         }
 
         targetTank = target;
@@ -90,7 +86,7 @@ public class OptionalSkill1_3 : MonoBehaviour, ITankShield
         isShield = true;
         isInvoke = false;
 
-        targetTank.Shield = this;
+        targetTank.AddShield(this);
 
         if (!gameObject.activeSelf)
         {
@@ -152,12 +148,15 @@ public class OptionalSkill1_3 : MonoBehaviour, ITankShield
         {
             Collider2D col = colliders[i];
             if (col == null) continue;
-
-            TankBrain target = col.GetComponentInParent<TankBrain>();
-            if (target != null && target != owner && target.IsAlive)
+            
+            ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(col);
+            if (targetRef != null && targetRef.TryGetOwner<TankBrain>(out var target))
             {
-                ally = target;
-                return true;
+                if (target != owner && target.IsAlive)
+                {
+                    ally = target;
+                    return true;
+                }
             }
         }
 
@@ -224,7 +223,7 @@ public class OptionalSkill1_3 : MonoBehaviour, ITankShield
     /// Kiểm tra nếu có khiên: hủy khiên, tạo hiệu ứng khói bùng tan và triệt tiêu hoàn toàn đòn đánh.
     /// Trả về true nếu đã triệt tiêu đòn đánh thành công.
     /// </summary>
-    public bool CheckAndConsumeShield()
+    private bool CheckAndConsumeShield()
     {
         if (isShield && remainingTime > 0)
         {
@@ -245,9 +244,9 @@ public class OptionalSkill1_3 : MonoBehaviour, ITankShield
         isShield = false;
         remainingTime = 0f;
 
-        if (targetTank != null && ReferenceEquals(targetTank.Shield, this))
+        if (targetTank != null)
         {
-            targetTank.Shield = null;
+            targetTank.RemoveShield(this);
         }
 
         if (visualGuard != null)

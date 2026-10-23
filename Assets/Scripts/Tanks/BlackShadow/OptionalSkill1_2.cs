@@ -1,3 +1,4 @@
+using IronWasteland;
 using IronWasteland.Tanks;
 using System;
 using UnityEngine;
@@ -11,6 +12,9 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class OptionalSkill1_2 : MonoBehaviour
 {
+    public event Action<TankBrain> OnLinkStarted;
+    public event Action<TankBrain> OnLinkEnded;
+
     [Header("Mục Tiêu & Thời Gian")]
     [Tooltip("Bán kính tìm kiếm đồng minh xung quanh vị trí con trỏ chuột.")]
     [SerializeField, Min(0.1f)] private float selectRadius = 1.0f;
@@ -29,35 +33,27 @@ public class OptionalSkill1_2 : MonoBehaviour
     [Tooltip("Kéo thả GameObject hiển thị dải xích bóng tối vào đây (VisualChain).")]
     [SerializeField] private GameObject visualChain;
 
-    [Tooltip("Sprite khói đen tỏa ra dưới thân mỗi xe (vfx_shadow_burst).")]
-    [SerializeField] private Sprite smokeSprite;
+    [Tooltip("Kéo thả GameObject hiển thị khói bóng tối dưới thân xe Black Shadow vào đây (VisualBurst).")]
+    [SerializeField] private GameObject visualBurst;
 
-    [Tooltip("Kích thước khói đen dưới thân xe.")]
-    [SerializeField] private Vector3 smokeScale = new Vector3(0.25f, 0.25f, 1f);
+    [Tooltip("Kéo thả GameObject hiển thị khói bóng tối dưới thân xe đồng minh (để trống sẽ tự nhân bản từ visualBurst).")]
+    [SerializeField] private GameObject visualBurstAlly;
 
-    [Tooltip("Thứ tự hiển thị (Sorting Order) của khói đen.")]
-    [SerializeField] private int smokeSortingOrder = -2;
-
-    public event Action<TankBrain> OnLinkStarted;
-    public event Action<TankBrain> OnLinkEnded;
-
-    public bool IsLinked => isLinked;
-    public TankBrain LinkedAlly => allyTank;
-    public float RemainingDuration => remainingDuration;
-    public GameObject VisualChain => visualChain;
+    // Trạng thái nội bộ (Runtime State)
+    private TankBrain ownerTank;
+    private TankBrain allyTank;
+    private bool isLinked = false;
+    private float remainingTime = 0f;
+    private SpriteRenderer chainRenderer;
 
     private const string SelfBonusKey = "ShadowLink_Self";
     private const string AllyBonusKey = "ShadowLink_Ally";
 
-    private TankBrain ownerTank;
-    private TankBrain allyTank;
-    private bool isLinked;
-    private float remainingDuration;
-
-    private SpriteRenderer chainRenderer;
-    private GameObject vfxRoot;
-    private GameObject ownerSmokeGo;
-    private GameObject allySmokeGo;
+    // Thuộc tính công khai (Read-only Getters & UI)
+    public bool IsActive => isLinked && remainingTime > 0f;
+    public float RemainingTime => remainingTime;
+    public float Duration => duration;
+    public TankBrain TargetTank => allyTank;
 
     private void Awake()
     {
@@ -67,30 +63,27 @@ public class OptionalSkill1_2 : MonoBehaviour
             visualChain.SetActive(false);
         }
 
-        if (smokeSprite != null)
+        // Tắt SpriteRenderer gắn sẵn trên GameObject này (nếu có) để tránh hiện xích thừa trên xe
+        SpriteRenderer selfSr = GetComponent<SpriteRenderer>();
+        if (selfSr != null)
         {
-            vfxRoot = new GameObject($"{gameObject.name}_Visuals");
-            vfxRoot.transform.SetParent(null);
-
-            ownerSmokeGo = CreateVfxObject("OwnerSmoke", smokeSprite, smokeSortingOrder, smokeScale);
-            allySmokeGo = CreateVfxObject("AllySmoke", smokeSprite, smokeSortingOrder, smokeScale);
-
-            ownerSmokeGo.SetActive(false);
-            allySmokeGo.SetActive(false);
+            selfSr.enabled = false;
         }
-    }
 
-    private GameObject CreateVfxObject(string objName, Sprite sprite, int sortingOrder, Vector3 scale)
-    {
-        GameObject go = new GameObject(objName);
-        go.transform.SetParent(vfxRoot.transform);
-        go.transform.localScale = scale;
+        if (visualBurst != null)
+        {
+            visualBurst.SetActive(false);
 
-        SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
-        sr.sprite = sprite;
-        sr.sortingOrder = sortingOrder;
-
-        return go;
+            if (visualBurstAlly == null && transform.parent != null)
+            {
+                visualBurstAlly = Instantiate(visualBurst, transform.parent);
+                visualBurstAlly.name = $"{visualBurst.name}_Ally";
+            }
+            if (visualBurstAlly != null)
+            {
+                visualBurstAlly.SetActive(false);
+            }
+        }
     }
 
     /// <summary>
@@ -123,7 +116,7 @@ public class OptionalSkill1_2 : MonoBehaviour
         if (isLinked) BreakLink();
 
         this.allyTank = foundAlly;
-        this.remainingDuration = duration;
+        this.remainingTime = duration;
         this.isLinked = true;
 
         // Tăng tốc độ di chuyển cho Black Shadow
@@ -148,10 +141,9 @@ public class OptionalSkill1_2 : MonoBehaviour
 
     /// <summary>
     /// Tìm kiếm tất cả các collider xung quanh vị trí chuột.
-    /// Nếu có collider nào thuộc về xe tăng đồng minh (khác bản thân và còn sống) thì chọn người đó,
-    /// nếu không có collider nào là đồng minh thì mới trả về false.
+    /// Nếu có collider nào thuộc về xe tăng đồng minh (khác owner và còn sống) thì chọn xe đó.
     /// </summary>
-    public bool TryFindAllyAt(Vector2 targetPos, out TankBrain ally)
+    public bool TryFindAllyAt(Vector2 targetPos, TankBrain owner, out TankBrain ally)
     {
         ally = null;
         Collider2D[] colliders = Physics2D.OverlapCircleAll(targetPos, selectRadius);
@@ -161,15 +153,26 @@ public class OptionalSkill1_2 : MonoBehaviour
             Collider2D col = colliders[i];
             if (col == null) continue;
 
-            TankBrain target = col.GetComponentInParent<TankBrain>();
-            if (target != null && target != ownerTank && target.IsAlive)
+            ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(col);
+            if (targetRef != null && targetRef.TryGetOwner<TankBrain>(out var target))
             {
-                ally = target;
-                return true;
+                if (target != owner && target.IsAlive)
+                {
+                    ally = target;
+                    return true;
+                }
             }
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Tìm kiếm xe tăng đồng minh xung quanh vị trí chỉ định đối với ownerTank hiện tại.
+    /// </summary>
+    public bool TryFindAllyAt(Vector2 targetPos, out TankBrain ally)
+    {
+        return TryFindAllyAt(targetPos, ownerTank, out ally);
     }
 
     private void Update()
@@ -184,8 +187,8 @@ public class OptionalSkill1_2 : MonoBehaviour
         }
 
         // Đếm ngược thời gian duy trì liên kết
-        remainingDuration -= Time.deltaTime;
-        if (remainingDuration <= 0f)
+        remainingTime -= Time.deltaTime;
+        if (remainingTime <= 0f)
         {
             BreakLink();
         }
@@ -232,15 +235,15 @@ public class OptionalSkill1_2 : MonoBehaviour
         }
 
         // 2. Cập nhật vị trí khói đen dưới thân mỗi xe
-        if (ownerSmokeGo != null) ownerSmokeGo.transform.position = start;
-        if (allySmokeGo != null) allySmokeGo.transform.position = end;
+        if (visualBurst != null) visualBurst.transform.position = start;
+        if (visualBurstAlly != null) visualBurstAlly.transform.position = end;
     }
 
     private void SetVisualsActive(bool isActive)
     {
         if (visualChain != null) visualChain.SetActive(isActive);
-        if (ownerSmokeGo != null) ownerSmokeGo.SetActive(isActive);
-        if (allySmokeGo != null) allySmokeGo.SetActive(isActive);
+        if (visualBurst != null) visualBurst.SetActive(isActive);
+        if (visualBurstAlly != null) visualBurstAlly.SetActive(isActive);
     }
 
     /// <summary>
@@ -251,7 +254,7 @@ public class OptionalSkill1_2 : MonoBehaviour
         if (!isLinked) return;
 
         isLinked = false;
-        remainingDuration = 0f;
+        remainingTime = 0f;
 
         if (ownerTank != null) ownerTank.RemoveBonusStats(SelfBonusKey);
         if (allyTank != null) allyTank.RemoveBonusStats(AllyBonusKey);
@@ -272,9 +275,5 @@ public class OptionalSkill1_2 : MonoBehaviour
     private void OnDestroy()
     {
         BreakLink();
-        if (vfxRoot != null)
-        {
-            Destroy(vfxRoot);
-        }
     }
 }

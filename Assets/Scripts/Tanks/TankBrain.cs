@@ -495,6 +495,13 @@ namespace IronWasteland.Tanks
             skillCooldowns[index] = Mathf.Max(0f, skillCooldowns[index] - amount);
         }
 
+        /// <summary>Gán trực tiếp thời gian hồi chiêu cho kỹ năng tại slot index.</summary>
+        public void SetSkillCooldown(int index, float amount)
+        {
+            if (index < 0 || index >= SkillCount) return;
+            skillCooldowns[index] = Mathf.Max(0f, amount);
+        }
+
         #endregion
     }
 }

@@ -61,6 +61,24 @@ public class TankBrainBlackShadow : TankBrain
     [SerializeField, Min(0f)] private float optionalSkill1_3Cooldown = 10f;
     [SerializeField, Min(0f)] private float cooldownReductionKillingInEnhanced = 10f;
 
+    [Header("Optional Skill 2 - Design")]
+    [Tooltip("Kỹ năng tùy chọn 2 - Biến thể 1: Shadow Ambush (Mai phục bóng tối).")]
+    [SerializeField] private OptionalSkill2 optionalSkill2;
+
+    [Tooltip("Kỹ năng tùy chọn 2 - Biến thể 2: Shadow Possession (Nhập thể bóng tối).")]
+    [SerializeField] private OptionalSkill2_1 optionalSkill2_1;
+
+    [Tooltip("Kỹ năng tùy chọn 2 - Biến thể 3: Shadow Exchange (Hoán đổi bóng tối).")]
+    [SerializeField] private OptionalSkill2_2 optionalSkill2_2;
+
+    [Tooltip("Thời gian hồi chiêu của Optional Skill 2 (giây).")]
+    [SerializeField, Min(0f)] private float optionalSkill2Cooldown = 8f;
+
+    [Tooltip("Thời gian hồi chiêu của Optional Skill 2_1 (giây).")]
+    [SerializeField, Min(0f)] private float optionalSkill2_1Cooldown = 12f;
+
+    [Tooltip("Thời gian hồi chiêu của Optional Skill 2_2 (giây).")]
+    [SerializeField, Min(0f)] private float optionalSkill2_2Cooldown = 10f;
 
     [Header("Optional Skill 1 - Orb VFX")]
     [Tooltip("Prefab của tàn hỏa đen (OptionalSkill1Orb) hút về thân xe.")]
@@ -71,8 +89,8 @@ public class TankBrainBlackShadow : TankBrain
 
     private const int normalSkillIndex = 0;
     private const int specializedSkillIndex = 1;
-
     private const int optionalSkill1Index = 2;
+    private const int optionalSkill2Index = 3;
 
     private bool isEnhanced = false;
 
@@ -96,6 +114,15 @@ public class TankBrainBlackShadow : TankBrain
         PrewarmOrbPool();
         if (optionalSkill1 != null)
             optionalSkill1.OnIsEnhancedChange += OptionalSkill1_OnTimeEnhancedRunOut;
+        if (optionalSkill2_2 != null)
+            optionalSkill2_2.OnCloneExpired += HandleOptionalSkill2CloneExpired;
+    }
+
+    private void HandleOptionalSkill2CloneExpired()
+    {
+        // Khi bản sao hết hạn hoặc bị đánh vỡ mà người chơi chưa kịp hoán đổi -> Kích hoạt full hồi chiêu (đã trừ CDR)
+        float fullCooldown = GetCooldownWithReduction(optionalSkill2_2Cooldown);
+        SetSkillCooldown(optionalSkill2Index, fullCooldown);
     }
 
     private void OptionalSkill1_OnTimeEnhancedRunOut(bool obj)
@@ -123,6 +150,20 @@ public class TankBrainBlackShadow : TankBrain
             if (Context.OptionSkill1 == 2) return optionalSkill1_3Cooldown;
             return optionalSkill1Cooldown;
         }
+        if (index == optionalSkill2Index)
+        {
+            if (Context.OptionSkill2 == 1) return optionalSkill2_1Cooldown;
+            if (Context.OptionSkill2 == 2)
+            {
+                // Nếu đang có bản sao ở State 1 (chờ hoán đổi) -> lần bấm này là hoán đổi vị trí -> tính full cooldown
+                if (optionalSkill2_2 != null && optionalSkill2_2.HasActiveClone)
+                    return optionalSkill2_2Cooldown;
+
+                // Nếu chưa có bản sao -> lần bấm này là tạo bản sao -> cho phép bấm lần 2 sau recastDelay
+                return recastDelay;
+            }
+            return optionalSkill2Cooldown;
+        }
 
         return base.GetBaseCooldown(index);
     }
@@ -143,6 +184,11 @@ public class TankBrainBlackShadow : TankBrain
         if (index == optionalSkill1Index)
         {
             UseOptionalSkill1();
+            return;
+        }
+        if (index == optionalSkill2Index)
+        {
+            UseOptionalSkill2();
             return;
         }
         base.OnUseSkill(index);
@@ -176,6 +222,46 @@ public class TankBrainBlackShadow : TankBrain
         else
         {
             optionalSkill1?.Initialize();
+        }
+    }
+
+    private void UseOptionalSkill2()
+    {
+        if (Context.OptionSkill2 == 1)
+        {
+            if (optionalSkill2_1 != null)
+            {
+                bool success = optionalSkill2_1.Initialize(this, LookTarget);
+                if (!success)
+                {
+                    // Không tìm thấy xe đồng minh hợp lệ dưới con trỏ chuột -> hoàn lại hồi chiêu
+                    ReduceSkillCooldown(optionalSkill2Index, GetCooldown(optionalSkill2Index));
+                }
+            }
+        }
+        else if (Context.OptionSkill2 == 2)
+        {
+            if (optionalSkill2_2 != null)
+            {
+                bool success = optionalSkill2_2.Execute(this, LookTarget);
+                if (!success)
+                {
+                    // Không tìm thấy xe đồng minh hợp lệ dưới con trỏ chuột -> hoàn lại hồi chiêu
+                    ReduceSkillCooldown(optionalSkill2Index, GetCooldown(optionalSkill2Index));
+                }
+            }
+        }
+        else
+        {
+            if (optionalSkill2 != null)
+            {
+                bool success = optionalSkill2.Initialize(this, LookTarget);
+                if (!success)
+                {
+                    // Không tìm thấy kẻ địch hợp lệ dưới con trỏ chuột -> hoàn lại hồi chiêu
+                    ReduceSkillCooldown(optionalSkill2Index, GetCooldown(optionalSkill2Index));
+                }
+            }
         }
     }
 
@@ -284,14 +370,37 @@ public class TankBrainBlackShadow : TankBrain
         if (enemy == null)
             return;
 
-        enemy.TakeDamage(normalSkillDmg);
+        float damage = normalSkillDmg;
+
+        // Nếu có buff chí mạng từ Shadow Ambush cho đòn đánh kế tiếp
+        if (optionalSkill2 != null && optionalSkill2.HasBackstabBuff)
+        {
+            // Kiểm tra vị trí của xe tank có đang ở sau lưng kẻ địch hay không
+            bool isBackstab = optionalSkill2.CheckAndConsumeBackstab(transform.position, enemy);
+            if (isBackstab)
+            {
+                // Xe tank đang ở sau lưng -> tính kèm bonus DamageMultiplier chí mạng
+                damage = normalSkillDmg * Stats.DamageMultiplier;
+            }
+            else
+            {
+                // Đòn kế tiếp không ở sau lưng -> tiêu hao buff và tính sát thương thường
+                damage = normalSkillDmg;
+            }
+        }
+        else
+        {
+            damage = normalSkillDmg * Stats.DamageMultiplier;
+        }
+
+        enemy.TakeDamage(damage);
 
         if (!enemy.IsAlive && isEnhanced)
         {
             ReduceSkillCooldown(specializedSkillIndex, cooldownReductionKillingInEnhanced);
             SpawnOptionalSkill1Orb(enemy.transform.position);
         }
-        TextDamageManager.Instance?.Show(normalSkillDmg, skillInstance.transform.position);
+        TextDamageManager.Instance?.Show(damage, skillInstance.transform.position);
     }
     #endregion
 
@@ -539,5 +648,7 @@ public class TankBrainBlackShadow : TankBrain
         orbPool.Clear();
         if (optionalSkill1 != null)
             optionalSkill1.OnIsEnhancedChange -= OptionalSkill1_OnTimeEnhancedRunOut;
+        if (optionalSkill2_2 != null)
+            optionalSkill2_2.OnCloneExpired -= HandleOptionalSkill2CloneExpired;
     }
 }
