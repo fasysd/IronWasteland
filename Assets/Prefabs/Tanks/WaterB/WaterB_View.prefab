@@ -77,6 +77,8 @@ GameObject:
   - component: {fileID: 1264366280795951762}
   - component: {fileID: 4035724410283292367}
   - component: {fileID: 7712000000000000001}
+  - component: {fileID: -8640168622598202285}
+  - component: {fileID: -6032753915094440144}
   m_Layer: 6
   m_Name: WaterB_View
   m_TagString: Untagged
@@ -201,6 +203,47 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
   owner: {fileID: 0}
+--- !u!114 &-8640168622598202285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2147206032191955045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffdd4485fc883514e99101a2d6805129, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.WaterB.WaterB_Skill1Sub
+  activeVariant: 0
+  sharedPercent: 0.5
+  drainPercent: 0.3
+  domeDuration: 6
+  domeRadius: 5
+  domeHealOnEnd: 40
+--- !u!114 &-6032753915094440144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2147206032191955045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fa1d39260c6cf242988db470cfa4e4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.WaterB.WaterB_Skill2Sub
+  activeVariant: 0
+  altarDuration: 8
+  altarInterval: 1
+  altarHealPerTick: 20
+  turretDuration: 10
+  turretAttackInterval: 1.5
+  turretDamage: 15
+  energyRegenPerShot: 5
+  assaultDuration: 6
+  cooldownMultiplier: 0.6
+  selfHealOnHitPercent: 0.2
 --- !u!1 &4416177109912046103
 GameObject:
   m_ObjectHideFlags: 0

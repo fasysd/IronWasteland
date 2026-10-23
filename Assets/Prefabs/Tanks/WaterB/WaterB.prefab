@@ -11,6 +11,10 @@ GameObject:
   - component: {fileID: 987192533526621700}
   - component: {fileID: 569371263267873161}
   - component: {fileID: 2337791876944670423}
+  - component: {fileID: -2957460832437783227}
+  - component: {fileID: -9026452789056875626}
+  - component: {fileID: 6307709474518011721}
+  - component: {fileID: 6773930010349115613}
   m_Layer: 6
   m_Name: WaterB
   m_TagString: Untagged
@@ -107,3 +111,116 @@ MonoBehaviour:
     MobilityEquipmentId: 0
     OptionSkill1: 0
     OptionSkill2: 0
+  baseHealAmount: 20
+  skill0Cooldown: 0.5
+  energyGainPerHeal: 15
+  healingWaterPrefab: {fileID: 4484246724071856352, guid: cfb0a0efe92cae14b9f5072350eca862, type: 3}
+  shieldCapacity: 100
+  shieldDuration: 5
+  shieldHealOnBreak: 50
+  energyCostForShield: 40
+  bubbleShieldPrefab: {fileID: 4152230224732511425, guid: 798b0f907646e1f4b9f755da62ab9c0d, type: 3}
+  skill1SubDesign: {fileID: -2957460832437783227}
+  skill2SubDesign: {fileID: -9026452789056875626}
+  skill1SubCooldown: 12
+  skill2SubCooldown: 10
+  bubbleProtectorPrefab: {fileID: 9085398380949952740, guid: 10c965ceef4e5124b8311ca891a33920, type: 3}
+  mobileAltarPrefab: {fileID: 1384006585347044756, guid: 0170b52e964c6aa4f9766ca4faa800f3, type: 3}
+  waterTurretPrefab: {fileID: 834826092504559950, guid: 7e330e9fd294f7647ab9a9d48f550f21, type: 3}
+  energyGainPerTurretHit: 5
+  maxPlacementRange: 8
+--- !u!114 &-2957460832437783227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2007533005529995649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffdd4485fc883514e99101a2d6805129, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  activeVariant: 2
+  sharedPercent: 0.5
+  sharedHealingLinkPrefab: {fileID: 2490352363854650707, guid: f5da3f94bad536b47b81cfe30590c8b3, type: 3}
+  sharedHealingDuration: 10
+  maxSelectRange: 10
+  drainPercent: 0.3
+  drainDuration: 6
+  domeDuration: 6
+  domeRadius: 5
+  domeHealOnEnd: 40
+  domeDefenseBonus: 1
+--- !u!114 &-9026452789056875626
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2007533005529995649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fa1d39260c6cf242988db470cfa4e4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  activeVariant: 0
+  altarDuration: 8
+  altarInterval: 1
+  altarHealPerTick: 20
+  turretDuration: 10
+  turretAttackInterval: 1.5
+  turretDamage: 15
+  energyRegenPerShot: 5
+  assaultDuration: 6
+  cooldownMultiplier: 0.6
+  selfHealOnHitPercent: 0.2
+--- !u!58 &6307709474518011721
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2007533005529995649}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Radius: 0.5
+--- !u!114 &6773930010349115613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2007533005529995649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
+  owner: {fileID: 0}
