@@ -1,0 +1,229 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace IronWasteland.Tanks
+{
+    /// <summary>
+    /// Hanh dong cua Tank.
+    /// - Move va UseSkill la action "dong" (chi mot cai chay tai mot thoi diem).
+    /// - Look la action lien tuc, chay song song voi Move (xem <see cref="TankView.IsLooking"/>).
+    /// </summary>
+    public enum TankAction
+    {
+        Idle,
+        Move,
+        Look,
+        UseSkill1,
+        UseSkill2,
+        UseSkill3,
+        UseSkill4,
+    }
+
+    /// <summary>
+    /// Phan Visual + Physical cua Tank: sprite, animator, collider, rigidbody.
+    /// KHONG chua logic game (speed, damage, skill...). No chi day dieu khien hinh anh.
+    /// Cac ham public day la "hanh dong" cua Tank, moi ham se chay animation tuong ung.
+    ///
+    /// KHONG quan ly trang bi nua: Equipment chi la logic (stat + passive),
+    /// khong con gan vao slot cua View (khong con AttachEquipment / DetachEquipment).
+    /// </summary>
+    [DisallowMultipleComponent]
+    public class TankView : MonoBehaviour
+    {
+        [Header("References")]
+        [Tooltip("Animator cua Tank ( tren root ).")]
+        [SerializeField] private Animator animator;
+
+        [Tooltip("Pivot xoay doc lap phia tren (Nong sung). Chi View dung transform nay.")]
+        [SerializeField] private Transform firepowerPivot;
+
+        [Tooltip("Pivot xoay theo huong di chuyen (Than Xe + Bo Banh).")]
+        [SerializeField] private Transform bodyPivot;
+
+        [SerializeField] private Transform muzzle;
+
+        [Header("Look")]
+        [Tooltip("Toc do xoay noi sung (do/giay).")]
+        [SerializeField] private float lookSmoothing = 900f;
+
+        [Header("References (hitbox)")]
+        [Tooltip("Rigidbody2D dung cho hitbox. TankView KHONG sua truc tiep, chi de reference.")]
+        [SerializeField] private Rigidbody2D body;
+
+        [Header("Owner")]
+        [Tooltip("Tank nao dieu khien View nay. Do TankBrain gan luc runtime.")]
+        [SerializeField, HideInInspector] private UnityEngine.Object owner;
+
+        private readonly List<ColliderOwnerRef> m_OwnerRefs = new List<ColliderOwnerRef>();
+
+        private TankAction m_Action = TankAction.Idle;
+        private bool m_IsLooking;
+        private Vector2 m_LookTarget;
+        private bool m_HasLookTarget;
+        private float m_LookAngle;
+
+        // Animator parameter hash
+        private static readonly int HashMoveSpeed = Animator.StringToHash("MoveSpeed");
+
+        public Rigidbody2D Body => body;
+        public Transform FirepowerPivot => firepowerPivot;
+        public Transform BodyPivot => bodyPivot;
+        public Transform Muzzle => muzzle;
+        public TankAction CurrentAction => m_Action;
+
+        /// <summary>
+        /// True khi action Look dang chay. Look chay lien tuc, song song
+        /// voi Move/UseSkill nen khong dung chung bien CurrentAction.
+        /// </summary>
+        public bool IsLooking => m_IsLooking;
+
+        /// <summary>Tank nao dieu khien View nay (do TankBrain dang ky).</summary>
+        public UnityEngine.Object Owner => owner;
+
+        public bool HasOwner => owner != null;
+
+        /// <summary>Yeu cau xoa ma doc: TankBrain dang ky lam Owner cua View nay.</summary>
+        public void RegisterOwner(UnityEngine.Object value)
+        {
+            owner = value;
+            CollectOwnerRefs();
+            PropagateOwner();
+        }
+
+        /// <summary>Quet lai cac collider chua duoc gan OwnerRef.</summary>
+        public void CollectOwnerRefs()
+        {
+            m_OwnerRefs.Clear();
+            m_OwnerRefs.AddRange(GetComponentsInChildren<ColliderOwnerRef>(true));
+        }
+
+        /// <summary>Day Owner xuong moi collider trong View.</summary>
+        public void PropagateOwner()
+        {
+            for (int i = 0; i < m_OwnerRefs.Count; i++)
+            {
+                m_OwnerRefs[i].SetOwner(owner);
+            }
+        }
+
+        /// <summary>Lay ColliderOwnerRef dau tien cua View (tien cho raycast).</summary>
+        public ColliderOwnerRef GetOwnerRef() => m_OwnerRefs.Count > 0 ? m_OwnerRefs[0] : null;
+
+        private void Awake()
+        {
+            if (animator == null) animator = GetComponentInChildren<Animator>();
+            if (bodyPivot == null) bodyPivot = transform;
+            m_LookAngle = bodyPivot.eulerAngles.z;
+
+            // TankView co the la prefab con cua Tank. Rigidbody2D nam tren Tank
+            // nen tim o cha khi chua co tren chinh no.
+            if (body == null) body = GetComponentInParent<Rigidbody2D>();
+
+            // Gan owner xuong cac collider (truong hop owner da duoc gan san trong prefab).
+            CollectOwnerRefs();
+            PropagateOwner();
+        }
+
+        private void Update()
+        {
+            // Look luôn chay lien tuc: noi sung luon bam theo con tro chuot.
+            // Neu chua co target thi noi sung giu nguyen huong hien tai.
+            UpdateLookRotation(Time.deltaTime);
+        }
+
+        #region Action - duoc TankBrain goi
+
+        /// <summary>Xoay toan than Tank theo huong di chuyen.</summary>
+        public void Move(Vector2 direction)
+        {
+            m_Action = TankAction.Move;
+
+            if (direction.sqrMagnitude > 0.0001f)
+            {
+                bodyPivot.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
+            }
+
+            SetFloat(HashMoveSpeed, direction.magnitude);
+        }
+
+        /// <summary>
+        /// Nhin ve mot diem trong world (vi du vi tri con tro chuot).
+        /// Day la action lien tuc, chay SONG SONG voi Move va UseSkill.
+        /// Moi thang Tank goi lai de noi sung bam theo muc tieu.
+        /// </summary>
+        public void Look(Vector2 worldPoint)
+        {
+            m_IsLooking = true;
+            m_LookTarget = worldPoint;
+            m_HasLookTarget = true;
+        }
+
+        /// <summary>Tat action Look. Noi sung giu nguyen huong hien tai.</summary>
+        public void StopLook()
+        {
+            m_IsLooking = false;
+        }
+
+        /// <summary>Dung 1 trong 4 ky nang (index 0..3).</summary>
+        public void UseSkill(int index)
+        {
+            if (index < 0 || index > 3) return;
+            m_Action = (TankAction)((int)TankAction.UseSkill1 + index);
+        }
+
+        /// <summary>Dung hanh dong / ve idle.</summary>
+        public void Stop()
+        {
+            m_Action = TankAction.Idle;
+            SetFloat(HashMoveSpeed, 0f);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Noi sung luôn huong ve giua thiet ke Tank va muc tieu look tren man hinh.
+        /// </summary>
+        private void UpdateLookRotation(float deltaTime)
+        {
+            if (firepowerPivot == null || !m_HasLookTarget) return;
+
+            Vector3 origin = transform.position;
+
+            Vector2 dir = new Vector2(m_LookTarget.x - origin.x, m_LookTarget.y - origin.y);
+            if (dir.sqrMagnitude <= 0.0001f) return;
+
+            // Goc mong muon tren truc Z, chuan hoa ve (-180, 180].
+            float targetAngle = NormalizeAngle(Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg);
+
+            // Xoay nganh nhat theo goc ngan tu A sang B (tranh quay vong kinh).
+            float delta = Mathf.DeltaAngle(m_LookAngle, targetAngle);
+            float t = 1f - Mathf.Exp(-lookSmoothing * deltaTime);
+            m_LookAngle = NormalizeAngle(m_LookAngle + delta * t);
+
+            // Gan rotation WORLD: dung du co parent xoay hay khong,
+            // noi sung luon chi dung mot huong muc tieu.
+            firepowerPivot.rotation = Quaternion.Euler(0f, 0f, m_LookAngle);
+        }
+
+        private static float NormalizeAngle(float angle)
+        {
+            angle %= 360f;
+            if (angle > 180f) angle -= 360f;
+            if (angle <= -180f) angle += 360f;
+            return angle;
+        }
+
+        private void SetFloat(int hash, float value)
+        {
+            if (animator != null) animator.SetFloat(hash, value);
+        }
+
+        private void OnValidate()
+        {
+            if (animator == null) animator = GetComponentInChildren<Animator>();
+            if (bodyPivot == null) bodyPivot = transform;
+            if (body == null) body = GetComponentInParent<Rigidbody2D>();
+            lookSmoothing = Mathf.Max(0f, lookSmoothing);
+        }
+    }
+}
