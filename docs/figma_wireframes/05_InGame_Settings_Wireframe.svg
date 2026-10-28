@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <style>
+      .bg-blur { fill: #080A0E; fill-opacity: 0.75; }
+      .modal { fill: #191C23; stroke: #353C4B; stroke-width: 2; rx: 12px; }
+      .btn-primary { fill: #2F6BF2; rx: 8px; cursor: pointer; }
+      .btn-danger { fill: #D32F2F; rx: 8px; cursor: pointer; }
+      .text-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 26px; font-weight: 700; fill: #FFFFFF; text-anchor: middle; }
+      .text-heading { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600; fill: #FFFFFF; }
+      .text-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; fill: #8E95A3; }
+      .text-btn { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 17px; font-weight: 600; fill: #FFFFFF; text-anchor: middle; dominant-baseline: middle; }
+      .slider-bg { fill: #2B303C; rx: 4px; }
+      .slider-fill { fill: #3A6DF0; rx: 4px; }
+      .slider-thumb { fill: #FFFFFF; }
+      .alert-box { fill: #2D1A10; stroke: #FF9800; stroke-width: 1.5; rx: 6px; }
+    </style>
+  </defs>
+
+  <!-- Semi-Transparent Background Overlay (Gameplay still visible underneath) -->
+  <rect width="1920" height="1080" class="bg-blur" />
+
+  <!-- Center Modal Window (Cài Đặt Trong Trận - Không Phải Pause) -->
+  <g transform="translate(660, 180)">
+    <rect width="600" height="720" class="modal" />
+
+    <!-- Modal Header -->
+    <text x="300" y="55" class="text-title">CÀI ĐẶT TRẬN ĐẤU (SETTINGS)</text>
+    <line x1="40" y1="80" x2="560" y2="80" stroke="#2B303B" stroke-width="1.5" />
+
+    <!-- Important Notice: Game does not pause because of Co-op multiplayer -->
+    <g transform="translate(40, 100)">
+      <rect width="520" height="56" class="alert-box" />
+      <text x="25" y="25" class="text-title" font-size="13" fill="#FFB74D" text-anchor="start">⚠ CHÚ Ý: GAME KHÔNG TẠM DỪNG!</text>
+      <text x="25" y="44" class="text-body" font-size="12" fill="#FFE082">Trận đấu hỗ trợ Co-op mạng nên quái và đồng đội vẫn đang chiến đấu.</text>
+    </g>
+
+    <!-- Audio Settings -->
+    <g transform="translate(60, 190)">
+      <text x="0" y="20" class="text-heading">ÂM LƯỢNG TỔNG (MASTER VOLUME)</text>
+      <rect x="0" y="35" width="480" height="8" class="slider-bg" />
+      <rect x="0" y="35" width="380" height="8" class="slider-fill" />
+      <circle cx="380" cy="39" r="10" class="slider-thumb" />
+
+      <text x="0" y="80" class="text-heading">ÂM THANH CHIẾN ĐẤU &amp; MA PHÁP (SFX)</text>
+      <rect x="0" y="95" width="480" height="8" class="slider-bg" />
+      <rect x="0" y="95" width="420" height="8" class="slider-fill" />
+      <circle cx="420" cy="99" r="10" class="slider-thumb" />
+
+      <text x="0" y="145" class="text-heading">HỆ THỐNG ĐIỀU KHIỂN &amp; PHÍM BẤM</text>
+      <text x="0" y="172" class="text-body">• Di chuyển xe: Phím W - A - S - D</text>
+      <text x="0" y="197" class="text-body">• Hướng nòng pháo &amp; ngắm bắn: Con trỏ chuột</text>
+      <text x="0" y="222" class="text-body">• Kỹ năng: J (Thường) | K (Chuyên biệt) | L (Tùy chọn 1) | I (Tùy chọn 2)</text>
+      <text x="0" y="247" class="text-body">• Mở Cài đặt: Phím ESC</text>
+    </g>
+
+    <!-- Action Buttons -->
+    <g transform="translate(100, 510)">
+      <!-- Close / Back to battle button -->
+      <g transform="translate(0, 0)">
+        <rect width="400" height="60" class="btn-primary" />
+        <text x="200" y="30" class="text-btn">QUAY LẠI TRẬN CHIẾN (ESC)</text>
+      </g>
+
+      <!-- Leave match button (Rời trận) -->
+      <g transform="translate(0, 80)">
+        <rect width="400" height="54" class="btn-danger" />
+        <text x="200" y="27" class="text-btn">RỜI TRẬN (VỀ SẢNH CHÍNH)</text>
+      </g>
+      <text x="200" y="155" class="text-sub" text-anchor="middle" fill="#E57373">*Nếu chơi Co-op, bạn sẽ thoát khỏi phòng của đồng đội.</text>
+    </g>
+  </g>
+</svg>
