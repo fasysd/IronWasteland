@@ -17,7 +17,6 @@ namespace IronWasteland.Tanks.GreenFox
         private float m_Interval;
         private float m_TailDamage;
 
-        // Lưu danh sách các kẻ địch đang đứng trong vùng vòng tròn tấn công của Cửu Vĩ
         private readonly HashSet<EnemyBrain> m_EnemiesInAssaultRange = new HashSet<EnemyBrain>();
 
         private void Awake()
@@ -35,9 +34,8 @@ namespace IronWasteland.Tanks.GreenFox
             m_TankTransform = tankTransform;
             m_Duration = duration;
             m_Interval = interval;
-            m_TailDamage = tailDamage;
+            m_TailDamage = tailDamage; // Giá trị 15% ATK truyền vào
 
-            // Đặt vị trí ban đầu trùng với Tank và gán làm con để di chuyển theo Tank
             if (m_TankTransform != null)
             {
                 transform.position = m_TankTransform.position;
@@ -57,17 +55,14 @@ namespace IronWasteland.Tanks.GreenFox
                 yield return new WaitForSeconds(m_Interval);
                 elapsed += m_Interval;
 
-                // Dọn dẹp các đối tượng quái đã chết hoặc bị hủy
                 m_EnemiesInAssaultRange.RemoveWhere(enemy => enemy == null);
-
-                // Chuyển sang danh sách tạm để tránh lỗi "Collection was modified"
                 List<EnemyBrain> targetsToAttack = new List<EnemyBrain>(m_EnemiesInAssaultRange);
 
                 foreach (EnemyBrain enemy in targetsToAttack)
                 {
                     if (enemy == null) continue;
 
-                    // Kiểm tra nếu mục tiêu đang dính hiệu ứng thiêu đốt -> Gấp đôi sát thương
+                    // Nếu mục tiêu đang dính hiệu ứng thiêu đốt (1B) thì x2 sát thương đuôi
                     GreenFox_BurnEffect burn = enemy.GetComponent<GreenFox_BurnEffect>();
                     float multiplier = (burn != null && burn.IsBurning) ? 2.0f : 1.0f;
 
@@ -75,9 +70,6 @@ namespace IronWasteland.Tanks.GreenFox
                     enemy.TakeDamage(damage);
                     TextDamageManager.Instance?.Show(damage, enemy.transform.position);
 
-                    Debug.Log($"[NineTailedAssault] Đuôi ma thuật tấn công {enemy.name} gây {damage} sát thương (Multiplier: {multiplier}x)");
-
-                    // Kích hoạt hiệu ứng cháy nếu 1B đang bật trên Tank chủ nhân
                     if (m_OwnerTank != null)
                     {
                         m_OwnerTank.TryApplyBurn(enemy, damage);
@@ -91,7 +83,6 @@ namespace IronWasteland.Tanks.GreenFox
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (other == null) return;
-
             ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(other);
             if (targetRef == null) return;
 
@@ -105,7 +96,6 @@ namespace IronWasteland.Tanks.GreenFox
         private void OnTriggerExit2D(Collider2D other)
         {
             if (other == null) return;
-
             ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(other);
             if (targetRef == null) return;
 
@@ -113,19 +103,6 @@ namespace IronWasteland.Tanks.GreenFox
             if (enemy != null)
             {
                 m_EnemiesInAssaultRange.Remove(enemy);
-            }
-        }
-
-        private void OnDrawGizmosSelected()
-        {
-            if (m_CircleCollider == null)
-                m_CircleCollider = GetComponent<CircleCollider2D>();
-
-            if (m_CircleCollider != null)
-            {
-                Gizmos.color = Color.magenta;
-                float maxScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y);
-                Gizmos.DrawWireSphere(transform.position, m_CircleCollider.radius * maxScale);
             }
         }
     }

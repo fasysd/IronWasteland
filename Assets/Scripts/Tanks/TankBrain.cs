@@ -40,7 +40,8 @@ namespace IronWasteland.Tanks
         [SerializeField] private float currentHealth;
         [SerializeField] private float currentEnergy;
         [SerializeField, ReadOnly] private float[] skillCooldowns = new float[SkillCount];
-
+        /// <summary>(người nhận, lượng hồi, có phải máu do chia sẻ không)</summary>
+        public event Action<TankBrain, float, bool> OnHealed;
 
         private Rigidbody2D m_Body;
         private TankStats m_FinalStats = new TankStats();
@@ -377,12 +378,13 @@ namespace IronWasteland.Tanks
             // TODO: tinh damage thuc te bang m_FinalStats.Defense va ArmorPenetration cua doi phuong.
             currentHealth -= amount;
         }
-
-        public virtual void Heal(float amount)
+        public virtual void Heal(float amount, bool isByShare = false)
         {
-            currentHealth = Mathf.Min(currentHealth + amount, m_FinalStats.MaxHealth);
-        }
+            if (amount <= 0f) return;
 
+            currentHealth = Mathf.Min(currentHealth + amount, m_FinalStats.MaxHealth);
+            OnHealed?.Invoke(this, amount, isByShare);
+        }
         public virtual void GainEnergy(float amount)
         {
             currentEnergy = Mathf.Min(currentEnergy + amount, m_FinalStats.MaxEnergy);

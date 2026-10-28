@@ -1,90 +1,114 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 namespace IronWasteland.Tanks.WaterB
 {
+    /// <summary>
+    /// Lien ket hoi phuc giua Water B va 1 dong minh.
+    /// Bat ky hieu qua hoi mau nao ma 1 ben nhan duoc cung se tu dong chia se 1 phan sang ben con lai.
+    /// Phan chia se la LOGIC thuan (qua event TankBrain.OnHealed) - vien dan chi la hinh anh.
+    /// </summary>
     [DisallowMultipleComponent]
     public class WaterB_SharedHealingLink : MonoBehaviour
     {
-        [Header("Visual References")]
-        [SerializeField] private LineRenderer lineRenderer;
+        [Header("Visual Only")]
+        [SerializeField] private WaterB_HealingProjectile linkProjectilePrefab; // Chi de tao tia lien ket cho nguoi choi nhin
+        [SerializeField, Min(0.05f)] private float rapidFireInterval = 0.15f;    // Toc do ban hinh anh giua 2 tank
 
-        private TankBrain m_OwnerTank;
-        private TankBrain m_TargetAllyTank;
+        private TankBrain m_OwnerTank;      // Water B
+        private TankBrain m_TargetAllyTank; // RedNova hoac dong minh khac
         private float m_SharedPercent;
-        private float m_Duration;
         private bool m_IsActive;
-
-        // Cờ chống gọi lặp vô tận khi 2 bên qua lại chia sẻ máu
-        private bool m_IsSharing = false;
+        private Coroutine m_ContinuousLinkCoroutine;
 
         public void Initialize(TankBrain owner, TankBrain targetAlly, float sharedPercent, float duration)
         {
+            if (owner == null || targetAlly == null)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             m_OwnerTank = owner;
             m_TargetAllyTank = targetAlly;
             m_SharedPercent = sharedPercent;
-            m_Duration = duration > 0f ? duration : 10f;
             m_IsActive = true;
 
-            if (lineRenderer == null)
-            {
-                lineRenderer = GetComponent<LineRenderer>();
-            }
+            transform.position = m_TargetAllyTank.transform.position;
+            transform.SetParent(m_TargetAllyTank.transform);
 
-            if (m_TargetAllyTank != null)
-            {
-                transform.position = m_TargetAllyTank.transform.position;
-                transform.SetParent(m_TargetAllyTank.transform);
-            }
+            // LOGIC: lang nghe hoi mau cua CA HAI tank
+            m_OwnerTank.OnHealed += HandleTankHealed;
+            m_TargetAllyTank.OnHealed += HandleTankHealed;
 
-            Destroy(gameObject, m_Duration);
+            // HINH ANH: ban dan lien tuc de tao tia lien ket
+            m_ContinuousLinkCoroutine = StartCoroutine(ContinuousLinkBeamRoutine());
+
+            Destroy(gameObject, duration > 0f ? duration : 10f);
+        }
+
+        private void OnDestroy()
+        {
+            m_IsActive = false;
+
+            if (m_OwnerTank != null) m_OwnerTank.OnHealed -= HandleTankHealed;
+            if (m_TargetAllyTank != null) m_TargetAllyTank.OnHealed -= HandleTankHealed;
         }
 
         private void Update()
         {
             if (!m_IsActive || m_OwnerTank == null || m_TargetAllyTank == null)
             {
+                if (m_ContinuousLinkCoroutine != null) StopCoroutine(m_ContinuousLinkCoroutine);
                 Destroy(gameObject);
-                return;
-            }
-
-            // Cập nhật đường nối LineRenderer giữa 2 xe tăng
-            if (lineRenderer != null)
-            {
-                lineRenderer.positionCount = 2;
-                lineRenderer.SetPosition(0, m_OwnerTank.transform.position);
-                lineRenderer.SetPosition(1, m_TargetAllyTank.transform.position);
             }
         }
 
         /// <summary>
-        /// Xử lý san sẻ hiệu quả hồi máu qua lại giữa Chủ nhân (Water B) và Đồng minh.
+        /// Duoc goi khi BAT KI tank nao trong lien ket nhan mau.
+        /// Chia se hoi NGAY LAP TUC, khong phu thuoc vao dan.
         /// </summary>
-        public void TriggerSharedHeal(TankBrain receiver, float healAmount)
+        private void HandleTankHealed(TankBrain receiver, float amount, bool isByShare)
         {
-            if (!m_IsActive || m_IsSharing) return;
+            // Mau do chia se thi KHONG chia se lai -> khong bi vong lap vo tan
+            if (!m_IsActive || isByShare || amount <= 0f) return;
 
-            // Bật cờ khóa để ngăn sự kiện gọi ngược lại lặp vô tận
-            m_IsSharing = true;
+            TankBrain other = (receiver == m_OwnerTank) ? m_TargetAllyTank : m_OwnerTank;
+            if (other == null) return;
 
-            float sharedAmount = healAmount * m_SharedPercent;
+            float sharedAmount = amount * m_SharedPercent;
+            if (sharedAmount <= 0f) return;
 
-            if (receiver == m_OwnerTank && m_TargetAllyTank != null)
+            other.Heal(sharedAmount, true);
+            TextDamageManager.Instance?.Show(sharedAmount, other.transform.position);
+
+            Debug.Log($"[SharedHealing] {receiver.name} nhan {amount} HP -> chia se {sharedAmount} HP cho {other.name}.");
+
+            // Dan chi de nhin
+            ShootVisualProjectile(receiver, other);
+        }
+
+        private IEnumerator ContinuousLinkBeamRoutine()
+        {
+            var wait = new WaitForSeconds(rapidFireInterval);
+
+            while (m_IsActive && m_OwnerTank != null && m_TargetAllyTank != null)
             {
-                // Chủ nhân nhận máu -> San sẻ sang cho Đồng minh
-                m_TargetAllyTank.Heal(sharedAmount);
-                TextDamageManager.Instance?.Show(sharedAmount, m_TargetAllyTank.transform.position);
-                Debug.Log($"[SharedHealing] Chủ nhân nhận {healAmount} HP -> San sẻ {sharedAmount} HP cho đồng minh!");
+                ShootVisualProjectile(m_OwnerTank, m_TargetAllyTank);
+                yield return wait;
             }
-            else if (receiver == m_TargetAllyTank && m_OwnerTank != null)
-            {
-                // Đồng minh nhận máu -> San sẻ sang cho Chủ nhân (Water B)
-                m_OwnerTank.Heal(sharedAmount);
-                TextDamageManager.Instance?.Show(sharedAmount, m_OwnerTank.transform.position);
-                Debug.Log($"[SharedHealing] Đồng minh nhận {healAmount} HP -> San sẻ {sharedAmount} HP cho chủ nhân!");
-            }
+        }
 
-            // Mở khóa cờ
-            m_IsSharing = false;
+        /// <summary>Ban 1 vien dan HINH ANH (power = 0): khong hoi mau, khong hien text, khong goi callback.</summary>
+        private void ShootVisualProjectile(TankBrain from, TankBrain to)
+        {
+            if (linkProjectilePrefab == null || from == null || to == null) return;
+
+            Vector3 startPos = from.transform.position;
+            Vector3 direction = (to.transform.position - startPos).normalized;
+
+            WaterB_HealingProjectile proj = Instantiate(linkProjectilePrefab, startPos, Quaternion.identity);
+            proj.Initialize(m_OwnerTank, direction, 0f, false, null);
         }
     }
 }

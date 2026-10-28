@@ -152,6 +152,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3254e1af64e258a4cb6872e4fe57d724, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.GreenFox.GreenFox_Skill0
-  projectilePrefab: {fileID: 0}
-  projectileSpeed: 15
-  lifeTime: 3
+  speed: 15
+  maxLifetime: 5
+  rootEffectPrefab: {fileID: 7097947749654271453, guid: f5bcbed4f6ea44946a730c4e7a28cb36, type: 3}

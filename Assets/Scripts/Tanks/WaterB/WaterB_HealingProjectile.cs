@@ -7,7 +7,8 @@ namespace IronWasteland.Tanks.WaterB
     [RequireComponent(typeof(Collider2D))]
     public class WaterB_HealingProjectile : MonoBehaviour
     {
-        [SerializeField] private float speed = 15f;
+        [Header("Settings")]
+        [SerializeField] private float speed = 40f; // Tốc độ bay cực nhanh
         [SerializeField] private float maxLifeTime = 3f;
 
         private TankBrain m_OwnerTank;
@@ -52,14 +53,14 @@ namespace IronWasteland.Tanks.WaterB
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (Time.time - m_SpawnTime < 0.15f) return;
+            if (Time.time - m_SpawnTime < 0.05f) return;
 
             ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collision);
             if (targetRef == null) return;
 
             if (m_IsAssaultMode)
             {
-                // CHẾ ĐỘ TẤN CÔNG (AQUA ASSAULT): Bắn trúng Kẻ Địch và gây sát thương
+                // DẠNG 2C (AQUA ASSAULT): Bắn trúng kẻ địch
                 EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
                 if (enemy != null)
                 {
@@ -68,7 +69,7 @@ namespace IronWasteland.Tanks.WaterB
             }
             else
             {
-                // CHẾ ĐỘ THƯỜNG: Hồi máu cho Xe Tăng (Bản thân hoặc Đồng minh)
+                // DẠNG THƯỜNG: Bắn trúng Tank (Bản thân hoặc Đồng minh)
                 TankBrain targetTank = targetRef.GetOwner<TankBrain>();
                 if (targetTank != null)
                 {
@@ -79,49 +80,57 @@ namespace IronWasteland.Tanks.WaterB
 
         private void ApplyHealingToTank(TankBrain targetTank)
         {
-            targetTank.Heal(m_PowerAmount);
-
-            TextDamageManager.Instance?.Show(m_PowerAmount, targetTank.transform.position);
-            Debug.Log($"[HealingProjectile] Hồi phục {m_PowerAmount} HP cho xe tăng {targetTank.name}");
+            if (m_PowerAmount > 0f)
+            {
+                if (m_OwnerTank is TankBrain_WaterB waterBTank)
+                {
+                    waterBTank.HandleProjectileHeal(targetTank, m_PowerAmount);
+                }
+                else
+                {
+                    targetTank.Heal(m_PowerAmount, false);
+                    TextDamageManager.Instance?.Show(m_PowerAmount, targetTank.transform.position);
+                }
+            }
 
             m_OnSuccess?.Invoke(m_PowerAmount);
-            Destroy(gameObject);
+            Destroy(gameObject); // Chạm vào tank là hủy ngay lập tức
         }
 
         private void ApplyDamageToEnemy(EnemyBrain enemy)
         {
             // 1. Gây sát thương lên kẻ địch
             enemy.TakeDamage(m_PowerAmount);
-            TextDamageManager.Instance?.Show(m_PowerAmount, enemy.transform.position);
-            Debug.Log($"[AquaAssault] Đã đánh trúng kẻ địch {enemy.name} gây {m_PowerAmount} sát thương!");
+            if (m_PowerAmount > 0f)
+            {
+                TextDamageManager.Instance?.Show(m_PowerAmount, enemy.transform.position);
+            }
 
-            // 2. Kiểm tra nếu chủ nhân là Water B
+            // 2. KHÔI PHỤC LOGIC 2C: Hồi máu lại cho Water B khi gây sát thương lên kẻ địch[cite: 7]
             if (m_OwnerTank is TankBrain_WaterB waterBTank)
             {
                 float totalHeal = 0f;
 
-                // Mặc định Aqua Assault khi đánh trúng tự hồi máu cơ bản (20% sát thương gây ra)
+                // Mặc định Aqua Assault khi đánh trúng tự hồi máu cơ bản (20% sát thương gây ra)[cite: 7]
                 float baseAssaultHeal = m_PowerAmount * 0.2f;
                 totalHeal += baseAssaultHeal;
 
-                // Nếu đang kích hoạt đồng thời chiêu phụ 1 (1B - LifeDrain), cộng thêm lượng hút máu từ LifeDrain
+                // Nếu đang bật đồng thời chiêu phụ 1B (Life Drain), cộng thêm lượng % hút máu[cite: 7]
                 if (waterBTank.IsLifeDrainActive)
                 {
                     float lifeDrainHeal = m_PowerAmount * waterBTank.LifeDrainPercent;
                     totalHeal += lifeDrainHeal;
-                    Debug.Log($"[LifeDrain + AquaAssault] Hút máu thành công! Hồi thêm {lifeDrainHeal} HP.");
                 }
 
-                // Thực hiện hồi tổng lượng máu cho xe tăng Water B
+                // Thực hiện hồi máu cho Water B và kích hoạt truyền/chia sẻ nếu đang có liên kết[cite: 7]
                 if (totalHeal > 0f)
                 {
-                    waterBTank.Heal(totalHeal);
-                    TextDamageManager.Instance?.Show(totalHeal, waterBTank.transform.position);
+                    waterBTank.TriggerHealAndShare(totalHeal, false);
                 }
             }
 
             m_OnSuccess?.Invoke(m_PowerAmount);
-            Destroy(gameObject);
+            Destroy(gameObject); // Chạm vào kẻ địch là hủy ngay lập tức[cite: 7]
         }
     }
 }

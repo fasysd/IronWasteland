@@ -8,9 +8,11 @@ namespace IronWasteland.Tanks.GreenFox
     [RequireComponent(typeof(Collider2D))]
     public class GreenFox_MagicTrap : MonoBehaviour
     {
-        private float m_BaseDamage;
+        private float m_AttackPower;
         private float m_DamagePercent;
+        private float m_EliteDamagePercent;
         private float m_RootDuration;
+        private float m_TrapDuration;
         private bool m_Triggered;
 
         private void Awake()
@@ -20,12 +22,17 @@ namespace IronWasteland.Tanks.GreenFox
                 col.isTrigger = true;
         }
 
-        public void Initialize(float baseDamage, float damagePercent, float rootDuration)
+        public void Initialize(float attackPower, float damagePercent, float eliteDamagePercent, float rootDuration, float trapDuration)
         {
-            m_BaseDamage = baseDamage;
+            m_AttackPower = attackPower;
             m_DamagePercent = damagePercent;
+            m_EliteDamagePercent = eliteDamagePercent;
             m_RootDuration = rootDuration;
+            m_TrapDuration = trapDuration;
             m_Triggered = false;
+
+            // Tự hủy bẫy sau 15 giây nếu không có kẻ địch nào dẫm phải
+            Destroy(gameObject, m_TrapDuration);
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -43,31 +50,35 @@ namespace IronWasteland.Tanks.GreenFox
 
             m_Triggered = true;
 
-            // Bắt đầu đếm ngược 2 giây trước khi gây sát thương
-            StartCoroutine(DelayExplosionRoutine(enemy));
+            StartCoroutine(TrapTriggerRoutine(enemy));
         }
 
-        private IEnumerator DelayExplosionRoutine(EnemyBrain enemy)
+        private IEnumerator TrapTriggerRoutine(EnemyBrain enemy)
         {
-            // Trói chân ngay lập tức khi dẫm vào bẫy (nếu cần)
-            // enemy.SetRooted(true);
+            // Kiểm tra xem kẻ địch có phải là loại Tinh anh (Elite) hay không
+            bool isElite = enemy is EliteEnemyBrain;
 
-            // Chờ đúng 2 giây
-            yield return new WaitForSeconds(2f);
+            // Nếu không phải Tinh anh, trói chân trong 2 giây (nếu hệ thống hỗ trợ)
+            if (!isElite)
+            {
+                // enemy.SetRooted(true, m_RootDuration);
+            }
 
-            // Kiểm tra xem enemy còn tồn tại trong game không trước khi gây sát thương
+            // Chờ 0.2 giây mô phỏng hiệu ứng hàm nanh sập xuống
+            yield return new WaitForSeconds(0.2f);
+
             if (enemy != null && enemy.gameObject.activeInHierarchy)
             {
-                // Kiểm tra xem mục tiêu có đang bị thiêu đốt (1B) hay không để x2 sát thương
-                GreenFox_BurnEffect burn = enemy.GetComponent<GreenFox_BurnEffect>();
-                float multiplier = (burn != null && burn.IsBurning) ? 2.0f : 1.0f;
+                // Nếu là Tinh anh: dùng 230% ATK | Thường: dùng 150% ATK
+                float activeDamagePercent = isElite ? m_EliteDamagePercent : m_DamagePercent;
 
-                float finalDamage = m_BaseDamage * m_DamagePercent * multiplier;
+                // Tính toán sát thương chuẩn: Tấn công của xe tăng * (% sát thương / 100)[cite: 1]
+                float finalDamage = m_AttackPower * (activeDamagePercent / 100f);
+
                 enemy.TakeDamage(finalDamage);
                 TextDamageManager.Instance?.Show(finalDamage, transform.position);
             }
 
-            // Hủy bẫy sau khi nổ xong
             Destroy(gameObject);
         }
     }
