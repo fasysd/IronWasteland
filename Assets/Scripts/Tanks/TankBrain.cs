@@ -377,12 +377,10 @@ namespace IronWasteland.Tanks
             // TODO: tinh damage thuc te bang m_FinalStats.Defense va ArmorPenetration cua doi phuong.
             currentHealth -= amount;
         }
-
-        public virtual void Heal(float amount)
+        public virtual void Heal(float amount, bool isByShare = false)
         {
             currentHealth = Mathf.Min(currentHealth + amount, m_FinalStats.MaxHealth);
         }
-
         public virtual void GainEnergy(float amount)
         {
             currentEnergy = Mathf.Min(currentEnergy + amount, m_FinalStats.MaxEnergy);

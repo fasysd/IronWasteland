@@ -106,7 +106,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ddeb7f36a70f6f40bb206bf2117d8a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  lineRenderer: {fileID: 0}
+  linkProjectilePrefab: {fileID: -9213944568594606525, guid: 524fd4e3411ec6d4f8cf30539f531d31, type: 3}
+  rapidFireInterval: 0.15
 --- !u!61 &257137886773016002
 BoxCollider2D:
   m_ObjectHideFlags: 0

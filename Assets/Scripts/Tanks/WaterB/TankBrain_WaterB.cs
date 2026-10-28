@@ -49,7 +49,6 @@ namespace IronWasteland.Tanks.WaterB
         private bool m_IsLifeDrainActive = false;
         private Coroutine m_LifeDrainCoroutine;
 
-        // Trạng thái Mobile Altar (Skill 2A): Khi active sẽ chặn đánh thường & skill khác
         private bool m_IsMobileAltarActive = false;
         private Coroutine m_MobileAltarCoroutine;
 
@@ -75,7 +74,6 @@ namespace IronWasteland.Tanks.WaterB
 
         protected override void OnUseSkill(int index)
         {
-            // Nếu đang trong thời gian triển khai Mobile Altar (Skill 2A) -> Chặn toàn bộ hành động tấn công/dùng skill khác
             if (m_IsMobileAltarActive && index != Skill2SubIndex)
             {
                 Debug.Log("[WaterB] Đang trong trạng thái Đài Tế Thủy Triều (Mobile Altar) - Không thể tấn công hoặc dùng kỹ năng!");
@@ -97,10 +95,7 @@ namespace IronWasteland.Tanks.WaterB
             if (healingWaterPrefab != null)
             {
                 Vector2 mouseScreenPos = Vector2.zero;
-                if (Pointer.current != null)
-                {
-                    mouseScreenPos = Pointer.current.position.ReadValue();
-                }
+                if (Pointer.current != null) mouseScreenPos = Pointer.current.position.ReadValue();
 
                 Vector3 mouseWorldPos = Vector3.zero;
                 if (Camera.main != null)
@@ -114,10 +109,7 @@ namespace IronWasteland.Tanks.WaterB
                 spawnPos.z = 0f;
 
                 Vector3 shootDirection = (mouseWorldPos - transform.position);
-                if (shootDirection.sqrMagnitude < 0.001f)
-                {
-                    shootDirection = transform.up;
-                }
+                if (shootDirection.sqrMagnitude < 0.001f) shootDirection = transform.up;
                 shootDirection.z = 0f;
 
                 WaterB_HealingProjectile projectile = Instantiate(healingWaterPrefab, spawnPos, Quaternion.identity);
@@ -131,7 +123,7 @@ namespace IronWasteland.Tanks.WaterB
             {
                 m_WaterEnergy = Mathf.Clamp(m_WaterEnergy + energyGainPerHeal, 0f, MaxWaterEnergy);
                 TextDamageManager.Instance?.Show(finalPower, transform.position);
-                TriggerHealAndShare(finalPower);
+                TriggerHealAndShare(finalPower, false);
             }
         }
 
@@ -141,10 +133,7 @@ namespace IronWasteland.Tanks.WaterB
             if (bubbleShieldPrefab == null) return;
 
             Vector2 mouseScreenPos = Vector2.zero;
-            if (Pointer.current != null)
-            {
-                mouseScreenPos = Pointer.current.position.ReadValue();
-            }
+            if (Pointer.current != null) mouseScreenPos = Pointer.current.position.ReadValue();
 
             Vector3 mouseWorldPos = Vector3.zero;
             if (Camera.main != null)
@@ -197,21 +186,9 @@ namespace IronWasteland.Tanks.WaterB
                 case Skill1WaterVariant.BubbleProtector:
                     if (bubbleProtectorPrefab != null)
                     {
-                        // Thả vòm bong bóng bảo vệ bằng chuột
                         Vector3 spawnPos = GetValidPlacementPosition();
-
                         WaterB_BubbleProtectorDome dome = Instantiate(bubbleProtectorPrefab, spawnPos, Quaternion.identity);
-                        dome.Initialize(
-                            skill1SubDesign.DomeDuration,
-                            skill1SubDesign.DomeHealOnEnd,
-                            skill1SubDesign.DomeDefenseBonus
-                        );
-
-                        Debug.Log($"[WaterB] Đã triển khai Bubble Protector tại vị trí: {spawnPos}");
-                    }
-                    else
-                    {
-                        Debug.LogWarning("[WaterB] Chưa gán BubbleProtector Prefab trong TankBrain_WaterB!");
+                        dome.Initialize(skill1SubDesign.DomeDuration, skill1SubDesign.DomeHealOnEnd, skill1SubDesign.DomeDefenseBonus);
                     }
                     break;
             }
@@ -222,10 +199,7 @@ namespace IronWasteland.Tanks.WaterB
             if (skill1SubDesign.SharedHealingLinkPrefab == null) return;
 
             Vector2 mouseScreenPos = Vector2.zero;
-            if (Pointer.current != null)
-            {
-                mouseScreenPos = Pointer.current.position.ReadValue();
-            }
+            if (Pointer.current != null) mouseScreenPos = Pointer.current.position.ReadValue();
 
             Vector3 mouseWorldPos = Vector3.zero;
             if (Camera.main != null)
@@ -255,23 +229,36 @@ namespace IronWasteland.Tanks.WaterB
 
             if (bestAllyTank != null)
             {
-                if (m_ActiveLink != null)
-                {
-                    Destroy(m_ActiveLink.gameObject);
-                }
+                if (m_ActiveLink != null) Destroy(m_ActiveLink.gameObject);
 
                 m_ActiveLink = Instantiate(skill1SubDesign.SharedHealingLinkPrefab, transform.position, Quaternion.identity);
                 m_ActiveLink.Initialize(this, bestAllyTank, skill1SubDesign.SharedPercent, skill1SubDesign.SharedHealingDuration);
             }
         }
 
-        public void TriggerHealAndShare(float amount)
+        /// <summary>
+        /// Hàm chuyên biệt nhận máu do chia sẻ, đánh dấu là Healing By Share để không gọi ngược lại.
+        /// </summary>
+        public void HealByShare(float amount)
         {
-            Heal(amount);
+            if (amount <= 0f) return;
+            Heal(amount, true);
+            TextDamageManager.Instance?.Show(amount, transform.position);
+            Debug.Log($"[TankBrain_WaterB] Nhận {amount} HP từ Healing By Share.");
+        }
 
-            if (m_ActiveLink != null)
+        public void TriggerHealAndShare(float amount, bool isHealingByShare = false)
+        {
+            if (amount <= 0f) return;
+
+            // Hồi máu cho bản thân
+            Heal(amount, isHealingByShare);
+            TextDamageManager.Instance?.Show(amount, transform.position);
+
+            // Báo cho liên kết biết để chia sẻ sang tank còn lại (chỉ báo nếu không phải là máu do chia sẻ)
+            if (m_ActiveLink != null && !isHealingByShare)
             {
-                m_ActiveLink.TriggerSharedHeal(this, amount);
+                m_ActiveLink.NotifyTankHealed(this, amount, isHealingByShare);
             }
         }
 
@@ -291,18 +278,14 @@ namespace IronWasteland.Tanks.WaterB
                 case Skill2WaterVariant.MobileAltar:
                     if (mobileAltarPrefab != null)
                     {
-                        // Kích hoạt trạng thái cấm tấn công trong thời gian triển khai Mobile Altar
                         float altarDuration = skill2SubDesign.AltarDuration > 0f ? skill2SubDesign.AltarDuration : 8f;
                         m_IsMobileAltarActive = true;
 
                         if (m_MobileAltarCoroutine != null) StopCoroutine(m_MobileAltarCoroutine);
                         m_MobileAltarCoroutine = StartCoroutine(MobileAltarStateRoutine(altarDuration));
 
-                        // Sinh Mobile Altar ngay dưới chân Water B
                         WaterB_MobileAltar altar = Instantiate(mobileAltarPrefab, transform.position, Quaternion.identity);
                         altar.Initialize(transform, skill2SubDesign.AltarDuration, skill2SubDesign.AltarInterval, skill2SubDesign.AltarHealPerTick);
-
-                        Debug.Log($"[WaterB] Triển khai Mobile Altar dưới chân! Khóa tấn công trong {altarDuration} giây.");
                     }
                     break;
 
@@ -311,7 +294,6 @@ namespace IronWasteland.Tanks.WaterB
                     {
                         Vector3 spawnPosition = GetValidPlacementPosition();
                         WaterB_WaterTurret turret = Instantiate(waterTurretPrefab, spawnPosition, Quaternion.identity);
-
                         turret.Initialize(() =>
                         {
                             m_WaterEnergy = Mathf.Clamp(m_WaterEnergy + energyGainPerTurretHit, 0f, MaxWaterEnergy);
@@ -332,17 +314,12 @@ namespace IronWasteland.Tanks.WaterB
             yield return new WaitForSeconds(duration);
             m_IsMobileAltarActive = false;
             m_MobileAltarCoroutine = null;
-            Debug.Log("[WaterB] Mobile Altar kết thúc. Water B có thể tấn công bình thường trở lại.");
         }
 
         private Vector3 GetValidPlacementPosition()
         {
             Vector2 mouseScreenPos = Vector2.zero;
-
-            if (Pointer.current != null)
-            {
-                mouseScreenPos = Pointer.current.position.ReadValue();
-            }
+            if (Pointer.current != null) mouseScreenPos = Pointer.current.position.ReadValue();
 
             Vector3 mouseWorldPos = Vector3.zero;
             if (Camera.main != null)
@@ -350,7 +327,6 @@ namespace IronWasteland.Tanks.WaterB
                 Vector3 screenPoint = new Vector3(mouseScreenPos.x, mouseScreenPos.y, Mathf.Abs(Camera.main.transform.position.z));
                 mouseWorldPos = Camera.main.ScreenToWorldPoint(screenPoint);
             }
-
             mouseWorldPos.z = 0f;
 
             float distance = Vector2.Distance(transform.position, mouseWorldPos);
@@ -368,6 +344,20 @@ namespace IronWasteland.Tanks.WaterB
             yield return new WaitForSeconds(duration);
             m_IsAquaAssaultActive = false;
             m_AquaAssaultCoroutine = null;
+        }
+        public void HandleProjectileHeal(TankBrain targetTank, float amount)
+        {
+            if (amount <= 0f) return;
+
+            targetTank.Heal(amount, false);
+            TextDamageManager.Instance?.Show(amount, targetTank.transform.position);
+            Debug.Log($"[WaterB] Đạn hồi máu trúng {targetTank.name}, hồi phục {amount} HP.");
+
+            // Báo cho liên kết active biết để chia sẻ sang tank còn lại
+            if (m_ActiveLink != null)
+            {
+                m_ActiveLink.NotifyTankHealed(targetTank, amount, false);
+            }
         }
     }
 }

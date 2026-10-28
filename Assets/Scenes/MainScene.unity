@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90ca2f8cafd86134b87881b257253f06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.GameController
-  tankDefinition: {fileID: 11400000, guid: cd7492e832ea8ad44a7d0a1a553c551f, type: 2}
+  tankDefinition: {fileID: 11400000, guid: da2adcc56c23bf94abe7b8768551c551, type: 2}
   playerLevel: 1
   viewId: 0
   spawnPosition: {x: 0, y: 0}
@@ -233,7 +233,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4388350997166174563, guid: 3f3735b3c33f9f2449899ac60e59d944, type: 3}
       propertyPath: stats.MaxHealth
-      value: 100
+      value: 2000
       objectReference: {fileID: 0}
     - target: {fileID: 6093761989288909848, guid: 3f3735b3c33f9f2449899ac60e59d944, type: 3}
       propertyPath: m_LocalPosition.x
@@ -314,7 +314,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4388350997166174563, guid: 3f3735b3c33f9f2449899ac60e59d944, type: 3}
       propertyPath: stats.MaxHealth
-      value: 200
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 6093761989288909848, guid: 3f3735b3c33f9f2449899ac60e59d944, type: 3}
       propertyPath: m_LocalPosition.x
@@ -460,7 +460,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4388350997166174563, guid: 3f3735b3c33f9f2449899ac60e59d944, type: 3}
       propertyPath: stats.MaxHealth
-      value: 100
+      value: 2000
       objectReference: {fileID: 0}
     - target: {fileID: 6093761989288909848, guid: 3f3735b3c33f9f2449899ac60e59d944, type: 3}
       propertyPath: m_LocalScale.x
@@ -516,7 +516,7 @@ PrefabInstance:
       objectReference: {fileID: 1867623650}
     - target: {fileID: 7772003062153151634, guid: 3f3735b3c33f9f2449899ac60e59d944, type: 3}
       propertyPath: m_Name
-      value: Enemy_Normal (2)
+      value: to
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -613,6 +613,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy_Elite
       objectReference: {fileID: 0}
+    - target: {fileID: 4382231180120962163, guid: b4cc83c34e192c745b622423708c18db, type: 3}
+      propertyPath: model
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8657597288793346402, guid: b4cc83c34e192c745b622423708c18db, type: 3}
       propertyPath: m_LocalPosition.x
       value: -8.753916
@@ -698,17 +702,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   activeVariant: 0
+  buff2AEnergyCost: 55
+  buff2ACooldown: 12
+  damagePerStackPercent: 20
   attackBuffDuration: 5
+  attackBuffPercent: 0.3
   attackMultiplier: 1.3
+  buff2BEnergyCost: 60
+  buff2BCooldown: 15
   territoryDuration: 6
-  territoryRadius: 4
   slowAmount: 0.3
-  speedBoostMultiplier: 1.25
-  territoryDps: 15
+  speedBoostPercent: 0.3
+  energyPerHit: 3
+  maxEnergyGain: 30
+  buff2CEnergyCost: 75
+  buff2CCooldown: 16
   assaultDuration: 5
   attackInterval: 0.4
+  tailDamagePercent: 15
   attackRange: 6
-  tailDamage: 20
 --- !u!58 &2003934393
 CircleCollider2D:
   m_ObjectHideFlags: 0

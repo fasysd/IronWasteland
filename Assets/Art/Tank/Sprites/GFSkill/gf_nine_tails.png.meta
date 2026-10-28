@@ -1,33 +1,21 @@
 fileFormatVersion: 2
-guid: 22ccf1900a152eb4883ac952d1af8c23
+guid: 4093b6370515b904f9e484a406b3605b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3139217132901508662
-    second: 1016(2)_0
+      213: 7893272306698362456
+    second: gf_nine_tails_0
   - first:
-      213: -3317909354043561325
-    second: 1016(2)_1
+      213: 1304089295973122691
+    second: gf_nine_tails_1
   - first:
-      213: 3125455384505223865
-    second: 1016(2)_2
-  - first:
-      213: 7805385234579627976
-    second: 1016(2)_3
-  - first:
-      213: -4355760082308029981
-    second: 1016(2)_4
-  - first:
-      213: 2374905499140879324
-    second: 1016(2)_5
-  - first:
-      213: 126119708495286553
-    second: 1016(2)_6
+      213: 4500313779540851302
+    second: gf_nine_tails_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 1
+    enableMipMap: 0
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -69,7 +57,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 310
+  spritePixelsToUnits: 400
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -144,13 +132,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 1016(2)_0
+      name: gf_nine_tails_0
       rect:
         serializedVersion: 2
-        x: 1499
-        y: 1030
-        width: 17
-        height: 15
+        x: 98
+        y: 34
+        width: 832
+        height: 962
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -159,20 +147,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6362a6f995db09b20800000000000000
-      internalID: 3139217132901508662
+      spriteID: 85e1f24b7598a8d60800000000000000
+      internalID: 7893272306698362456
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 1016(2)_1
+      name: gf_nine_tails_1
       rect:
         serializedVersion: 2
-        x: 431
-        y: 491
-        width: 70
-        height: 359
+        x: 907
+        y: 611
+        width: 83
+        height: 78
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -181,20 +169,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 39aa943850b64f1d0800000000000000
-      internalID: -3317909354043561325
+      spriteID: 3820ed92e4e091210800000000000000
+      internalID: 1304089295973122691
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 1016(2)_2
+      name: gf_nine_tails_2
       rect:
         serializedVersion: 2
-        x: 500
-        y: 224
-        width: 581
-        height: 644
+        x: 0
+        y: 326
+        width: 92
+        height: 83
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -203,96 +191,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9ba04c2ec19df5b20800000000000000
-      internalID: 3125455384505223865
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 1016(2)_3
-      rect:
-        serializedVersion: 2
-        x: 447
-        y: 404
-        width: 6
-        height: 84
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 8cf9232248c425c60800000000000000
-      internalID: 7805385234579627976
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 1016(2)_4
-      rect:
-        serializedVersion: 2
-        x: 1233
-        y: 421
-        width: 7
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3e1243f684b3d83c0800000000000000
-      internalID: -4355760082308029981
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 1016(2)_5
-      rect:
-        serializedVersion: 2
-        x: 311
-        y: 270
-        width: 11
-        height: 30
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: cd3f96bf7fb55f020800000000000000
-      internalID: 2374905499140879324
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 1016(2)_6
-      rect:
-        serializedVersion: 2
-        x: 428
-        y: 216
-        width: 614
-        height: 159
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 9119908e43110c100800000000000000
-      internalID: 126119708495286553
+      spriteID: 66af35fe983547e30800000000000000
+      internalID: 4500313779540851302
       vertices: []
       indices: 
       edges: []
@@ -311,13 +211,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      1016(2)_0: 3139217132901508662
-      1016(2)_1: -3317909354043561325
-      1016(2)_2: 3125455384505223865
-      1016(2)_3: 7805385234579627976
-      1016(2)_4: -4355760082308029981
-      1016(2)_5: 2374905499140879324
-      1016(2)_6: 126119708495286553
+      gf_nine_tails_0: 7893272306698362456
+      gf_nine_tails_1: 1304089295973122691
+      gf_nine_tails_2: 4500313779540851302
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

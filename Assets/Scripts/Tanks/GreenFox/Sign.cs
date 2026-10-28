@@ -7,11 +7,16 @@ namespace IronWasteland.Tanks.GreenFox
     public class Sign : MonoBehaviour
     {
         [Header("Sign Settings")]
-        [SerializeField, Range(1, 10)] private int maxStacks = 4;
+        [SerializeField, Range(1, 20)] private int maxStacks = 10;
         [SerializeField] private int currentStacks = 1;
 
         [Header("Position Adjustment")]
-        [SerializeField] private Vector3 centerOffset = Vector3.zero; // Dùng để tinh chỉnh lệch tâm nếu cần (X, Y)
+        [SerializeField] private Vector3 centerOffset = Vector3.zero;
+
+        [Header("Visuals")]
+        [SerializeField] private SpriteRenderer spriteRenderer;
+        [SerializeField] private Sprite normalSprite;   // Sprite mặc định
+        [SerializeField] private Sprite buff1ASprite;   // Sprite khi bật chiêu 1A
 
         private Transform m_TargetEnemyTransform;
         private EnemyBrain m_OwnerEnemy;
@@ -20,6 +25,14 @@ namespace IronWasteland.Tanks.GreenFox
         public int MaxStacks => maxStacks;
         public EnemyBrain OwnerEnemy => m_OwnerEnemy;
 
+        private void Awake()
+        {
+            if (spriteRenderer == null)
+            {
+                spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            }
+        }
+
         public void SetTarget(EnemyBrain enemy)
         {
             if (enemy == null) return;
@@ -27,6 +40,20 @@ namespace IronWasteland.Tanks.GreenFox
             m_OwnerEnemy = enemy;
             m_TargetEnemyTransform = enemy.transform;
             UpdatePosition();
+        }
+
+        // Tên hàm chuẩn để gọi từ TankBrain
+        public void UpdateVisualState(bool is1AActive)
+        {
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.sprite = is1AActive ? buff1ASprite : normalSprite;
+            }
+        }
+
+        public void SetInitialStacks(int stacks)
+        {
+            currentStacks = Mathf.Clamp(stacks, 1, maxStacks);
         }
 
         private void LateUpdate()
@@ -40,11 +67,10 @@ namespace IronWasteland.Tanks.GreenFox
             {
                 Vector3 targetCenter = m_TargetEnemyTransform.position;
 
-                // Lấy tâm chính xác của khối hình/sprite kẻ địch
-                SpriteRenderer spriteRenderer = m_TargetEnemyTransform.GetComponentInChildren<SpriteRenderer>();
-                if (spriteRenderer != null)
+                SpriteRenderer sr = m_TargetEnemyTransform.GetComponentInChildren<SpriteRenderer>();
+                if (sr != null)
                 {
-                    targetCenter = spriteRenderer.bounds.center;
+                    targetCenter = sr.bounds.center;
                 }
                 else
                 {
@@ -55,7 +81,6 @@ namespace IronWasteland.Tanks.GreenFox
                     }
                 }
 
-                // Cộng thêm offset tùy chỉnh để căn chỉnh tuyệt đối vào giữa tâm
                 transform.position = targetCenter + centerOffset;
             }
             else
