@@ -22,6 +22,11 @@ namespace IronWasteland.Enemies
     [DisallowMultipleComponent]
     public abstract class EnemyBrain : MonoBehaviour
     {
+        /// <summary>Sự kiện phát ra khi bất kỳ kẻ địch nào bị tiêu diệt trong trận đấu.</summary>
+        public static event System.Action<EnemyBrain> OnAnyEnemyDied;
+
+        /// <summary>Sự kiện phát ra khi chính kẻ địch này bị tiêu diệt.</summary>
+        public event System.Action<EnemyBrain> OnDied;
         [Header("Model")]
         [Tooltip("Model con (visual + collider). Tu tim trong hierarchy neu de trong.")]
         [SerializeField] private EnemyModel model;
@@ -105,6 +110,9 @@ namespace IronWasteland.Enemies
 
             model?.PlayDeath();
             OnDeath();
+
+            OnDied?.Invoke(this);
+            OnAnyEnemyDied?.Invoke(this);
         }
 
         #endregion

@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2823c484fe2a0dd4caf36cc60dfa904d, type: 3}
+  m_Name: StageDefinition_Test_Boss
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stage.StageDefinition
+  stageId: stage_test_boss
+  stageName: Test Boss
+  stageDescription: "Ti\xEAu di\u1EC7t to\xE0n b\u1ED9 l\u1EF1c l\u01B0\u1EE3ng qu\xE1i
+    v\u1EADt x\xE2m l\u01B0\u1EE3c ho\u1EB7c ph\xF2ng th\u1EE7 c\u1EE9 \u0111i\u1EC3m
+    th\xE0nh c\xF4ng."
+  chapter: 1
+  stageNumber: 4
+  stageType: 1
+  timeLimit: 180
+  requireAllWinConditions: 1
+  enableKillCountCondition: 0
+  targetKills: 15
+  enableSurviveCondition: 0
+  surviveDuration: 60
+  enableDefendCondition: 0
+  defendDuration: 60
+  enableDefeatBossCondition: 0
+  requiredBossCount: 0

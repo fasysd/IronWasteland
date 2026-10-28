@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -20,6 +20,12 @@ namespace IronWasteland.Tanks
     {
         public const int SkillCount = 4;
 
+        /// <summary>Sự kiện phát ra khi bất kỳ xe tank nào bị tiêu diệt trong trận đấu.</summary>
+        public static event System.Action<TankBrain> OnAnyTankDied;
+
+        /// <summary>Sự kiện phát ra khi chính xe tank này bị tiêu diệt.</summary>
+        public event System.Action<TankBrain> OnDied;
+
         [Header("View")]
         [Tooltip("View dang chay. Se duoc gan luc runtime tu TankDefinition.")]
         [SerializeField, ReadOnly] private TankView view;
@@ -40,6 +46,7 @@ namespace IronWasteland.Tanks
         [SerializeField] private float currentHealth;
         [SerializeField] private float currentEnergy;
         [SerializeField, ReadOnly] private float[] skillCooldowns = new float[SkillCount];
+        private bool m_Dead = false;
 
 
         private Rigidbody2D m_Body;
@@ -96,6 +103,7 @@ namespace IronWasteland.Tanks
 
             currentHealth = m_FinalStats.MaxHealth;
             currentEnergy = m_FinalStats.MaxEnergy;
+            m_Dead = false;
             for (int i = 0; i < skillCooldowns.Length; i++) skillCooldowns[i] = 0f;
         }
 
@@ -371,11 +379,28 @@ namespace IronWasteland.Tanks
             }
         }
 
-        /// <summary>Nhan sat thuong. TODO: ap dung Defense/ArmorPenetration.</summary>
+        /// <summary>Nhận sát thương. Khi máu về <= 0 sẽ kích hoạt Die() và phát sự kiện tử trận OnDied.</summary>
         public virtual void TakeDamage(float amount)
         {
+            if (!IsAlive) return;
+
             // TODO: tinh damage thuc te bang m_FinalStats.Defense va ArmorPenetration cua doi phuong.
             currentHealth -= amount;
+            if (currentHealth <= 0f)
+            {
+                Die();
+            }
+        }
+
+        /// <summary>Kích hoạt cái chết cho xe tank và phát sự kiện tử trận OnDied.</summary>
+        public virtual void Die()
+        {
+            if (m_Dead) return;
+            m_Dead = true;
+            currentHealth = 0f;
+
+            OnDied?.Invoke(this);
+            OnAnyTankDied?.Invoke(this);
         }
 
         public virtual void Heal(float amount)
@@ -393,7 +418,7 @@ namespace IronWasteland.Tanks
             currentEnergy = Mathf.Max(currentEnergy - amount, 0f);
         }
 
-        public bool IsAlive => currentHealth > 0f;
+        public bool IsAlive => !m_Dead && currentHealth > 0f;
 
         #endregion
 
