@@ -251,15 +251,8 @@ namespace IronWasteland.Tanks.WaterB
         {
             if (amount <= 0f) return;
 
-            // Hồi máu cho bản thân
-            Heal(amount, isHealingByShare);
+            Heal(amount, isHealingByShare);   // event OnHealed tự lo phần chia sẻ
             TextDamageManager.Instance?.Show(amount, transform.position);
-
-            // Báo cho liên kết biết để chia sẻ sang tank còn lại (chỉ báo nếu không phải là máu do chia sẻ)
-            if (m_ActiveLink != null && !isHealingByShare)
-            {
-                m_ActiveLink.NotifyTankHealed(this, amount, isHealingByShare);
-            }
         }
 
         private IEnumerator LifeDrainRoutine(float duration)
@@ -349,15 +342,8 @@ namespace IronWasteland.Tanks.WaterB
         {
             if (amount <= 0f) return;
 
-            targetTank.Heal(amount, false);
+            targetTank.Heal(amount, false);   // event OnHealed tự lo phần chia sẻ
             TextDamageManager.Instance?.Show(amount, targetTank.transform.position);
-            Debug.Log($"[WaterB] Đạn hồi máu trúng {targetTank.name}, hồi phục {amount} HP.");
-
-            // Báo cho liên kết active biết để chia sẻ sang tank còn lại
-            if (m_ActiveLink != null)
-            {
-                m_ActiveLink.NotifyTankHealed(targetTank, amount, false);
-            }
         }
     }
 }

@@ -141,8 +141,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffdd4485fc883514e99101a2d6805129, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  activeVariant: 2
-  sharedPercent: 0.5
+  activeVariant: 0
+  sharedPercent: 1
   sharedHealingLinkPrefab: {fileID: 2490352363854650707, guid: f5da3f94bad536b47b81cfe30590c8b3, type: 3}
   sharedHealingDuration: 10
   maxSelectRange: 10
@@ -167,7 +167,7 @@ MonoBehaviour:
   activeVariant: 0
   altarDuration: 8
   altarInterval: 1
-  altarHealPerTick: 20
+  altarHealPerTick: 5
   turretDuration: 10
   turretAttackInterval: 1.5
   turretDamage: 15
