@@ -73,3 +73,9 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# AI tooling cache (understanding graph, fingerprints, tmp) — regenerated locally
+/.ua/
+
+# Tài liệu thiết kế game (.docx) — bản làm việc ~44 MB, giữ ngoài git
+/Tài liệu thiết kế Game.docx
