@@ -20,14 +20,8 @@ namespace IronWasteland.Tanks
 
         [SerializeField] private Vector2 spawnPosition = Vector2.zero;
 
-        [Tooltip("ID trang bi sung. De trong = Tank khong co nong phao.")]
-        [SerializeField] private int firepowerId;
-
-        [Tooltip("ID trang bi vo xe. De trong = Tank khong co vo xe.")]
-        [SerializeField] private int defenseId;
-
-        [Tooltip("ID trang bi bo banh. De trong = Tank khong co bo banh.")]
-        [SerializeField] private int mobilityId;
+        [Tooltip("ID phu kien trong EquipmentDatabase (-1 = khong trang bi).")]
+        [SerializeField] private int equipmentId = -1;
 
         [Header("Look")]
         [Tooltip("Camera de tinh huong nhin. Neu rong se dung Camera.main.")]
@@ -41,19 +35,17 @@ namespace IronWasteland.Tanks
         {
             if (targetCamera == null) targetCamera = Camera.main;
 
-            // Xây TankBrainContext từ fields hiện có (level, viewId, ids trang bi).
+            // Xay TankBrainContext tu fields hien co (level, viewId, equipmentId).
             var context = new TankBrainContext
             {
                 Level = playerLevel,
                 IdView = viewId,
-                FirepowerEquipmentId = firepowerId,
-                DefenseEquipmentId = defenseId,
-                MobilityEquipmentId = mobilityId,
+                EquipmentId = equipmentId,
                 OptionSkill1 = 0,
                 OptionSkill2 = 0,
             };
 
-            // Khởi tạo 1 lần duy nhất (guard).
+            // Khoi tao 1 lan duy nhat (guard).
             if (m_PlayerTank == null && tankDefinition != null)
             {
                 m_PlayerTank = tankDefinition.CreateTank(context);
@@ -62,9 +54,10 @@ namespace IronWasteland.Tanks
             if (m_PlayerTank == null)
             {
                 Debug.LogError($"[{nameof(GameController)}] Khong tao duoc Tank. Kiem tra TankDefinition.");
+                return;
             }
 
-            m_PlayerTank.transform.position.Set(spawnPosition.x, spawnPosition.y, m_PlayerTank.transform.position.z);
+            m_PlayerTank.transform.position = new Vector3(spawnPosition.x, spawnPosition.y, m_PlayerTank.transform.position.z);
         }
 
         // === INPUT TAM THOI: chi if/else trong Update ===
