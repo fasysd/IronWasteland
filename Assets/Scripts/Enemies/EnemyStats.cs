@@ -4,13 +4,11 @@ using UnityEngine;
 namespace IronWasteland.Enemies
 {
     /// <summary>
-    /// Bang chi so cua 1 ke dich. Theo mo ta he thong:
+    /// Bang chi so cua 1 ke dich theo Tai lieu thiet ke Game (GDD):
     /// - Attack: xac dinh luong sat thuong gay ra
     /// - MaxHealth: xac dinh luong mau toi da
-    /// - Defense: xac dinh luong giam sat thuong nhan vao tu Tank
+    /// - Defense: diem phong thu (flat stat), giam sat thuong nhan tu Tank theo cong thuc Logarit
     /// - MoveSpeed: xac dinh toc do di chuyen cua ke dich
-    ///
-    /// Designer chinh truc tiep tren prefab (hoac gui tu definition sau nay).
     /// </summary>
     [Serializable]
     public class EnemyStats
@@ -19,7 +17,7 @@ namespace IronWasteland.Enemies
         [Tooltip("Sat thuong gay ra cho Tank / nguoi choi.")]
         public float Attack = 10f;
 
-        [Tooltip("Phan tram giam sat thuong nhan vao (0 = 0%, 0.3 = 30%).")]
+        [Tooltip("Diem phong thu (flat stat), giam sat thuong nhan tu Tank theo cong thuc Logarit.")]
         public float Defense;
 
         [Header("Survivability")]
@@ -27,7 +25,7 @@ namespace IronWasteland.Enemies
         public float MaxHealth = 50f;
 
         [Header("Mobility")]
-        [Tooltip("Don vi / giay toi da.")]
+        [Tooltip("Toc do di chuyen (don vi / giay).")]
         public float MoveSpeed = 2f;
 
         public EnemyStats Clone() => (EnemyStats)MemberwiseClone();
