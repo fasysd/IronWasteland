@@ -1047,7 +1047,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90ca2f8cafd86134b87881b257253f06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.GameController
-  tankDefinition: {fileID: 11400000, guid: 6c45234ae1746fa47a2143507c619a1c, type: 2}
+  tankDefinition: {fileID: 11400000, guid: 50cf10bfd48885b469ef03739b0d162d, type: 2}
   playerLevel: 37
   viewId: 0
   spawnPosition: {x: 0, y: 0}

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace IronWasteland.Enemies
@@ -45,6 +46,9 @@ namespace IronWasteland.Enemies
 
         /// <summary>Chi so hien tai (chinh sua truc tiep tren prefab).</summary>
         public EnemyStats Stats => stats;
+
+        /// <summary>Phat ra 1 lan khi ke dich chet (truoc khi <see cref="OnDeath"/> cua lop con chay).</summary>
+        public event Action<EnemyBrain> Died;
 
         public float CurrentHealth => currentHealth;
         public float MaxHealth => stats != null ? stats.MaxHealth : 0f;
@@ -104,6 +108,7 @@ namespace IronWasteland.Enemies
             m_Dead = true;
 
             model?.PlayDeath();
+            Died?.Invoke(this);
             OnDeath();
         }
 
