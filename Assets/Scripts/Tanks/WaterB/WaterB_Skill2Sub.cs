@@ -2,19 +2,24 @@
 
 namespace IronWasteland.Tanks.WaterB
 {
+    /// <summary>
+    /// Biến thể của Skill 2 phụ. Được chọn bởi TankBrainContext.OptionSkill2
+    /// (mapping nằm trong TankBrain_WaterB.GetSkill2Variant()).
+    /// </summary>
     public enum Skill2WaterVariant
     {
-        MobileAltar,   // Đài tế thủy triều di động (Hồi máu/kéo dài aura quanh tank)
-        WaterTurrets,  // Triệu hồi tháp nước tấn công & hồi năng lượng
-        AquaAssault    // Chuyển hóa tấn công mạnh, giảm cooldown, tự hồi máu
+        MobileAltar,   // OptionSkill2 = 0 (mặc định) - Đài tế thủy triều di động (Hồi máu/kéo dài aura quanh tank)
+        WaterTurrets,  // OptionSkill2 = 1 - Triệu hồi tháp nước tấn công & hồi năng lượng
+        AquaAssault    // OptionSkill2 = 2 - Chuyển hóa tấn công mạnh, giảm cooldown, tự hồi máu
     }
 
+    /// <summary>
+    /// Chỉ chứa thông số của các biến thể Skill 2 phụ.
+    /// Việc chọn biến thể nào do TankBrain_WaterB quyết định qua Context.OptionSkill2.
+    /// </summary>
     [DisallowMultipleComponent]
     public class WaterB_Skill2Sub : MonoBehaviour
     {
-        [Header("Variant Selection")]
-        [SerializeField] private Skill2WaterVariant activeVariant = Skill2WaterVariant.MobileAltar;
-
         [Header("Mobile Altar Settings")]
         [SerializeField, Min(0.1f)] private float altarDuration = 8f;
         [SerializeField, Min(0.1f)] private float altarInterval = 1f;
@@ -30,8 +35,6 @@ namespace IronWasteland.Tanks.WaterB
         [SerializeField, Min(0.1f)] private float assaultDuration = 6f;
         [SerializeField, Range(0.1f, 0.9f)] private float cooldownMultiplier = 0.6f; // Giảm 40% cooldown
         [SerializeField, Range(0.1f, 1f)] private float selfHealOnHitPercent = 0.2f;
-
-        public Skill2WaterVariant ActiveVariant => activeVariant;
 
         // Getters Altar
         public float AltarDuration => altarDuration;

@@ -50,7 +50,7 @@ namespace IronWasteland.Tanks
                 DefenseEquipmentId = defenseId,
                 MobilityEquipmentId = mobilityId,
                 OptionSkill1 = 0,
-                OptionSkill2 = 0
+                OptionSkill2 = 0,
             };
 
             // Khởi tạo 1 lần duy nhất (guard).

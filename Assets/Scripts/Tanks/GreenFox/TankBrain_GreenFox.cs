@@ -61,6 +61,30 @@ namespace IronWasteland.Tanks.GreenFox
         private bool m_Is2ABuffActive = false;
         private Coroutine m_2ABuffCoroutine;
 
+        // ------------------------------------------------------------------
+        // Chọn biến thể qua TankBrainContext (giống TankBrain_WaterB):
+        // OptionSkill1 / OptionSkill2: 0 = mặc định, 1 = biến thể 2, 2 = biến thể 3
+        // ------------------------------------------------------------------
+        private Skill1Variant GetSkill1Variant()
+        {
+            switch (Context.OptionSkill1)
+            {
+                case 1: return Skill1Variant.Variant_1B;
+                case 2: return Skill1Variant.Variant_1C;
+                default: return Skill1Variant.Variant_1A;
+            }
+        }
+
+        private Skill2Variant GetSkill2Variant()
+        {
+            switch (Context.OptionSkill2)
+            {
+                case 1: return Skill2Variant.Variant_2B;
+                case 2: return Skill2Variant.Variant_2C;
+                default: return Skill2Variant.Variant_2A;
+            }
+        }
+
         protected override float GetBaseCooldown(int index)
         {
             if (index == Skill0Index) return skill0Cooldown;
@@ -69,7 +93,7 @@ namespace IronWasteland.Tanks.GreenFox
             {
                 if (skill2SubDesign != null)
                 {
-                    switch (skill2SubDesign.ActiveVariant)
+                    switch (GetSkill2Variant())
                     {
                         case Skill2Variant.Variant_2A: return skill2SubDesign.Buff2ACooldown; // 12s
                         case Skill2Variant.Variant_2B: return skill2SubDesign.Buff2BCooldown; // 15s
@@ -82,7 +106,7 @@ namespace IronWasteland.Tanks.GreenFox
             {
                 if (skill1SubDesign == null) return skill1SubDynamicCooldown;
 
-                switch (skill1SubDesign.ActiveVariant)
+                switch (GetSkill1Variant())
                 {
                     case Skill1Variant.Variant_1A: return skill1SubDesign.Buff1ACooldown;
                     case Skill1Variant.Variant_1B: return skill1SubDesign.Buff1BCooldown;
@@ -335,7 +359,7 @@ namespace IronWasteland.Tanks.GreenFox
                 return;
             }
 
-            switch (skill2SubDesign.ActiveVariant)
+            switch (GetSkill2Variant())
             {
                 case Skill2Variant.Variant_2A: Execute2AMarkExplosion(); break;
                 case Skill2Variant.Variant_2B: Execute2BFoxTerritory(); break;
@@ -461,7 +485,7 @@ namespace IronWasteland.Tanks.GreenFox
         {
             if (enemy == null || !m_Is1BBuffActive || skill1SubDesign == null) return;
 
-            if (skill1SubDesign.ActiveVariant == Skill1Variant.Variant_1B)
+            if (GetSkill1Variant() == Skill1Variant.Variant_1B)
             {
                 GreenFox_BurnEffect existingBurn = null;
                 GreenFox_BurnEffect[] activeBurns = FindObjectsByType<GreenFox_BurnEffect>(FindObjectsInactive.Exclude);
@@ -493,7 +517,7 @@ namespace IronWasteland.Tanks.GreenFox
         {
             if (skill1SubDesign == null) return;
 
-            switch (skill1SubDesign.ActiveVariant)
+            switch (GetSkill1Variant())
             {
                 case Skill1Variant.Variant_1A:
                     if (CurrentEnergy < skill1SubDesign.Buff1AEnergyCost) return;
