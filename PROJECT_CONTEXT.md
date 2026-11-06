@@ -82,6 +82,8 @@ Mọi dòng code do AI tạo ra **bắt buộc** phải tuân thủ nghiêm ng�
 - **Tank**: $\text{Def} = \text{Phòng thủ}$
 - **Kẻ địch**: $\text{Def} = \text{Phòng thủ} \times (1 - \text{Tỉ lệ xuyên giáp của Tank})$
 
+> ⚠️ **Đã chốt (06/11/2026)** — bản Word của GDD ghi thiếu phần $(1 - \dots)$ ở công thức Def kẻ địch: chỉ còn $\text{Phòng thủ} \times \text{Tỉ lệ xuyên giáp}$, nghĩa là xuyên giáp 0% sẽ vô hiệu hoá giáp hoàn toàn. Công thức đúng là bản trong mục này và trong `CombatUtility.CalculateEffectiveDefense` (`baseDefense * (1f - pen)`); câu mô tả cùng tài liệu ("xuyên giáp: cho phép đòn tấn công **bỏ qua** chỉ số phòng thủ") cũng xác nhận điều đó. **Code là chuẩn**, cần sửa lại dòng công thức trong Word.
+
 ### 4.3 Tỉ lệ giảm sát thương (%) — 4 Phân đoạn Logarit liên tục
 Hàm giảm sát thương là một hàm liên tục $C^0$ với đồ thị logarit tiệm cận 90%:
 - **Phân đoạn 1 ($\text{Def} \in [0, 40]$)**:
@@ -561,9 +563,136 @@ Assets/Scripts/
 3. **Triển khai 20 loại Phụ kiện**:
    - Viết các lớp kế thừa `EquipmentBrain` cho 20 phụ kiện trong Mục 4.4 của GDD.
 4. **Hệ thống Quái vật & Boss theo Chương**:
-   - Chương 1 (Lục Địa Đen): 5 loại quái thường + Boss Tinh Anh SeauBearus (3 đầu).
-   - Chương 2 (Vùng Đất Nguyên Tố): 4 loại quái + Boss The2Face & Boss D1onk.
+   - Chương 1 (Lục Địa Đen): 5 loại quái thường (Ký sinh thiên thạch, Xạ thủ tinh thể, Quái vật thạch anh, Mặt trăng đen, Tinh linh nghĩa địa) + 2 Boss (Bóng Ma Tử Địa, SeauBearus).
+   - Chương 2 (Vùng Đất Nguyên Tố): 7 loại quái thường (Kiến lửa, Quái đầm lầy, Nấm độc, Sao đen, Mặt trời đỏ, Xén nước, Tinh linh sấm sét) + 3 Boss (Tử Thần Nguyên Tố, The2Face, D1onk).
 5. **Stage & Spawner**:
    - Thiết lập các Scene cho từng màn chơi, gắn `WaveSpawner` và `TriggerZone` điều phối đợt quái.
 6. **Mạng LAN Co-op**:
    - Tích hợp giải pháp mạng LAN đồng bộ chuyển động và combat giữa 2–4 người chơi theo mô hình Host/Client.
+
+---
+
+## 10. Dữ Liệu Thiết Kế Tham Chiếu (trích GDD)
+
+> **Nguồn:** `Tài liệu thiết kế Game.docx` (22.6 MB, cập nhật 06/11/2026) — file này **không** nằm trong git. Mục này là bản rút gọn để code và AI tra cứu nhanh; **khi lệch số liệu, bảng trong Word là chuẩn**, trừ các điểm đã chốt ở §10.7.
+
+### 10.1 Chỉ số 6 xe tăng (Cấp 1 → Cấp 90)
+
+| Xe | Vai trò | Tấn công | Máu | Năng lượng | Phòng thủ | Tốc độ | Giảm hồi chiêu | Tỉ lệ sát thương | Xuyên giáp |
+|---|---|---|---|---|---|---|---|---|---|
+| Wall Titan | Tanker / Support | 15 → 50 | 1200 → 6500 | 100 → 300 | 25 → 55 | 100 → 100 | 0% → 20% | 0% → 0% | 0% → 0% |
+| Red Nova | DPS | 25 → 95 | 600 → 3200 | 100 → 300 | 10 → 15 | 100 → 100 | 0% → 0% | 0% → 15% | 0% → 25% |
+| Black Shadow | DPS / Support | 20 → 90 | 650 → 3400 | 120 → 300 | 12 → 18 | 110 → 130 | 0% → 15% | 0% → 15% | 0% → 0% |
+| Leviathan | Tanker | 5 → 45 | 1300 → 7000 | 120 → 350 | 28 → 60 | 100 → 100 | 0% → 10% | 0% → 0% | 0% → 0% |
+| Water B | Support / DPS | 15 → 75 | 650 → 3500 | 100 → 300 | 12 → 18 | 100 → 110 | 0% → 30% | 0% → 0% | 0% → 0% |
+| Green Fox | DPS | 25 → 85 | 700 → 3600 | 100 → 300 | 12 → 20 | 100 → 100 | 0% → 0% | 0% → 10% | 0% → 5% |
+
+⚠️ Tốc độ trong GDD dùng thang "chuẩn 100" (quái 70–140). `TankStats.MoveSpeed` ở runtime là đơn vị/giây (3–7.5) → phải chốt một hệ số quy đổi trước khi nhập vào `TankDefinition`, nếu không xe sẽ chạy sai tốc độ.
+
+### 10.2 Bộ kỹ năng: 4 slot, hai slot sau là **pool lựa chọn**
+
+| Xe | Kỹ năng thường | Kỹ năng chuyên biệt | Tuỳ chọn 1 (chọn 1 trong 3) | Tuỳ chọn 2 (chọn 1 trong 3) |
+|---|---|---|---|---|
+| Wall Titan | Earth Break | Earth Wall | Stone Fortress · Guardian Wall · Earth Prison | Immovable Titan · Earth Guardian · Earthquake |
+| Red Nova | Nova Shot | Triple Nova | Overdrive · Laser Cannon · Execution Core | Nova Barrage · Nova Pierce · Nova Rush |
+| Black Shadow | Shadow Claw | Shadow Step | Shadow Predator · Shadow Link · Shadow Guard | Shadow Ambush · Shadow Possession · Shadow Exchange |
+| Leviathan | Water Pulse | Water Bubble | Water Armor · Guardian Current · Regenerative Shell | Tidal Return · Leviathan Form · Tide Commander |
+| Water B | Healing Water | Bubble Shield | Shared Healing · Life Drain · Bubble Protector | Mobile Altar · Water Turrets · Aqua Assault |
+| Green Fox | Fox Fang | Fox Mark | Mark Hunter · Burning Fox · Fox Trap | Mark Explosion · Fox Territory · Nine-Tailed Assault |
+
+Tổng cộng **8 kỹ năng mỗi xe** (2 cố định + 6 trong pool). `SkillCount = 4` là 4 **slot đang gắn**, không phải 4 kỹ năng tồn tại.
+
+### 10.3 Kẻ địch
+
+**Chương 1 — Lục Địa Đen**
+
+| Tên | HP | HP Co-op | ATK | Giáp | Tốc độ | Hồi đòn |
+|---|---|---|---|---|---|---|
+| Ký sinh thiên thạch | 100 | 200 | 150 | 0 | 125 | — (nổ khi chạm) |
+| Xạ thủ tinh thể | 200 | 400 | 75 | 25 | 80 | 1.5s |
+| Quái vật thạch anh | 220 | 440 | 50 | 15 | 85 | 1.5s |
+| Mặt trăng đen | 260 | 520 | 15 | 50 | 95 | 2.0s |
+| Tinh linh nghĩa địa | 250 | 500 | 35 | 10 | 135 | — (để lại vệt lửa) |
+| **Bóng Ma Tử Địa** (boss) | 2000 | 4000 | 120 | 45 | 90 | — |
+| **SeauBearus** (boss) | 1800 | 3600 | 180 | 40 | 85 | — |
+
+**Chương 2 — Vùng Đất Nguyên Tố**
+
+| Tên | HP | HP Co-op | ATK | Giáp | Tốc độ | Hồi đòn |
+|---|---|---|---|---|---|---|
+| Kiến lửa khổng lồ | 420 | 840 | 130 | 30 | 105 | 2.0s |
+| Quái vật đầm lầy | 380 | 760 | 180 | 35 | 75 | 3.5s |
+| Nấm độc gai thạch | 380 | 760 | 110 | 25 | 0 | 6.0s |
+| Sao đen | 450 | 900 | 100 | 18 | 0 | 3.0s |
+| Mặt trời đỏ | 720 | 1400 | 240 | 40 | 0 | 8.0s |
+| Xén nước | 360 | 720 | 150 | 24 | 140 | 2.5s |
+| Tinh linh sấm sét | 260 | 520 | 170 | 10 | 95 | 2.0s |
+| **Tử Thần Nguyên Tố** (boss 2-4) | 9500 | 18000 | 250 | 25 | 90 | — |
+| **The2Face** (boss 2-4) | 16000 | 32000 | 350 | 30 | 100 | — |
+| **D1onk** (final 2-5) | 27000 | 54000 | 500 | 60 | 70 | — |
+
+Co-op nhân đôi HP — khớp `EnemyBrain.SetCoopMode(true)`.
+
+### 10.4 Chín màn chơi
+
+| Màn | Tên ải | Điều kiện thắng | Thời lượng | Ngọc | Phụ kiện rơi | Mở khoá |
+|---|---|---|---|---|---|---|
+| 1-1 | Sương Mù Tím | Diệt 40 quái | ~90s | 20 | 1 món | — |
+| 1-2 | Hang Đá Gai | Sinh tồn 100 giây | 100s | 30 | 1 món | Black Shadow |
+| 1-3 | Dấu Vết Tù Binh | Kích hoạt 2 Trạm Radar + hộ tống xe Mones 150m | ~120s | 40 | 1 món | Leviathan |
+| 1-4 | Vòng Xoáy Không Gian | Diệt Bóng Ma Tử Địa **và** SeauBearus (4 phase) | ~180s | 60 | 3 món | — |
+| 2-1 | Vành Đai Bão Lửa | Diệt 50 quái | ~90s | 50 | 1 món | Water B |
+| 2-2 | Đầm Lầy Độc Khí & Bão Điện | Phá 4 Cụm Nấm Mẹ + sinh tồn 120s | 120s | 60 | 1 món | — |
+| 2-3 | Đột Kích Tiền Đồn | Bảo vệ Xe phá thành, phá 3 Trụ Điện Trường | ~130s | 70 | 1 món | Green Fox |
+| 2-4 | Phi Thuyền Hai Mặt & Pháo Đài Hira | Diệt Tử Thần Nguyên Tố **và** The2Face (4 phase) | ~200s | 90 | 2 món | — |
+| 2-5 | Chiến Hạm D1ONK | Diệt D1onk (3 lõi năng lượng hộ thể) | ~240s | 120 | 3 món | — |
+
+Màn 1-4 và 2-4 là **boss kép 4 giai đoạn**: quái mở đầu → boss 1 → quái tiếp viện → boss 2.
+
+### 10.5 Cơ chế môi trường
+
+| Màn | Cơ chế |
+|---|---|
+| 1-3 | 2 Trạm Radar — 1 xe đứng trong bán kính 3m suốt 5s (sau khi dọn quái canh gác); hộ tống xe Mones 150m qua 3 đợt phục kích |
+| 2-2 | 4 Cụm Nấm Mẹ, mỗi cụm có 3 Nấm độc + 1 Sao đen canh gác; quấy nhiễu liên tục bằng 12 Tinh linh sấm + 12 Quái đầm lầy |
+| 2-3 | Xe phá thành phải sống sót phá 3 Trụ Điện Trường; trụ 1–2 có 2 Sao đen + 8 Kiến lửa + 5 Xén nước; trụ 3 (cổng thành) có 4 Mặt trời đỏ + 10 Tinh linh sét |
+| 2-5 | Kỳ hạm Hira: 4 trụ plasma 4 góc, 3 lõi năng lượng hộ thể phải phá để mở đường vào D1onk |
+
+### 10.6 Hai mươi phụ kiện
+
+| # | Tên | Chỉ số nền | Hiệu ứng đặc biệt |
+|---|---|---|---|
+| 1 | Lõi Động Cơ Trọng Lực Địa Mạch | +35% DEF | Đứng yên 1.5s: miễn đẩy lùi, +35% DEF |
+| 2 | Lõi Huyết Tinh Sinh Học | +15% ATK, +15% HP | 12% sát thương kỹ năng hồi máu cho bản thân + 1 đồng minh thấp máu nhất trong 5m |
+| 3 | Lõi Năng Lượng Thiên Thạch Nổ | +20% HP, +20% DEF | Mất 15% HP → nổ 100% DEF bán kính 1.5m, đẩy lùi quái thường |
+| 4 | Lõi Ma Pháp Hội Tụ Quang Tử | +18% DMG, +15% PEN | Trúng mục tiêu xa hơn 7m → +25% DMG trong 1s |
+| 5 | Động Cơ Xung Kích Tinh Thể Thạch Anh | +15% ATK, +25% PEN | Bắn liên tiếp 1 mục tiêu trong 2s: +5%/lần, tối đa +20% |
+| 6 | Lõi Ma Pháp Hắc Nguyệt | +25% HP | Trường 2.5m: địch −20% SPD, −15% ATK |
+| 7 | Động Cơ Tua-Bin Linh Hỏa | +25% SPD, +15% HP | Mỗi 3m để lại vùng lửa 1.2m: đồng minh +20% SPD, địch −20% SPD |
+| 8 | Lõi Ma Trận Cộng Hưởng Mones | +80 EN, +15% CDR | Kỹ năng thường chia 50% năng lượng hồi cho đồng minh gần nhất trong 7m (+10% CDR cho họ) |
+| 9 | Động Cơ Phân Pha Hư Không | +25% ATK, +15% SPD | Đi 3m → +30% PEN, +40% DMG; mất khi gây sát thương |
+| 10 | Lõi Nhiệt Hạch Ba Lõi | +20% ATK, +10% DMG | Kỹ năng thường gây Thiêu đốt 3 cộng dồn (3s, 25% ATK/s mỗi cộng dồn); đủ 3 → +25% DMG 3s |
+| 11 | Động Cơ Thủy Lực Ma Pháp Đầm Lầy | +30% DEF, +10% CDR | Mỗi lần nhận sát thương +3% giảm sát thương (tối đa 18%); 6 tầng → miễn làm chậm + 15% CDR trong 5s |
+| 12 | Động Cơ Tua-Bin Xoáy Nước | +15% DMG, +15% SPD | Hạ gục địch trong 10m → +25 EN, +20% SPD 2s, +25% ATK (2 tầng) |
+| 13 | Lõi Ma Pháp Bào Tử Độc | +50 EN, +15% CDR | Kỹ năng gây sát thương → khói độc 2.5m, địch −20% DEF |
+| 14 | Lõi Tụ Điện Ma Pháp Sấm Sét | +20% ATK | Mỗi kỹ năng thường thứ 3 → sét chuỗi 4 mục tiêu, 65% ATK, −20% SPD 5s |
+| 15 | Lõi Ma Trận Khiên Nhật Thực | +20% HP, +60 EN | Dùng kỹ năng tốn năng lượng → khiên 12% HP tối đa trong 6s |
+| 16 | Lõi Động Cơ Tái Sinh Chữ Thập | +30% HP | Hồi 1.5% HP/s; dưới 40% HP → 3%/s và +25% DEF |
+| 17 | Lõi Thủy Tinh Trị Liệu | +15% HP, +20% CDR | Hồi máu → khiên bằng 50% lượng hồi (5s), tối đa 30% HP |
+| 18 | Lõi Liên Kết Song Tinh Nguyên Tố | +15% HP, +25% DEF | Nối cáp đồng minh thấp máu nhất, nhận 20% sát thương của họ (trực tiếp vào máu); không có đồng minh → +50% DEF |
+| 19 | Lõi Động Cơ Lưỡng Cực THE2FACE | +15% ATK, +15% CDR | Gây sát thương → địch −10% DEF 4s; hồi máu/tạo khiên → đồng minh +15% ATK 4s (2 tầng) |
+| 20 | Lõi Siêu Cơ Giáp Thống Lĩnh D1ONK | +50% ATK, +50% HP, +50% DEF, +15% DMG, +30% PEN | Nhận thưởng từ địch Tinh anh → +50% EN, +30 CDR, +30% DMG trong 10s |
+
+Các phụ kiện số 2, 18 dùng đúng chặng **chuyển hướng sát thương** (§5.5.1): phần chuyển sang là `IsDirectToHealth = true`, `IsRedirected = true`.
+
+### 10.7 Cảnh báo lệch giữa GDD và code (đã chốt)
+
+| # | Vấn đề | Kết luận |
+|---|---|---|
+| 1 | Công thức Def kẻ địch trong Word thiếu `(1 - …)` | **Code đúng**; sửa lại dòng công thức trong Word (xem ghi chú §4.2) |
+| 2 | Tốc độ: GDD thang 100, runtime đơn vị/giây | Cần chốt hệ số quy đổi trước khi nhập liệu |
+| 3 | `DamageMultiplier` (×1.89) trong asset cũ vs `DamageRate` (+15%) | Quy đổi `DamageRate = Multiplier − 1`; copy thô sẽ sai 10× |
+| 4 | §5.6 GDD ghi ngọc Ch1 10–30 / Ch2 35–80, lệch bảng ải | **Bảng ải là chuẩn** (20/30/40/60 · 50/60/70/90/120) |
+| 5 | §5.6 ghi rơi phụ kiện 25–50%, bảng ải ghi 20% | **Bảng ải là chuẩn** (20%/món, đảm bảo 1 món) |
+| 6 | Final boss ghi "ẢI 2-15" | Sai chính tả, phải là **2-5** |
+| 7 | 6 asset `Assets/Prefabs/Tanks/*/*.asset` | Chưa migrate sang `baseStatsLevel1/90`, vẫn là số placeholder chung (10/100/50/10/3 → 180/1400/680/35.6/7.45), **khác hoàn toàn** §10.1 |
