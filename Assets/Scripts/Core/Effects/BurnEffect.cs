@@ -35,14 +35,14 @@ namespace IronWasteland.Core.Effects
             if (target is EnemyBrain enemy)
             {
                 var hitPos = enemy.transform.position;
-                DamageInfo info = new DamageInfo(Source, enemy, damage, 0f, hitPos, isDirectToHealth: true);
+                DamageInfo info = new DamageInfo(Source, enemy, damage, 0f, hitPos, isDirectToHealth: true, isDamageOverTime: true);
                 enemy.TakeDamage(info);
                 TextDamageManager.Instance?.Show(damage, hitPos);
             }
             else if (target is TankBrain tank)
             {
                 var hitPos = tank.transform.position;
-                DamageInfo info = new DamageInfo(Source, tank, damage, 0f, hitPos, isDirectToHealth: true);
+                DamageInfo info = new DamageInfo(Source, tank, damage, 0f, hitPos, isDirectToHealth: true, isDamageOverTime: true);
                 tank.TakeDamage(info);
                 TextDamageManager.Instance?.Show(damage, hitPos);
             }

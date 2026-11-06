@@ -160,7 +160,8 @@ Hệ thống khiên được quản lý đa tầng thông qua các `ShieldEffect
 - **Thuộc tính `CurrentShield`**: Được tính động bằng tổng `RemainingShield` của tất cả các `ShieldEffect` còn hiệu lực. Kèm event `OnShieldChangedEvent(float currentShield)` để cập nhật HUD/UI.
 - **Quy tắc trừ sát thương (Damage Absorption)**:
   - Khi đối tượng nhận sát thương (`TakeDamage`), sau khi tính toán giảm trừ qua Giáp/Xuyên giáp thu được `FinalDamage`.
-  - Nếu đòn đánh có cờ `IsDirectToHealth = true` (như cơ chế chia sẻ/chuyển sát thương đồng minh), sát thương trừ thẳng vào máu, bỏ qua khiên.
+  - Nếu đòn đánh có cờ `IsDirectToHealth = true` (sát thương theo thời gian, phần sát thương đã được gánh hộ), sát thương trừ thẳng vào máu, bỏ qua khiên.
+  - Ba cờ của `DamageInfo` được tách nghĩa rõ ràng: `IsDirectToHealth` (bỏ qua khâu khiên), `IsRedirected` (đòn đã được chuyển hướng, không chuyển hướng tiếp), `IsDamageOverTime` (tick DoT, không phải một đòn đánh thật). Cơ chế chặn đòn dựa vào `IsDamageOverTime` để một tick cháy không tiêu hao lượt chặn dành cho đòn thật.
   - Ngược lại, gọi `ProcessShieldAbsorption(finalDamage)`:
     $$\text{Sát thương trừ vào máu} = \text{Final Damage} - \text{Giá trị khiên xử lý}$$
     Trong đó: $\text{Giá trị khiên xử lý} \le \text{Final Damage}$.
@@ -168,6 +169,41 @@ Hệ thống khiên được quản lý đa tầng thông qua các `ShieldEffect
     1. Khiên nào sắp hết hạn nhất sẽ hấp thụ trước.
     2. Nếu khiên hấp thụ hết giá trị của nó mà vẫn chưa đủ `FinalDamage`: khiên đó cạn về 0 (`RemainingShield = 0`), hết hạn và bị gỡ bỏ, phần sát thương còn thiếu được chuyển tiếp sang `ShieldEffect` tiếp theo.
     3. Nếu giá trị khiên lớn hơn lượng sát thương còn thiếu: `RemainingShield` của khiên đó bị trừ đúng bằng $(\text{FinalDamage} - \text{Giá trị khiên đã xử lý})$, giữ nguyên thời gian tồn tại, và dừng vòng lặp hấp thụ.
+
+### 5.5.1 Chuyển Hướng Sát Thương (Damage Redirection)
+Chặng gánh hộ sát thương cho đồng minh, chạy **sau** chặng chặn đòn và **trước** bước tính giáp trong `TakeDamage`:
+1. `ProcessDamageRedirection(info)` hỏi lần lượt các `IDamageRedirector` đã đăng ký qua `AddDamageRedirector`.
+2. Mỗi cơ chế trả về `(protector, sharedAmount)`; Brain trừ `sharedAmount` khỏi `info.RawDamage` rồi gọi `protector.TakeDamage` với `DamageInfo` mới mang `IsDirectToHealth = true` và `IsRedirected = true`.
+3. Phần còn lại đi tiếp pipeline cũ: tính giáp → hấp thụ khiên → trừ máu.
+
+Quy ước bắt buộc:
+- Sát thương chia sẻ tính trên `RawDamage` (trước giáp), nên mỗi bên chỉ chịu giáp của mình đúng một lần.
+- Đòn đã mang `IsRedirected = true` **không** bị chuyển hướng thêm lần nữa → chặn đệ quy vô hạn.
+- Sát thương theo thời gian (`IsDamageOverTime = true`) không bị chuyển hướng.
+- Chặng chặn đòn (`5.5.3`) đứng **trước** chuyển hướng: đòn bị chặn sạch là đòn không tồn tại, nên không có sát thương nào để chia cho người gánh hộ. Nếu đảo lại (chia trước, chặn sau) thì người gánh hộ vẫn mất máu dù đòn đã bị phủ định.
+- Chuyển hướng chạy **trước** bước hấp thụ khiên, nên mục tiêu đang có khiên vẫn được gánh hộ (nếu đặt sau, phần còn lại có thể bằng 0 và cơ chế mất tác dụng).
+- Bên gánh nhận sát thương trực tiếp vào máu, bỏ qua khiên của chính họ (đúng ngữ nghĩa cờ `IsDirectToHealth`); tuy nhiên chặng chặn đòn của chính họ vẫn chạy bình thường, nên trạng thái bất tử/đỡ đòn vẫn che được phần gánh hộ.
+
+### 5.5.2 Bổ Sung Cho Hệ Khiên
+- `ShieldEffect.MaxAbsorbHits` / `AbsorbHits`: giới hạn số đòn một lớp khiên chịu được (mặc định `int.MaxValue` = không giới hạn). Chạm giới hạn thì lớp khiên vỡ ngay và phần khiên còn dư bị huỷ.
+- `TankBrain.AddShield(...)` trả về `ShieldEffect` đang hoạt động thật (nếu trùng `EffectId` thì trả về lớp khiên cũ đã được làm mới), để nơi gọi giữ được tham chiếu.
+- `OnShieldAbsorbedEvent(ShieldEffect, float, bool)`: phát cho từng lớp khiên sau khi hấp thụ xong; cờ `bool` cho biết đòn có bị chặn sạch hay không. Event phát **sau** bước dọn dẹp, nên lớp khiên vừa vỡ đã ở trạng thái `IsExpired = true`, `RemainingShield = 0`.
+- `DamageInfo.AbsorbedByShield` và `DamageInfo.HealthDamage`: giữ nguyên ngữ nghĩa cũ của `FinalDamage` (sau giáp, trước khiên); sát thương thực tế trừ vào máu đọc qua `HealthDamage`.
+
+### 5.5.3 Chặn Sát Thương (Damage Interception)
+Cơ chế "đỡ đúng N đòn", "bất tử tạm thời", "né đòn" **không** dùng `ShieldEffect`, vì chúng không có trữ lượng nào để hấp thụ. Chúng dùng một chặng riêng:
+1. Hiệu ứng implement `IDamageInterceptor` (`TryIntercept(DamageInfo)`) và được nạp vào Brain bằng `ApplyEffect` như mọi hiệu ứng khác — không cần đăng ký riêng.
+2. Trong `TakeDamage`, Brain gọi `ProcessDamageInterception(info)` ở **bước đầu tiên** — trước cả chặng chuyển hướng và bước tính giáp.
+3. Hiệu ứng đầu tiên trả `true` chặn sạch đòn: Brain dừng ngay, không trừ máu, không trừ khiên, không phát `OnTakeDamageEvent` (vì đây không phải một lần nhận sát thương).
+
+Quy ước:
+- `DamageInterceptEffect` là hiệu ứng chặn đòn dựng sẵn: `MaxNegateHits` / `NegatedHits` (số đòn), `BlockDamageOverTime`, `BlockRedirected`, và event `OnNegated(DamageInfo)` để skill bật burst / né.
+- Mặc định `BlockDamageOverTime = false` (một tick cháy không ăn mất lượt chặn dành cho đòn chí mạng) và `BlockRedirected = true` (trạng thái bất tử phải đỡ cả phần gánh hộ).
+- Vì chặng chặn đứng trước chặng chuyển hướng, một hiệu ứng "đỡ đúng 1 đòn" trên mục tiêu sẽ phủ định **toàn bộ** đòn: không phần nào bị chia sang người gánh hộ và lượt chặn bị tiêu đúng một lần.
+- Thứ tự ưu tiên: hiệu ứng có `RemainingTime` nhỏ nhất được hỏi trước — cùng nguyên tắc Earliest Expiring First với hệ khiên, tránh lãng phí lượt chặn của hiệu ứng sắp hết hạn.
+- Khi chạm `MaxNegateHits`, hiệu ứng tự đặt `RemainingTime = 0` để hệ thống hiệu ứng dọn dẹp ở tick kế tiếp.
+- Phần hình ảnh (bóng ma xoay quanh đồng minh, burst, tia né) vẫn nằm ở skill MonoBehaviour: skill subscribe `OnNegated` rồi bật/tắt các GameObject con đã dựng sẵn trên prefab.
+- HUD chỉ đọc `CurrentShield` cho khiên thật; hiệu ứng chặn đòn không làm sai số liệu khiên.
 
 ### 5.6 Kẻ Địch & Cơ Chế Bùng Nổ Năng Lượng (`EliteEnemyBrain`)
 - **Quái thường (`NormalEnemyBrain`)**: Có các chỉ số `EnemyStats`, AI di chuyển, tấn công.
