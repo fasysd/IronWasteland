@@ -457,10 +457,10 @@ MonoBehaviour:
   model: {fileID: 3189293709036001437}
   displayName: XaThuTinhThe
   stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    Attack: 75
+    Defense: 25
+    MaxHealth: 200
+    MoveSpeed: 80
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -489,7 +489,7 @@ MonoBehaviour:
   currentTarget: {fileID: 0}
   projectilePrefab: {fileID: 510763604257345619}
   firePoint: {fileID: 2219834986894892076}
-  attackCooldown: 2.5
+  attackCooldown: 1.5
   attackCooldownTimer: 0
 --- !u!50 &5477181706598878811
 Rigidbody2D:

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -22,7 +23,7 @@ namespace IronWasteland.Enemies.Normal
         [SerializeField, Min(5f)] private float angleSpacing = 30f;
 
         [Tooltip("Thời gian hồi giữa mỗi loạt bắn (giây).")]
-        [SerializeField, Min(0.5f)] private float attackCooldown = 4.0f;
+        [SerializeField, Min(0.5f)] private float attackCooldown = 1.5f;
 
         [SerializeField, ReadOnly] private float attackCooldownTimer;
         [SerializeField, ReadOnly] private int currentVolleyId;
@@ -54,7 +55,7 @@ namespace IronWasteland.Enemies.Normal
             repathTimer -= deltaTime;
             if (movementAgent != null && Stats != null)
             {
-                movementAgent.SetSpeed(Stats.MoveSpeed);
+                movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
             }
 
             currentTarget = ScanAndValidateTarget();
@@ -183,8 +184,9 @@ namespace IronWasteland.Enemies.Normal
                 float baseAtk = Stats != null ? Stats.Attack : 10f;
                 float finalDamage = baseAtk * multiplier;
 
-                tank.TakeDamage(finalDamage);
-                TextDamageManager.Instance?.Show(finalDamage, tank.transform.position);
+                DamageInfo damageInfo = new DamageInfo(this, tank, finalDamage, 0f, tank.transform.position);
+                tank.TakeDamage(damageInfo);
+                TextDamageManager.Instance?.Show(damageInfo.FinalDamage, tank.transform.position);
             }
         }
     }

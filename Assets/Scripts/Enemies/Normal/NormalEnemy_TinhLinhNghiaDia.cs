@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -20,14 +21,14 @@ namespace IronWasteland.Enemies.Normal
         [SerializeField] private DamageZone_TinhLinhNghiaDia zoneTemplate;
 
         [Tooltip("Khoảng cách di chuyển giữa mỗi lần tạo vùng (mét).")]
-        [SerializeField, Min(0.2f)] private float spawnDistanceInterval = 1.0f;
+        [SerializeField, Min(0.2f)] private float spawnDistanceInterval = 3.0f;
 
         [Header("Damage Tick Settings")]
         [Tooltip("Chu kỳ gây sát thương đồng loạt lên tất cả xe tăng trong các vùng (giây).")]
-        [SerializeField, Min(0.1f)] private float damageTickInterval = 0.5f;
+        [SerializeField, Min(0.1f)] private float damageTickInterval = 1.0f;
 
         [Tooltip("Tỷ lệ sát thương dựa trên chỉ số tấn công Stats.Attack ở mỗi nhịp tick (ví dụ: 0.5 = 50% Attack, 1.0 = 100% Attack).")]
-        [SerializeField, Min(0.1f)] private float damageMultiplierPerTick = 0.5f;
+        [SerializeField, Min(0.1f)] private float damageMultiplierPerTick = 1.0f;
 
         [Tooltip("Dọn dẹp toàn bộ các vùng khi quái chết.")]
         [SerializeField] private bool clearZonesOnDeath = true;
@@ -163,8 +164,12 @@ namespace IronWasteland.Enemies.Normal
             {
                 if (tank == null || !tank.IsAlive) continue;
 
-                tank.TakeDamage(damage);
-                TextDamageManager.Instance?.Show(damage, tank.transform.position);
+                DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position);
+                tank.TakeDamage(damageInfo);
+                TextDamageManager.Instance?.Show(damageInfo.FinalDamage, tank.transform.position);
+
+                // GDD: Giảm 20% Tốc độ trong 2s, kích hoạt lại sẽ đặt lại thời gian duy trì
+                tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Slow, 2.0f, 0.20f);
             }
         }
 

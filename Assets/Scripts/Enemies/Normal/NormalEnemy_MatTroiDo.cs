@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -27,7 +28,7 @@ namespace IronWasteland.Enemies.Normal
         [SerializeField] private NormalEnemy_KySinhThienThach kySinhThienThachTemplate;
 
         [Tooltip("Thời gian hồi kỹ năng giữa các lần triệu hồi vùng nổ (giây).")]
-        [SerializeField, Min(1f)] private float skillCooldown = 6.0f;
+        [SerializeField, Min(1f)] private float skillCooldown = 8.0f;
 
         [Tooltip("Tỷ lệ sát thương vụ nổ theo Stats.Attack của Mặt Trời Đỏ (1.0 = 100% Attack).")]
         [SerializeField, Min(0.1f)] private float explosionDamageMultiplier = 1.0f;
@@ -206,8 +207,9 @@ namespace IronWasteland.Enemies.Normal
                 {
                     if (tank == null || !tank.IsAlive) continue;
 
-                    tank.TakeDamage(damage);
-                    TextDamageManager.Instance?.Show(damage, tank.transform.position);
+                    DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position);
+                    tank.TakeDamage(damageInfo);
+                    TextDamageManager.Instance?.Show(damageInfo.FinalDamage, tank.transform.position);
                 }
             }
 

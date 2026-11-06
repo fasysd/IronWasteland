@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using IronWasteland;
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -45,7 +46,7 @@ namespace IronWasteland.Enemies.Normal
         [SerializeField, Min(0.1f)] private float damageMultiplier = 1.0f;
 
         [Tooltip("Thời gian hồi kỹ năng giữa các lần lao (giây).")]
-        [SerializeField, Min(1f)] private float skillCooldown = 4.5f;
+        [SerializeField, Min(1f)] private float skillCooldown = 2.5f;
 
         [Header("Runtime Info")]
         [SerializeField, ReadOnly] private float currentCooldownTimer;
@@ -178,7 +179,7 @@ namespace IronWasteland.Enemies.Normal
             repathTimer -= deltaTime;
             if (movementAgent != null && Stats != null)
             {
-                movementAgent.SetSpeed(Stats.MoveSpeed);
+                movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
             }
 
             // 1. Quét tìm và kiểm tra mục tiêu
@@ -306,10 +307,15 @@ namespace IronWasteland.Enemies.Normal
 
             isCharging = false;
 
-            // 3. Giai đoạn Giật lùi (Recoil) nếu có va chạm với Xe Tăng hoặc Địa hình
+            // 3. Giai đoạn Giật lùi (Recoil) nếu có va chạm với Xe Tăng hoặc Địa hình; nếu trượt sẽ khựng lại 1.5s
             if (hitObstacle)
             {
                 yield return StartCoroutine(RecoilRoutine(-chargeDirection));
+            }
+            else
+            {
+                // GDD: Nếu trượt sẽ khựng lại 1.5s
+                yield return new WaitForSeconds(1.5f);
             }
 
             // 4. Kết thúc toàn bộ cú lao và kích hoạt hồi chiêu
@@ -327,11 +333,12 @@ namespace IronWasteland.Enemies.Normal
             float baseAtk = Stats != null ? Stats.Attack : 10f;
             float damage = baseAtk * damageMultiplier;
 
-            tank.TakeDamage(damage);
-            TextDamageManager.Instance?.Show(damage, tank.transform.position);
+            DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position);
+            tank.TakeDamage(damageInfo);
+            TextDamageManager.Instance?.Show(damageInfo.FinalDamage, tank.transform.position);
 
-            // Ghi nhận thông báo đẩy văng mục tiêu theo yêu cầu
-            Debug.Log($"[{name}] Xén Nước đâm trúng và đẩy văng Xe Tăng '{tank.name}' một đoạn {knockbackDistance:F1}m theo hướng {chargeDirection}. (Lưu ý: Tạm thời hiển thị thông báo chờ logic đẩy lùi trong TankBrain hoàn thiện).");
+            // GDD: Tong trung gay 100% Tan cong va day lui tank
+            tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Knockback, 0.3f, knockbackDistance);
         }
 
         /// <summary>

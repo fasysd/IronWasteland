@@ -25,10 +25,10 @@ namespace IronWasteland.Enemies.Normal
     {
         [Header("Swamp Zone Settings")]
         [Tooltip("Thời gian tồn tại của vùng trước khi phát nổ và biến mất (giây).")]
-        [SerializeField, Min(0.5f)] private float swampDuration = 3.5f;
+        [SerializeField, Min(0.5f)] private float swampDuration = 3.0f;
 
         [Tooltip("Tỷ lệ giảm tốc độ di chuyển khi xe tăng ở trong vùng (0.5 = giảm 50%).")]
-        [SerializeField, Range(0.1f, 0.9f)] private float slowPercent = 0.5f;
+        [SerializeField, Range(0.1f, 0.9f)] private float slowPercent = 0.4f;
 
         [Tooltip("Thời gian chờ ngắn để physics nạp trigger collider khi vừa kích hoạt (giây).")]
         [SerializeField, Min(0f)] private float hitCheckDelay = 0.05f;

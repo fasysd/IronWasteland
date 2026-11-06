@@ -142,10 +142,10 @@ MonoBehaviour:
   model: {fileID: 7850232233383960063}
   displayName: SaoDen
   stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    Attack: 100
+    Defense: 18
+    MaxHealth: 450
+    MoveSpeed: 0
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -155,7 +155,7 @@ MonoBehaviour:
     m_Bits: 64
   currentTarget: {fileID: 0}
   zoneTemplate: {fileID: 7192837465910283007}
-  skillCooldown: 5
+  skillCooldown: 3
   healMultiplier: 1
   includeSelf: 1
   currentCooldownTimer: 0

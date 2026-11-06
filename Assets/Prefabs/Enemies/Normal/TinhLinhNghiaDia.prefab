@@ -175,10 +175,10 @@ MonoBehaviour:
   model: {fileID: 2061590832746270502}
   displayName: TinhLinhNghiaDia
   stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    Attack: 35
+    Defense: 10
+    MaxHealth: 250
+    MoveSpeed: 135
   currentHealth: 0
   loopMode: 0
   waypoints:
@@ -196,9 +196,9 @@ MonoBehaviour:
   isWaiting: 0
   waitTimer: 0
   zoneTemplate: {fileID: 1644315080049504421}
-  spawnDistanceInterval: 2.5
-  damageTickInterval: 0.5
-  damageMultiplierPerTick: 0.5
+  spawnDistanceInterval: 3
+  damageTickInterval: 1
+  damageMultiplierPerTick: 1
   clearZonesOnDeath: 1
   activeZoneCount: 0
   pooledZoneCount: 0

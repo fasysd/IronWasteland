@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -16,10 +17,10 @@ namespace IronWasteland.Enemies.Normal
         [SerializeField] private Skill_KySinhThienThach skill;
 
         [Tooltip("Tỷ lệ giảm tốc độ di chuyển của Tank (0.5 = giảm 50%).")]
-        [SerializeField, Range(0.1f, 0.9f)] private float slowPercent = 0.5f;
+        [SerializeField, Range(0.1f, 0.9f)] private float slowPercent = 0.3f;
 
         [Tooltip("Thời gian hiệu lực của hiệu ứng làm chậm (giây).")]
-        [SerializeField, Min(0.5f)] private float slowDuration = 3f;
+        [SerializeField, Min(0.5f)] private float slowDuration = 5f;
 
         [Header("Lifespan Settings")]
         [Tooltip("Thời gian tồn tại tối đa từ khi xuất hiện (giây). 0 = không giới hạn thời gian. Khi tồn tại quá lâu sẽ tự chết và phát nổ.")]
@@ -111,7 +112,7 @@ namespace IronWasteland.Enemies.Normal
             repathTimer -= deltaTime;
             if (movementAgent != null && Stats != null)
             {
-                movementAgent.SetSpeed(Stats.MoveSpeed);
+                movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
             }
 
             currentTarget = ScanAndValidateTarget();
@@ -229,14 +230,13 @@ namespace IronWasteland.Enemies.Normal
                 {
                     if (tank == null || !tank.IsAlive) continue;
 
-                    // 1. Gây sát thương 100% tấn công
-                    tank.TakeDamage(damage);
-                    TextDamageManager.Instance?.Show(damage, tank.transform.position);
+                    // 1. Gây sát thương 100% tấn công chuẩn DamageInfo
+                    DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position);
+                    tank.TakeDamage(damageInfo);
+                    TextDamageManager.Instance?.Show(damageInfo.FinalDamage, tank.transform.position);
 
-                    // 2. Làm chậm tốc độ di chuyển của Tank
-                    float slowAmount = tank.BaseStats.MoveSpeed * slowPercent;
-                    tank.AddBonusStats(m_SlowKey, new TankStats { MoveSpeed = -slowAmount });
-                    m_AffectedTanks.Add(tank);
+                    // 2. Làm chậm tốc độ di chuyển của Tank qua CrowdControl
+                    tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Slow, slowDuration, slowPercent);
                 }
             }
 

@@ -68,7 +68,7 @@ namespace IronWasteland.Enemies.Normal
                 movementAgent.Initialize(Model, enemyLayer);
                 if (Stats != null && Stats.MoveSpeed > 0f)
                 {
-                    movementAgent.SetSpeed(Stats.MoveSpeed);
+                    movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
                 }
             }
         }
@@ -88,11 +88,11 @@ namespace IronWasteland.Enemies.Normal
             {
                 if (Stats.MoveSpeed > 0f)
                 {
-                    movementAgent.SetSpeed(Stats.MoveSpeed);
+                    movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
                 }
                 else
                 {
-                    Stats.MoveSpeed = movementAgent.MoveSpeed;
+                    Stats.MoveSpeed = movementAgent.MoveSpeed * 100f;
                 }
             }
 
@@ -109,7 +109,7 @@ namespace IronWasteland.Enemies.Normal
         {
             if (movementAgent != null && Stats != null && Stats.MoveSpeed > 0f)
             {
-                movementAgent.SetSpeed(Stats.MoveSpeed);
+                movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
             }
 
             if (waypoints == null || waypoints.Count == 0)

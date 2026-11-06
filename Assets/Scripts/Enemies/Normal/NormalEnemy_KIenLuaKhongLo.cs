@@ -1,3 +1,4 @@
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ namespace IronWasteland.Enemies.Normal
     {
         [Header("Skill Settings")]
         [SerializeField] private Skill_KIenLuaKhongLo skill;
-        [SerializeField, Min(0.1f)] private float skillCooldown = 3f;
+        [SerializeField, Min(0.1f)] private float skillCooldown = 2.0f;
         [SerializeField, ReadOnly] private float currentCooldownTimer;
         [SerializeField, ReadOnly] private bool isCastingSkill;
 
@@ -63,7 +64,7 @@ namespace IronWasteland.Enemies.Normal
             repathTimer -= deltaTime;
             if (movementAgent != null && Stats != null)
             {
-                movementAgent.SetSpeed(Stats.MoveSpeed);
+                movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
             }
 
             // Quét tìm mục tiêu
@@ -154,8 +155,20 @@ namespace IronWasteland.Enemies.Normal
             if (target == null || !target.IsAlive) return;
 
             float damage = Stats != null ? Stats.Attack : 10f;
-            target.TakeDamage(damage);
-            TextDamageManager.Instance?.Show(damage, target.transform.position);
+            DamageInfo damageInfo = new DamageInfo(this, target, damage, 0f, target.transform.position);
+            target.TakeDamage(damageInfo);
+            TextDamageManager.Instance?.Show(damageInfo.FinalDamage, target.transform.position);
+
+            // GDD: Hiệu ứng thiêu đốt gây 15% Tấn công mỗi 1s, duy trì 5s. Gán lại sẽ đặt lại thời gian duy trì.
+            float burnDamagePerSecond = damage * 0.15f;
+            target.ApplyEffect(new IronWasteland.Core.Effects.BurnEffect(
+                this,
+                duration: 5.0f,
+                damagePerSecondPerStack: burnDamagePerSecond,
+                maxStacks: 1,
+                tickInterval: 1.0f,
+                stackPolicy: IronWasteland.Core.Effects.EffectStackPolicy.RefreshDuration
+            ));
         }
     }
 }

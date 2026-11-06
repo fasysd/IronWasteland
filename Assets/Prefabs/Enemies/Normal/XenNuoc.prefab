@@ -50,10 +50,10 @@ MonoBehaviour:
   model: {fileID: 2874064844783536822}
   displayName: XenNuoc
   stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    Attack: 150
+    Defense: 24
+    MaxHealth: 360
+    MoveSpeed: 140
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -88,7 +88,7 @@ MonoBehaviour:
   recoilSpeed: 5
   knockbackDistance: 2.5
   damageMultiplier: 1
-  skillCooldown: 4.5
+  skillCooldown: 2.5
   currentCooldownTimer: 0
   isCharging: 0
   isRecoiling: 0

@@ -50,10 +50,10 @@ MonoBehaviour:
   model: {fileID: 6394706134186681563}
   displayName: KIenLuaKhongLo
   stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    Attack: 130
+    Defense: 30
+    MaxHealth: 420
+    MoveSpeed: 105
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -81,7 +81,7 @@ MonoBehaviour:
   awayFromHomeTimer: 0
   currentTarget: {fileID: 0}
   skill: {fileID: 4553068932767955983}
-  skillCooldown: 3
+  skillCooldown: 2
   currentCooldownTimer: 0
   isCastingSkill: 0
 --- !u!50 &5501993967548307625

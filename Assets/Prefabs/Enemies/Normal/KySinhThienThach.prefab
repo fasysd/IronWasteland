@@ -142,10 +142,10 @@ MonoBehaviour:
   model: {fileID: 8812115092897458670}
   displayName: KySinhThienThach
   stats:
-    Attack: 10
+    Attack: 150
     Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    MaxHealth: 100
+    MoveSpeed: 125
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -173,8 +173,8 @@ MonoBehaviour:
   awayFromHomeTimer: 0
   currentTarget: {fileID: 0}
   skill: {fileID: 7164576974939703006}
-  slowPercent: 0.5
-  slowDuration: 3
+  slowPercent: 0.3
+  slowDuration: 5
   lifespan: 0
   currentLifespanTimer: 0
   isCastingSkill: 0

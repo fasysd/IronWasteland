@@ -51,10 +51,10 @@ MonoBehaviour:
   model: {fileID: 4402753513937810429}
   displayName: QuaiVatDamLay
   stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    Attack: 180
+    Defense: 35
+    MaxHealth: 380
+    MoveSpeed: 75
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -84,7 +84,7 @@ MonoBehaviour:
   zoneTemplate: {fileID: 7183921048291048206}
   chargeSpeed: 10
   chargeWindup: 0.25
-  skillCooldown: 5
+  skillCooldown: 3.5
   currentCooldownTimer: 0
   isCharging: 0
   activeZoneCount: 0

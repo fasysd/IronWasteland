@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -40,7 +41,7 @@ namespace IronWasteland.Enemies.Normal
         [SerializeField, Min(1f)] private float skillCooldown = 6.0f;
 
         [Tooltip("Tỷ lệ sát thương dựa trên Stats.Attack ở mỗi nhịp tick của vùng độc (0.5 = 50% Attack).")]
-        [SerializeField, Min(0.1f)] private float damageMultiplierPerTick = 0.5f;
+        [SerializeField, Min(0.1f)] private float damageMultiplierPerTick = 1.0f;
 
         [Header("Runtime Info")]
         [SerializeField, ReadOnly] private float currentCooldownTimer;
@@ -256,8 +257,9 @@ namespace IronWasteland.Enemies.Normal
             {
                 if (tank != null && tank.IsAlive)
                 {
-                    tank.TakeDamage(damage);
-                    TextDamageManager.Instance?.Show(damage, tank.transform.position);
+                    DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position);
+                    tank.TakeDamage(damageInfo);
+                    TextDamageManager.Instance?.Show(damageInfo.FinalDamage, tank.transform.position);
                 }
             }
         }

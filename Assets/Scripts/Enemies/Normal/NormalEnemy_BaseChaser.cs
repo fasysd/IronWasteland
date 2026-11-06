@@ -111,7 +111,7 @@ namespace IronWasteland.Enemies.Normal
                 movementAgent.Initialize(Model, enemyLayer);
                 if (Stats != null)
                 {
-                    movementAgent.SetSpeed(Stats.MoveSpeed);
+                    movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
                 }
             }
         }
@@ -139,7 +139,7 @@ namespace IronWasteland.Enemies.Normal
         {
             if (movementAgent != null && Stats != null)
             {
-                movementAgent.SetSpeed(Stats.MoveSpeed);
+                movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
             }
         }
 
@@ -147,7 +147,7 @@ namespace IronWasteland.Enemies.Normal
         {
             if (movementAgent != null && Stats != null)
             {
-                movementAgent.SetSpeed(Stats.MoveSpeed);
+                movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
             }
 
             repathTimer -= deltaTime;

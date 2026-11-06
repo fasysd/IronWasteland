@@ -52,10 +52,10 @@ MonoBehaviour:
   model: {fileID: 4747381535021143275}
   displayName: TinhLinhSamSetNho
   stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    Attack: 170
+    Defense: 10
+    MaxHealth: 260
+    MoveSpeed: 95
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -85,7 +85,7 @@ MonoBehaviour:
   beamTemplate: {fileID: 8101000000000000004}
   scannerTemplate: {fileID: 8201000000000000006}
   attackRange: 5
-  skillCooldown: 4
+  skillCooldown: 2
   damageMultiplier: 1
   chainJumpDistance: 4
   chainJumpDelay: 0.08

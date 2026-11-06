@@ -266,10 +266,10 @@ MonoBehaviour:
   model: {fileID: 8227576074421998604}
   displayName: NamDocGaiThach
   stats:
-    Attack: 23
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    Attack: 110
+    Defense: 25
+    MaxHealth: 380
+    MoveSpeed: 0
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -284,7 +284,7 @@ MonoBehaviour:
   fadeDuration: 1
   zoneTemplate: {fileID: 8192837465910283007}
   skillCooldown: 6
-  damageMultiplierPerTick: 0.5
+  damageMultiplierPerTick: 1
   currentCooldownTimer: 0
   isCasting: 0
   currentAlpha: 0.1

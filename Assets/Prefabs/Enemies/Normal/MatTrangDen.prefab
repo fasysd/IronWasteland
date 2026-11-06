@@ -430,10 +430,10 @@ MonoBehaviour:
   model: {fileID: 3544012859745960153}
   displayName: MatTrangDen
   stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    Attack: 15
+    Defense: 50
+    MaxHealth: 260
+    MoveSpeed: 95
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -461,7 +461,7 @@ MonoBehaviour:
   awayFromHomeTimer: 0
   currentTarget: {fileID: 0}
   skill: {fileID: 6164576974939704005}
-  skillCooldown: 3.5
+  skillCooldown: 2
   currentCooldownTimer: 0
   isCastingSkill: 0
 --- !u!50 &8430088118289894666

@@ -143,10 +143,10 @@ MonoBehaviour:
   model: {fileID: 6714497270518856939}
   displayName: QuaiVatTinhThach
   stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    Attack: 50
+    Defense: 15
+    MaxHealth: 220
+    MoveSpeed: 85
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -176,7 +176,7 @@ MonoBehaviour:
   projectilePrefab: {fileID: 8602492178605685947}
   firePoint: {fileID: 3384412052821398168}
   angleSpacing: 45
-  attackCooldown: 4
+  attackCooldown: 1.5
   attackCooldownTimer: 0
   currentVolleyId: 0
 --- !u!50 &894335969520627437

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -18,7 +19,7 @@ namespace IronWasteland.Enemies.Normal
         [SerializeField] private Skill_MatTrangDen skill;
 
         [Tooltip("Thời gian hồi kỹ năng (giây).")]
-        [SerializeField, Min(0.5f)] private float skillCooldown = 3.5f;
+        [SerializeField, Min(0.5f)] private float skillCooldown = 2.0f;
 
         [SerializeField, ReadOnly] private float currentCooldownTimer;
         [SerializeField, ReadOnly] private bool isCastingSkill;
@@ -68,7 +69,7 @@ namespace IronWasteland.Enemies.Normal
             repathTimer -= deltaTime;
             if (movementAgent != null && Stats != null)
             {
-                movementAgent.SetSpeed(Stats.MoveSpeed);
+                movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
             }
 
             // 1. Quét tìm và kiểm tra mục tiêu
@@ -137,8 +138,9 @@ namespace IronWasteland.Enemies.Normal
             foreach (TankBrain tank in targets)
             {
                 if (tank == null || !tank.IsAlive) continue;
-                tank.TakeDamage(damage);
-                TextDamageManager.Instance?.Show(damage, tank.transform.position);
+                DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position);
+                tank.TakeDamage(damageInfo);
+                TextDamageManager.Instance?.Show(damageInfo.FinalDamage, tank.transform.position);
             }
         }
 

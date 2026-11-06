@@ -31,7 +31,7 @@ namespace IronWasteland.Enemies.Normal
         [SerializeField, Min(0f)] private float chargeWindup = 0.25f;
 
         [Tooltip("Thời gian hồi kỹ năng giữa các lần lao (giây).")]
-        [SerializeField, Min(1f)] private float skillCooldown = 5f;
+        [SerializeField, Min(1f)] private float skillCooldown = 3.5f;
 
         [Header("Runtime Info")]
         [SerializeField, ReadOnly] private float currentCooldownTimer;
@@ -127,7 +127,7 @@ namespace IronWasteland.Enemies.Normal
             repathTimer -= deltaTime;
             if (movementAgent != null && Stats != null)
             {
-                movementAgent.SetSpeed(Stats.MoveSpeed);
+                movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
             }
 
             // 1. Quét tìm và kiểm tra mục tiêu

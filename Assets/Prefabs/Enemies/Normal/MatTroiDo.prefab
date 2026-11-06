@@ -142,10 +142,10 @@ MonoBehaviour:
   model: {fileID: 8448639190714170460}
   displayName: KySinhThienThach
   stats:
-    Attack: 10
+    Attack: 150
     Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    MaxHealth: 100
+    MoveSpeed: 125
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -1013,10 +1013,10 @@ MonoBehaviour:
   model: {fileID: 5093897849060831660}
   displayName: MatTroiDo
   stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 50
-    MoveSpeed: 2
+    Attack: 240
+    Defense: 40
+    MaxHealth: 720
+    MoveSpeed: 0
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -1027,7 +1027,7 @@ MonoBehaviour:
   currentTarget: {fileID: 0}
   zoneTemplate: {fileID: 4001635201955676831}
   kySinhThienThachTemplate: {fileID: 4991510293078395760}
-  skillCooldown: 6
+  skillCooldown: 8
   explosionDamageMultiplier: 1
   minSpawnCount: 2
   maxSpawnCount: 5

@@ -1,3 +1,4 @@
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -18,7 +19,7 @@ namespace IronWasteland.Enemies.Normal
         [SerializeField] private Transform firePoint;
 
         [Tooltip("Thời gian hồi giữa mỗi phát bắn (giây).")]
-        [SerializeField, Min(0.5f)] private float attackCooldown = 2.5f;
+        [SerializeField, Min(0.5f)] private float attackCooldown = 1.5f;
 
         [SerializeField, ReadOnly] private float attackCooldownTimer;
 
@@ -46,7 +47,7 @@ namespace IronWasteland.Enemies.Normal
             repathTimer -= deltaTime;
             if (movementAgent != null && Stats != null)
             {
-                movementAgent.SetSpeed(Stats.MoveSpeed);
+                movementAgent.SetSpeed(Stats.MoveSpeed / 100f);
             }
 
             currentTarget = ScanAndValidateTarget();
@@ -135,8 +136,9 @@ namespace IronWasteland.Enemies.Normal
             if (tank == null || !tank.IsAlive) return;
 
             float damage = Stats != null ? Stats.Attack : 10f;
-            tank.TakeDamage(damage);
-            TextDamageManager.Instance?.Show(damage, tank.transform.position);
+            DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position);
+            tank.TakeDamage(damageInfo);
+            TextDamageManager.Instance?.Show(damageInfo.FinalDamage, tank.transform.position);
         }
     }
 }
