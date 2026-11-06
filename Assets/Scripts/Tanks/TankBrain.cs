@@ -72,6 +72,15 @@ namespace IronWasteland.Tanks
         // Status Effects (Buff, Debuff, DoT, HoT, Shield)
         private readonly List<StatusEffect> m_ActiveEffects = new List<StatusEffect>();
 
+        // Cơ chế gánh hộ sát thương (Guardian Current, Guardian Wall, Earth Guardian...)
+        private readonly List<IDamageRedirector> m_DamageRedirectors = new List<IDamageRedirector>();
+
+        // Bản sao tạm dùng khi duyệt redirector, tránh lỗi sửa collection ngay trong lúc duyệt
+        private readonly List<IDamageRedirector> m_RedirectorBuffer = new List<IDamageRedirector>();
+
+        // Bộ đệm tạm dùng khi duyệt các hiệu ứng chặn đòn, tránh cấp phát mới ở mỗi đòn đánh
+        private readonly List<IDamageInterceptor> m_InterceptorBuffer = new List<IDamageInterceptor>();
+
         protected bool _initialized = false;
         private TankView viewPrefab;
 
@@ -81,6 +90,13 @@ namespace IronWasteland.Tanks
         public event Action<float> OnHealEvent;
         public event Action<int> OnSkillUsedEvent;
         public event Action<float> OnShieldChangedEvent;
+
+        /// <summary>
+        /// Phát khi một lớp khiên vừa hấp thụ sát thương: (lớp khiên, lượng hấp thụ, đòn có bị chặn sạch hay không).
+        /// Phát SAU khi việc dọn dẹp hiệu ứng đã xong, nên listener có thể nhận được lớp khiên đã cạn
+        /// (<see cref="ShieldEffect.IsExpired"/> = true, <see cref="ShieldEffect.RemainingShield"/> = 0).
+        /// </summary>
+        public event Action<ShieldEffect, float, bool> OnShieldAbsorbedEvent;
         public event Action<CrowdControlType> OnCrowdControlApplied;
         public event Action<CrowdControlType> OnCrowdControlRemoved;
         public event Action<StatusEffect> OnEffectAppliedEvent;
@@ -446,14 +462,22 @@ namespace IronWasteland.Tanks
         #region Shield System
 
         /// <summary>
-        /// Them mot lop khien moi thong qua ShieldEffect voi nguon goc (Source) va thoi gian ton tai xac dinh.
+        /// Thêm một lớp khiên mới qua <see cref="ShieldEffect"/> với nguồn gốc (Source) và thời gian tồn tại xác định.
         /// </summary>
-        public virtual void AddShield(float amount, float duration, string effectId = null, UnityEngine.Object source = null, string displayName = "Khiên")
+        /// <param name="maxAbsorbHits">Số đòn tối đa lớp khiên này chịu được; mặc định không giới hạn.</param>
+        /// <returns>
+        /// Lớp khiên đang thực sự hoạt động trên Brain. Nếu trùng <paramref name="effectId"/> với một lớp khiên đã có,
+        /// hiệu ứng cũ được làm mới và chính nó được trả về (instance mới không được giữ lại).
+        /// </returns>
+        public virtual ShieldEffect AddShield(float amount, float duration, string effectId = null, UnityEngine.Object source = null, string displayName = "Khiên", int maxAbsorbHits = int.MaxValue)
         {
-            if (amount <= 0f) return;
+            if (amount <= 0f) return null;
             string id = string.IsNullOrEmpty(effectId) ? $"Shield_{Guid.NewGuid():N}" : effectId;
-            ShieldEffect shield = new ShieldEffect(id, displayName, duration, amount, source);
+            ShieldEffect shield = new ShieldEffect(id, displayName, duration, amount, source, maxAbsorbHits);
             ApplyEffect(shield);
+
+            // ApplyEffect có thể cộng dồn vào lớp khiên cùng EffectId đã tồn tại → trả về lớp đang hoạt động thật.
+            return GetEffect(id) as ShieldEffect ?? shield;
         }
 
         public virtual void ClearShield()
@@ -499,6 +523,10 @@ namespace IronWasteland.Tanks
             float damageNeedToAbsorb = finalDamage;
             float totalShieldProcessed = 0f;
 
+            // Chỉ cấp phát danh sách khi thật sự có listener, tránh rác GC ở mỗi đòn đánh.
+            List<ShieldEffect> absorbedShields = OnShieldAbsorbedEvent != null ? new List<ShieldEffect>() : null;
+            List<float> absorbedAmounts = OnShieldAbsorbedEvent != null ? new List<float>() : null;
+
             for (int i = 0; i < activeShields.Count; i++)
             {
                 if (damageNeedToAbsorb <= 0f) break;
@@ -508,6 +536,12 @@ namespace IronWasteland.Tanks
 
                 totalShieldProcessed += absorbed;
                 damageNeedToAbsorb -= absorbed;
+
+                if (absorbed > 0f && absorbedShields != null)
+                {
+                    absorbedShields.Add(currentShieldEffect);
+                    absorbedAmounts.Add(absorbed);
+                }
             }
 
             // Don dep cac ShieldEffect da bi pha huy hoan toan (RemainingShield <= 0)
@@ -524,6 +558,16 @@ namespace IronWasteland.Tanks
             if (totalShieldProcessed > 0f)
             {
                 OnShieldChangedEvent?.Invoke(CurrentShield);
+            }
+
+            // Thông báo cho từng lớp khiên biết mình vừa hấp thụ bao nhiêu, sau khi đã dọn dẹp xong.
+            if (absorbedShields != null)
+            {
+                bool fullyBlocked = damageNeedToAbsorb <= 0f;
+                for (int i = 0; i < absorbedShields.Count; i++)
+                {
+                    OnShieldAbsorbedEvent?.Invoke(absorbedShields[i], absorbedAmounts[i], fullyBlocked);
+                }
             }
 
             return totalShieldProcessed;
@@ -611,29 +655,175 @@ namespace IronWasteland.Tanks
 
         #endregion
 
+        #region Damage Redirection
+
+        /// <summary>
+        /// Đăng ký một cơ chế gánh hộ sát thương (ví dụ Guardian Current của Leviathan chia một phần đòn đánh sang đồng minh gánh thay).
+        /// </summary>
+        public virtual void AddDamageRedirector(IDamageRedirector redirector)
+        {
+            if (redirector == null) return;
+            if (m_DamageRedirectors.Contains(redirector)) return;
+            m_DamageRedirectors.Add(redirector);
+        }
+
+        /// <summary>Gỡ đăng ký cơ chế gánh hộ sát thương.</summary>
+        public virtual void RemoveDamageRedirector(IDamageRedirector redirector)
+        {
+            if (redirector == null) return;
+            m_DamageRedirectors.Remove(redirector);
+        }
+
+        /// <summary>
+        /// Chặng chuyển hướng sát thương: cho phép các cơ chế gánh hộ lấy đi một phần
+        /// <see cref="DamageInfo.RawDamage"/> TRƯỚC khi tính giáp và TRƯỚC khi trừ khiên.
+        /// <para>
+        /// Vì sao phải đứng trước bước tính giáp: phần gánh hộ được chia trên sát thương gốc, sau đó mỗi bên
+        /// tự tính giáp của mình đúng một lần. Nếu đặt sau bước hấp thụ khiên, mục tiêu đang có khiên sẽ làm
+        /// phần sát thương còn lại về 0 và cơ chế gánh hộ mất tác dụng.
+        /// </para>
+        /// <para>
+        /// Phần sát thương gánh hộ được tạo thành <see cref="DamageInfo"/> mới mang cờ
+        /// <see cref="DamageInfo.IsDirectToHealth"/> = true (đi thẳng vào máu bên gánh, bỏ qua khiên của họ)
+        /// và <see cref="DamageInfo.IsRedirected"/> = true. Đòn đã mang cờ chuyển hướng sẽ KHÔNG bị
+        /// chuyển hướng thêm lần nữa, nhờ đó chặn đệ quy vô hạn.
+        /// </para>
+        /// <para>
+        /// Sát thương theo thời gian (<see cref="DamageInfo.IsDamageOverTime"/>) không bị chuyển hướng.
+        /// </para>
+        /// </summary>
+        protected virtual DamageInfo ProcessDamageRedirection(DamageInfo info)
+        {
+            if (m_DamageRedirectors.Count == 0) return info;
+            if (info.IsRedirected) return info;
+            if (info.IsDamageOverTime) return info;
+            if (info.RawDamage <= 0f) return info;
+
+            // Duyệt trên bản sao: bên gánh có thể chết và gỡ đăng ký ngay trong lúc ta đang duyệt.
+            m_RedirectorBuffer.Clear();
+            m_RedirectorBuffer.AddRange(m_DamageRedirectors);
+
+            for (int i = 0; i < m_RedirectorBuffer.Count; i++)
+            {
+                IDamageRedirector redirector = m_RedirectorBuffer[i];
+                if (redirector == null) continue;
+                if (!redirector.TryRedirect(info, out TankBrain protector, out float sharedAmount)) continue;
+                if (protector == null || protector == this) continue;
+
+                sharedAmount = Mathf.Min(sharedAmount, info.RawDamage);
+                if (sharedAmount <= 0f) continue;
+
+                info.RawDamage -= sharedAmount;
+
+                DamageInfo redirected = new DamageInfo(
+                    info.Attacker,
+                    protector,
+                    sharedAmount,
+                    info.ArmorPenetration,
+                    info.HitPosition,
+                    isDirectToHealth: true,
+                    isRedirected: true);
+
+                protector.TakeDamage(redirected);
+
+                if (info.RawDamage <= 0f) break;
+            }
+
+            return info;
+        }
+
+        #endregion
+
+        #region Damage Interception
+
+        /// <summary>
+        /// Chặng chặn đòn: hỏi lần lượt các hiệu ứng có khả năng chặn sạch một đòn
+        /// (né đòn, đỡ đòn, bất tử tạm thời — xem <see cref="IDamageInterceptor"/>).
+        /// <para>
+        /// Chạy SAU chặng chuyển hướng gánh hộ và TRƯỚC bước tính giáp. Đặt trước giáp để việc "chặn"
+        /// không phụ thuộc vào con số giáp của người nhận: chặn là chặn sạch, không phải hấp thụ một phần.
+        /// Tại thời điểm này <see cref="DamageInfo.FinalDamage"/> vẫn bằng <see cref="DamageInfo.RawDamage"/>.
+        /// </para>
+        /// <para>
+        /// Trả về true nghĩa là đòn đã bị chặn sạch: Brain dừng xử lý ngay, không trừ máu, không trừ khiên
+        /// và không phát <see cref="OnTakeDamageEvent"/> (vì đây không phải là một lần nhận sát thương).
+        /// Hiệu ứng chặn tự phát sự kiện riêng của nó để bật hiệu ứng hình ảnh.
+        /// </para>
+        /// <para>
+        /// Thứ tự ưu tiên: hiệu ứng có thời gian còn lại ít nhất được hỏi trước (cùng nguyên tắc với
+        /// hệ khiên), để lượt chặn của hiệu ứng sắp hết hạn được dùng trước thay vì bị lãng phí.
+        /// </para>
+        /// </summary>
+        protected virtual bool ProcessDamageInterception(DamageInfo info)
+        {
+            if (info.RawDamage <= 0f) return false;
+
+            m_InterceptorBuffer.Clear();
+            for (int i = 0; i < m_ActiveEffects.Count; i++)
+            {
+                StatusEffect effect = m_ActiveEffects[i];
+                if (effect.IsExpired) continue;
+                if (effect is IDamageInterceptor interceptor)
+                {
+                    m_InterceptorBuffer.Add(interceptor);
+                }
+            }
+
+            if (m_InterceptorBuffer.Count == 0) return false;
+
+            // Ưu tiên hiệu ứng sắp hết hạn trước.
+            m_InterceptorBuffer.Sort((a, b) =>
+                ((StatusEffect)a).RemainingTime.CompareTo(((StatusEffect)b).RemainingTime));
+
+            for (int i = 0; i < m_InterceptorBuffer.Count; i++)
+            {
+                IDamageInterceptor interceptor = m_InterceptorBuffer[i];
+                if (interceptor is StatusEffect e && e.IsExpired) continue;
+                if (interceptor.TryIntercept(info)) return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Combat & Damage
 
         /// <summary>
-        /// Nhan sat thuong qua DamageInfo, ap dung cong thuc Phong thu va Xuyen giap theo GDD.
+        /// Nhận sát thương qua <see cref="DamageInfo"/>, áp dụng công thức Phòng thủ và Xuyên giáp theo GDD.
+        /// Thứ tự xử lý: chuyển hướng gánh hộ → chặn đòn → tính giáp → hấp thụ khiên → trừ máu.
         /// </summary>
         public virtual void TakeDamage(DamageInfo info)
         {
             if (!IsAlive) return;
 
-            // Tinh sat thuong thuc te bang CombatUtility
+            // [1] Chặng chuyển hướng (gánh hộ) — phải chạy trước bước tính giáp, xem ProcessDamageRedirection.
+            float rawDamageBeforeRedirect = info.RawDamage;
+            info = ProcessDamageRedirection(info);
+
+            // Đòn đã được gánh hộ toàn bộ thì không còn gì để xử lý tiếp (không phát event sát thương).
+            if (rawDamageBeforeRedirect > 0f && info.RawDamage <= 0f) return;
+
+            // [2] Chặng chặn đòn (né/đỡ đòn/bất tử tạm thời) — chặn sạch trước khi tính giáp.
+            if (ProcessDamageInterception(info)) return;
+
+            // [3] Tinh sat thuong thuc te bang CombatUtility
             float finalDamage = CombatUtility.ResolveDamage(info.RawDamage, m_FinalStats.Defense, info.ArmorPenetration);
             info.FinalDamage = finalDamage;
 
             if (info.IsDirectToHealth)
             {
+                info.AbsorbedByShield = 0f;
                 currentHealth -= finalDamage;
             }
             else
             {
-                // Xu ly hap thu bang he thong cac lop khien: Uu tien effect co thoi gian con lai it nhat
+                // [4] Xu ly hap thu bang he thong cac lop khien: Uu tien effect co thoi gian con lai it nhat
                 float absorbedShield = ProcessShieldAbsorption(finalDamage);
+                info.AbsorbedByShield = absorbedShield;
                 float damageToHealth = finalDamage - absorbedShield;
 
+                // [5] Tru mau
                 currentHealth -= damageToHealth;
             }
 
