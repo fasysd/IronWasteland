@@ -1,0 +1,278 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <style>
+      .bg { fill: #121418; }
+      .panel { fill: #1A1D24; stroke: #2D3340; stroke-width: 1.5; rx: 8px; }
+      .panel-focus { fill: #1F2430; stroke: #3A6DF0; stroke-width: 2; rx: 8px; }
+      .tab-active { fill: #3A6DF0; rx: 6px; cursor: pointer; }
+      .tab-inactive { fill: #232732; stroke: #3E4554; stroke-width: 1.5; rx: 6px; cursor: pointer; }
+      .stage-node-cleared { fill: #1E2E24; stroke: #4CAF50; stroke-width: 2; rx: 8px; cursor: pointer; }
+      .stage-node-current { fill: #26334D; stroke: #3D6EFF; stroke-width: 2.5; rx: 8px; cursor: pointer; }
+      .stage-node-boss { fill: #3E1E22; stroke: #F44336; stroke-width: 2.5; rx: 8px; cursor: pointer; }
+      .stage-node-locked { fill: #16181E; stroke: #2A2E38; stroke-width: 1.5; rx: 8px; opacity: 0.6; }
+      .btn-primary { fill: #00C853; rx: 8px; cursor: pointer; }
+      .btn-secondary { fill: #262B35; stroke: #454D5D; stroke-width: 1.5; rx: 6px; cursor: pointer; }
+      .text-heading { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 22px; font-weight: 700; fill: #FFFFFF; }
+      .text-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600; fill: #FFFFFF; }
+      .text-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; fill: #9BA2AF; }
+      .text-btn { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 700; fill: #FFFFFF; text-anchor: middle; dominant-baseline: middle; }
+      .text-sub { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; fill: #6B7280; }
+      .coop-slot { fill: #181B22; stroke: #383F50; stroke-width: 1.5; rx: 6px; }
+      .coop-slot-ready { fill: #1B2E24; stroke: #4CAF50; stroke-width: 1.5; rx: 6px; }
+    </style>
+  </defs>
+
+  <rect width="1920" height="1080" class="bg" />
+
+  <!-- TOP BAR: NAVIGATION & HEADER -->
+  <rect x="0" y="0" width="1920" height="70" fill="#181A20" stroke="#262B35" stroke-width="1" />
+  <g transform="translate(40, 15)">
+    <rect width="130" height="40" class="btn-secondary" />
+    <text x="65" y="20" class="text-btn" font-size="14">&lt; VỀ SẢNH</text>
+  </g>
+  <text x="195" y="44" class="text-heading" font-size="22">CHỌN MÀN CHƠI • CHIẾN DỊCH GIẢI CỨU ĐỊA CẦU</text>
+
+  <!-- CHAPTER TABS (CHƯƠNG 1 & CHƯƠNG 2) -->
+  <g transform="translate(720, 15)">
+    <!-- Chapter 1 Tab (Active) -->
+    <rect width="240" height="40" class="tab-active" />
+    <text x="120" y="20" class="text-btn" font-size="14">CHƯƠNG 1: LỤC ĐỊA ĐEN</text>
+
+    <!-- Chapter 2 Tab -->
+    <g transform="translate(255, 0)">
+      <rect width="250" height="40" class="tab-inactive" />
+      <text x="125" y="20" class="text-btn" font-size="14" fill="#9AA0AC">CHƯƠNG 2: VÙNG ĐẤT NGUYÊN TỐ</text>
+    </g>
+  </g>
+
+  <!-- ==================== LEFT AREA: MAP PROGRESSION & STAGE NODES (CÁC ẢI HIỆN RA) ==================== -->
+  <g transform="translate(40, 95)">
+    <rect width="1280" height="940" class="panel" />
+    
+    <!-- Chapter Map Title Header -->
+    <text x="40" y="45" class="text-heading">BẢN ĐỒ TIẾN TRÌNH: CHƯƠNG 1 (10 MÀN)</text>
+    <text x="40" y="72" class="text-sub">Vượt qua các đợt phục kích của Alien tại vùng sa mạc tro bụi để tiến vào Vòng Xoáy</text>
+
+    <!-- Stage Nodes Flow (Từ Ải 1-1 đến Ải 1-10) -->
+    <g transform="translate(60, 120)">
+      
+      <!-- Stage 1-1 (Cleared) -->
+      <g transform="translate(0, 50)">
+        <rect width="180" height="130" class="stage-node-cleared" />
+        <circle cx="90" cy="45" r="22" fill="#2E7D32" />
+        <text x="90" y="52" class="text-btn" font-size="16">✓</text>
+        <text x="90" y="90" class="text-title" text-anchor="middle">ẢI 1-1</text>
+        <text x="90" y="112" class="text-sub" text-anchor="middle" fill="#81C784">Đã vượt qua</text>
+      </g>
+      <line x1="180" y1="115" x2="240" y2="115" stroke="#4CAF50" stroke-width="3" />
+
+      <!-- Stage 1-2 (Cleared) -->
+      <g transform="translate(240, 50)">
+        <rect width="180" height="130" class="stage-node-cleared" />
+        <circle cx="90" cy="45" r="22" fill="#2E7D32" />
+        <text x="90" y="52" class="text-btn" font-size="16">✓</text>
+        <text x="90" y="90" class="text-title" text-anchor="middle">ẢI 1-2</text>
+        <text x="90" y="112" class="text-sub" text-anchor="middle" fill="#81C784">Đã vượt qua</text>
+      </g>
+      <line x1="420" y1="115" x2="480" y2="115" stroke="#3D6EFF" stroke-width="3" />
+
+      <!-- Stage 1-3 (CURRENT FOCUS - ĐANG CHỌN) -->
+      <g transform="translate(480, 40)">
+        <rect width="200" height="150" class="stage-node-current" />
+        <rect x="50" y="15" width="100" height="22" fill="#3D6EFF" rx="4" />
+        <text x="100" y="26" class="text-hotkey" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle" font-size="11">ĐANG CHỌN</text>
+        <text x="100" y="75" class="text-heading" font-size="24" text-anchor="middle">ẢI 1-3</text>
+        <text x="100" y="105" class="text-title" font-size="14" text-anchor="middle" fill="#90CAF9">Đột Kích Vành Đai</text>
+        <text x="100" y="128" class="text-sub" text-anchor="middle">3 Đợt quái • Độ khó: Trung bình</text>
+      </g>
+      <line x1="680" y1="115" x2="740" y2="115" stroke="#373D4D" stroke-width="2" stroke-dasharray="4 4" />
+
+      <!-- Stage 1-4 (Unlocked / Next) -->
+      <g transform="translate(740, 50)">
+        <rect width="180" height="130" class="panel" stroke="#4B5366" />
+        <text x="90" y="50" class="text-title" text-anchor="middle" fill="#9EA5B4">ẢI 1-4</text>
+        <text x="90" y="75" class="text-body" text-anchor="middle">Căn Cứ Hira</text>
+        <text x="90" y="105" class="text-sub" text-anchor="middle">Chưa mở</text>
+      </g>
+      <line x1="920" y1="115" x2="980" y2="115" stroke="#373D4D" stroke-width="2" stroke-dasharray="4 4" />
+
+      <!-- Stage 1-5 (BOSS 1 - Cố định Màn 5) -->
+      <g transform="translate(980, 40)">
+        <rect width="190" height="150" class="stage-node-boss" />
+        <text x="95" y="40" class="text-hotkey" fill="#EF5350" text-anchor="middle">⚠ BOSS ẢI 1-5</text>
+        <text x="95" y="75" class="text-heading" font-size="20" text-anchor="middle" fill="#FF8A80">THE2FACE</text>
+        <text x="95" y="102" class="text-body" text-anchor="middle">Phó Quản Ngục Hira</text>
+        <text x="95" y="128" class="text-sub" text-anchor="middle" fill="#E57373">Thưởng: Mở khóa Tank mới</text>
+      </g>
+
+      <!-- Connection down to Row 2 (Ải 1-6 đến 1-10) -->
+      <path d="M 1075 190 L 1075 280 L 1075 330" fill="none" stroke="#373D4D" stroke-width="2" stroke-dasharray="4 4" />
+
+      <!-- Row 2: Stages 1-6 -> 1-10 -->
+      <g transform="translate(0, 330)">
+        <!-- Stage 1-10: FINAL BOSS CHƯƠNG 1 -->
+        <g transform="translate(0, 0)">
+          <rect width="240" height="150" class="stage-node-locked" stroke="#B71C1C" stroke-width="2" />
+          <text x="120" y="40" class="text-hotkey" fill="#D32F2F" text-anchor="middle">☠ ĐẠI BOSS ẢI 1-10</text>
+          <text x="120" y="75" class="text-heading" font-size="22" text-anchor="middle" fill="#E57373">D1ONK</text>
+          <text x="120" y="102" class="text-body" text-anchor="middle">Trưởng Quản Ngục Hira</text>
+          <text x="120" y="128" class="text-sub" text-anchor="middle">3 Lõi Mạch Năng Lượng</text>
+        </g>
+        <line x1="240" y1="75" x2="300" y2="75" stroke="#2A2E38" stroke-width="2" stroke-dasharray="4 4" />
+
+        <!-- Stage 1-9 -->
+        <g transform="translate(300, 10)">
+          <rect width="170" height="130" class="stage-node-locked" />
+          <text x="85" y="60" class="text-title" text-anchor="middle" fill="#5A6170">ẢI 1-9</text>
+          <text x="85" y="90" class="text-sub" text-anchor="middle">Khóa</text>
+        </g>
+        <line x1="470" y1="75" x2="530" y2="75" stroke="#2A2E38" stroke-width="2" stroke-dasharray="4 4" />
+
+        <!-- Stage 1-8 -->
+        <g transform="translate(530, 10)">
+          <rect width="170" height="130" class="stage-node-locked" />
+          <text x="85" y="60" class="text-title" text-anchor="middle" fill="#5A6170">ẢI 1-8</text>
+          <text x="85" y="90" class="text-sub" text-anchor="middle">Khóa</text>
+        </g>
+        <line x1="700" y1="75" x2="760" y2="75" stroke="#2A2E38" stroke-width="2" stroke-dasharray="4 4" />
+
+        <!-- Stage 1-7 -->
+        <g transform="translate(760, 10)">
+          <rect width="170" height="130" class="stage-node-locked" />
+          <text x="85" y="60" class="text-title" text-anchor="middle" fill="#5A6170">ẢI 1-7</text>
+          <text x="85" y="90" class="text-sub" text-anchor="middle">Khóa</text>
+        </g>
+        <line x1="930" y1="75" x2="990" y2="75" stroke="#2A2E38" stroke-width="2" stroke-dasharray="4 4" />
+
+        <!-- Stage 1-6 -->
+        <g transform="translate(990, 10)">
+          <rect width="180" height="130" class="stage-node-locked" />
+          <text x="90" y="60" class="text-title" text-anchor="middle" fill="#5A6170">ẢI 1-6</text>
+          <text x="90" y="90" class="text-sub" text-anchor="middle">Khóa</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- Bottom Legend Info -->
+    <g transform="translate(60, 850)">
+      <circle cx="10" cy="10" r="7" fill="#4CAF50" />
+      <text x="25" y="15" class="text-sub">Đã Vượt</text>
+      <circle cx="110" cy="10" r="7" fill="#3D6EFF" />
+      <text x="125" y="15" class="text-sub">Màn Hiện Tại</text>
+      <circle cx="230" cy="10" r="7" fill="#F44336" />
+      <text x="245" y="15" class="text-sub">Màn Boss (Ải 5, 10, 15)</text>
+      <circle cx="390" cy="10" r="7" fill="#5A6170" />
+      <text x="405" y="15" class="text-sub">Chưa Mở Khóa</text>
+    </g>
+  </g>
+
+  <!-- ==================== RIGHT PANEL: STAGE DETAILS & MATCH PREPARATION ==================== -->
+  <!-- (CHỌN 1 ẢI -> CHỌN CHẾ ĐỘ -> CHỌN TANK -> BẮT ĐẦU TRẬN CHIẾN) -->
+  <g transform="translate(1340, 95)">
+    <rect width="540" height="940" class="panel-focus" />
+
+    <!-- 1. THÔNG TIN ẢI ĐANG CHỌN -->
+    <text x="35" y="40" class="text-heading">THÔNG TIN ẢI: 1-3</text>
+    <text x="35" y="65" class="text-title" fill="#90CAF9">ĐỘT KÍCH VÀNH ĐAI LỤC ĐỊA ĐEN</text>
+
+    <!-- Rewards info -->
+    <g transform="translate(35, 85)">
+      <rect width="470" height="65" class="panel" fill="#14171E" />
+      <text x="20" y="26" class="text-sub">PHẦN THƯỞNG KHI HOÀN THÀNH:</text>
+      <text x="20" y="48" class="text-title" font-size="14" fill="#E1BEE7">💎 +15 Ngọc Ma Pháp</text>
+      <text x="220" y="48" class="text-title" font-size="14" fill="#FFB74D">⚡ Tỷ lệ rơi Phụ kiện: 35%</text>
+    </g>
+
+    <line x1="35" y1="170" x2="505" y2="170" stroke="#2B313F" stroke-width="1.5" />
+
+    <!-- 2. BƯỚC 1: CHỌN CHẾ ĐỘ CHƠI (CHƠI ĐƠN HOẶC CO-OP 2-4) -->
+    <text x="35" y="200" class="text-heading" font-size="18">BƯỚC 1: CHỌN CHẾ ĐỘ CHƠI</text>
+    <g transform="translate(35, 220)">
+      <!-- Tab Chơi Đơn (Solo) -->
+      <g transform="translate(0, 0)">
+        <rect width="225" height="48" class="tab-inactive" />
+        <text x="112" y="24" class="text-btn" font-size="14">CHƠI ĐƠN (SOLO)</text>
+      </g>
+      <!-- Tab Co-op (Active) -->
+      <g transform="translate(245, 0)">
+        <rect width="225" height="48" class="tab-active" />
+        <text x="112" y="24" class="text-btn" font-size="14">CO-OP (2 - 4 NGƯỜI)</text>
+      </g>
+    </g>
+
+    <!-- Sub-Panel: Co-op Room Lobby (Hiển thị phòng Co-op tối đa 4 người theo GDD) -->
+    <g transform="translate(35, 285)">
+      <rect width="470" height="150" class="panel" fill="#14171E" stroke="#373D4D" />
+      <text x="20" y="25" class="text-title" font-size="13">PHÒNG CO-OP #8824 • CHỦ PHÒNG: BẠN (P1)</text>
+
+      <!-- 4 Co-op Player Slots -->
+      <g transform="translate(15, 40)">
+        <!-- Slot 1: You (Host) -->
+        <rect width="105" height="95" class="coop-slot-ready" />
+        <circle cx="52" cy="30" r="14" fill="#2E7D32" />
+        <text x="52" y="34" class="text-btn" font-size="11">P1</text>
+        <text x="52" y="60" class="text-title" font-size="12" text-anchor="middle">Bạn (Host)</text>
+        <text x="52" y="80" class="text-sub" text-anchor="middle" fill="#81C784">SẴN SÀNG</text>
+
+        <!-- Slot 2: Teammate -->
+        <g transform="translate(112, 0)">
+          <rect width="105" height="95" class="coop-slot-ready" />
+          <circle cx="52" cy="30" r="14" fill="#1565C0" />
+          <text x="52" y="34" class="text-btn" font-size="11">P2</text>
+          <text x="52" y="60" class="text-title" font-size="12" text-anchor="middle">IronClad</text>
+          <text x="52" y="80" class="text-sub" text-anchor="middle" fill="#81C784">SẴN SÀNG</text>
+        </g>
+
+        <!-- Slot 3: Waiting -->
+        <g transform="translate(224, 0)">
+          <rect width="105" height="95" class="coop-slot" stroke-dasharray="4 4" />
+          <text x="52" y="45" class="text-sub" text-anchor="middle">P3</text>
+          <text x="52" y="70" class="text-sub" text-anchor="middle" fill="#6B7280">[ Đang chờ... ]</text>
+        </g>
+
+        <!-- Slot 4: Empty / Closed -->
+        <g transform="translate(336, 0)">
+          <rect width="105" height="95" class="coop-slot" stroke-dasharray="4 4" opacity="0.6" />
+          <text x="52" y="45" class="text-sub" text-anchor="middle">P4</text>
+          <text x="52" y="70" class="text-sub" text-anchor="middle" fill="#6B7280">[ Mở slot ]</text>
+        </g>
+      </g>
+    </g>
+
+    <line x1="35" y1="460" x2="505" y2="460" stroke="#2B313F" stroke-width="1.5" />
+
+    <!-- 3. BƯỚC 2: CHỌN XE TĂNG XUẤT TRẬN -->
+    <text x="35" y="495" class="text-heading" font-size="18">BƯỚC 2: CHỌN XE TĂNG RA TRẬN</text>
+    <text x="35" y="520" class="text-sub">Chọn chiến xa mang vào ải (và xem nhanh phụ kiện đang gắn)</text>
+
+    <!-- Tank Selected Preview Card -->
+    <g transform="translate(35, 535)">
+      <rect width="470" height="140" class="panel" stroke="#3D6EFF" stroke-width="2" />
+      
+      <!-- Tank Thumbnail -->
+      <rect x="20" y="20" width="100" height="100" class="placeholder-box" stroke="#3D6EFF" />
+      <text x="70" y="75" class="text-title" text-anchor="middle" font-size="13">WALL TITAN</text>
+
+      <!-- Tank Info -->
+      <text x="140" y="42" class="text-title" font-size="17">Wall Titan (Cấp 1 / 90)</text>
+      <text x="140" y="65" class="text-body">Vai trò: Tanker Siêu Giáp • Máu 1,200 • Giáp 25</text>
+      <text x="140" y="90" class="text-body" fill="#CE93D8">Phụ kiện: Trái Tim Nham Thạch (Tinh Anh)</text>
+      <text x="140" y="112" class="text-sub" fill="#81C784">Passive: Khiên 500 khi máu dưới 30%</text>
+
+      <!-- Change Tank Button -->
+      <g transform="translate(340, 20)">
+        <rect width="110" height="35" class="btn-secondary" />
+        <text x="55" y="17" class="text-btn" font-size="13">ĐỔI XE &gt;</text>
+      </g>
+    </g>
+
+    <!-- Notice on Tank Preparation -->
+    <text x="35" y="700" class="text-sub" fill="#90A4AE">Lưu ý: Bạn có thể vào "Quản lý Tank" ở Sảnh chính để nâng cấp chỉ số hoặc lắp phụ kiện khác.</text>
+
+    <!-- 4. BƯỚC 3: BẮT ĐẦU TRẬN CHIẾN (START BATTLE BUTTON) -->
+    <g transform="translate(35, 825)">
+      <rect width="470" height="75" class="btn-primary" />
+      <text x="235" y="37" class="text-btn" font-size="20">BẮT ĐẦU TRẬN CHIẾN ➔</text>
+    </g>
+  </g>
+</svg>
