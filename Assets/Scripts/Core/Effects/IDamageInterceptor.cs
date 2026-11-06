@@ -9,8 +9,9 @@ namespace IronWasteland.Core.Effects
     /// </para>
     /// <para>
     /// Hiệu ứng implement giao diện này chỉ cần được thêm vào Brain qua <c>ApplyEffect</c>. Brain tự
-    /// phát hiện trong danh sách hiệu ứng đang hoạt động và hỏi ý nó ở đầu đường ống sát thương,
-    /// ngay sau chặng chuyển hướng gánh hộ và trước bước tính giáp.
+    /// phát hiện trong danh sách hiệu ứng đang hoạt động và hỏi ý nó ở <b>bước đầu tiên</b> của đường ống
+    /// sát thương — trước cả chặng chuyển hướng gánh hộ và bước tính giáp. Đứng trước chuyển hướng để
+    /// đòn bị chặn sạch không bị chia phần nào sang người gánh hộ.
     /// </para>
     /// </summary>
     public interface IDamageInterceptor

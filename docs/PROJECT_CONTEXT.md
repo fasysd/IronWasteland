@@ -171,17 +171,18 @@ Hệ thống khiên được quản lý đa tầng thông qua các `ShieldEffect
     3. Nếu giá trị khiên lớn hơn lượng sát thương còn thiếu: `RemainingShield` của khiên đó bị trừ đúng bằng $(\text{FinalDamage} - \text{Giá trị khiên đã xử lý})$, giữ nguyên thời gian tồn tại, và dừng vòng lặp hấp thụ.
 
 ### 5.5.1 Chuyển Hướng Sát Thương (Damage Redirection)
-Chặng gánh hộ sát thương cho đồng minh, chạy **trước** bước tính giáp trong `TakeDamage`:
+Chặng gánh hộ sát thương cho đồng minh, chạy **sau** chặng chặn đòn và **trước** bước tính giáp trong `TakeDamage`:
 1. `ProcessDamageRedirection(info)` hỏi lần lượt các `IDamageRedirector` đã đăng ký qua `AddDamageRedirector`.
 2. Mỗi cơ chế trả về `(protector, sharedAmount)`; Brain trừ `sharedAmount` khỏi `info.RawDamage` rồi gọi `protector.TakeDamage` với `DamageInfo` mới mang `IsDirectToHealth = true` và `IsRedirected = true`.
-3. Phần còn lại đi tiếp pipeline cũ: chặn đòn → tính giáp → hấp thụ khiên → trừ máu.
+3. Phần còn lại đi tiếp pipeline cũ: tính giáp → hấp thụ khiên → trừ máu.
 
 Quy ước bắt buộc:
 - Sát thương chia sẻ tính trên `RawDamage` (trước giáp), nên mỗi bên chỉ chịu giáp của mình đúng một lần.
 - Đòn đã mang `IsRedirected = true` **không** bị chuyển hướng thêm lần nữa → chặn đệ quy vô hạn.
 - Sát thương theo thời gian (`IsDamageOverTime = true`) không bị chuyển hướng.
+- Chặng chặn đòn (`5.5.3`) đứng **trước** chuyển hướng: đòn bị chặn sạch là đòn không tồn tại, nên không có sát thương nào để chia cho người gánh hộ. Nếu đảo lại (chia trước, chặn sau) thì người gánh hộ vẫn mất máu dù đòn đã bị phủ định.
 - Chuyển hướng chạy **trước** bước hấp thụ khiên, nên mục tiêu đang có khiên vẫn được gánh hộ (nếu đặt sau, phần còn lại có thể bằng 0 và cơ chế mất tác dụng).
-- Bên gánh nhận sát thương trực tiếp vào máu, bỏ qua khiên của chính họ (đúng ngữ nghĩa cờ `IsDirectToHealth`).
+- Bên gánh nhận sát thương trực tiếp vào máu, bỏ qua khiên của chính họ (đúng ngữ nghĩa cờ `IsDirectToHealth`); tuy nhiên chặng chặn đòn của chính họ vẫn chạy bình thường, nên trạng thái bất tử/đỡ đòn vẫn che được phần gánh hộ.
 
 ### 5.5.2 Bổ Sung Cho Hệ Khiên
 - `ShieldEffect.MaxAbsorbHits` / `AbsorbHits`: giới hạn số đòn một lớp khiên chịu được (mặc định `int.MaxValue` = không giới hạn). Chạm giới hạn thì lớp khiên vỡ ngay và phần khiên còn dư bị huỷ.
@@ -192,12 +193,13 @@ Quy ước bắt buộc:
 ### 5.5.3 Chặn Sát Thương (Damage Interception)
 Cơ chế "đỡ đúng N đòn", "bất tử tạm thời", "né đòn" **không** dùng `ShieldEffect`, vì chúng không có trữ lượng nào để hấp thụ. Chúng dùng một chặng riêng:
 1. Hiệu ứng implement `IDamageInterceptor` (`TryIntercept(DamageInfo)`) và được nạp vào Brain bằng `ApplyEffect` như mọi hiệu ứng khác — không cần đăng ký riêng.
-2. Trong `TakeDamage`, **sau** chặng chuyển hướng và **trước** bước tính giáp, Brain gọi `ProcessDamageInterception(info)`.
+2. Trong `TakeDamage`, Brain gọi `ProcessDamageInterception(info)` ở **bước đầu tiên** — trước cả chặng chuyển hướng và bước tính giáp.
 3. Hiệu ứng đầu tiên trả `true` chặn sạch đòn: Brain dừng ngay, không trừ máu, không trừ khiên, không phát `OnTakeDamageEvent` (vì đây không phải một lần nhận sát thương).
 
 Quy ước:
 - `DamageInterceptEffect` là hiệu ứng chặn đòn dựng sẵn: `MaxNegateHits` / `NegatedHits` (số đòn), `BlockDamageOverTime`, `BlockRedirected`, và event `OnNegated(DamageInfo)` để skill bật burst / né.
 - Mặc định `BlockDamageOverTime = false` (một tick cháy không ăn mất lượt chặn dành cho đòn chí mạng) và `BlockRedirected = true` (trạng thái bất tử phải đỡ cả phần gánh hộ).
+- Vì chặng chặn đứng trước chặng chuyển hướng, một hiệu ứng "đỡ đúng 1 đòn" trên mục tiêu sẽ phủ định **toàn bộ** đòn: không phần nào bị chia sang người gánh hộ và lượt chặn bị tiêu đúng một lần.
 - Thứ tự ưu tiên: hiệu ứng có `RemainingTime` nhỏ nhất được hỏi trước — cùng nguyên tắc Earliest Expiring First với hệ khiên, tránh lãng phí lượt chặn của hiệu ứng sắp hết hạn.
 - Khi chạm `MaxNegateHits`, hiệu ứng tự đặt `RemainingTime = 0` để hệ thống hiệu ứng dọn dẹp ở tick kế tiếp.
 - Phần hình ảnh (bóng ma xoay quanh đồng minh, burst, tia né) vẫn nằm ở skill MonoBehaviour: skill subscribe `OnNegated` rồi bật/tắt các GameObject con đã dựng sẵn trên prefab.
