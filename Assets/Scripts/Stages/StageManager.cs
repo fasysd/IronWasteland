@@ -108,7 +108,7 @@ namespace IronWasteland.Stages
             for (int i = 0; i < m_Spawned.Count; i++)
             {
                 EnemyBrain enemy = m_Spawned[i];
-                if (enemy != null) enemy.Died -= OnEnemyDied;
+                if (enemy != null) enemy.OnDeathEvent -= OnEnemyDied;
             }
 
             m_Spawned.Clear();
@@ -231,7 +231,7 @@ namespace IronWasteland.Stages
             stats.MoveSpeed *= Mathf.Max(0.01f, spawn.SpeedMultiplier);
 
             enemy.Initialize(stats);
-            enemy.Died += OnEnemyDied;
+            enemy.OnDeathEvent += OnEnemyDied;
 
             m_Spawned.Add(enemy);
             m_SpawnedCount++;
@@ -248,7 +248,7 @@ namespace IronWasteland.Stages
 
         #region Outcome
 
-        private void OnEnemyDied(EnemyBrain enemy)
+        private void OnEnemyDied()
         {
             if (State != StageState.Running) return;
 
@@ -257,7 +257,7 @@ namespace IronWasteland.Stages
 
             if (logEvents)
             {
-                Debug.Log($"[Stage] Ha guc {enemy.DisplayName}: {Kills}/{KillTarget}.");
+                Debug.Log($"[Stage] Ha guc {Kills}/{KillTarget}.");
             }
         }
 
