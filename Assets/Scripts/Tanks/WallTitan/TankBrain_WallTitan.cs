@@ -176,8 +176,14 @@ namespace IronWasteland.Tanks.WallTitan
         }
         #endregion
 
+        [Header("VFX (Assets/Art/Tank/VFX/WallTitan)")]
+        [SerializeField] private WallTitanVfx vfx;
+
         private void Start()
         {
+            if (vfx == null)
+                vfx = GetComponent<WallTitanVfx>();
+
             PrewarmEarthBreakPool();
             PrewarmEarthWallPool();
             PrewarmEarthPrisonPool();
@@ -347,6 +353,10 @@ namespace IronWasteland.Tanks.WallTitan
             float defenseRatio = Mathf.Lerp(earthBreakNearDefenseRatio, earthBreakFarDefenseRatio, t);
 
             ApplySkillDamage(enemy, CalculateRawDamage(attackRatio, defenseRatio), skill.transform.position);
+
+            if (vfx != null)
+                vfx.PlayEarthShards(skill.transform.position);
+
             GainEnergy(earthBreakEnergyGain);
         }
         #endregion
@@ -481,10 +491,16 @@ namespace IronWasteland.Tanks.WallTitan
             if (stoneFortressVisual != null)
                 stoneFortressVisual.SetActive(true);
 
+            if (vfx != null)
+                vfx.SetFortressActive(true);
+
             yield return new WaitForSeconds(stoneFortressDuration);
 
             if (stoneFortressVisual != null)
                 stoneFortressVisual.SetActive(false);
+
+            if (vfx != null)
+                vfx.SetFortressActive(false);
 
             RemoveBonusStats(BonusKeyStoneFortress);
             m_StoneFortressCoroutine = null;
@@ -507,6 +523,12 @@ namespace IronWasteland.Tanks.WallTitan
 
             if (guardianWallVisual != null)
                 StartCoroutine(PlayVisualRoutine(guardianWallVisual, guardianWallDuration));
+
+            if (vfx != null)
+            {
+                vfx.SetGuardianActive(true);
+                StartCoroutine(DisableGuardianAfter(guardianWallDuration));
+            }
         }
 
         private void FireEarthPrison()
@@ -652,10 +674,16 @@ namespace IronWasteland.Tanks.WallTitan
             if (immovableTitanVisual != null)
                 immovableTitanVisual.SetActive(true);
 
+            if (vfx != null)
+                vfx.SetImmovableActive(true);
+
             yield return new WaitForSeconds(immovableTitanDuration);
 
             if (immovableTitanVisual != null)
                 immovableTitanVisual.SetActive(false);
+
+            if (vfx != null)
+                vfx.SetImmovableActive(false);
 
             IsCrowdControlImmune = false;
             RemoveBonusStats(BonusKeyStoneFortress + "_Immovable");
@@ -688,6 +716,14 @@ namespace IronWasteland.Tanks.WallTitan
 
             if (earthGuardianVisual != null)
                 StartCoroutine(PlayVisualRoutine(earthGuardianVisual, earthGuardianDuration));
+        }
+
+        private IEnumerator DisableGuardianAfter(float duration)
+        {
+            yield return new WaitForSeconds(duration);
+
+            if (vfx != null)
+                vfx.SetGuardianActive(false);
         }
 
         private void RegisterSharedDamageLink(TankBrain ally, float ratio, float duration)
@@ -758,6 +794,9 @@ namespace IronWasteland.Tanks.WallTitan
             quake.Duration = earthquakeDuration;
             quake.TargetFound += OnEarthquakeTargetFound;
             quake.StartSkill();
+
+            if (vfx != null)
+                vfx.ShowEarthquake(LookTarget);
         }
 
         private void OnEarthquakeTargetFound(Skill_Earthquake skill, EnemyBrain enemy)

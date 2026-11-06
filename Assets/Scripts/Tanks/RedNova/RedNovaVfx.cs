@@ -29,6 +29,10 @@ namespace IronWasteland.Tanks.RedNova
         [SerializeField] private int beamSortingOrder = 9;
         [Tooltip("Thời gian hiện chùm laser mỗi phát (giây).")]
         [SerializeField, Min(0.02f)] private float laserDuration = 0.1f;
+        [Tooltip("Độ dày của chùm laser (nhân theo trục dọc sprite).")]
+        [SerializeField, Min(0.2f)] private float beamThickness = 2.2f;
+        [Tooltip("Kích thước điểm chạm laser.")]
+        [SerializeField, Min(0.2f)] private float impactScale = 1.4f;
         [Tooltip("Độ dài tối đa của tàn ảnh Nova Rush.")]
         [SerializeField, Min(0.2f)] private float rushStreakLength = 1.2f;
 
@@ -86,10 +90,11 @@ namespace IronWasteland.Tanks.RedNova
             Transform beam = m_LaserBeam.transform;
             beam.position = (from + to) * 0.5f;
             beam.rotation = Quaternion.Euler(0f, 0f, angle);
-            beam.localScale = new Vector3(distance / SpriteWorldWidth(m_LaserBeam.sprite, 1f), 1f, 1f);
+            beam.localScale = new Vector3(distance / SpriteWorldWidth(m_LaserBeam.sprite, 1f), beamThickness, 1f);
 
             m_LaserImpact.transform.position = to;
             m_LaserImpact.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+            m_LaserImpact.transform.localScale = Vector3.one * impactScale;
 
             SetActive(m_LaserBeam, true);
             SetActive(m_LaserImpact, true);

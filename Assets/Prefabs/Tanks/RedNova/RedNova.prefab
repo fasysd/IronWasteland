@@ -363,6 +363,8 @@ MonoBehaviour:
   auraSortingOrder: 3
   beamSortingOrder: 9
   laserDuration: 0.1
+  beamThickness: 2.2
+  impactScale: 1.4
   rushStreakLength: 1.2
 --- !u!1 &4047863631810336622
 GameObject:
@@ -395,7 +397,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 987192533526621700}
@@ -673,7 +675,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 4, y: 4, z: 1}
+  m_LocalScale: {x: 1.2, y: 1.2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 987192533526621700}
