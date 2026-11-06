@@ -13,17 +13,32 @@ namespace IronWasteland.Core.Effects
         public float ShieldAmount { get; private set; }
         public float RemainingShield { get; private set; }
 
+        /// <summary>
+        /// Số đòn tối đa mà lớp khiên này có thể hấp thụ. <see cref="int.MaxValue"/> nghĩa là không giới hạn
+        /// (hành vi mặc định của mọi khiên cũ). Dùng cho loại khiên "đỡ đúng N đòn rồi vỡ".
+        /// </summary>
+        public int MaxAbsorbHits { get; private set; }
+
+        /// <summary>Số đòn lớp khiên này đã hấp thụ kể từ lần làm mới gần nhất.</summary>
+        public int AbsorbHits { get; private set; }
+
+        /// <summary>True khi lớp khiên đã cạn lượng khiên hoặc đã chạm số đòn tối đa.</summary>
+        public bool IsExhausted => RemainingShield <= 0f || AbsorbHits >= MaxAbsorbHits;
+
         public ShieldEffect(
             string effectId,
             string displayName,
             float duration,
             float shieldAmount,
-            UnityEngine.Object source = null)
+            UnityEngine.Object source = null,
+            int maxAbsorbHits = int.MaxValue)
             : base(effectId, displayName, duration, 1, EffectStackPolicy.RefreshDuration)
         {
             Source = source;
             ShieldAmount = Mathf.Max(0f, shieldAmount);
             RemainingShield = ShieldAmount;
+            MaxAbsorbHits = maxAbsorbHits <= 0 ? int.MaxValue : maxAbsorbHits;
+            AbsorbHits = 0;
         }
 
         public override void OnStackAdded(UnityEngine.Object target, int newStacks)
@@ -31,6 +46,7 @@ namespace IronWasteland.Core.Effects
             base.OnStackAdded(target, newStacks);
             // Khi duoc lam moi hoac cong them stack, hoi lai luong khien
             RemainingShield = ShieldAmount;
+            AbsorbHits = 0;
         }
 
         /// <summary>
@@ -40,13 +56,16 @@ namespace IronWasteland.Core.Effects
         /// </summary>
         public float Absorb(float damageAmount)
         {
-            if (damageAmount <= 0f || RemainingShield <= 0f) return 0f;
+            if (damageAmount <= 0f || IsExhausted) return 0f;
 
             float absorbed = Mathf.Min(RemainingShield, damageAmount);
             RemainingShield -= absorbed;
+            AbsorbHits++;
 
-            if (RemainingShield <= 0f)
+            // Cạn lượng khiên, hoặc đã đỡ đủ số đòn tối đa → vỡ khiên và hết hạn ngay.
+            if (RemainingShield <= 0f || AbsorbHits >= MaxAbsorbHits)
             {
+                // Lượng khiên còn dư cũng bị huỷ vì hiệu ứng đã cạn.
                 RemainingShield = 0f;
                 remainingTime = 0f; // Danh dau het han de he thong Effect tu don dep
             }
