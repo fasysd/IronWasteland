@@ -21,6 +21,17 @@ namespace IronWasteland.Tanks.RedNova
         [SerializeField, Min(0.1f)] private float duration = 3f;
         [SerializeField, Min(0.05f)] private float interval = 0.4f;
 
+        [Header("Hiển thị (Assets/Art/Tank/VFX/RedNova)")]
+        [Tooltip("SpriteRenderer dùng để vẽ vòng cảnh báo / đạn rơi / vụ nổ.")]
+        [SerializeField] private SpriteRenderer visual;
+        [SerializeField] private Sprite warningSprite;
+        [SerializeField] private Sprite fallingSprite;
+        [SerializeField] private Sprite impactSprite;
+        [Tooltip("Thời gian hiện vòng cảnh báo trước khi đạn bắt đầu rơi.")]
+        [SerializeField, Min(0.05f)] private float warningDuration = 0.5f;
+        [SerializeField, Min(0.02f)] private float fallingDuration = 0.08f;
+        [SerializeField, Min(0.02f)] private float impactFlashDuration = 0.12f;
+
         private CircleCollider2D m_AreaCollider;
         private ColliderOwnerRef m_OwnerRef;
 
@@ -64,6 +75,7 @@ namespace IronWasteland.Tanks.RedNova
             m_Initialized = false;
             m_ReturnToPool = null;
             TargetFound = null;
+            SetVisual(null);
         }
 
         public void Initialize(
@@ -93,23 +105,60 @@ namespace IronWasteland.Tanks.RedNova
         {
             float elapsed = 0f;
 
-            while (elapsed < duration && m_Initialized)
+            // --- Giai đoạn 1: vòng cảnh báo ---
+            SetVisual(warningSprite);
+
+            float warn = Mathf.Min(warningDuration, duration);
+            if (warn > 0f)
             {
-                FindTargets();
-
-                float waitTime = Mathf.Min(interval, duration - elapsed);
-                if (waitTime <= 0f)
-                    break;
-
-                yield return new WaitForSeconds(waitTime);
-                elapsed += waitTime;
+                yield return new WaitForSeconds(warn);
+                elapsed += warn;
                 m_ElapsedTime = elapsed;
             }
 
+            // --- Giai đoạn 2: đạn rơi + nổ từng đợt ---
+            while (elapsed < duration && m_Initialized)
+            {
+                SetVisual(fallingSprite);
+                yield return new WaitForSeconds(fallingDuration);
+                elapsed += fallingDuration;
+
+                if (!m_Initialized)
+                    break;
+
+                SetVisual(impactSprite);
+                FindTargets();
+
+                yield return new WaitForSeconds(impactFlashDuration);
+                elapsed += impactFlashDuration;
+                m_ElapsedTime = elapsed;
+
+                // Nghỉ cho tới nhịp kế tiếp để tổng chu kỳ xấp xỉ interval.
+                float rest = interval - fallingDuration - impactFlashDuration;
+                if (rest > 0f && elapsed < duration)
+                {
+                    SetVisual(null);
+                    float wait = Mathf.Min(rest, duration - elapsed);
+                    yield return new WaitForSeconds(wait);
+                    elapsed += wait;
+                    m_ElapsedTime = elapsed;
+                }
+            }
+
+            SetVisual(null);
             m_LoopCoroutine = null;
 
             if (m_Initialized)
                 FinishSkill();
+        }
+
+        private void SetVisual(Sprite sprite)
+        {
+            if (visual == null)
+                return;
+
+            visual.sprite = sprite;
+            visual.enabled = sprite != null;
         }
 
         private void FindTargets()

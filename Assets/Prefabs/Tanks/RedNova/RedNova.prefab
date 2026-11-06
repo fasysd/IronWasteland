@@ -84,7 +84,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 3
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 5a4bf717c904406584de0468411a7b26, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 2a3a0c963be440f68328323332231ca2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -132,9 +132,9 @@ BoxCollider2D:
   m_Offset: {x: 5.12, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0.5}
-    oldSize: {x: 10.24, y: 2.28}
-    newSize: {x: 10.24, y: 2.28}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 5.12, y: 0.64}
+    newSize: {x: 1.921875, y: 1.921875}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
@@ -179,6 +179,7 @@ GameObject:
   - component: {fileID: 987192533526621700}
   - component: {fileID: 569371263267873161}
   - component: {fileID: 2337791876944670423}
+  - component: {fileID: 6388140922218136812}
   m_Layer: 6
   m_Name: RedNova
   m_TagString: Untagged
@@ -249,16 +250,25 @@ MonoBehaviour:
   baseStats:
     Attack: 0
     Defense: 0
-    DamageMultiplier: 1
+    DamageRate: 0
     ArmorPenetration: 0
     MaxHealth: 0
     MaxEnergy: 0
     MoveSpeed: 0
     CooldownReduction: 0
-  bonusStats:
+  flatBonusStats:
     Attack: 0
     Defense: 0
-    DamageMultiplier: 0
+    DamageRate: 0
+    ArmorPenetration: 0
+    MaxHealth: 0
+    MaxEnergy: 0
+    MoveSpeed: 0
+    CooldownReduction: 0
+  percentBonusStats:
+    Attack: 0
+    Defense: 0
+    DamageRate: 0
     ArmorPenetration: 0
     MaxHealth: 0
     MaxEnergy: 0
@@ -274,52 +284,86 @@ MonoBehaviour:
   m_context:
     Level: 0
     IdView: 0
-    FirepowerEquipmentId: 0
-    DefenseEquipmentId: 0
-    MobilityEquipmentId: 0
+    EquipmentId: 0
     OptionSkill1: 0
     OptionSkill2: 0
+  m_EquippedAccessory: {fileID: 0}
   novaShotDesign: {fileID: 7466232400555351784}
   novaShotPoolSize: 8
-  novaShotDamage: 32
-  novaShotEnergyGain: 6
-  novaShotCooldown: 0.8
+  novaShotDamageMultiplier: 1.1
+  novaShotEnergyGain: 10
+  novaShotCooldown: 0.5
   tripleNovaDesign: {fileID: 7466232400555351784}
   tripleNovaBulletCount: 3
   tripleNovaSpreadAngle: 10
-  tripleNovaTotalDamage: 66
-  tripleNovaEnergyCost: 15
-  tripleNovaCooldown: 4
+  tripleNovaDamageMultiplier: 0.9
+  tripleNovaEnergyCost: 40
+  tripleNovaCooldown: 5
   optionSkill1Branch: 1
-  optionSkill1EnergyCost: 20
-  optionSkill1Cooldown: 8
   overdriveVisual: {fileID: 0}
-  overdriveMoveSpeedBonus: 2
-  overdriveNormalShotCooldownMultiplier: 0.5
-  overdriveDuration: 4
+  overdriveEnergyCost: 20
+  overdriveCooldown: 1
+  overdriveMoveSpeedPercent: 0.35
+  overdriveDamageRateBonus: 0.2
+  overdriveDuration: 1
   laserCannonDesign: {fileID: 1908197467000782568}
   laserCannonPoolSize: 2
-  laserCannonDamage: 55
-  laserShotCooldown: 1.6
-  laserCannonStateDuration: 6
+  laserCannonDamageMultiplier: 1.5
+  laserShotEnergyCost: 5
+  laserShotCooldown: 1
+  laserCannonCooldown: 1
   executionCoreVisual: {fileID: 0}
-  executionLowHpThreshold: 0.4
-  executionDamageMultiplier: 1.5
-  executionCoreDuration: 5
+  executionCoreEnergyCost: 45
+  executionCoreCooldown: 10
+  executionDamageRateBonus: 0.55
+  executionArmorPenBonus: 0.3
   optionSkill2Branch: 0
-  optionSkill2EnergyCost: 20
-  optionSkill2Cooldown: 9
   novaBarrageDesign: {fileID: 816611801873219308}
   novaBarragePoolSize: 2
-  novaBarrageDamagePerTick: 14
+  novaBarrageDamageMultiplier: 0.75
+  novaBarrageEnergyCost: 65
+  novaBarrageCooldown: 12
+  novaBarrageDuration: 3
+  novaBarrageInterval: 0.5
   novaPierceVisual: {fileID: 0}
-  novaPierceArmorPenBonus: 0.35
+  novaPierceAttackPercent: 0.5
+  novaPierceDamageRateBonus: 0.25
+  novaPierceArmorPenBonus: 0.75
   novaPierceDuration: 5
+  novaPierceEnergyCost: 55
+  novaPierceCooldown: 12
   novaRushVisual: {fileID: 7820100000000000001}
   novaRushMaxDistance: 4
-  novaRushBonusDamage: 25
+  novaRushBonusAttackPercent: 2
+  novaRushEnergyCost: 35
+  novaRushCooldown: 7
   novaRushShadowCount: 6
   novaRushShadowFadeDuration: 0.35
+  vfx: {fileID: 6388140922218136812}
+--- !u!114 &6388140922218136812
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2007533005529995649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1990bc33a64bcb149ab3c1ee3848bb16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.RedNova.RedNovaVfx
+  overdriveAura: {fileID: 21300000, guid: 1e688883d1994a4db0f4d0bc2142af25, type: 3}
+  executionCore: {fileID: 21300000, guid: b03be099068c48acac4abc657f20ffd4, type: 3}
+  pierceOverlay: {fileID: 21300000, guid: aee68e9ea8214554b3d73b53ee79ea4a, type: 3}
+  laserBeam: {fileID: 21300000, guid: 2a3a0c963be440f68328323332231ca2, type: 3}
+  laserImpact: {fileID: 21300000, guid: 03a10d03df4247de910dccf29f20aff4, type: 3}
+  executionShockwave: {fileID: 21300000, guid: 05c7be6413dc4f46ab84c5df16bdd0df, type: 3}
+  rushAfterimage: {fileID: 21300000, guid: ac95ff4237674b789658c709a8bd1b7d, type: 3}
+  auraScale: 2.4
+  auraSortingOrder: 3
+  beamSortingOrder: 9
+  laserDuration: 0.1
+  rushStreakLength: 1.2
 --- !u!1 &4047863631810336622
 GameObject:
   m_ObjectHideFlags: 0
@@ -405,7 +449,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 3
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: de90dea1653c4ae7ab5bd0d723142ef8, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 48bee7902f7b4d07a3900e8cfab7cbae, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -507,6 +551,98 @@ MonoBehaviour:
   speed: 13
   lifetime: 4
   hitCheckDelay: 0.05
+--- !u!1 &7820100000000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7820100000000000002}
+  - component: {fileID: 7820100000000000003}
+  m_Layer: 6
+  m_Name: NovaRushVisual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &7820100000000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7820100000000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 987192533526621700}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &7820100000000000003
+SpriteRenderer:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7820100000000000001}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 1
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: 21300000, guid: ac95ff4237674b789658c709a8bd1b7d, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.75}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 2, y: 2}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0
+  m_BlendShapeWeights: []
 --- !u!1 &8848128171384281089
 GameObject:
   m_ObjectHideFlags: 0
@@ -591,7 +727,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 3
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: eff36cbf3425432e8be7f92bce7937cf, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f437ac3fd62e41c1a1d2e3d12421c775, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -665,95 +801,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.RedNova.Skill_NovaBarrage
   duration: 3
   interval: 0.4
---- !u!1 &7820100000000000001
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7820100000000000002}
-  - component: {fileID: 7820100000000000003}
-  m_Layer: 6
-  m_Name: NovaRushVisual
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &7820100000000000002
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7820100000000000001}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 987192533526621700}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &7820100000000000003
-SpriteRenderer:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7820100000000000001}
-  m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 0
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 0
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 1
-  m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: b1f13d9a18fb4d53a13ff11dcaebc84b, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.75}
-  m_FlipX: 0
-  m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 2, y: 2}
-  m_AdaptiveModeThreshold: 0.5
-  m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
-  m_SpriteSortPoint: 0
-  m_BlendShapeWeights: []
+  visual: {fileID: 5952037879084995624}
+  warningSprite: {fileID: 21300000, guid: f437ac3fd62e41c1a1d2e3d12421c775, type: 3}
+  fallingSprite: {fileID: 21300000, guid: 3b44b662c9c84955b89e530f8399a405, type: 3}
+  impactSprite: {fileID: 21300000, guid: a54f290d07934d4a9da55f76b93ce918, type: 3}
+  warningDuration: 0.5
+  fallingDuration: 0.08
+  impactFlashDuration: 0.12

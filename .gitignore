@@ -80,3 +80,4 @@ crashlytics-build.properties
 
 # Tài liệu thiết kế game (.docx) — bản làm việc ~44 MB, giữ ngoài git
 /Tài liệu thiết kế Game.docx
+/[Bb]in/

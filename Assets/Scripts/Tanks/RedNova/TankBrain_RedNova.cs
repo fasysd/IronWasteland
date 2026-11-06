@@ -112,6 +112,9 @@ namespace IronWasteland.Tanks.RedNova
         [SerializeField, Min(0.1f)] private float novaRushShadowFadeDuration = 0.35f;
         #endregion
 
+        [Header("VFX (Assets/Art/Tank/VFX/RedNova)")]
+        [SerializeField] private RedNovaVfx vfx;
+
         // --- Pools ---
         private readonly Stack<Skill_NovaShot> m_NovaShotPool = new Stack<Skill_NovaShot>();
         private readonly HashSet<Skill_NovaShot> m_AllNovaShots = new HashSet<Skill_NovaShot>();
@@ -184,6 +187,9 @@ namespace IronWasteland.Tanks.RedNova
 
         private void Start()
         {
+            if (vfx == null)
+                vfx = GetComponent<RedNovaVfx>();
+
             PrewarmNovaShotPool();
             PrewarmLaserPool();
             PrewarmBarragePool();
@@ -263,6 +269,9 @@ namespace IronWasteland.Tanks.RedNova
             RemoveExecutionCoreBuff();
             m_ExecutionCoreFreeCast = true;
             ResetSkillCooldown(SkillOption1Index);
+
+            if (vfx != null)
+                vfx.PlayExecutionShockwave(transform.position);
         }
 
         private void RemoveOverdriveDamageBuff()
@@ -279,6 +288,9 @@ namespace IronWasteland.Tanks.RedNova
             RemoveBonusStats(BonusKeyExecution);
             if (executionCoreVisual != null)
                 executionCoreVisual.SetActive(false);
+
+            if (vfx != null)
+                vfx.SetExecutionCoreActive(false);
         }
         #endregion
 
@@ -559,10 +571,16 @@ namespace IronWasteland.Tanks.RedNova
             if (overdriveVisual != null)
                 overdriveVisual.SetActive(true);
 
+            if (vfx != null)
+                vfx.SetOverdriveActive(true);
+
             yield return new WaitForSeconds(overdriveDuration);
 
             if (overdriveVisual != null)
                 overdriveVisual.SetActive(false);
+
+            if (vfx != null)
+                vfx.SetOverdriveActive(false);
 
             RemoveBonusStats(BonusKeyOverdrive);
             m_IsOverdriveActive = false;
@@ -604,6 +622,9 @@ namespace IronWasteland.Tanks.RedNova
             if (beam == null)
                 return;
 
+            if (vfx != null)
+                vfx.ShowLaserBeam(muzzle.position, LookTarget);
+
             beam.transform.SetParent(null);
             beam.gameObject.SetActive(true);
             beam.Initialize(muzzle.position, direction, ReturnLaserToPool);
@@ -639,6 +660,9 @@ namespace IronWasteland.Tanks.RedNova
 
             if (executionCoreVisual != null)
                 executionCoreVisual.SetActive(true);
+
+            if (vfx != null)
+                vfx.SetExecutionCoreActive(true);
 
             // Tồn tại tới khi gây sát thương hoặc hết hồi chiêu kế tiếp (GDD không ghi thời hạn,
             // dùng đúng bằng hồi chiêu 10s làm chặn trên an toàn).
@@ -795,10 +819,16 @@ namespace IronWasteland.Tanks.RedNova
             if (novaPierceVisual != null)
                 novaPierceVisual.SetActive(true);
 
+            if (vfx != null)
+                vfx.SetPierceActive(true);
+
             yield return new WaitForSeconds(novaPierceDuration);
 
             if (novaPierceVisual != null)
                 novaPierceVisual.SetActive(false);
+
+            if (vfx != null)
+                vfx.SetPierceActive(false);
 
             RemoveBonusStats(BonusKeyNovaPierce);
             m_NovaPierceCoroutine = null;
@@ -819,6 +849,9 @@ namespace IronWasteland.Tanks.RedNova
                 : LookTarget;
 
             SpawnNovaRushShadows(currentPos, targetPos);
+
+            if (vfx != null)
+                vfx.PlayRushTrail(currentPos, targetPos);
 
             transform.position = new Vector3(targetPos.x, targetPos.y, transform.position.z);
 
