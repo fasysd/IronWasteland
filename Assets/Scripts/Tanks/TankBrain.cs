@@ -980,6 +980,16 @@ namespace IronWasteland.Tanks
             skillCooldowns[Mathf.Clamp(index, 0, SkillCount - 1)] = 0f;
         }
 
+        /// <summary>Xoá hồi chiêu của cả 4 slot (dùng cho sân test kỹ năng).</summary>
+        public void ResetAllSkillCooldowns()
+        {
+            if (skillCooldowns == null)
+                return;
+
+            for (int i = 0; i < skillCooldowns.Length; i++)
+                skillCooldowns[i] = 0f;
+        }
+
         #endregion
     }
 }

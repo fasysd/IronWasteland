@@ -15,7 +15,7 @@ namespace IronWasteland.Tanks.WallTitan
     /// Toàn bộ thông số lấy theo GDD mục 4.3.
     /// </summary>
     [DisallowMultipleComponent]
-    public class TankBrain_WallTitan : TankBrain
+    public class TankBrain_WallTitan : TankBrain, ISkillBranchConfigurable
     {
         private const int SkillEarthBreakIndex = 0;
         private const int SkillEarthWallIndex = 1;
@@ -860,6 +860,56 @@ namespace IronWasteland.Tanks.WallTitan
                 protector = m_Protector;
                 sharedAmount = info.RawDamage * m_Ratio;
                 return sharedAmount > 0f;
+            }
+        }
+        #endregion
+
+        #region Test API (Skill Arena)
+        public int Option1Branch
+        {
+            get => optionSkill1Branch;
+            set
+            {
+                optionSkill1Branch = Mathf.Clamp(value, 0, 2);
+                ResetSkillCooldown(SkillOption1Index);
+            }
+        }
+
+        public int Option2Branch
+        {
+            get => optionSkill2Branch;
+            set
+            {
+                optionSkill2Branch = Mathf.Clamp(value, 0, 2);
+                ResetSkillCooldown(SkillOption2Index);
+            }
+        }
+
+        public string GetSkillName(int slotIndex)
+        {
+            switch (slotIndex)
+            {
+                case SkillEarthBreakIndex: return "Earth Break";
+                case SkillEarthWallIndex: return "Earth Wall";
+
+                case SkillOption1Index:
+                    switch (optionSkill1Branch)
+                    {
+                        case 0: return "Stone Fortress";
+                        case 1: return "Guardian Wall";
+                        default: return "Earth Prison";
+                    }
+
+                case SkillOption2Index:
+                    switch (optionSkill2Branch)
+                    {
+                        case 0: return "Immovable Titan";
+                        case 1: return "Earth Guardian";
+                        default: return "Earthquake";
+                    }
+
+                default:
+                    return $"Skill {slotIndex}";
             }
         }
         #endregion

@@ -16,7 +16,7 @@ namespace IronWasteland.Tanks.RedNova
     /// Toàn bộ thông số lấy theo GDD mục 4.3.
     /// </summary>
     [DisallowMultipleComponent]
-    public class TankBrain_RedNova : TankBrain
+    public class TankBrain_RedNova : TankBrain, ISkillBranchConfigurable
     {
         private const int SkillNovaShotIndex = 0;
         private const int SkillTripleNovaIndex = 1;
@@ -883,6 +883,61 @@ namespace IronWasteland.Tanks.RedNova
 
             if (shadow != null)
                 Destroy(shadow);
+        }
+        #endregion
+
+        #region Test API (Skill Arena)
+        /// <summary>Nhánh kỹ năng tùy chọn 1 đang dùng (đổi lúc chạy để test).</summary>
+        public int Option1Branch
+        {
+            get => optionSkill1Branch;
+            set
+            {
+                optionSkill1Branch = Mathf.Clamp(value, 0, 2);
+                ResetSkillCooldown(SkillOption1Index);
+            }
+        }
+
+        /// <summary>Nhánh kỹ năng tùy chọn 2 đang dùng (đổi lúc chạy để test).</summary>
+        public int Option2Branch
+        {
+            get => optionSkill2Branch;
+            set
+            {
+                optionSkill2Branch = Mathf.Clamp(value, 0, 2);
+                ResetSkillCooldown(SkillOption2Index);
+            }
+        }
+
+        public string GetSkillName(int slotIndex)
+        {
+            switch (slotIndex)
+            {
+                case SkillNovaShotIndex:
+                    return m_IsLaserCannonActive ? "Nova Shot (LASER ON)" : "Nova Shot";
+
+                case SkillTripleNovaIndex:
+                    return "Triple Nova";
+
+                case SkillOption1Index:
+                    switch (optionSkill1Branch)
+                    {
+                        case 0: return "Overdrive";
+                        case 1: return "Laser Cannon";
+                        default: return "Execution Core";
+                    }
+
+                case SkillOption2Index:
+                    switch (optionSkill2Branch)
+                    {
+                        case 0: return "Nova Barrage";
+                        case 1: return "Nova Pierce";
+                        default: return "Nova Rush";
+                    }
+
+                default:
+                    return $"Skill {slotIndex}";
+            }
         }
         #endregion
 
