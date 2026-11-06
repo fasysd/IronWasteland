@@ -174,6 +174,38 @@ namespace IronWasteland.Tanks.WallTitan
             int fromContext = Context.OptionSkill2;
             return fromContext != 0 ? fromContext : optionSkill2Branch;
         }
+
+        /// <summary>
+        /// Chi phí năng lượng theo GDD. Lớp cha mặc định 30 EN cho slot khác 0 nên phải ghi đè,
+        /// nếu không mỗi chiêu bị trừ thêm 30 EN. Immovable Titan không tốn EN mà hồi 40 EN.
+        /// </summary>
+        protected override float GetSkillEnergyCost(int index)
+        {
+            switch (index)
+            {
+                case 1:
+                    return earthWallEnergyCost;
+
+                case 2:
+                    switch (ResolveOption1Branch())
+                    {
+                        case 1: return guardianWallEnergyCost;
+                        case 2: return earthPrisonEnergyCost;
+                        default: return stoneFortressEnergyCost;
+                    }
+
+                case 3:
+                    switch (ResolveOption2Branch())
+                    {
+                        case 1: return earthGuardianEnergyCost;
+                        case 2: return earthquakeEnergyCost;
+                        default: return 0f; // Immovable Titan: hồi 40 EN
+                    }
+
+                default:
+                    return 0f;
+            }
+        }
         #endregion
 
         [Header("VFX (Assets/Art/Tank/VFX/WallTitan)")]
@@ -428,7 +460,6 @@ namespace IronWasteland.Tanks.WallTitan
             if (!HasLookTarget)
                 return;
 
-            SpendEnergy(earthWallEnergyCost);
 
             Skill_EarthWall wall = GetEarthWallFromPool();
             if (wall == null)
@@ -452,19 +483,16 @@ namespace IronWasteland.Tanks.WallTitan
             switch (ResolveOption1Branch())
             {
                 case 0:
-                    SpendEnergy(stoneFortressEnergyCost);
-                    ActivateStoneFortress();
+                            ActivateStoneFortress();
                     break;
 
                 case 1:
-                    SpendEnergy(guardianWallEnergyCost);
-                    ActivateGuardianWall();
+                            ActivateGuardianWall();
                     break;
 
                 case 2:
                 default:
-                    SpendEnergy(earthPrisonEnergyCost);
-                    FireEarthPrison();
+                            FireEarthPrison();
                     break;
             }
         }
@@ -642,14 +670,12 @@ namespace IronWasteland.Tanks.WallTitan
                     break;
 
                 case 1:
-                    SpendEnergy(earthGuardianEnergyCost);
-                    ActivateEarthGuardian();
+                            ActivateEarthGuardian();
                     break;
 
                 case 2:
                 default:
-                    SpendEnergy(earthquakeEnergyCost);
-                    FireEarthquake();
+                            FireEarthquake();
                     break;
             }
         }

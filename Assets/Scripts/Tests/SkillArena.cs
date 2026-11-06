@@ -28,6 +28,8 @@ namespace IronWasteland.Tests
 
         [Header("HUD")]
         [SerializeField] private bool showHud = true;
+        [Tooltip("Tự sinh bia khi bắt đầu. Tắt để sân sạch; bấm [R] để sinh bia khi cần.")]
+        [SerializeField] private bool spawnOnStart = false;
 
         private TankBrain m_Tank;
         private readonly List<EnemyBrain> m_Dummies = new List<EnemyBrain>();
@@ -48,7 +50,9 @@ namespace IronWasteland.Tests
             // Chờ thêm 1 nhịp để Brain chạy xong Initialize/Start.
             yield return new WaitForSeconds(0.25f);
 
-            SpawnDummies();
+            // Mặc định không tự sinh bia để sân test sạch; bấm [R] khi cần.
+            if (spawnOnStart)
+                SpawnDummies();
         }
 
         private void OnDestroy()

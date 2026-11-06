@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 0.6, z: 1}
+  m_LocalScale: {x: 1, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 987192533526621700}
@@ -359,12 +359,12 @@ MonoBehaviour:
   laserImpact: {fileID: 21300000, guid: 03a10d03df4247de910dccf29f20aff4, type: 3}
   executionShockwave: {fileID: 21300000, guid: 05c7be6413dc4f46ab84c5df16bdd0df, type: 3}
   rushAfterimage: {fileID: 21300000, guid: ac95ff4237674b789658c709a8bd1b7d, type: 3}
-  auraScale: 2.4
+  auraScale: 4.2
   auraSortingOrder: 3
   beamSortingOrder: 9
   laserDuration: 0.1
-  beamThickness: 2.2
-  impactScale: 1.4
+  beamThickness: 3.6
+  impactScale: 2.6
   rushStreakLength: 1.2
 --- !u!1 &4047863631810336622
 GameObject:
@@ -397,7 +397,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
+  m_LocalScale: {x: 3, y: 3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 987192533526621700}
@@ -580,7 +580,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 987192533526621700}
@@ -675,7 +675,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.2, y: 1.2, z: 1}
+  m_LocalScale: {x: 2.4, y: 2.4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 987192533526621700}

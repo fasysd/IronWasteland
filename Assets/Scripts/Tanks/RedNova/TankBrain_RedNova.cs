@@ -183,6 +183,39 @@ namespace IronWasteland.Tanks.RedNova
             int fromContext = Context.OptionSkill2;
             return fromContext != 0 ? fromContext : optionSkill2Branch;
         }
+
+        /// <summary>
+        /// Chi phí năng lượng của từng kỹ năng theo GDD. Lớp cha mặc định 30 EN cho mọi slot
+        /// khác 0, nên nếu không ghi đè thì mỗi chiêu sẽ bị trừ thêm 30 EN.
+        /// Laser Cannon: bật/tắt miễn phí, mỗi phát trừ riêng trong FireLaserBeam().
+        /// </summary>
+        protected override float GetSkillEnergyCost(int index)
+        {
+            switch (index)
+            {
+                case 1:
+                    return tripleNovaEnergyCost;
+
+                case 2:
+                    switch (ResolveOption1Branch())
+                    {
+                        case 1: return 0f;
+                        case 2: return executionCoreEnergyCost;
+                        default: return overdriveEnergyCost;
+                    }
+
+                case 3:
+                    switch (ResolveOption2Branch())
+                    {
+                        case 1: return novaPierceEnergyCost;
+                        case 2: return novaRushEnergyCost;
+                        default: return novaBarrageEnergyCost;
+                    }
+
+                default:
+                    return 0f;
+            }
+        }
         #endregion
 
         private void Start()
@@ -415,7 +448,6 @@ namespace IronWasteland.Tanks.RedNova
             if (View == null || View.Muzzle == null || !HasLookTarget)
                 return;
 
-            SpendEnergy(tripleNovaEnergyCost);
 
             Transform muzzle = View.Muzzle;
             Vector2 baseDirection = LookTarget - (Vector2)muzzle.position;
@@ -525,8 +557,7 @@ namespace IronWasteland.Tanks.RedNova
             switch (ResolveOption1Branch())
             {
                 case 0:
-                    SpendEnergy(overdriveEnergyCost);
-                    ActivateOverdrive();
+                            ActivateOverdrive();
                     break;
 
                 case 1:
@@ -540,8 +571,7 @@ namespace IronWasteland.Tanks.RedNova
                     if (m_ExecutionCoreFreeCast)
                         m_ExecutionCoreFreeCast = false;
                     else
-                        SpendEnergy(executionCoreEnergyCost);
-
+            
                     ActivateExecutionCore();
                     break;
             }
@@ -735,18 +765,15 @@ namespace IronWasteland.Tanks.RedNova
             {
                 case 0:
                 default:
-                    SpendEnergy(novaBarrageEnergyCost);
-                    FireNovaBarrage();
+                            FireNovaBarrage();
                     break;
 
                 case 1:
-                    SpendEnergy(novaPierceEnergyCost);
-                    ActivateNovaPierce();
+                            ActivateNovaPierce();
                     break;
 
                 case 2:
-                    SpendEnergy(novaRushEnergyCost);
-                    PerformNovaRush();
+                            PerformNovaRush();
                     break;
             }
         }

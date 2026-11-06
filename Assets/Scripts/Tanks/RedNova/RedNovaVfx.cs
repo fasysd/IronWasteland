@@ -24,15 +24,15 @@ namespace IronWasteland.Tanks.RedNova
 
         [Header("Cấu hình")]
         [Tooltip("Hệ số phóng aura so với sprite gốc.")]
-        [SerializeField, Min(0.1f)] private float auraScale = 2.4f;
+        [SerializeField, Min(0.1f)] private float auraScale = 4.2f;
         [SerializeField] private int auraSortingOrder = 3;
         [SerializeField] private int beamSortingOrder = 9;
         [Tooltip("Thời gian hiện chùm laser mỗi phát (giây).")]
         [SerializeField, Min(0.02f)] private float laserDuration = 0.1f;
         [Tooltip("Độ dày của chùm laser (nhân theo trục dọc sprite).")]
-        [SerializeField, Min(0.2f)] private float beamThickness = 2.2f;
+        [SerializeField, Min(0.2f)] private float beamThickness = 3.6f;
         [Tooltip("Kích thước điểm chạm laser.")]
-        [SerializeField, Min(0.2f)] private float impactScale = 1.4f;
+        [SerializeField, Min(0.2f)] private float impactScale = 2.6f;
         [Tooltip("Độ dài tối đa của tàn ảnh Nova Rush.")]
         [SerializeField, Min(0.2f)] private float rushStreakLength = 1.2f;
 
@@ -106,14 +106,14 @@ namespace IronWasteland.Tanks.RedNova
         /// <summary>Sóng xung kích lan ra khi Execution Core hạ gục mục tiêu.</summary>
         public void PlayExecutionShockwave(Vector2 position)
         {
-            PlayOneShot(executionShockwave, position, 0.5f, 3.2f, 0.35f);
+            PlayOneShot(executionShockwave, position, 0.9f, 5.0f, 0.4f);
         }
 
         /// <summary>Tàn ảnh dọc đường lướt của Nova Rush.</summary>
         public void PlayRushTrail(Vector2 from, Vector2 to)
         {
-            PlayOneShot(rushAfterimage, from, 1f, 1.6f, 0.30f);
-            PlayOneShot(rushAfterimage, Vector2.Lerp(from, to, 0.5f), 0.9f, 1.4f, 0.22f);
+            PlayOneShot(rushAfterimage, from, 2.0f, 3.0f, 0.35f);
+            PlayOneShot(rushAfterimage, Vector2.Lerp(from, to, 0.5f), 1.8f, 2.6f, 0.28f);
         }
 
         // ---------- Tiện ích ----------
