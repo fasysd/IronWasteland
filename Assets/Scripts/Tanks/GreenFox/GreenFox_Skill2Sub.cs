@@ -2,19 +2,24 @@
 
 namespace IronWasteland.Tanks.GreenFox
 {
+    /// <summary>
+    /// Biến thể của Skill 2 phụ. Được chọn bởi TankBrainContext.OptionSkill2
+    /// (mapping nằm trong TankBrain_GreenFox.GetSkill2Variant()).
+    /// </summary>
     public enum Skill2Variant
     {
-        Variant_2A, // Mark Explosion
-        Variant_2B, // Fox Territory
-        Variant_2C  // Nine-Tailed Assault: Cửu Vĩ bộc phát
+        Variant_2A, // OptionSkill2 = 0 (mặc định) - Mark Explosion
+        Variant_2B, // OptionSkill2 = 1 - Fox Territory
+        Variant_2C  // OptionSkill2 = 2 - Nine-Tailed Assault: Cửu Vĩ bộc phát
     }
 
+    /// <summary>
+    /// Chỉ chứa thông số của các biến thể Skill 2 phụ.
+    /// Việc chọn biến thể nào do TankBrain_GreenFox quyết định qua Context.OptionSkill2.
+    /// </summary>
     [DisallowMultipleComponent]
     public class GreenFox_Skill2Sub : MonoBehaviour
     {
-        [Header("Variant Selection")]
-        [SerializeField] private Skill2Variant activeVariant = Skill2Variant.Variant_2C;
-
         [Header("2A - Mark Explosion Settings")]
         [SerializeField, Min(0.1f)] private float buff2AEnergyCost = 55f;
         [SerializeField, Min(0.01f)] private float buff2ACooldown = 12f;
@@ -39,8 +44,6 @@ namespace IronWasteland.Tanks.GreenFox
         [SerializeField, Min(0.01f)] private float attackInterval = 1f;       // Giãn cách tấn công mỗi đuôi: 1s
         [SerializeField, Min(0f)] private float tailDamagePercent = 15f;        // Giá trị sát thương mỗi đuôi: 15% ATK
         [SerializeField, Min(0.1f)] private float attackRange = 6f;
-
-        public Skill2Variant ActiveVariant => activeVariant;
 
         // 2A Getters
         public float Buff2AEnergyCost => buff2AEnergyCost;

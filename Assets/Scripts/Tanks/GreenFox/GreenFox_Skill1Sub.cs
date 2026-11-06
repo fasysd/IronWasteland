@@ -2,19 +2,24 @@
 
 namespace IronWasteland.Tanks.GreenFox
 {
+    /// <summary>
+    /// Biến thể của Skill 1 phụ. Được chọn bởi TankBrainContext.OptionSkill1
+    /// (mapping nằm trong TankBrain_GreenFox.GetSkill1Variant()).
+    /// </summary>
     public enum Skill1Variant
     {
-        Variant_1A, // Mark Hunter
-        Variant_1B, // Thiêu đốt ma thuật
-        Variant_1C  // Bẫy ma thuật
+        Variant_1A, // OptionSkill1 = 0 (mặc định) - Mark Hunter
+        Variant_1B, // OptionSkill1 = 1 - Thiêu đốt ma thuật
+        Variant_1C  // OptionSkill1 = 2 - Bẫy ma thuật
     }
 
+    /// <summary>
+    /// Chỉ chứa thông số của các biến thể Skill 1 phụ.
+    /// Việc chọn biến thể nào do TankBrain_GreenFox quyết định qua Context.OptionSkill1.
+    /// </summary>
     [DisallowMultipleComponent]
     public class GreenFox_Skill1Sub : MonoBehaviour
     {
-        [Header("Variant Selection")]
-        [SerializeField] private Skill1Variant activeVariant = Skill1Variant.Variant_1C;
-
         [Header("1A - Mark Hunter Settings")]
         [SerializeField, Min(0.1f)] private float buff1ADuration = 5f;
         [SerializeField, Min(0.01f)] private float buff1ACooldown = 10f;
@@ -38,8 +43,6 @@ namespace IronWasteland.Tanks.GreenFox
         [SerializeField, Min(0.1f)] private float rootDuration = 2f;             // Thời gian trói chân: 2s
         [SerializeField, Min(0f)] private float trapDamagePercent = 150f;        // Giá trị sát thương cơ bản: 150% ATK
         [SerializeField, Min(0f)] private float eliteTrapDamagePercent = 230f;   // Giá trị sát thương thay cho trói chân Tinh anh: 230% ATK
-
-        public Skill1Variant ActiveVariant => activeVariant;
 
         // 1A Getters
         public float Buff1ADuration => buff1ADuration;

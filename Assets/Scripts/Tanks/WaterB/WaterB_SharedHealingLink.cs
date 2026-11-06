@@ -13,7 +13,11 @@ namespace IronWasteland.Tanks.WaterB
     {
         [Header("Visual Only")]
         [SerializeField] private WaterB_HealingProjectile linkProjectilePrefab; // Chi de tao tia lien ket cho nguoi choi nhin
-        [SerializeField, Min(0.05f)] private float rapidFireInterval = 0.15f;    // Toc do ban hinh anh giua 2 tank
+        [SerializeField, Min(0.05f)] private float rapidFireInterval = 0.3f;     // Interval giua cac dot ban chuoi dan
+
+        [Header("Multi-Projectile Burst Settings")]
+        [SerializeField] private int burstCount = 3;             // So luong vien dan ban lan luot trong 1 dot
+        [SerializeField] private float burstDelay = 0.04f;     // Khoang cach thoi gian giua cac vien dan
 
         private TankBrain m_OwnerTank;      // Water B
         private TankBrain m_TargetAllyTank; // RedNova hoac dong minh khac
@@ -85,7 +89,7 @@ namespace IronWasteland.Tanks.WaterB
             Debug.Log($"[SharedHealing] {receiver.name} nhan {amount} HP -> chia se {sharedAmount} HP cho {other.name}.");
 
             // Dan chi de nhin
-            ShootVisualProjectile(receiver, other);
+            StartCoroutine(ShootVisualProjectile(receiver, other));
         }
 
         private IEnumerator ContinuousLinkBeamRoutine()
@@ -94,21 +98,33 @@ namespace IronWasteland.Tanks.WaterB
 
             while (m_IsActive && m_OwnerTank != null && m_TargetAllyTank != null)
             {
-                ShootVisualProjectile(m_OwnerTank, m_TargetAllyTank);
+                StartCoroutine(ShootVisualProjectile(m_OwnerTank, m_TargetAllyTank));
                 yield return wait;
             }
         }
 
         /// <summary>Ban 1 vien dan HINH ANH (power = 0): khong hoi mau, khong hien text, khong goi callback.</summary>
-        private void ShootVisualProjectile(TankBrain from, TankBrain to)
+        private IEnumerator ShootVisualProjectile(TankBrain from, TankBrain to)
         {
-            if (linkProjectilePrefab == null || from == null || to == null) return;
+            if (linkProjectilePrefab == null || from == null || to == null) yield break;
 
-            Vector3 startPos = from.transform.position;
-            Vector3 direction = (to.transform.position - startPos).normalized;
+            var burstWait = new WaitForSeconds(burstDelay);
 
-            WaterB_HealingProjectile proj = Instantiate(linkProjectilePrefab, startPos, Quaternion.identity);
-            proj.Initialize(m_OwnerTank, direction, 0f, false, null);
+            for (int i = 0; i < burstCount; i++)
+            {
+                if (from == null || to == null || !m_IsActive) break;
+
+                Vector3 startPos = from.transform.position;
+                Vector3 direction = (to.transform.position - startPos).normalized;
+
+                WaterB_HealingProjectile proj = Instantiate(linkProjectilePrefab, startPos, Quaternion.identity);
+                proj.Initialize(m_OwnerTank, direction, 0f, false, null);
+
+                if (i < burstCount - 1)
+                {
+                    yield return burstWait;
+                }
+            }
         }
     }
 }

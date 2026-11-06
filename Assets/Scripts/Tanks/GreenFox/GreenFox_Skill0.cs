@@ -14,7 +14,10 @@ namespace IronWasteland.Tanks.GreenFox
         [SerializeField, Min(0.1f)] private float projectileSpeed = 15f;
         [SerializeField, Min(0.05f)] private float lifeTime = 3f;
 
-        [Header("Root Effect Settings")]
+        [Header("Proc Settings (Trói chân / Sát thương thêm)")]
+        [SerializeField, Range(0f, 100f)] private float procChancePercent = 25f;
+        [SerializeField, Min(0.1f)] private float rootDuration = 1f;
+        [SerializeField, Min(0f)] private float eliteBonusDamagePercent = 20f; // Elite: +20% ATK thay cho trói chân
         [SerializeField] private GameObject rootEffectPrefab;
 
         private Action<GreenFox_Skill0> m_ReturnToPool;
@@ -71,29 +74,33 @@ namespace IronWasteland.Tanks.GreenFox
                 float baseAtk = m_OwnerTank != null ? m_OwnerTank.Stats.Attack : 10f;
                 float finalDamage = baseAtk * 1.0f;
 
-                bool isElite = enemy.CompareTag("Elite") || enemy.name.Contains("Elite");
+                // Phân biệt Elite / Normal dựa vào loại Brain (không dùng tag hay tên nữa)
+                bool isElite = enemy is EliteEnemyBrain;
 
-                if (isElite)
-                {
-                    finalDamage = baseAtk * 1.2f;
-                    enemy.TakeDamage(finalDamage);
-                    TextDamageManager.Instance?.Show(finalDamage, enemy.transform.position);
-                }
-                else
-                {
-                    enemy.TakeDamage(finalDamage);
-                    TextDamageManager.Instance?.Show(finalDamage, enemy.transform.position);
+                // Đòn đánh thường: ai cũng nhận sát thương cơ bản
+                enemy.TakeDamage(finalDamage);
+                TextDamageManager.Instance?.Show(finalDamage, enemy.transform.position);
 
-                    float roll = Random.Range(0f, 100f);
-                    if (roll <= 25f)
+                // 25% kích hoạt hiệu ứng: Normal bị trói chân, Elite miễn trói nên nhận thêm sát thương
+                float roll = Random.Range(0f, 100f);
+                if (roll <= procChancePercent)
+                {
+                    if (isElite)
+                    {
+                        float bonusDamage = baseAtk * eliteBonusDamagePercent / 100f;
+                        enemy.TakeDamage(bonusDamage);
+                        TextDamageManager.Instance?.Show(bonusDamage, enemy.transform.position);
+                        finalDamage += bonusDamage;
+                    }
+                    else
                     {
                         if (m_OwnerTank != null)
                         {
-                            m_OwnerTank.StartCoroutine(ApplyRootEffectRoutine(enemy, 1f));
+                            m_OwnerTank.StartCoroutine(ApplyRootEffectRoutine(enemy, rootDuration));
                         }
                         else
                         {
-                            enemy.StartCoroutine(ApplyRootEffectRoutine(enemy, 1f));
+                            enemy.StartCoroutine(ApplyRootEffectRoutine(enemy, rootDuration));
                         }
 
                         if (rootEffectPrefab != null)
@@ -104,7 +111,7 @@ namespace IronWasteland.Tanks.GreenFox
                             {
                                 rootEffect = rootObj.AddComponent<GreenFox_RootEffect>();
                             }
-                            rootEffect.SetTarget(enemy, 1f);
+                            rootEffect.SetTarget(enemy, rootDuration);
                         }
                     }
                 }

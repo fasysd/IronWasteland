@@ -105,7 +105,7 @@ namespace IronWasteland.Tanks.WaterB
                 }
                 mouseWorldPos.z = 0f;
 
-                Vector3 spawnPos = transform.position + (mouseWorldPos - transform.position).normalized * 1.0f;
+                Vector3 spawnPos = transform.position + (mouseWorldPos - transform.position).normalized * 0.2f;
                 spawnPos.z = 0f;
 
                 Vector3 shootDirection = (mouseWorldPos - transform.position);
@@ -167,11 +167,35 @@ namespace IronWasteland.Tanks.WaterB
             shield.Initialize(targetTransform, shieldCapacity, shieldDuration, shieldHealOnBreak, 0.2f);
         }
 
+        // ------------------------------------------------------------------
+        // Chọn biến thể qua TankBrainContext (giống TankBrain_BlackShadow):
+        // OptionSkill1 / OptionSkill2: 0 = mặc định, 1 = biến thể 2, 2 = biến thể 3
+        // ------------------------------------------------------------------
+        private Skill1WaterVariant GetSkill1Variant()
+        {
+            switch (Context.OptionSkill1)
+            {
+                case 1: return Skill1WaterVariant.LifeDrain;
+                case 2: return Skill1WaterVariant.BubbleProtector;
+                default: return Skill1WaterVariant.SharedHealing;
+            }
+        }
+
+        private Skill2WaterVariant GetSkill2Variant()
+        {
+            switch (Context.OptionSkill2)
+            {
+                case 1: return Skill2WaterVariant.WaterTurrets;
+                case 2: return Skill2WaterVariant.AquaAssault;
+                default: return Skill2WaterVariant.MobileAltar;
+            }
+        }
+
         private void ActivateSkill1Sub()
         {
             if (skill1SubDesign == null) return;
 
-            switch (skill1SubDesign.ActiveVariant)
+            switch (GetSkill1Variant())
             {
                 case Skill1WaterVariant.SharedHealing:
                     CastSharedHealing();
@@ -266,7 +290,7 @@ namespace IronWasteland.Tanks.WaterB
         {
             if (skill2SubDesign == null) return;
 
-            switch (skill2SubDesign.ActiveVariant)
+            switch (GetSkill2Variant())
             {
                 case Skill2WaterVariant.MobileAltar:
                     if (mobileAltarPrefab != null)
@@ -338,6 +362,7 @@ namespace IronWasteland.Tanks.WaterB
             m_IsAquaAssaultActive = false;
             m_AquaAssaultCoroutine = null;
         }
+
         public void HandleProjectileHeal(TankBrain targetTank, float amount)
         {
             if (amount <= 0f) return;
