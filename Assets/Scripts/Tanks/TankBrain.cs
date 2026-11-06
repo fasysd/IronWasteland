@@ -738,8 +738,10 @@ namespace IronWasteland.Tanks
         /// Chặng chặn đòn: hỏi lần lượt các hiệu ứng có khả năng chặn sạch một đòn
         /// (né đòn, đỡ đòn, bất tử tạm thời — xem <see cref="IDamageInterceptor"/>).
         /// <para>
-        /// Chạy SAU chặng chuyển hướng gánh hộ và TRƯỚC bước tính giáp. Đặt trước giáp để việc "chặn"
-        /// không phụ thuộc vào con số giáp của người nhận: chặn là chặn sạch, không phải hấp thụ một phần.
+        /// Chạy TRƯỚC cả chặng chuyển hướng gánh hộ và bước tính giáp. Phải đứng trước chuyển hướng vì
+        /// "chặn sạch" nghĩa là đòn đánh không tồn tại: nếu đã chia sát thương cho người gánh hộ trước thì
+        /// phần đã gửi đi không thể lấy lại, nên người gánh hộ vẫn mất máu dù đòn đã bị phủ định.
+        /// Đặt trước giáp để việc "chặn" không phụ thuộc vào con số giáp của người nhận.
         /// Tại thời điểm này <see cref="DamageInfo.FinalDamage"/> vẫn bằng <see cref="DamageInfo.RawDamage"/>.
         /// </para>
         /// <para>
@@ -789,21 +791,22 @@ namespace IronWasteland.Tanks
 
         /// <summary>
         /// Nhận sát thương qua <see cref="DamageInfo"/>, áp dụng công thức Phòng thủ và Xuyên giáp theo GDD.
-        /// Thứ tự xử lý: chuyển hướng gánh hộ → chặn đòn → tính giáp → hấp thụ khiên → trừ máu.
+        /// Thứ tự xử lý: chặn đòn → chuyển hướng gánh hộ → tính giáp → hấp thụ khiên → trừ máu.
         /// </summary>
         public virtual void TakeDamage(DamageInfo info)
         {
             if (!IsAlive) return;
 
-            // [1] Chặng chuyển hướng (gánh hộ) — phải chạy trước bước tính giáp, xem ProcessDamageRedirection.
+            // [1] Chặng chặn đòn (né/đỡ đòn/bất tử tạm thời) — phải đứng TRƯỚC chặng chuyển hướng:
+            // đòn bị chặn sạch là đòn không tồn tại, nên không có sát thương nào để chia cho người gánh hộ.
+            if (ProcessDamageInterception(info)) return;
+
+            // [2] Chặng chuyển hướng (gánh hộ) — phải chạy trước bước tính giáp, xem ProcessDamageRedirection.
             float rawDamageBeforeRedirect = info.RawDamage;
             info = ProcessDamageRedirection(info);
 
             // Đòn đã được gánh hộ toàn bộ thì không còn gì để xử lý tiếp (không phát event sát thương).
             if (rawDamageBeforeRedirect > 0f && info.RawDamage <= 0f) return;
-
-            // [2] Chặng chặn đòn (né/đỡ đòn/bất tử tạm thời) — chặn sạch trước khi tính giáp.
-            if (ProcessDamageInterception(info)) return;
 
             // [3] Tinh sat thuong thuc te bang CombatUtility
             float finalDamage = CombatUtility.ResolveDamage(info.RawDamage, m_FinalStats.Defense, info.ArmorPenetration);
