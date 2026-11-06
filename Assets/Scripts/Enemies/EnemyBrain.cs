@@ -41,6 +41,9 @@ namespace IronWasteland.Enemies
         // Status Effects
         private readonly List<StatusEffect> m_ActiveEffects = new List<StatusEffect>();
 
+        // Bộ đệm tạm dùng khi duyệt các hiệu ứng chặn đòn, tránh cấp phát mới ở mỗi đòn đánh
+        private readonly List<IDamageInterceptor> m_InterceptorBuffer = new List<IDamageInterceptor>();
+
         #region Events
         public event Action<DamageInfo> OnTakeDamageEvent;
         public event Action<DamageInfo> OnDealDamageEvent;
@@ -112,15 +115,67 @@ namespace IronWasteland.Enemies
 
         #endregion
 
+        #region Damage Interception
+
+        /// <summary>
+        /// Chặng chặn đòn: hỏi lần lượt các hiệu ứng có khả năng chặn sạch một đòn
+        /// (né đòn, đỡ đòn, bất tử tạm thời — xem <see cref="IDamageInterceptor"/>).
+        /// <para>
+        /// Chạy TRƯỚC bước tính giáp, để việc "chặn" không phụ thuộc vào con số giáp của đối tượng.
+        /// Trả về true nghĩa là đòn bị chặn sạch: không trừ máu, không trừ khiên, không phát sự kiện sát thương.
+        /// </para>
+        /// <para>
+        /// Thứ tự ưu tiên: hiệu ứng có thời gian còn lại ít nhất được hỏi trước (cùng nguyên tắc với
+        /// hệ khiên), tránh lãng phí lượt chặn của hiệu ứng sắp hết hạn.
+        /// </para>
+        /// </summary>
+        protected virtual bool ProcessDamageInterception(DamageInfo info)
+        {
+            if (info.RawDamage <= 0f) return false;
+
+            m_InterceptorBuffer.Clear();
+            for (int i = 0; i < m_ActiveEffects.Count; i++)
+            {
+                StatusEffect effect = m_ActiveEffects[i];
+                if (effect.IsExpired) continue;
+                if (effect is IDamageInterceptor interceptor)
+                {
+                    m_InterceptorBuffer.Add(interceptor);
+                }
+            }
+
+            if (m_InterceptorBuffer.Count == 0) return false;
+
+            // Ưu tiên hiệu ứng sắp hết hạn trước.
+            m_InterceptorBuffer.Sort((a, b) =>
+                ((StatusEffect)a).RemainingTime.CompareTo(((StatusEffect)b).RemainingTime));
+
+            for (int i = 0; i < m_InterceptorBuffer.Count; i++)
+            {
+                IDamageInterceptor interceptor = m_InterceptorBuffer[i];
+                if (interceptor is StatusEffect e && e.IsExpired) continue;
+                if (interceptor.TryIntercept(info)) return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Combat & Damage
 
         /// <summary>
         /// Nhan sat thuong qua DamageInfo va ap dung cong thuc Phong thu / Xuyen giap va He thong Khiên.
+        /// Thứ tự xử lý: chặn đòn → tính giáp → hấp thụ khiên → trừ máu.
         /// </summary>
         public virtual void TakeDamage(DamageInfo info)
         {
             if (!IsAlive) return;
 
+            // [1] Chặng chặn đòn (né/đỡ đòn/bất tử tạm thời) — chặn sạch trước khi tính giáp.
+            if (ProcessDamageInterception(info)) return;
+
+            // [2] Tinh sat thuong thuc te bang CombatUtility
             float finalDamage = CombatUtility.ResolveDamage(info.RawDamage, stats.Defense, info.ArmorPenetration);
             info.FinalDamage = finalDamage;
 
@@ -130,8 +185,11 @@ namespace IronWasteland.Enemies
             }
             else
             {
+                // [3] Xu ly hap thu bang he thong cac lop khien
                 float absorbedShield = ProcessShieldAbsorption(finalDamage);
                 float damageToHealth = finalDamage - absorbedShield;
+
+                // [4] Tru mau
                 currentHealth -= damageToHealth;
             }
 
