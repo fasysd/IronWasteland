@@ -1,3 +1,4 @@
+using IronWasteland.Core;
 using IronWasteland.Enemies;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,10 +8,11 @@ namespace IronWasteland.Tanks.WallTitan
 {
     /// <summary>
     /// TankBrain cụ thể cho xe tăng "Wall Titan" (Tanker / Support):
-    /// - Slot 0 (J): Earth Break — Phóng khối đá gây sát thương giảm dần theo khoảng cách + hồi năng lượng.
-    /// - Slot 1 (K): Earth Wall — Dựng tường đất chặn di chuyển và đạn tại vị trí LookTarget.
-    /// - Slot 2 (L): Kỹ năng tùy chọn 1 (0: Stone Fortress, 1: Guardian Wall, 2: Earth Prison).
-    /// - Slot 3 (I): Kỹ năng tùy chọn 2 (0: Immovable Titan, 1: Earth Guardian, 2: Earthquake).
+    /// - Slot 0: Earth Break — 50% ATK + 50% DEF (&lt;3m), 20% ATK + 10% DEF (&gt;7m), hồi 10 EN, CD 0.6s.
+    /// - Slot 1: Earth Wall — 45 EN, CD 10s, tường tồn tại 4s.
+    /// - Slot 2: Kỹ năng tùy chọn 1 (0: Stone Fortress, 1: Guardian Wall, 2: Earth Prison).
+    /// - Slot 3: Kỹ năng tùy chọn 2 (0: Immovable Titan, 1: Earth Guardian, 2: Earthquake).
+    /// Toàn bộ thông số lấy theo GDD mục 4.3.
     /// </summary>
     [DisallowMultipleComponent]
     public class TankBrain_WallTitan : TankBrain
@@ -21,79 +23,94 @@ namespace IronWasteland.Tanks.WallTitan
         private const int SkillOption2Index = 3;
 
         private const string BonusKeyStoneFortress = "WallTitan_StoneFortress";
-        private const string BonusKeyGuardianWall = "WallTitan_GuardianWall";
-        private const string BonusKeyEarthGuardian = "WallTitan_EarthGuardian";
 
         #region Inspector - Skill 0: Earth Break
-        [Header("Skill 0 (J) - Earth Break")]
-        [Tooltip("GameObject mẫu inactive của khối đá Earth Break.")]
+        [Header("Skill 0 - Earth Break  [GDD: 50% ATK + 50% DEF gần, 20% ATK + 10% DEF xa, +10 EN, CD 0.6s]")]
+        [Tooltip("GameObject mẫu inactive của đạn Earth Break.")]
         [SerializeField] private Skill_EarthBreak earthBreakDesign;
-        [SerializeField, Min(0)] private int earthBreakPoolSize = 4;
-        [SerializeField, Min(0f)] private float earthBreakMaxDamage = 45f;
-        [Tooltip("Tỉ lệ sát thương tối thiểu khi mục tiêu ở xa (0.4 = 40% sát thương gốc).")]
-        [SerializeField, Range(0.1f, 1f)] private float earthBreakMinDamageRatio = 0.4f;
-        [Tooltip("Khoảng cách tối đa để tính giảm sát thương.")]
-        [SerializeField, Min(1f)] private float earthBreakMaxFalloffDistance = 12f;
-        [SerializeField, Min(0f)] private float earthBreakEnergyGain = 8f;
-        [SerializeField, Min(0.01f)] private float earthBreakCooldown = 1.2f;
+        [SerializeField, Min(0)] private int earthBreakPoolSize = 8;
+        [SerializeField, Min(0f)] private float earthBreakNearAttackRatio = 0.5f;
+        [SerializeField, Min(0f)] private float earthBreakNearDefenseRatio = 0.5f;
+        [SerializeField, Min(0f)] private float earthBreakFarAttackRatio = 0.2f;
+        [SerializeField, Min(0f)] private float earthBreakFarDefenseRatio = 0.1f;
+        [SerializeField, Min(0f)] private float earthBreakNearRange = 3f;
+        [SerializeField, Min(0f)] private float earthBreakFarRange = 7f;
+        [SerializeField, Min(0f)] private float earthBreakEnergyGain = 10f;
+        [SerializeField, Min(0.01f)] private float earthBreakCooldown = 0.6f;
         #endregion
 
         #region Inspector - Skill 1: Earth Wall
-        [Header("Skill 1 (K) - Earth Wall")]
-        [Tooltip("GameObject mẫu inactive của bức tường đất Earth Wall.")]
+        [Header("Skill 1 - Earth Wall  [GDD: 45 EN, CD 10s, tồn tại 4s]")]
+        [Tooltip("GameObject mẫu inactive của bức tường đá.")]
         [SerializeField] private Skill_EarthWall earthWallDesign;
         [SerializeField, Min(0)] private int earthWallPoolSize = 2;
-        [SerializeField, Min(0f)] private float earthWallEnergyCost = 15f;
-        [SerializeField, Min(0.01f)] private float earthWallCooldown = 8f;
+        [SerializeField, Min(0f)] private float earthWallEnergyCost = 45f;
+        [SerializeField, Min(0.01f)] private float earthWallCooldown = 10f;
+        [SerializeField, Min(0.1f)] private float earthWallDuration = 4f;
         #endregion
 
         #region Inspector - Skill 2: Option Skill 1
-        [Header("Skill 2 (L) - Option Skill 1 (0: StoneFortress, 1: GuardianWall, 2: EarthPrison)")]
-        [Tooltip("Nhánh kỹ năng tùy chọn 1 mặc định trên Inspector (0, 1 hoặc 2).")]
-        [SerializeField, Range(0, 2)] private int optionSkill1Branch = 2;
-        [SerializeField, Min(0f)] private float optionSkill1EnergyCost = 20f;
-        [SerializeField, Min(0.01f)] private float optionSkill1Cooldown = 10f;
+        [Header("Skill 2 - Option Skill 1 (0: Stone Fortress, 1: Guardian Wall, 2: Earth Prison)")]
+        [SerializeField, Range(0, 2)] private int optionSkill1Branch = 0;
 
-        [Header("Option 1.0 - Stone Fortress")]
+        [Header("Option 1.0 - Stone Fortress  [50 EN, CD 12s, khiên 30% HP 8s, +50% DEF, -30% Tốc độ]")]
         [SerializeField] private GameObject stoneFortressVisual;
-        [SerializeField, Min(0f)] private float stoneFortressHealAmount = 35f;
-        [SerializeField, Range(0f, 0.9f)] private float stoneFortressDefenseBonus = 0.25f;
-        [SerializeField, Min(0f)] private float stoneFortressMoveSpeedPenalty = 1.2f;
-        [SerializeField, Min(0.1f)] private float stoneFortressDuration = 4f;
+        [SerializeField, Min(0f)] private float stoneFortressEnergyCost = 50f;
+        [SerializeField, Min(0.01f)] private float stoneFortressCooldown = 12f;
+        [SerializeField, Min(0.1f)] private float stoneFortressDuration = 8f;
+        [SerializeField, Range(0f, 2f)] private float stoneFortressShieldHpRatio = 0.30f;
+        [SerializeField, Range(0f, 2f)] private float stoneFortressDefensePercent = 0.50f;
+        [SerializeField, Range(0f, 1f)] private float stoneFortressSpeedPenalty = 0.30f;
 
-        [Header("Option 1.1 - Guardian Wall")]
+        [Header("Option 1.1 - Guardian Wall  [50 EN, CD 10s, khiên 30% HP 5s, chuyển 35% sát thương]")]
         [SerializeField] private GameObject guardianWallVisual;
-        [SerializeField, Range(0f, 0.9f)] private float guardianWallDefenseBonus = 0.2f;
-        [SerializeField, Min(0.1f)] private float guardianWallDuration = 4f;
+        [SerializeField, Min(0f)] private float guardianWallEnergyCost = 50f;
+        [SerializeField, Min(0.01f)] private float guardianWallCooldown = 10f;
+        [SerializeField, Min(0.1f)] private float guardianWallDuration = 5f;
+        [SerializeField, Range(0f, 2f)] private float guardianWallShieldHpRatio = 0.30f;
+        [SerializeField, Range(0f, 1f)] private float guardianWallRedirectRatio = 0.35f;
 
-        [Header("Option 1.2 - Earth Prison")]
-        [Tooltip("GameObject mẫu inactive của ngục đất Earth Prison.")]
+        [Header("Option 1.2 - Earth Prison  [60 EN, CD 14s, tồn tại 4s, 100% ATK + 150% DEF]")]
+        [Tooltip("GameObject mẫu inactive của vòng giam đá.")]
         [SerializeField] private Skill_EarthPrison earthPrisonDesign;
         [SerializeField, Min(0)] private int earthPrisonPoolSize = 2;
-        [SerializeField, Min(0f)] private float earthPrisonDamage = 50f;
+        [SerializeField, Min(0f)] private float earthPrisonAirAttackRatio = 1.0f;
+        [SerializeField, Min(0f)] private float earthPrisonDefenseRatio = 1.5f;
+        [SerializeField, Min(0f)] private float earthPrisonEnergyCost = 60f;
+        [SerializeField, Min(0.01f)] private float earthPrisonCooldown = 14f;
+        [SerializeField, Min(0.1f)] private float earthPrisonDuration = 4f;
         #endregion
 
         #region Inspector - Skill 3: Option Skill 2
-        [Header("Skill 3 (I) - Option Skill 2 (0: ImmovableTitan, 1: EarthGuardian, 2: Earthquake)")]
-        [Tooltip("Nhánh kỹ năng tùy chọn 2 mặc định trên Inspector (0, 1 hoặc 2).")]
-        [SerializeField, Range(0, 2)] private int optionSkill2Branch = 2;
-        [SerializeField, Min(0f)] private float optionSkill2EnergyCost = 20f;
-        [SerializeField, Min(0.01f)] private float optionSkill2Cooldown = 12f;
+        [Header("Skill 3 - Option Skill 2 (0: Immovable Titan, 1: Earth Guardian, 2: Earthquake)")]
+        [SerializeField, Range(0, 2)] private int optionSkill2Branch = 0;
 
-        [Header("Option 2.0 - Immovable Titan")]
+        [Header("Option 2.0 - Immovable Titan  [hồi 40 EN, CD 10s, 5s, +50 DEF, miễn khống chế]")]
         [SerializeField] private GameObject immovableTitanVisual;
-        [SerializeField, Min(0.1f)] private float immovableTitanDuration = 4f;
+        [SerializeField, Min(0f)] private float immovableTitanEnergyGain = 40f;
+        [SerializeField, Min(0.01f)] private float immovableTitanCooldown = 10f;
+        [SerializeField, Min(0.1f)] private float immovableTitanDuration = 5f;
+        [SerializeField, Min(0f)] private float immovableTitanDefenseFlat = 50f;
 
-        [Header("Option 2.1 - Earth Guardian")]
+        [Header("Option 2.1 - Earth Guardian  [50 EN, CD 10s, 5s, +35 DEF, chuyển 35% sát thương]")]
         [SerializeField] private GameObject earthGuardianVisual;
-        [SerializeField, Range(0f, 0.9f)] private float earthGuardianDefenseBonus = 0.15f;
+        [SerializeField, Min(0f)] private float earthGuardianEnergyCost = 50f;
+        [SerializeField, Min(0.01f)] private float earthGuardianCooldown = 10f;
         [SerializeField, Min(0.1f)] private float earthGuardianDuration = 5f;
+        [SerializeField, Min(0f)] private float earthGuardianDefenseFlat = 35f;
+        [SerializeField, Range(0f, 1f)] private float earthGuardianRedirectRatio = 0.35f;
 
-        [Header("Option 2.2 - Earthquake")]
-        [Tooltip("GameObject mẫu inactive của vùng chấn động Earthquake.")]
+        [Header("Option 2.2 - Earthquake  [65 EN, CD 14s, 6s, tick 0.5s, 60% ATK + 100% DEF, -35% Tốc độ]")]
+        [Tooltip("GameObject mẫu inactive của vùng chấn động.")]
         [SerializeField] private Skill_Earthquake earthquakeDesign;
         [SerializeField, Min(0)] private int earthquakePoolSize = 2;
-        [SerializeField, Min(0f)] private float earthquakeDamagePerTick = 12f;
+        [SerializeField, Min(0f)] private float earthquakeAttackRatio = 0.6f;
+        [SerializeField, Min(0f)] private float earthquakeDefenseRatio = 1.0f;
+        [SerializeField, Range(0f, 1f)] private float earthquakeSlowPercent = 0.35f;
+        [SerializeField, Min(0.1f)] private float earthquakeSlowDuration = 0.6f;
+        [SerializeField, Min(0f)] private float earthquakeEnergyCost = 65f;
+        [SerializeField, Min(0.01f)] private float earthquakeCooldown = 14f;
+        [SerializeField, Min(0.1f)] private float earthquakeDuration = 6f;
         #endregion
 
         // --- Pools ---
@@ -109,30 +126,55 @@ namespace IronWasteland.Tanks.WallTitan
         private readonly Stack<Skill_Earthquake> m_EarthquakePool = new Stack<Skill_Earthquake>();
         private readonly HashSet<Skill_Earthquake> m_AllEarthquakes = new HashSet<Skill_Earthquake>();
 
+        // --- Runtime States ---
+        private readonly List<SharedDamageLink> m_SharedLinks = new List<SharedDamageLink>();
         private Coroutine m_StoneFortressCoroutine;
-        private Coroutine m_GuardianWallCoroutine;
-        private Coroutine m_ImmovableCoroutine;
-        private Coroutine m_EarthGuardianCoroutine;
+        private Coroutine m_ImmovableTitanCoroutine;
 
-        /// <summary>True khi Wall Titan đang trong trạng thái Immovable Titan (miễn đẩy/kéo).</summary>
-        public bool IsImmovable { get; private set; }
-
+        #region Cooldown
         protected override float GetBaseCooldown(int index)
         {
             switch (index)
             {
                 case SkillEarthBreakIndex:
                     return earthBreakCooldown;
+
                 case SkillEarthWallIndex:
                     return earthWallCooldown;
+
                 case SkillOption1Index:
-                    return optionSkill1Cooldown;
+                    switch (ResolveOption1Branch())
+                    {
+                        case 0: return stoneFortressCooldown;
+                        case 1: return guardianWallCooldown;
+                        default: return earthPrisonCooldown;
+                    }
+
                 case SkillOption2Index:
-                    return optionSkill2Cooldown;
+                    switch (ResolveOption2Branch())
+                    {
+                        case 0: return immovableTitanCooldown;
+                        case 1: return earthGuardianCooldown;
+                        default: return earthquakeCooldown;
+                    }
+
                 default:
                     return base.GetBaseCooldown(index);
             }
         }
+
+        private int ResolveOption1Branch()
+        {
+            int fromContext = Context.OptionSkill1;
+            return fromContext != 0 ? fromContext : optionSkill1Branch;
+        }
+
+        private int ResolveOption2Branch()
+        {
+            int fromContext = Context.OptionSkill2;
+            return fromContext != 0 ? fromContext : optionSkill2Branch;
+        }
+        #endregion
 
         private void Start()
         {
@@ -167,6 +209,48 @@ namespace IronWasteland.Tanks.WallTitan
                     return;
             }
         }
+
+        #region Damage Helper
+        /// <summary>Tấn công × hệ số ATK + Phòng thủ × hệ số DEF, nhân (1 + Tỉ lệ sát thương).</summary>
+        private float CalculateRawDamage(float attackRatio, float defenseRatio)
+        {
+            return (Stats.Attack * attackRatio + Stats.Defense * defenseRatio) * (1f + Stats.DamageRate);
+        }
+
+        private void ApplySkillDamage(EnemyBrain enemy, float rawDamage, Vector2 hitPosition)
+        {
+            if (enemy == null || !enemy.IsAlive)
+                return;
+
+            DamageInfo info = new DamageInfo(this, enemy, rawDamage, Stats.ArmorPenetration, hitPosition);
+            enemy.TakeDamage(info);
+            TextDamageManager.Instance?.Show(info.FinalDamage, hitPosition);
+        }
+
+        /// <summary>Tìm đồng minh gần nhất (khác bản thân) tại vị trí chỉ định; không có thì trả về chính mình.</summary>
+        private TankBrain FindAllyNear(Vector2 point)
+        {
+            TankBrain[] tanks = FindObjectsOfType<TankBrain>();
+            TankBrain best = null;
+            float bestSqr = float.MaxValue;
+
+            for (int i = 0; i < tanks.Length; i++)
+            {
+                TankBrain candidate = tanks[i];
+                if (candidate == null || candidate == this || !candidate.IsAlive)
+                    continue;
+
+                float sqr = ((Vector2)candidate.transform.position - point).sqrMagnitude;
+                if (sqr < bestSqr)
+                {
+                    bestSqr = sqr;
+                    best = candidate;
+                }
+            }
+
+            return best != null ? best : this;
+        }
+        #endregion
 
         #region Skill 0 - Earth Break
         private void PrewarmEarthBreakPool()
@@ -235,26 +319,21 @@ namespace IronWasteland.Tanks.WallTitan
             if (View == null || View.Muzzle == null || !HasLookTarget)
                 return;
 
-            Transform muzzle = View.Muzzle;
-            Vector2 direction = LookTarget - (Vector2)muzzle.position;
+            Vector2 spawnPos = View.Muzzle.position;
+            Vector2 direction = LookTarget - spawnPos;
             if (direction.sqrMagnitude <= 0.0001f)
                 return;
 
             direction.Normalize();
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
 
             Skill_EarthBreak skill = GetEarthBreakFromPool();
             if (skill == null)
                 return;
 
             skill.transform.SetParent(null);
-            skill.transform.SetPositionAndRotation(muzzle.position, rotation);
-
-            skill.Initialize(muzzle.position, direction, ReturnEarthBreakToPool);
-            skill.TargetFound += OnEarthBreakTargetFound;
-
             skill.gameObject.SetActive(true);
+            skill.Initialize(spawnPos, direction, ReturnEarthBreakToPool);
+            skill.TargetFound += OnEarthBreakTargetFound;
         }
 
         private void OnEarthBreakTargetFound(Skill_EarthBreak skill, EnemyBrain enemy, float travelDistance)
@@ -262,15 +341,13 @@ namespace IronWasteland.Tanks.WallTitan
             if (enemy == null)
                 return;
 
-            // Sát thương giảm dần theo khoảng cách (ở gần sát thương cao nhất).
-            float t = Mathf.Clamp01(travelDistance / Mathf.Max(0.1f, earthBreakMaxFalloffDistance));
-            float damageRatio = Mathf.Lerp(1f, earthBreakMinDamageRatio, t);
-            float finalDamage = earthBreakMaxDamage * damageRatio;
+            // GDD: dưới 3m dùng hệ số gần, trên 7m dùng hệ số xa, ở giữa nội suy tuyến tính.
+            float t = Mathf.InverseLerp(earthBreakNearRange, earthBreakFarRange, travelDistance);
+            float attackRatio = Mathf.Lerp(earthBreakNearAttackRatio, earthBreakFarAttackRatio, t);
+            float defenseRatio = Mathf.Lerp(earthBreakNearDefenseRatio, earthBreakFarDefenseRatio, t);
 
-            enemy.TakeDamage(finalDamage);
+            ApplySkillDamage(enemy, CalculateRawDamage(attackRatio, defenseRatio), skill.transform.position);
             GainEnergy(earthBreakEnergyGain);
-
-            TextDamageManager.Instance?.Show(finalDamage, skill.transform.position);
         }
         #endregion
 
@@ -343,26 +420,138 @@ namespace IronWasteland.Tanks.WallTitan
 
             SpendEnergy(earthWallEnergyCost);
 
-            Skill_EarthWall skill = GetEarthWallFromPool();
-            if (skill == null)
+            Skill_EarthWall wall = GetEarthWallFromPool();
+            if (wall == null)
                 return;
 
-            Vector2 spawnPos = LookTarget;
-            Vector2 dir = spawnPos - (Vector2)transform.position;
-            float angle = dir.sqrMagnitude > 0.0001f
-                ? Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg + 90f
-                : 0f;
-
+            Vector2 delta = LookTarget - (Vector2)transform.position;
+            float angle = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg;
             Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
 
-            skill.transform.SetParent(null);
-            skill.gameObject.SetActive(true);
-            skill.Initialize(spawnPos, rotation, ReturnEarthWallToPool);
-            skill.StartSkill();
+            wall.transform.SetParent(null);
+            wall.gameObject.SetActive(true);
+            wall.Initialize(LookTarget, rotation, ReturnEarthWallToPool);
+            wall.Duration = earthWallDuration;
+            wall.StartSkill();
         }
         #endregion
 
         #region Skill 2 - Option Skill 1 (Stone Fortress / Guardian Wall / Earth Prison)
+        private void UseOptionSkill1()
+        {
+            switch (ResolveOption1Branch())
+            {
+                case 0:
+                    SpendEnergy(stoneFortressEnergyCost);
+                    ActivateStoneFortress();
+                    break;
+
+                case 1:
+                    SpendEnergy(guardianWallEnergyCost);
+                    ActivateGuardianWall();
+                    break;
+
+                case 2:
+                default:
+                    SpendEnergy(earthPrisonEnergyCost);
+                    FireEarthPrison();
+                    break;
+            }
+        }
+
+        private void ActivateStoneFortress()
+        {
+            if (m_StoneFortressCoroutine != null)
+                StopCoroutine(m_StoneFortressCoroutine);
+
+            m_StoneFortressCoroutine = StartCoroutine(StoneFortressRoutine());
+        }
+
+        private IEnumerator StoneFortressRoutine()
+        {
+            float shieldValue = Stats.MaxHealth * stoneFortressShieldHpRatio;
+            AddShield(shieldValue, stoneFortressDuration, BonusKeyStoneFortress, this, "Khiên Đá");
+
+            TankStats flat = TankStats.Zeroed();
+            TankStats percent = TankStats.Zeroed();
+            percent.Defense = stoneFortressDefensePercent;
+            percent.MoveSpeed = -stoneFortressSpeedPenalty;
+            AddBonusStats(BonusKeyStoneFortress, flat, percent);
+
+            if (stoneFortressVisual != null)
+                stoneFortressVisual.SetActive(true);
+
+            yield return new WaitForSeconds(stoneFortressDuration);
+
+            if (stoneFortressVisual != null)
+                stoneFortressVisual.SetActive(false);
+
+            RemoveBonusStats(BonusKeyStoneFortress);
+            m_StoneFortressCoroutine = null;
+        }
+
+        private void ActivateGuardianWall()
+        {
+            TankBrain ally = FindAllyNear(LookTarget);
+            if (ally == null)
+                return;
+
+            float shieldValue = ally == this
+                ? Stats.MaxHealth * guardianWallShieldHpRatio
+                : ally.Stats.MaxHealth * guardianWallShieldHpRatio;
+
+            ally.AddShield(shieldValue, guardianWallDuration, "WallTitan_GuardianWall", this, "Khiên Hộ Vệ");
+
+            if (ally != this)
+                RegisterSharedDamageLink(ally, guardianWallRedirectRatio, guardianWallDuration);
+
+            if (guardianWallVisual != null)
+                StartCoroutine(PlayVisualRoutine(guardianWallVisual, guardianWallDuration));
+        }
+
+        private void FireEarthPrison()
+        {
+            if (earthPrisonDesign == null)
+            {
+                Debug.LogWarning($"[{nameof(TankBrain_WallTitan)}] Chưa gán EarthPrison Design.", this);
+                return;
+            }
+
+            if (!HasLookTarget)
+                return;
+
+            Skill_EarthPrison prison = GetEarthPrisonFromPool();
+            if (prison == null)
+                return;
+
+            prison.transform.SetParent(null);
+            prison.transform.position = LookTarget;
+            prison.gameObject.SetActive(true);
+            prison.Initialize(LookTarget, ReturnEarthPrisonToPool);
+            prison.Duration = earthPrisonDuration;
+            prison.TargetFound += OnEarthPrisonTargetFound;
+            prison.StartSkill();
+        }
+
+        private void OnEarthPrisonTargetFound(Skill_EarthPrison skill, EnemyBrain enemy)
+        {
+            if (enemy == null)
+                return;
+
+            float raw = CalculateRawDamage(earthPrisonAirAttackRatio, earthPrisonDefenseRatio);
+
+            Collider2D enemyCollider = enemy.Model != null ? enemy.Model.BodyCollider : null;
+            if (enemyCollider != null &&
+                Collider2DUtility.TryGetRandomOverlapPoint(skill.ColliderRef.Collider, enemyCollider, out Vector2 center))
+            {
+                ApplySkillDamage(enemy, raw, center);
+            }
+            else
+            {
+                ApplySkillDamage(enemy, raw, skill.transform.position);
+            }
+        }
+
         private void PrewarmEarthPrisonPool()
         {
             if (earthPrisonDesign == null)
@@ -417,129 +606,172 @@ namespace IronWasteland.Tanks.WallTitan
             if (!m_EarthPrisonPool.Contains(skill))
                 m_EarthPrisonPool.Push(skill);
         }
+        #endregion
 
-        private void UseOptionSkill1()
+        #region Skill 3 - Option Skill 2 (Immovable Titan / Earth Guardian / Earthquake)
+        private void UseOptionSkill2()
         {
-            SpendEnergy(optionSkill1EnergyCost);
-
-            int branch = Context.OptionSkill1 != 0 ? Context.OptionSkill1 : optionSkill1Branch;
-
-            switch (branch)
+            switch (ResolveOption2Branch())
             {
                 case 0:
-                    ActivateStoneFortress();
+                    // GDD ghi "Năng lượng hồi" → kỹ năng này KHÔNG tốn năng lượng mà hồi thêm.
+                    GainEnergy(immovableTitanEnergyGain);
+                    ActivateImmovableTitan();
                     break;
+
                 case 1:
-                    ActivateGuardianWall();
+                    SpendEnergy(earthGuardianEnergyCost);
+                    ActivateEarthGuardian();
                     break;
+
                 case 2:
                 default:
-                    FireEarthPrison();
+                    SpendEnergy(earthquakeEnergyCost);
+                    FireEarthquake();
                     break;
             }
         }
 
-        private void ActivateStoneFortress()
+        private void ActivateImmovableTitan()
         {
-            Heal(stoneFortressHealAmount);
+            if (m_ImmovableTitanCoroutine != null)
+                StopCoroutine(m_ImmovableTitanCoroutine);
 
-            if (m_StoneFortressCoroutine != null)
-                StopCoroutine(m_StoneFortressCoroutine);
-
-            m_StoneFortressCoroutine = StartCoroutine(StoneFortressRoutine());
+            m_ImmovableTitanCoroutine = StartCoroutine(ImmovableTitanRoutine());
         }
 
-        private IEnumerator StoneFortressRoutine()
+        private IEnumerator ImmovableTitanRoutine()
         {
-            TankStats bonus = TankStats.Zeroed();
-            bonus.Defense = stoneFortressDefenseBonus;
-            bonus.MoveSpeed = -stoneFortressMoveSpeedPenalty;
-            AddBonusStats(BonusKeyStoneFortress, bonus);
+            TankStats flat = TankStats.Zeroed();
+            flat.Defense = immovableTitanDefenseFlat;
+            AddBonusStats(BonusKeyStoneFortress + "_Immovable", flat);
 
-            if (stoneFortressVisual != null)
-                stoneFortressVisual.SetActive(true);
+            IsCrowdControlImmune = true;
+            ClearAllCrowdControl();
 
-            yield return new WaitForSeconds(stoneFortressDuration);
+            if (immovableTitanVisual != null)
+                immovableTitanVisual.SetActive(true);
 
-            if (stoneFortressVisual != null)
-                stoneFortressVisual.SetActive(false);
+            yield return new WaitForSeconds(immovableTitanDuration);
 
-            RemoveBonusStats(BonusKeyStoneFortress);
-            m_StoneFortressCoroutine = null;
+            if (immovableTitanVisual != null)
+                immovableTitanVisual.SetActive(false);
+
+            IsCrowdControlImmune = false;
+            RemoveBonusStats(BonusKeyStoneFortress + "_Immovable");
+            m_ImmovableTitanCoroutine = null;
         }
 
-        private void ActivateGuardianWall()
+        private void ActivateEarthGuardian()
         {
-            if (m_GuardianWallCoroutine != null)
-                StopCoroutine(m_GuardianWallCoroutine);
+            TankBrain ally = FindAllyNear(LookTarget);
+            if (ally == null)
+                return;
 
-            m_GuardianWallCoroutine = StartCoroutine(GuardianWallRoutine());
-        }
-
-        private IEnumerator GuardianWallRoutine()
-        {
-            TankStats bonus = TankStats.Zeroed();
-            bonus.Defense = guardianWallDefenseBonus;
-            AddBonusStats(BonusKeyGuardianWall, bonus);
-
-            if (guardianWallVisual != null)
-                guardianWallVisual.SetActive(true);
-
-            yield return new WaitForSeconds(guardianWallDuration);
-
-            if (guardianWallVisual != null)
-                guardianWallVisual.SetActive(false);
-
-            RemoveBonusStats(BonusKeyGuardianWall);
-            m_GuardianWallCoroutine = null;
-        }
-
-        private void FireEarthPrison()
-        {
-            if (earthPrisonDesign == null)
+            if (ally == this)
             {
-                Debug.LogWarning($"[{nameof(TankBrain_WallTitan)}] Chưa gán EarthPrison Design.", this);
+                TankStats flatSelf = TankStats.Zeroed();
+                flatSelf.Defense = earthGuardianDefenseFlat;
+                AddBonusStats(BonusKeyStoneFortress + "_EarthGuardian", flatSelf);
+                StartCoroutine(ClearBonusAfterDelay(BonusKeyStoneFortress + "_EarthGuardian", earthGuardianDuration));
+            }
+            else
+            {
+                // Đồng minh nhận trực tiếp +DEF và chuyển 35% sát thương sang Wall Titan.
+                TankStats flat = TankStats.Zeroed();
+                flat.Defense = earthGuardianDefenseFlat;
+                ally.AddBonusStats("WallTitan_EarthGuardian", flat);
+                ally.StartCoroutine(ClearAllyBonusAfterDelay(ally, "WallTitan_EarthGuardian", earthGuardianDuration));
+
+                RegisterSharedDamageLink(ally, earthGuardianRedirectRatio, earthGuardianDuration);
+            }
+
+            if (earthGuardianVisual != null)
+                StartCoroutine(PlayVisualRoutine(earthGuardianVisual, earthGuardianDuration));
+        }
+
+        private void RegisterSharedDamageLink(TankBrain ally, float ratio, float duration)
+        {
+            if (ally == null || ally == this || ratio <= 0f)
+                return;
+
+            SharedDamageLink link = new SharedDamageLink(this, ratio, duration);
+            m_SharedLinks.Add(link);
+            ally.AddDamageRedirector(link);
+
+            StartCoroutine(UnregisterSharedDamageLinkAfter(link, ally, duration));
+        }
+
+        private IEnumerator UnregisterSharedDamageLinkAfter(SharedDamageLink link, TankBrain ally, float duration)
+        {
+            yield return new WaitForSeconds(duration);
+
+            if (ally != null)
+                ally.RemoveDamageRedirector(link);
+
+            m_SharedLinks.Remove(link);
+        }
+
+        private IEnumerator ClearBonusAfterDelay(string key, float duration)
+        {
+            yield return new WaitForSeconds(duration);
+            RemoveBonusStats(key);
+        }
+
+        private IEnumerator ClearAllyBonusAfterDelay(TankBrain ally, string key, float duration)
+        {
+            yield return new WaitForSeconds(duration);
+            if (ally != null)
+                ally.RemoveBonusStats(key);
+        }
+
+        private IEnumerator PlayVisualRoutine(GameObject visual, float duration)
+        {
+            if (visual == null)
+                yield break;
+
+            visual.SetActive(true);
+            yield return new WaitForSeconds(duration);
+            if (visual != null)
+                visual.SetActive(false);
+        }
+
+        private void FireEarthquake()
+        {
+            if (earthquakeDesign == null)
+            {
+                Debug.LogWarning($"[{nameof(TankBrain_WallTitan)}] Chưa gán Earthquake Design.", this);
                 return;
             }
 
             if (!HasLookTarget)
                 return;
 
-            Skill_EarthPrison skill = GetEarthPrisonFromPool();
-            if (skill == null)
+            Skill_Earthquake quake = GetEarthquakeFromPool();
+            if (quake == null)
                 return;
 
-            Vector2 spawnPos = LookTarget;
-            skill.transform.SetParent(null);
-            skill.transform.position = spawnPos;
-            skill.gameObject.SetActive(true);
-
-            skill.Initialize(spawnPos, ReturnEarthPrisonToPool);
-            skill.TargetFound += OnEarthPrisonTargetFound;
-            skill.StartSkill();
+            quake.transform.SetParent(null);
+            quake.transform.position = LookTarget;
+            quake.gameObject.SetActive(true);
+            quake.Initialize(LookTarget, ReturnEarthquakeToPool);
+            quake.Duration = earthquakeDuration;
+            quake.TargetFound += OnEarthquakeTargetFound;
+            quake.StartSkill();
         }
 
-        private void OnEarthPrisonTargetFound(Skill_EarthPrison skill, EnemyBrain enemy)
+        private void OnEarthquakeTargetFound(Skill_Earthquake skill, EnemyBrain enemy)
         {
-            if (enemy == null)
+            if (enemy == null || !enemy.IsAlive)
                 return;
 
-            enemy.TakeDamage(earthPrisonDamage);
+            float raw = CalculateRawDamage(earthquakeAttackRatio, earthquakeDefenseRatio);
+            ApplySkillDamage(enemy, raw, enemy.transform.position);
 
-            Collider2D enemyCollider = enemy.Model != null ? enemy.Model.BodyCollider : null;
-            if (enemyCollider != null &&
-                Collider2DUtility.TryGetRandomOverlapPoint(skill.ColliderRef.Collider, enemyCollider, out Vector2 hitPoint))
-            {
-                TextDamageManager.Instance?.Show(earthPrisonDamage, hitPoint);
-            }
-            else
-            {
-                TextDamageManager.Instance?.Show(earthPrisonDamage, enemy.transform.position);
-            }
+            // GDD: kẻ địch trong vùng bị giảm 35% tốc độ.
+            enemy.ApplyCrowdControl(CrowdControlType.Slow, earthquakeSlowDuration, earthquakeSlowPercent);
         }
-        #endregion
 
-        #region Skill 3 - Option Skill 2 (Immovable Titan / Earth Guardian / Earthquake)
         private void PrewarmEarthquakePool()
         {
             if (earthquakeDesign == null)
@@ -594,118 +826,40 @@ namespace IronWasteland.Tanks.WallTitan
             if (!m_EarthquakePool.Contains(skill))
                 m_EarthquakePool.Push(skill);
         }
+        #endregion
 
-        private void UseOptionSkill2()
+        #region Shared Damage Link
+        /// <summary>
+        /// Liên kết gánh hộ: đồng minh nhận đòn → chuyển <see cref="ratio"/> sát thương gốc sang Wall Titan.
+        /// Sát thương chuyển sang được tính là trừ trực tiếp vào máu (IsDirectToHealth), đúng GDD.
+        /// </summary>
+        private class SharedDamageLink : IDamageRedirector
         {
-            SpendEnergy(optionSkill2EnergyCost);
+            private readonly TankBrain m_Protector;
+            private readonly float m_Ratio;
+            private readonly float m_ExpireTime;
 
-            int branch = Context.OptionSkill2 != 0 ? Context.OptionSkill2 : optionSkill2Branch;
-
-            switch (branch)
+            public SharedDamageLink(TankBrain protector, float ratio, float duration)
             {
-                case 0:
-                    ActivateImmovableTitan();
-                    break;
-                case 1:
-                    ActivateEarthGuardian();
-                    break;
-                case 2:
-                default:
-                    FireEarthquake();
-                    break;
-            }
-        }
-
-        private void ActivateImmovableTitan()
-        {
-            if (m_ImmovableCoroutine != null)
-                StopCoroutine(m_ImmovableCoroutine);
-
-            m_ImmovableCoroutine = StartCoroutine(ImmovableTitanRoutine());
-        }
-
-        private IEnumerator ImmovableTitanRoutine()
-        {
-            IsImmovable = true;
-            if (immovableTitanVisual != null)
-                immovableTitanVisual.SetActive(true);
-
-            yield return new WaitForSeconds(immovableTitanDuration);
-
-            if (immovableTitanVisual != null)
-                immovableTitanVisual.SetActive(false);
-
-            IsImmovable = false;
-            m_ImmovableCoroutine = null;
-        }
-
-        private void ActivateEarthGuardian()
-        {
-            if (m_EarthGuardianCoroutine != null)
-                StopCoroutine(m_EarthGuardianCoroutine);
-
-            m_EarthGuardianCoroutine = StartCoroutine(EarthGuardianRoutine());
-        }
-
-        private IEnumerator EarthGuardianRoutine()
-        {
-            TankStats bonus = TankStats.Zeroed();
-            bonus.Defense = earthGuardianDefenseBonus;
-            AddBonusStats(BonusKeyEarthGuardian, bonus);
-
-            if (earthGuardianVisual != null)
-                earthGuardianVisual.SetActive(true);
-
-            yield return new WaitForSeconds(earthGuardianDuration);
-
-            if (earthGuardianVisual != null)
-                earthGuardianVisual.SetActive(false);
-
-            RemoveBonusStats(BonusKeyEarthGuardian);
-            m_EarthGuardianCoroutine = null;
-        }
-
-        private void FireEarthquake()
-        {
-            if (earthquakeDesign == null)
-            {
-                Debug.LogWarning($"[{nameof(TankBrain_WallTitan)}] Chưa gán Earthquake Design.", this);
-                return;
+                m_Protector = protector;
+                m_Ratio = Mathf.Clamp01(ratio);
+                m_ExpireTime = Time.time + duration;
             }
 
-            if (!HasLookTarget)
-                return;
-
-            Skill_Earthquake skill = GetEarthquakeFromPool();
-            if (skill == null)
-                return;
-
-            Vector2 spawnPos = LookTarget;
-            skill.transform.SetParent(null);
-            skill.transform.position = spawnPos;
-            skill.gameObject.SetActive(true);
-
-            skill.Initialize(spawnPos, ReturnEarthquakeToPool);
-            skill.TargetFound += OnEarthquakeTargetFound;
-            skill.StartSkill();
-        }
-
-        private void OnEarthquakeTargetFound(Skill_Earthquake skill, EnemyBrain enemy)
-        {
-            if (enemy == null)
-                return;
-
-            enemy.TakeDamage(earthquakeDamagePerTick);
-
-            Collider2D enemyCollider = enemy.Model != null ? enemy.Model.BodyCollider : null;
-            if (enemyCollider != null &&
-                Collider2DUtility.TryGetRandomOverlapPoint(skill.ColliderRef.Collider, enemyCollider, out Vector2 center))
+            public bool TryRedirect(DamageInfo info, out TankBrain protector, out float sharedAmount)
             {
-                TextDamageManager.Instance?.Show(earthquakeDamagePerTick, center);
-            }
-            else
-            {
-                TextDamageManager.Instance?.Show(earthquakeDamagePerTick, skill.transform.position);
+                protector = null;
+                sharedAmount = 0f;
+
+                if (m_Protector == null || !m_Protector.IsAlive)
+                    return false;
+
+                if (Time.time > m_ExpireTime)
+                    return false;
+
+                protector = m_Protector;
+                sharedAmount = info.RawDamage * m_Ratio;
+                return sharedAmount > 0f;
             }
         }
         #endregion

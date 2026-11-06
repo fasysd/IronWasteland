@@ -26,6 +26,12 @@ namespace IronWasteland.Tanks.WallTitan
         private Action<Skill_EarthWall> m_ReturnToPool;
 
         public ColliderOwnerRef ColliderRef => m_OwnerRef;
+        /// <summary>Thời gian tồn tại, cho phép Brain ghi đè theo GDD thay vì dùng giá trị trong prefab.</summary>
+        public float Duration
+        {
+            get => duration;
+            set => duration = Mathf.Max(0.05f, value);
+        }
 
         private void Awake()
         {
