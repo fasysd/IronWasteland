@@ -128,25 +128,25 @@ MonoBehaviour:
   earthBreakFarDefenseRatio: 0.1
   earthBreakNearRange: 3
   earthBreakFarRange: 7
-  earthBreakEnergyGain: 8
-  earthBreakCooldown: 1.2
+  earthBreakEnergyGain: 10
+  earthBreakCooldown: 0.6
   earthWallDesign: {fileID: 4692119365693708535}
   earthWallPoolSize: 2
-  earthWallEnergyCost: 15
-  earthWallCooldown: 8
+  earthWallEnergyCost: 45
+  earthWallCooldown: 10
   earthWallDuration: 4
   optionSkill1Branch: 2
   stoneFortressVisual: {fileID: 0}
   stoneFortressEnergyCost: 50
   stoneFortressCooldown: 12
-  stoneFortressDuration: 4
+  stoneFortressDuration: 8
   stoneFortressShieldHpRatio: 0.3
   stoneFortressDefensePercent: 0.5
   stoneFortressSpeedPenalty: 0.3
   guardianWallVisual: {fileID: 0}
   guardianWallEnergyCost: 50
   guardianWallCooldown: 10
-  guardianWallDuration: 4
+  guardianWallDuration: 5
   guardianWallShieldHpRatio: 0.3
   guardianWallRedirectRatio: 0.35
   earthPrisonDesign: {fileID: 8433354684311306794}
