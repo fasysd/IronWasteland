@@ -1,0 +1,509 @@
+﻿using IronWasteland;
+using IronWasteland.Core;
+using IronWasteland.Core.Effects;
+using IronWasteland.Tanks;
+using System;
+using System.Collections;
+using UnityEngine;
+
+namespace IronWasteland.Tanks.Leviathan
+{
+    /// <summary>
+    /// Kỹ năng Tùy Chọn 2 - Biến Thể 2 của Leviathan: Leviathan Form (Dạng Thủy Quái).
+    /// 
+    /// Hiệu quả:
+    /// - Chuyển sang dạng thủy quái phòng thủ: +50 Phòng thủ (phẳng), +50% Giới hạn máu,
+    ///   hồi 1% Giới hạn máu mỗi giây (theo nhịp 1 giây).
+    /// - Đổi lại, Tấn công bị giảm 50% và Water Pulse bị kéo dài thời gian hồi lên 1.5 giây.
+    /// - Kỹ năng KHÔNG còn cửa sổ bất tử/miễn sát thương như phiên bản cũ.
+    /// 
+    /// Hiển thị trực quan:
+    /// - Cơ thể xe tăng phình to (View scale phóng to 1.25x).
+    /// - Linh ảnh đầu rồng nước xanh đậm bao phủ lấy thân xe (VisualDragonSpirit) rống lên chấn động toàn bộ khung hình (VisualRoarBurst + Screen Shake).
+    /// </summary>
+    [DisallowMultipleComponent]
+    public class OptionalSkill2_2_Leviathan : MonoBehaviour
+    {
+        public event Action<bool> OnFormStateChange;
+        public event Action OnRoarTriggered;
+
+        [Header("Thông Số Thời Gian")]
+        [Tooltip("Thời gian duy trì dạng thủy quái phòng thủ (giây).")]
+        [SerializeField, Min(1.0f)] private float duration = 10.0f;
+
+        [Header("Chỉ Số Buff Sinh Tồn")]
+        [Tooltip("Điểm Phòng thủ cộng thêm khi chuyển sang dạng thủy quái (giá trị phẳng, không phải phần trăm).")]
+        [SerializeField, Min(0f)] private float bonusDefense = 50.0f;
+
+        [Tooltip("Tỉ lệ Giới hạn máu cộng thêm khi chuyển sang dạng thủy quái (0.5 = +50% Giới hạn máu).")]
+        [SerializeField, Min(0f)] private float bonusMaxHealthRatio = 0.5f;
+
+        [Tooltip("Giãn cách hồi máu trong suốt thời gian biến dạng (giây).")]
+        [SerializeField, Min(0.05f)] private float healInterval = 1.0f;
+
+        [Tooltip("Tỉ lệ Giới hạn máu hồi mỗi nhịp (0.01 = 1% Giới hạn máu của chính Leviathan).")]
+        [SerializeField, Min(0f)] private float healMaxHealthRatio = 0.01f;
+
+        [Header("Chỉ Số Phạt (Trade-off)")]
+        [Tooltip("Tỉ lệ Tấn công bị giảm trong khi ở dạng thủy quái (0.5 = -50% Tấn công).")]
+        [SerializeField, Range(0f, 1f)] private float attackPenalty = 0.5f;
+
+        [Header("Hình Ảnh & Hiệu Ứng (Visuals)")]
+        [Tooltip("GameObject hiển thị linh ảnh đầu rồng nước bao phủ thân xe (VisualDragonSpirit).")]
+        [SerializeField] private GameObject visualDragonSpirit;
+
+        [Tooltip("GameObject hiển thị sóng nước bùng nổ khi đầu rồng gầm thét (VisualRoarBurst).")]
+        [SerializeField] private GameObject visualRoarBurst;
+
+        [Tooltip("Tỷ lệ phóng to cơ thể xe tăng khi biến dạng (1.25 = to hơn 25%).")]
+        [SerializeField, Range(1.0f, 1.5f)] private float bodyExpansionScale = 1.25f;
+
+        [Tooltip("Thời gian chuyển đổi phóng to/thu nhỏ thân xe tăng (giây).")]
+        [SerializeField, Min(0.05f)] private float transformTransitionDuration = 0.35f;
+
+        [Tooltip("Biên độ nhấp nhô uy dũng của linh ảnh đầu rồng (0 = không nhấp nhô, 0.05 = 5%).")]
+        [SerializeField, Range(0f, 0.2f)] private float dragonPulseScale = 0.04f;
+
+        [Tooltip("Tần số nhấp nhô của linh ảnh đầu rồng (chu kỳ/giây).")]
+        [SerializeField, Min(0.1f)] private float dragonPulseSpeed = 2.0f;
+
+        [Header("Rung Lắc Màn Hình (Screen Shake)")]
+        [Tooltip("Thời gian rung màn hình khi đầu rồng gầm thét (giây).")]
+        [SerializeField, Min(0.05f)] private float roarShakeDuration = 0.4f;
+
+        [Tooltip("Cường độ rung màn hình.")]
+        [SerializeField, Min(0.01f)] private float roarShakeMagnitude = 0.16f;
+
+        private const string FormBonusStatsKey = "Leviathan_LeviathanForm";
+
+        // Trạng thái nội bộ (Runtime State)
+        private TankBrain ownerTank;
+        private bool isFormActive = false;
+        private float remainingTime = 0f;
+        private float healTimer = 0f;
+
+        private SpriteRenderer dragonRenderer;
+        private SpriteRenderer burstRenderer;
+
+        private Vector3 dragonInitialScale = Vector3.one;
+        private Vector3 burstInitialScale = Vector3.one;
+        private Color dragonInitialColor = Color.white;
+        private Color burstInitialColor = Color.white;
+
+        private Vector3 originalViewScale = Vector3.one;
+        private Coroutine viewScaleCoroutine;
+        private Coroutine burstCoroutine;
+        private Coroutine shakeCoroutine;
+
+        // Thuộc tính công khai (Read-only Getters & UI)
+        public bool IsActive => isFormActive && remainingTime > 0f;
+        public float RemainingTime => remainingTime;
+        public float Duration => duration;
+        public float BonusDefense => bonusDefense;
+        public float BonusMaxHealthRatio => bonusMaxHealthRatio;
+        public float HealInterval => healInterval;
+        public float HealMaxHealthRatio => healMaxHealthRatio;
+        public float AttackPenalty => attackPenalty;
+        public TankBrain OwnerTank => ownerTank;
+
+        private void Awake()
+        {
+            if (visualDragonSpirit != null)
+            {
+                dragonRenderer = visualDragonSpirit.GetComponent<SpriteRenderer>();
+                if (dragonRenderer == null)
+                {
+                    dragonRenderer = visualDragonSpirit.GetComponentInChildren<SpriteRenderer>();
+                }
+
+                dragonInitialScale = visualDragonSpirit.transform.localScale;
+                if (dragonRenderer != null)
+                {
+                    dragonInitialColor = dragonRenderer.color;
+                }
+
+                visualDragonSpirit.SetActive(false);
+            }
+
+            if (visualRoarBurst != null)
+            {
+                burstRenderer = visualRoarBurst.GetComponent<SpriteRenderer>();
+                if (burstRenderer == null)
+                {
+                    burstRenderer = visualRoarBurst.GetComponentInChildren<SpriteRenderer>();
+                }
+
+                burstInitialScale = visualRoarBurst.transform.localScale;
+                if (burstRenderer != null)
+                {
+                    burstInitialColor = burstRenderer.color;
+                }
+
+                visualRoarBurst.SetActive(false);
+            }
+
+            // Tắt SpriteRenderer thừa trên chính GameObject này (nếu có)
+            SpriteRenderer selfSr = GetComponent<SpriteRenderer>();
+            if (selfSr != null)
+            {
+                selfSr.enabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Kích hoạt kỹ năng Leviathan Form cho xe tăng chủ thể.
+        /// Cho phép truyền đè các thông số tính toán từ TankBrain.
+        /// </summary>
+        public void Initialize(
+            TankBrain owner,
+            float customDuration = -1f,
+            float customBonusMaxHpRatio = -1f,
+            float customBonusDefense = -1f,
+            float customHealInterval = -1f,
+            float customHealRatio = -1f,
+            float customAttackPenalty = -1f)
+        {
+            if (owner == null) return;
+
+            // Dọn dẹp trạng thái của lần kích hoạt trước trước khi áp cấu hình mới
+            Clear();
+
+            this.ownerTank = owner;
+
+            if (customDuration >= 0f) this.duration = customDuration;
+            if (customBonusMaxHpRatio >= 0f) this.bonusMaxHealthRatio = customBonusMaxHpRatio;
+            if (customBonusDefense >= 0f) this.bonusDefense = customBonusDefense;
+            if (customHealInterval >= 0f) this.healInterval = customHealInterval;
+            if (customHealRatio >= 0f) this.healMaxHealthRatio = customHealRatio;
+            if (customAttackPenalty >= 0f) this.attackPenalty = customAttackPenalty;
+
+            remainingTime = duration;
+            isFormActive = true;
+
+            // 1. Áp dụng Bonus Stats: +Phòng thủ (phẳng), +Giới hạn máu (%), -Tấn công (%)
+            ApplyFormBonus();
+
+            if (!gameObject.activeSelf)
+            {
+                gameObject.SetActive(true);
+            }
+
+            // 2. Phóng to cơ thể xe tăng (View)
+            if (ownerTank.View != null)
+            {
+                originalViewScale = ownerTank.View.transform.localScale;
+                if (viewScaleCoroutine != null) StopCoroutine(viewScaleCoroutine);
+                viewScaleCoroutine = StartCoroutine(AnimateViewScale(originalViewScale, originalViewScale * bodyExpansionScale, transformTransitionDuration));
+            }
+
+            // 3. Kích hoạt linh ảnh đầu rồng nước
+            if (visualDragonSpirit != null)
+            {
+                visualDragonSpirit.transform.localPosition = Vector3.zero;
+                visualDragonSpirit.transform.localScale = dragonInitialScale;
+                if (dragonRenderer != null)
+                {
+                    dragonRenderer.color = dragonInitialColor;
+                }
+                visualDragonSpirit.SetActive(true);
+            }
+
+            // 4. Hiệu ứng gầm thét: Sóng nước bùng nổ + Rung màn hình
+            if (burstCoroutine != null) StopCoroutine(burstCoroutine);
+            burstCoroutine = StartCoroutine(AnimateRoarBurst());
+
+            if (shakeCoroutine != null) StopCoroutine(shakeCoroutine);
+            shakeCoroutine = StartCoroutine(AnimateScreenShake(roarShakeDuration, roarShakeMagnitude));
+
+            OnRoarTriggered?.Invoke();
+            OnFormStateChange?.Invoke(true);
+        }
+
+        private void ApplyFormBonus()
+        {
+            if (ownerTank == null) return;
+
+            // Ghi lại Giới hạn máu trước khi cộng để biết đã tăng thêm bao nhiêu máu thật.
+            float maxHealthBefore = ownerTank.Stats != null ? ownerTank.Stats.MaxHealth : 0f;
+
+            TankStats flatBonus = TankStats.Zeroed();
+            flatBonus.Defense = bonusDefense;
+
+            TankStats percentBonus = TankStats.Zeroed();
+            percentBonus.MaxHealth = bonusMaxHealthRatio;
+            // Tấn công bị giảm theo phần trăm: mọi đòn đánh của Leviathan đều tính từ Stats.Attack,
+            // nên chỉ cần trừ ở đây là giảm đúng một lần cho toàn bộ kỹ năng (không trừ lặp ở CalculateSkillDamage).
+            percentBonus.Attack = -attackPenalty;
+
+            ownerTank.AddBonusStats(FormBonusStatsKey, flatBonus, percentBonus);
+
+            // Tăng Giới hạn máu thì hồi luôn phần máu mới để thanh máu có ý nghĩa tức thì.
+            float gainedMaxHealth = (ownerTank.Stats != null ? ownerTank.Stats.MaxHealth : 0f) - maxHealthBefore;
+            if (gainedMaxHealth > 0f)
+            {
+                ownerTank.Heal(gainedMaxHealth);
+            }
+
+            healTimer = 0f;
+        }
+
+        private void RemoveFormBonus()
+        {
+            if (ownerTank != null)
+            {
+                ownerTank.RemoveBonusStats(FormBonusStatsKey);
+            }
+        }
+
+        private void Update()
+        {
+            if (!isFormActive) return;
+
+            // Kiểm tra xe tăng chủ thể
+            if (ownerTank == null || !ownerTank.IsAlive)
+            {
+                CancelForm();
+                return;
+            }
+
+            // Đồng bộ vị trí linh ảnh theo xe tăng
+            transform.position = ownerTank.transform.position;
+
+            // 1. Hồi máu theo nhịp: mặc định 1% Giới hạn máu mỗi giây, tính trên Giới hạn máu hiện tại
+            //    (tức đã gồm phần +50% của dạng thủy quái).
+            if (healMaxHealthRatio > 0f && ownerTank.Stats != null)
+            {
+                float interval = Mathf.Max(0.05f, healInterval);
+                healTimer += Time.deltaTime;
+                while (healTimer >= interval)
+                {
+                    healTimer -= interval;
+                    ownerTank.Heal(ownerTank.Stats.MaxHealth * healMaxHealthRatio);
+                }
+            }
+
+            // 2. Hiệu ứng nhấp nhô uy dũng của linh ảnh đầu rồng
+            if (visualDragonSpirit != null && dragonPulseScale > 0f && dragonPulseSpeed > 0f)
+            {
+                float pulse = 1f + Mathf.Sin(Time.time * dragonPulseSpeed * Mathf.PI * 2f) * dragonPulseScale;
+                visualDragonSpirit.transform.localScale = dragonInitialScale * pulse;
+            }
+
+            // 3. Đếm ngược thời gian duy trì dạng thủy quái
+            remainingTime -= Time.deltaTime;
+            if (remainingTime <= 0f)
+            {
+                FinishForm();
+            }
+        }
+
+        private IEnumerator AnimateViewScale(Vector3 startScale, Vector3 targetScale, float dur)
+        {
+            if (ownerTank == null || ownerTank.View == null) yield break;
+
+            Transform viewTransform = ownerTank.View.transform;
+            float elapsed = 0f;
+
+            while (elapsed < dur)
+            {
+                if (ownerTank == null || ownerTank.View == null) yield break;
+
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / dur);
+                // Ease Out Quad
+                float easeOut = 1f - (1f - t) * (1f - t);
+
+                viewTransform.localScale = Vector3.Lerp(startScale, targetScale, easeOut);
+                yield return null;
+            }
+
+            if (ownerTank != null && ownerTank.View != null)
+            {
+                ownerTank.View.transform.localScale = targetScale;
+            }
+        }
+
+        private IEnumerator AnimateRoarBurst()
+        {
+            if (visualRoarBurst == null) yield break;
+
+            visualRoarBurst.transform.localPosition = Vector3.zero;
+            visualRoarBurst.transform.localScale = burstInitialScale;
+            if (burstRenderer != null)
+            {
+                burstRenderer.color = burstInitialColor;
+            }
+            visualRoarBurst.SetActive(true);
+
+            Vector3 startScale = burstInitialScale;
+            Vector3 targetScale = burstInitialScale * 1.5f;
+            float dur = 0.45f;
+            float elapsed = 0f;
+
+            while (elapsed < dur)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / dur);
+
+                visualRoarBurst.transform.localScale = Vector3.Lerp(startScale, targetScale, t);
+
+                if (burstRenderer != null)
+                {
+                    Color c = burstInitialColor;
+                    c.a = Mathf.Lerp(burstInitialColor.a, 0f, t);
+                    burstRenderer.color = c;
+                }
+
+                yield return null;
+            }
+
+            visualRoarBurst.transform.localScale = burstInitialScale;
+            if (burstRenderer != null)
+            {
+                burstRenderer.color = burstInitialColor;
+            }
+            visualRoarBurst.SetActive(false);
+        }
+
+        private IEnumerator AnimateScreenShake(float dur, float magnitude)
+        {
+            Camera cam = Camera.main;
+            if (cam == null) yield break;
+
+            Transform camTransform = cam.transform;
+            Vector3 originalCamPos = camTransform.position;
+            float elapsed = 0f;
+
+            while (elapsed < dur)
+            {
+                if (cam == null) yield break;
+
+                elapsed += Time.deltaTime;
+                float progress = Mathf.Clamp01(elapsed / dur);
+                float strength = (1f - progress) * magnitude;
+
+                Vector2 offset = UnityEngine.Random.insideUnitCircle * strength;
+                camTransform.position = new Vector3(originalCamPos.x + offset.x, originalCamPos.y + offset.y, originalCamPos.z);
+                yield return null;
+            }
+
+            if (cam != null)
+            {
+                camTransform.position = originalCamPos;
+            }
+        }
+
+        private void FinishForm()
+        {
+            isFormActive = false;
+            remainingTime = 0f;
+
+            // Gỡ bỏ chỉ số buff/debuff
+            RemoveFormBonus();
+
+            // Thu nhỏ View của xe tăng về lại kích thước ban đầu
+            if (ownerTank != null && ownerTank.View != null)
+            {
+                if (viewScaleCoroutine != null) StopCoroutine(viewScaleCoroutine);
+                viewScaleCoroutine = StartCoroutine(AnimateViewScale(ownerTank.View.transform.localScale, originalViewScale, transformTransitionDuration));
+            }
+
+            // Tắt linh ảnh đầu rồng
+            if (visualDragonSpirit != null)
+            {
+                visualDragonSpirit.transform.localScale = dragonInitialScale;
+                visualDragonSpirit.SetActive(false);
+            }
+
+            if (visualRoarBurst != null)
+            {
+                visualRoarBurst.transform.localScale = burstInitialScale;
+                visualRoarBurst.SetActive(false);
+            }
+
+            OnFormStateChange?.Invoke(false);
+        }
+
+        /// <summary>
+        /// Đặt lại toàn bộ trạng thái runtime của Dạng Thủy Quái về mặc định.
+        /// CHỈ reset state: không phát event, không tắt GameObject.
+        /// Dùng chung cho CancelForm (kết thúc trong trận) và Clear (dọn dẹp khi tái sử dụng).
+        /// </summary>
+        private void ResetRuntimeState()
+        {
+            StopAllCoroutines();
+            viewScaleCoroutine = null;
+            burstCoroutine = null;
+            shakeCoroutine = null;
+
+            if (isFormActive)
+            {
+                RemoveFormBonus();
+            }
+
+            isFormActive = false;
+            remainingTime = 0f;
+
+            if (ownerTank != null && ownerTank.View != null && originalViewScale != Vector3.zero)
+            {
+                ownerTank.View.transform.localScale = originalViewScale;
+            }
+
+            if (visualDragonSpirit != null)
+            {
+                visualDragonSpirit.transform.localScale = dragonInitialScale;
+                visualDragonSpirit.SetActive(false);
+            }
+
+            if (visualRoarBurst != null)
+            {
+                visualRoarBurst.transform.localScale = burstInitialScale;
+                visualRoarBurst.SetActive(false);
+            }
+        }
+
+        /// <summary>
+        /// Hủy bỏ dạng thủy quái khi xe tử trận hoặc tắt game.
+        /// </summary>
+        public void CancelForm()
+        {
+            ResetRuntimeState();
+            gameObject.SetActive(false);
+            OnFormStateChange?.Invoke(false);
+        }
+
+        /// <summary>
+        /// Dọn dẹp để tái sử dụng: reset state và gỡ owner.
+        /// Không phát event, không tắt GameObject, KHÔNG xoá subscriber —
+        /// người nghe tự gỡ đăng ký của mình trong OnDisable/OnDestroy.
+        /// Initialize gọi hàm này trước tiên.
+        /// </summary>
+        public void Clear()
+        {
+            ResetRuntimeState();
+            ownerTank = null;
+        }
+
+        private void OnDisable()
+        {
+            CancelForm();
+        }
+
+        private void OnDestroy()
+        {
+            CancelForm();
+        }
+
+        private void OnValidate()
+        {
+            duration = Mathf.Max(1.0f, duration);
+            bonusDefense = Mathf.Max(0f, bonusDefense);
+            bonusMaxHealthRatio = Mathf.Max(0f, bonusMaxHealthRatio);
+            healInterval = Mathf.Max(0.05f, healInterval);
+            healMaxHealthRatio = Mathf.Max(0f, healMaxHealthRatio);
+            transformTransitionDuration = Mathf.Max(0.05f, transformTransitionDuration);
+            roarShakeDuration = Mathf.Max(0.05f, roarShakeDuration);
+            roarShakeMagnitude = Mathf.Max(0.01f, roarShakeMagnitude);
+        }
+    }
+}

@@ -182,6 +182,22 @@ namespace IronWasteland.Enemies
             Debug.Log($"[{nameof(EliteEnemyBrain)}] Boss thi trien ky nang suy yeu/huy diet len nguoi choi!", this);
         }
 
+        /// <summary>
+        /// Kẻ địch Tinh anh luôn được nhận diện là Elite cho các kỹ năng rẽ nhánh hành vi.
+        /// </summary>
+        public override bool IsElite => true;
+
+        /// <summary>
+        /// Tinh anh chỉ miễn nhiễm khống chế CỨNG (Root/Stun) theo GDD.
+        /// Các hiệu ứng mềm như Slow vẫn có tác dụng để kỹ năng như Water Bubble
+        /// gây sát thương + làm chậm thay vì nhốt.
+        /// </summary>
+        public override bool IsImmuneToCrowdControl(CrowdControlType type)
+        {
+            return IsCrowdControlImmune
+                   && (type == CrowdControlType.Root || type == CrowdControlType.Stun);
+        }
+
         protected override void OnCrowdControlResisted(CrowdControlType type, float strength)
         {
             Debug.Log($"[{DisplayName}] Khang hieu ung khong che {type}!");
