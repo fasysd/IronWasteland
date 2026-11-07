@@ -134,6 +134,16 @@ namespace IronWasteland.Tanks.WallTitan
             if (!m_Initialized || m_HasHit)
                 return;
 
+            // Chạm đúng collider kẻ địch: xử lý ngay thay vì luôn đợi 0.05s.
+            EnemyBrain direct = ResolveEnemy(other);
+            if (direct != null)
+            {
+                Hit(direct);
+                return;
+            }
+
+            // Collider vừa chạm không phải kẻ địch: quét bù để bắt mục tiêu đã
+            // nằm sẵn trong vùng trigger ngay khi đạn xuất hiện.
             if (m_HitCheckCoroutine == null)
                 m_HitCheckCoroutine = StartCoroutine(CheckTargetsAfterDelay());
         }
@@ -148,36 +158,59 @@ namespace IronWasteland.Tanks.WallTitan
             if (!this || !gameObject.activeInHierarchy || !m_Initialized || m_HasHit)
                 yield break;
 
-            var enemies = new HashSet<EnemyBrain>();
+            // Earth Break là đòn đơn mục tiêu: chọn enemy gần nhất thay vì đánh
+            // tất cả enemy đang overlap (trước đây một phát có thể trúng nhiều con).
+            EnemyBrain nearest = FindNearestEnemy();
+            if (nearest != null)
+                Hit(nearest);
+        }
 
-            foreach (Collider2D collider in m_OwnerRef.GetTriggerColliders())
-            {
-                if (collider == null)
-                    continue;
-
-                ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collider);
-                if (targetRef == null)
-                    continue;
-
-                EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
-                if (enemy != null)
-                    enemies.Add(enemy);
-            }
-
-            if (enemies.Count == 0)
-                yield break;
+        private void Hit(EnemyBrain enemy)
+        {
+            if (enemy == null || m_HasHit)
+                return;
 
             m_HasHit = true;
 
             float travelDistance = Vector2.Distance(m_SpawnPosition, transform.position);
-
-            foreach (EnemyBrain enemy in enemies)
-            {
-                if (enemy != null)
-                    TargetFound?.Invoke(this, enemy, travelDistance);
-            }
+            TargetFound?.Invoke(this, enemy, travelDistance);
 
             FinishProjectile();
+        }
+
+        private EnemyBrain FindNearestEnemy()
+        {
+            if (m_OwnerRef == null)
+                return null;
+
+            EnemyBrain nearest = null;
+            float bestSqrDistance = float.MaxValue;
+            Vector2 selfPosition = transform.position;
+
+            foreach (Collider2D collider in m_OwnerRef.GetTriggerColliders())
+            {
+                EnemyBrain enemy = ResolveEnemy(collider);
+                if (enemy == null)
+                    continue;
+
+                float sqrDistance = ((Vector2)enemy.transform.position - selfPosition).sqrMagnitude;
+                if (sqrDistance < bestSqrDistance)
+                {
+                    bestSqrDistance = sqrDistance;
+                    nearest = enemy;
+                }
+            }
+
+            return nearest;
+        }
+
+        private static EnemyBrain ResolveEnemy(Collider2D collider)
+        {
+            if (collider == null)
+                return null;
+
+            ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collider);
+            return targetRef != null ? targetRef.GetOwner<EnemyBrain>() : null;
         }
 
         private void FinishProjectile()

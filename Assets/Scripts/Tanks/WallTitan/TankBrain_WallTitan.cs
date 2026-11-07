@@ -131,6 +131,10 @@ namespace IronWasteland.Tanks.WallTitan
         private Coroutine m_StoneFortressCoroutine;
         private Coroutine m_ImmovableTitanCoroutine;
 
+        /// <summary>Đã đổi nhánh bằng Test API/Skill Arena hay chưa (override context).</summary>
+        private bool m_Option1BranchOverridden;
+        private bool m_Option2BranchOverridden;
+
         #region Cooldown
         protected override float GetBaseCooldown(int index)
         {
@@ -163,16 +167,25 @@ namespace IronWasteland.Tanks.WallTitan
             }
         }
 
+        /// <summary>
+        /// Nhánh kỹ năng tùy chọn 1. Context lấy từ TankDefinition là nguồn chuẩn và
+        /// 0..2 đều là ID hợp lệ (0 = Stone Fortress), không dùng 0 làm sentinel nữa.
+        /// Khi test/arena đổi nhánh lúc chạy thì override được ưu tiên.
+        /// </summary>
         private int ResolveOption1Branch()
         {
-            int fromContext = Context.OptionSkill1;
-            return fromContext != 0 ? fromContext : optionSkill1Branch;
+            if (m_Option1BranchOverridden)
+                return Mathf.Clamp(optionSkill1Branch, 0, 2);
+
+            return Mathf.Clamp(Context.OptionSkill1, 0, 2);
         }
 
         private int ResolveOption2Branch()
         {
-            int fromContext = Context.OptionSkill2;
-            return fromContext != 0 ? fromContext : optionSkill2Branch;
+            if (m_Option2BranchOverridden)
+                return Mathf.Clamp(optionSkill2Branch, 0, 2);
+
+            return Mathf.Clamp(Context.OptionSkill2, 0, 2);
         }
 
         /// <summary>
@@ -206,6 +219,13 @@ namespace IronWasteland.Tanks.WallTitan
                     return 0f;
             }
         }
+
+        /// <summary>
+        /// GDD: Earth Break chỉ hồi EN khi TRÚNG mục tiêu (+10 trong OnEarthBreakTargetFound),
+        /// không hồi lúc bấm. Lớp cha cộng 10 EN ngay khi dùng slot 0 nên phải chặn tại đây,
+        /// nếu không mỗi phát trúng sẽ hồi 20 EN và bắn trượt vẫn được 10 EN.
+        /// </summary>
+        protected override float GetSkillEnergyGain(int index) => 0f;
         #endregion
 
         [Header("VFX (Assets/Art/Tank/VFX/WallTitan)")]
@@ -932,20 +952,22 @@ namespace IronWasteland.Tanks.WallTitan
         #region Test API (Skill Arena)
         public int Option1Branch
         {
-            get => optionSkill1Branch;
+            get => ResolveOption1Branch();
             set
             {
                 optionSkill1Branch = Mathf.Clamp(value, 0, 2);
+                m_Option1BranchOverridden = true;
                 ResetSkillCooldown(SkillOption1Index);
             }
         }
 
         public int Option2Branch
         {
-            get => optionSkill2Branch;
+            get => ResolveOption2Branch();
             set
             {
                 optionSkill2Branch = Mathf.Clamp(value, 0, 2);
+                m_Option2BranchOverridden = true;
                 ResetSkillCooldown(SkillOption2Index);
             }
         }
@@ -958,7 +980,7 @@ namespace IronWasteland.Tanks.WallTitan
                 case SkillEarthWallIndex: return "Earth Wall";
 
                 case SkillOption1Index:
-                    switch (optionSkill1Branch)
+                    switch (ResolveOption1Branch())
                     {
                         case 0: return "Stone Fortress";
                         case 1: return "Guardian Wall";
@@ -966,7 +988,7 @@ namespace IronWasteland.Tanks.WallTitan
                     }
 
                 case SkillOption2Index:
-                    switch (optionSkill2Branch)
+                    switch (ResolveOption2Branch())
                     {
                         case 0: return "Immovable Titan";
                         case 1: return "Earth Guardian";
