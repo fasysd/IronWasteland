@@ -425,7 +425,10 @@ namespace IronWasteland.Tanks.RedNova
             if (enemy == null)
                 return;
 
-            ApplySkillDamage(enemy, CalculateRawDamage(novaShotDamageMultiplier), skill.transform.position);
+            // Nova Rush: đòn kế tiếp được cộng thêm ATK (GDD: +200%).
+            float rushBonus = m_HasNovaRushEmpoweredShot ? novaRushBonusAttackPercent : 0f;
+
+            ApplySkillDamage(enemy, CalculateRawDamage(novaShotDamageMultiplier, rushBonus), skill.transform.position);
             GainEnergy(novaShotEnergyGain);
         }
 
@@ -492,7 +495,8 @@ namespace IronWasteland.Tanks.RedNova
             if (enemy == null)
                 return;
 
-            ApplySkillDamage(enemy, CalculateRawDamage(tripleNovaDamageMultiplier), skill.transform.position);
+            float rushBonus = m_HasNovaRushEmpoweredShot ? novaRushBonusAttackPercent : 0f;
+            ApplySkillDamage(enemy, CalculateRawDamage(tripleNovaDamageMultiplier, rushBonus), skill.transform.position);
         }
         #endregion
 
