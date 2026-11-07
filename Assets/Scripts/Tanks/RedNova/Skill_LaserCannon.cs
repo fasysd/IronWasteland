@@ -30,6 +30,9 @@ namespace IronWasteland.Tanks.RedNova
         private Coroutine m_BeamCoroutine;
         private Action<Skill_LaserCannon> m_ReturnToPool;
 
+        /// <summary>Enemy đã ăn sát thương trong phát laser hiện tại (chống trùng).</summary>
+        private readonly HashSet<EnemyBrain> m_HitEnemies = new HashSet<EnemyBrain>();
+
         public ColliderOwnerRef ColliderRef => m_OwnerRef;
 
         private void Awake()
@@ -59,6 +62,9 @@ namespace IronWasteland.Tanks.RedNova
             m_Initialized = false;
             m_ReturnToPool = null;
             TargetFound = null;
+
+            // Mỗi phát laser chỉ gây sát thương một lần cho mỗi mục tiêu.
+            m_HitEnemies.Clear();
         }
 
         public void Initialize(
@@ -176,8 +182,13 @@ namespace IronWasteland.Tanks.RedNova
 
             foreach (EnemyBrain enemy in enemies)
             {
-                if (enemy != null)
-                    TargetFound?.Invoke(this, enemy);
+                if (enemy == null || m_HitEnemies.Contains(enemy))
+                    continue;
+
+                // PierceTargets chạy 2 lần (ngay + sau hitCheckDelay); set này chặn
+                // việc một enemy ăn sát thương 2 lần trong cùng một phát laser.
+                m_HitEnemies.Add(enemy);
+                TargetFound?.Invoke(this, enemy);
             }
         }
 
