@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 3e11bcfd257f4c349afa5e328b87bac9, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0.36862746}
   m_FlipX: 0
   m_FlipY: 0
@@ -91,7 +91,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
 --- !u!114 &2490352363854650707
@@ -106,8 +106,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ddeb7f36a70f6f40bb206bf2117d8a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  linkProjectilePrefab: {fileID: -9213944568594606525, guid: 524fd4e3411ec6d4f8cf30539f531d31, type: 3}
-  rapidFireInterval: 0.15
+  segments: 24
+  ropeWidth: 0.18
+  waveAmplitude: 0.25
+  waveFrequency: 1.5
+  waveSpeed: 4
+  widthBreathing: 0.15
+  fadeOutTime: 0.5
+  ropeColor: {r: 0.55, g: 0.95, b: 1, a: 0.5}
+  sparkleColor: {r: 1, g: 1, b: 1, a: 0.95}
+  sparkleSpeed: 6
+  pulsePrefab: {fileID: 0}
+  healBurstPrefab: {fileID: 0}
+  pulseTravelTime: 0.35
+  maxPulses: 8
+  burstLifetime: 2
+  pulseColor: {r: 0.7, g: 1, b: 1, a: 1}
+  pulseWidth: 0.35
+  pulseTrailTime: 0.3
 --- !u!61 &257137886773016002
 BoxCollider2D:
   m_ObjectHideFlags: 0

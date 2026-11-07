@@ -1,126 +1,87 @@
-﻿using System.Collections;
+﻿using IronWasteland.Core.Effects;
 using UnityEngine;
 
 namespace IronWasteland.Tanks.WaterB
 {
+    /// <summary>
+    /// Bubble Shield (GDD): khiên = 120% ATK + 10% Giới hạn máu, duy trì 4s.
+    /// Khi khiên vỡ HOẶC hết thời gian -> hồi máu cho mục tiêu (100% ATK + 5% Giới hạn máu).
+    ///
+    /// Phần khiên thật do TankBrain.AddShield() (ShieldEffect) xử lý: hấp thụ sát thương, hết hạn, cộng dồn nhiều lớp...
+    /// Component này chỉ làm 2 việc: hiển thị hình bong bóng bám theo xe, và hồi máu khi lớp khiên của nó bị gỡ.
+    /// </summary>
     [DisallowMultipleComponent]
     public class WaterB_BubbleShield : MonoBehaviour
     {
         [Header("Visual References")]
         [SerializeField] private SpriteRenderer shieldSpriteRenderer;
 
-        private Transform m_TargetTransform;
-        private TankBrain m_TargetTank;
-        private float m_ShieldCapacity;
-        private float m_Duration;
+        private TankBrain_WaterB m_Caster;
+        private TankBrain m_Target;
         private float m_HealOnBreak;
-        private bool m_IsActive;
+        private string m_EffectId;
+        private bool m_Finished;
 
-        private const string ShieldBonusKey = "BubbleShield_DefenseBonus";
-
-        public void Initialize(Transform target, float capacity, float duration, float healOnBreak, float defenseBonusAmount = 0.2f)
+        public void Initialize(TankBrain_WaterB caster, TankBrain target, float shieldAmount, float duration, float healOnBreak)
         {
-            m_TargetTransform = target;
-            m_TargetTank = target.GetComponent<TankBrain>();
-            m_ShieldCapacity = capacity;
-            m_Duration = duration > 0f ? duration : 5f;
-            m_HealOnBreak = healOnBreak;
-            m_IsActive = true;
-
-            if (shieldSpriteRenderer == null)
+            if (target == null || shieldAmount <= 0f)
             {
-                shieldSpriteRenderer = GetComponent<SpriteRenderer>();
-            }
-
-            // Gắn khiên đi theo xe tăng mục tiêu
-            transform.position = target.position;
-            transform.SetParent(target);
-
-            // 1. Tăng chỉ số Defense thêm 0.2 (+20%)
-            if (m_TargetTank != null)
-            {
-                TankStats bonus = TankStats.Zeroed();
-                bonus.Defense = defenseBonusAmount;
-                m_TargetTank.AddBonusStats(ShieldBonusKey, bonus);
-                Debug.Log($"[BubbleShield] Đã cộng thêm {defenseBonusAmount * 100}% Defense cho {m_TargetTank.name}");
-            }
-
-            // Bắt đầu đếm ngược thời gian duy trì khiên bằng Coroutine an toàn
-            StartCoroutine(ShieldTimerRoutine());
-        }
-
-        private IEnumerator ShieldTimerRoutine()
-        {
-            yield return new WaitForSeconds(m_Duration);
-            BreakShield();
-        }
-
-        private void LateUpdate()
-        {
-            if (!m_IsActive || m_TargetTransform == null)
-            {
+                Destroy(gameObject);
                 return;
             }
 
-            transform.position = m_TargetTransform.position;
-        }
+            m_Caster = caster;
+            m_Target = target;
+            m_HealOnBreak = healOnBreak;
+            m_EffectId = $"WaterB_BubbleShield_{System.Guid.NewGuid():N}"; // mỗi lần cast là 1 lớp khiên riêng
 
-        public void TakeShieldDamage(float damage)
-        {
-            if (!m_IsActive) return;
+            if (shieldSpriteRenderer == null) shieldSpriteRenderer = GetComponent<SpriteRenderer>();
 
-            m_ShieldCapacity -= damage;
-            Debug.Log($"[BubbleShield] Khiên chịu {damage} sát thương. Độ bền còn lại: {m_ShieldCapacity}");
+            // Bám theo xe được bảo vệ
+            transform.SetParent(target.transform, false);
+            transform.localPosition = Vector3.zero;
 
-            if (m_ShieldCapacity <= 0f)
+            // Đăng ký TRƯỚC khi thêm khiên để không bỏ lỡ sự kiện gỡ khiên
+            m_Target.OnEffectRemovedEvent += HandleEffectRemoved;
+
+            ShieldEffect shield = m_Target.AddShield(
+                shieldAmount,
+                duration > 0f ? duration : 4f,
+                m_EffectId,
+                caster,
+                "Bubble Shield");
+
+            if (shield == null)
             {
-                BreakShield();
+                Cleanup();
+                Destroy(gameObject);
             }
         }
 
-        private void BreakShield()
+        /// <summary>TankBrain phát sự kiện này khi khiên bị phá hết, hết hạn hoặc bị xóa.</summary>
+        private void HandleEffectRemoved(StatusEffect effect)
         {
-            if (!m_IsActive) return;
-            m_IsActive = false;
+            if (m_Finished || effect == null || effect.EffectId != m_EffectId) return;
+            m_Finished = true;
 
-            if (m_TargetTank != null)
+            if (m_Target != null && m_HealOnBreak > 0f)
             {
-                // 2. Gỡ bỏ chỉ số Defense cộng thêm khi khiên vỡ/hết hạn
-                m_TargetTank.RemoveBonusStats(ShieldBonusKey);
-                Debug.Log($"[BubbleShield] Đã gỡ bỏ chỉ số Defense của khiên khỏi {m_TargetTank.name}");
-
-                // 3. Thực hiện hồi máu trực tiếp (Thử gọi trực tiếp hàm Heal hoặc qua Reflection nếu cần)
-                ExecuteHealing();
+                if (m_Caster != null) m_Caster.HealAlly(m_Target, m_HealOnBreak);
+                else m_Target.Heal(m_HealOnBreak, false);
             }
 
+            Cleanup();
             Destroy(gameObject);
         }
 
-        private void ExecuteHealing()
+        private void Cleanup()
         {
-            if (m_TargetTank == null) return;
+            if (m_Target != null) m_Target.OnEffectRemovedEvent -= HandleEffectRemoved;
+        }
 
-            bool healSuccess = false;
-
-            // Thử gọi phương thức Heal tiêu chuẩn nếu TankBrain có hỗ trợ
-            System.Reflection.MethodInfo healMethod = m_TargetTank.GetType().GetMethod("Heal", new System.Type[] { typeof(float) });
-            if (healMethod != null)
-            {
-                healMethod.Invoke(m_TargetTank, new object[] { m_HealOnBreak });
-                healSuccess = true;
-            }
-            else
-            {
-                // Fallback dự phòng: Nếu TankBrain của bạn đặt tên hàm hồi máu khác, hãy gọi thông qua phương thức cộng máu công khai tương đương
-                // Hoặc nếu TankStats có MaxHealth, ta có thể log ra để kiểm tra
-                Debug.LogWarning("[BubbleShield] Không tìm thấy method Heal(float) công khai trong TankBrain!");
-            }
-
-            if (healSuccess)
-            {
-                TextDamageManager.Instance?.Show(m_HealOnBreak, m_TargetTransform.position);
-                Debug.Log($"[BubbleShield] Khiên vỡ/hết hạn! Hồi phục thành công {m_HealOnBreak} HP cho {m_TargetTank.name}");
-            }
+        private void OnDestroy()
+        {
+            Cleanup();
         }
     }
 }

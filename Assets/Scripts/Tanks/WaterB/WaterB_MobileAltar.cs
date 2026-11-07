@@ -1,154 +1,144 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace IronWasteland.Tanks.WaterB
 {
+    /// <summary>
+    /// Mobile Altar (GDD): Water B không thể tấn công trong thời gian này, nhưng cứ mỗi 2s hồi máu
+    /// (50% ATK + 2% Giới hạn máu) và tạo khiên (80% ATK + 5% Giới hạn máu, kéo dài 5s) cho mọi đồng minh xung quanh.
+    /// Đồng minh đang có khiên của đài tế thì khiên được đặt lại giá trị và thời gian duy trì.
+    ///
+    /// Vùng ảnh hưởng = CircleCollider2D (Is Trigger) đã cài trên prefab.
+    /// Khiên đi qua TankBrain.AddShield (ShieldEffect). Hồi máu đi qua TankBrain_WaterB.HealAlly
+    /// (Heal(amount,false) nên Shared Healing vẫn kích hoạt).
+    /// </summary>
     [RequireComponent(typeof(CircleCollider2D))]
     [RequireComponent(typeof(Rigidbody2D))]
     [DisallowMultipleComponent]
     public class WaterB_MobileAltar : MonoBehaviour
     {
-        [Header("Altar Settings")]
-        [SerializeField] private float altarDuration = 8f;
-        [SerializeField] private float healInterval = 1f;       // Khoảng thời gian giữa mỗi lần hồi máu (giây)
-        [SerializeField] private float healPerTick = 10f;       // Lượng HP hồi mỗi nhịp (10 HP)
-        [SerializeField] private float defenseBoostMultiplier = 3.0f; // Tăng 300% giáp/khiên
+        private TankBrain_WaterB m_Owner;
+        private float m_Duration;
+        private float m_Interval;
+        private float m_HealPerTick;
+        private float m_ShieldAmount;
+        private float m_ShieldDuration;
+        private Action m_OnFinished;
+        private string m_ShieldId;
+        private bool m_Finished;
 
-        private Transform m_OwnerTransform;
-        private TankBrain m_OwnerTank;
-        private bool m_IsActive = false;
+        private readonly Dictionary<TankBrain, int> m_Inside = new Dictionary<TankBrain, int>();
+        private readonly List<TankBrain> m_Snapshot = new List<TankBrain>();
 
-        private readonly HashSet<TankBrain> m_InsideTanks = new HashSet<TankBrain>();
-        private readonly Dictionary<TankBrain, string> m_TankBonusKeys = new Dictionary<TankBrain, string>();
-        private const string AltarDefenseKey = "MobileAltar_DefenseBoost";
-
-        public void Initialize(Transform ownerTransform, float duration, float interval, float healAmount)
+        public void Initialize(TankBrain_WaterB owner, float duration, float interval,
+                               float healPerTick, float shieldAmount, float shieldDuration,
+                               Action onFinished)
         {
-            m_OwnerTransform = ownerTransform;
-            m_OwnerTank = ownerTransform != null ? ownerTransform.GetComponent<TankBrain>() : null;
+            m_Owner = owner;
+            m_Duration = duration > 0f ? duration : 10f;
+            m_Interval = interval > 0f ? interval : 2f;
+            m_HealPerTick = healPerTick;
+            m_ShieldAmount = shieldAmount;
+            m_ShieldDuration = shieldDuration;
+            m_OnFinished = onFinished;
 
-            if (duration > 0f) altarDuration = duration;
-            if (interval > 0f) healInterval = interval;
-            if (healAmount > 0f) healPerTick = healAmount;
+            // Cùng 1 Id cho mọi khiên của đài tế (theo Water B) -> luôn là 1 lớp khiên duy nhất trên mỗi đồng minh
+            m_ShieldId = $"WaterB_MobileAltar_Shield_{owner.InstanceKey}";
 
-            m_IsActive = true;
-
-            // Đảm bảo Rigidbody2D ở dạng Kinematic để không bị tác động vật lý đẩy đi
             Rigidbody2D rb = GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                rb.bodyType = RigidbodyType2D.Kinematic;
-            }
+            if (rb != null) rb.bodyType = RigidbodyType2D.Kinematic;
 
-            // Bắt đầu chuỗi hoạt động của đài tế (hồi máu định kỳ và bám theo Water B)
             StartCoroutine(AltarRoutine());
         }
 
-        private void Update()
+        private void LateUpdate()
         {
-            // Đài tế di chuyển bám theo chân Water B
-            if (m_OwnerTransform != null)
-            {
-                transform.position = m_OwnerTransform.position;
-            }
+            // Đài tế bám theo Water B
+            if (m_Owner != null) transform.position = m_Owner.transform.position;
         }
 
         private IEnumerator AltarRoutine()
         {
-            float elapsed = 0f;
-            WaitForSeconds waitInterval = new WaitForSeconds(healInterval);
+            float endTime = Time.time + m_Duration;
+            var wait = new WaitForSeconds(m_Interval);
 
-            while (elapsed < altarDuration)
+            while (Time.time < endTime)
             {
-                elapsed += healInterval;
+                if (m_Owner == null || !m_Owner.IsAlive) break;
 
-                // Thực hiện hồi máu định kỳ cho tất cả mục tiêu bên trong vùng ảnh hưởng
-                TriggerPeriodicHeal();
-
-                yield return waitInterval;
+                PulseHealAndShield();
+                yield return wait;
             }
 
-            // Hết thời gian, tự hủy đài tế
-            CleanupAndDestroy();
-        }
-
-        private void TriggerPeriodicHeal()
-        {
-            if (!m_IsActive) return;
-
-            foreach (var tank in m_InsideTanks)
-            {
-                if (tank != null)
-                {
-                    tank.Heal(healPerTick);
-                    TextDamageManager.Instance?.Show(healPerTick, tank.transform.position);
-                    Debug.Log($"[MobileAltar] Hồi phục {healPerTick} HP cho {tank.name}");
-                }
-            }
+            Finish();
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (!m_IsActive) return;
+            if (m_Finished) return;
 
             TankBrain tank = collision.GetComponentInParent<TankBrain>();
-            if (tank != null && !m_InsideTanks.Contains(tank))
-            {
-                m_InsideTanks.Add(tank);
+            if (tank == null) return;
 
-                string bonusKey = AltarDefenseKey + "_" + tank.GetHashCode();
-                m_TankBonusKeys[tank] = bonusKey;
-
-                // Tăng 300% Defense/Khiên
-                TankStats bonus = TankStats.Zeroed();
-                bonus.Defense = defenseBoostMultiplier;
-                tank.AddBonusStats(bonusKey, bonus);
-
-                Debug.Log($"[MobileAltar] Xe tăng {tank.name} vào vùng ảnh hưởng, nhận +300% Defense.");
-            }
+            m_Inside.TryGetValue(tank, out int count);
+            m_Inside[tank] = count + 1;
         }
 
         private void OnTriggerExit2D(Collider2D collision)
         {
             TankBrain tank = collision.GetComponentInParent<TankBrain>();
-            if (tank != null && m_InsideTanks.Contains(tank))
+            if (tank == null || !m_Inside.TryGetValue(tank, out int count)) return;
+
+            count--;
+            if (count <= 0) m_Inside.Remove(tank);
+            else m_Inside[tank] = count;
+        }
+
+        private void PulseHealAndShield()
+        {
+            // Duyệt trên bản sao: hồi máu/khiên có thể kích hoạt sự kiện làm thay đổi tập hợp
+            m_Snapshot.Clear();
+            foreach (var kv in m_Inside)
             {
-                RemoveTankBuff(tank);
-                m_InsideTanks.Remove(tank);
-                Debug.Log($"[MobileAltar] Xe tăng {tank.name} rời khỏi vùng ảnh hưởng.");
+                if (kv.Key != null && kv.Key.IsAlive) m_Snapshot.Add(kv.Key);
+            }
+
+            for (int i = 0; i < m_Snapshot.Count; i++)
+            {
+                TankBrain tank = m_Snapshot[i];
+
+                // Hồi máu
+                m_Owner.HealAlly(tank, m_HealPerTick);
+
+                // Khiên: gỡ khiên cũ của đài tế (nếu có) rồi tạo lại => đặt lại cả giá trị lẫn thời gian
+                tank.RemoveEffect(m_ShieldId);
+                tank.AddShield(m_ShieldAmount, m_ShieldDuration, m_ShieldId, m_Owner, "Mobile Altar");
             }
         }
 
-        private void RemoveTankBuff(TankBrain tank)
+        private void Finish()
         {
-            if (tank != null && m_TankBonusKeys.TryGetValue(tank, out string key))
-            {
-                tank.RemoveBonusStats(key);
-                m_TankBonusKeys.Remove(tank);
-            }
-        }
+            if (m_Finished) return;
+            m_Finished = true;
 
-        private void CleanupAndDestroy()
-        {
-            if (!m_IsActive) return;
-            m_IsActive = false;
-
-            // Xóa sạch buff khiên/giáp khi đài tế kết thúc
-            foreach (var tank in m_InsideTanks)
-            {
-                RemoveTankBuff(tank);
-            }
-
-            m_InsideTanks.Clear();
-            m_TankBonusKeys.Clear();
+            m_OnFinished?.Invoke(); // báo Water B được phép tấn công lại
+            m_OnFinished = null;
+            m_Inside.Clear();
 
             Destroy(gameObject);
         }
 
         private void OnDestroy()
         {
-            CleanupAndDestroy();
+            // Dự phòng: bị xóa đột ngột vẫn trả lại khả năng tấn công cho Water B
+            if (!m_Finished)
+            {
+                m_Finished = true;
+                m_OnFinished?.Invoke();
+                m_OnFinished = null;
+            }
         }
     }
 }

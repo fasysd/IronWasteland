@@ -6,6 +6,11 @@ using Random = UnityEngine.Random;
 
 namespace IronWasteland.Tanks.GreenFox
 {
+    /// <summary>
+    /// Fox Fang (GDD): đạn ma thuật, sát thương 100% ATK. 25% trói chân 1s;
+    /// Tinh anh không bị trói chân mà nhận thêm 120% ATK. Hồi năng lượng/dấu ấn/thiêu đốt do TankBrain_GreenFox xử lý.
+    /// Va chạm qua trigger.
+    /// </summary>
     [DisallowMultipleComponent]
     public class GreenFox_Skill0 : MonoBehaviour
     {
@@ -17,19 +22,22 @@ namespace IronWasteland.Tanks.GreenFox
         [Header("Proc Settings (Trói chân / Sát thương thêm)")]
         [SerializeField, Range(0f, 100f)] private float procChancePercent = 25f;
         [SerializeField, Min(0.1f)] private float rootDuration = 1f;
-        [SerializeField, Min(0f)] private float eliteBonusDamagePercent = 20f; // Elite: +20% ATK thay cho trói chân
+        [SerializeField, Min(0f)] private float eliteBonusDamagePercent = 120f; // Tinh anh: +120% ATK thay cho trói chân
         [SerializeField] private GameObject rootEffectPrefab;
 
         private Action<GreenFox_Skill0> m_ReturnToPool;
         private float m_Damage;
         private TankBrain_GreenFox m_OwnerTank;
+        private bool m_Consumed;
 
+        /// <param name="damage">Sát thương cuối đã tính (100% ATK * (1 + tỉ lệ sát thương)).</param>
         public void Initialize(TankBrain_GreenFox owner, Vector2 spawnPos, Vector2 direction, float damage, Action<GreenFox_Skill0> returnToPool)
         {
             StopAllCoroutines();
             m_OwnerTank = owner;
             m_Damage = damage;
             m_ReturnToPool = returnToPool;
+            m_Consumed = false;
 
             transform.position = spawnPos;
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
@@ -47,14 +55,8 @@ namespace IronWasteland.Tanks.GreenFox
             while (elapsed < lifeTime)
             {
                 elapsed += Time.deltaTime;
-                if (rb != null)
-                {
-                    rb.linearVelocity = direction * projectileSpeed;
-                }
-                else
-                {
-                    transform.Translate(direction * projectileSpeed * Time.deltaTime, Space.World);
-                }
+                if (rb != null) rb.linearVelocity = direction * projectileSpeed;
+                else transform.Translate(direction * projectileSpeed * Time.deltaTime, Space.World);
                 yield return null;
             }
 
@@ -63,83 +65,48 @@ namespace IronWasteland.Tanks.GreenFox
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (other == null) return;
+            if (m_Consumed || other == null || m_OwnerTank == null) return;
 
             ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(other);
             if (targetRef == null) return;
 
             EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
-            if (enemy != null)
+            if (enemy == null) return;
+
+            m_Consumed = true;
+            Vector3 hitPos = enemy.transform.position;
+
+            // Sát thương cơ bản
+            m_OwnerTank.DamageEnemy(enemy, m_Damage, hitPos);
+
+            // 25%: thường bị trói chân, Tinh anh nhận thêm sát thương
+            if (Random.Range(0f, 100f) < procChancePercent)
             {
-                float baseAtk = m_OwnerTank != null ? m_OwnerTank.Stats.Attack : 10f;
-                float finalDamage = baseAtk * 1.0f;
-
-                // Phân biệt Elite / Normal dựa vào loại Brain (không dùng tag hay tên nữa)
-                bool isElite = enemy is EliteEnemyBrain;
-
-                // Đòn đánh thường: ai cũng nhận sát thương cơ bản
-                enemy.TakeDamage(finalDamage);
-                TextDamageManager.Instance?.Show(finalDamage, enemy.transform.position);
-
-                // 25% kích hoạt hiệu ứng: Normal bị trói chân, Elite miễn trói nên nhận thêm sát thương
-                float roll = Random.Range(0f, 100f);
-                if (roll <= procChancePercent)
+                if (enemy is EliteEnemyBrain)
                 {
-                    if (isElite)
-                    {
-                        float bonusDamage = baseAtk * eliteBonusDamagePercent / 100f;
-                        enemy.TakeDamage(bonusDamage);
-                        TextDamageManager.Instance?.Show(bonusDamage, enemy.transform.position);
-                        finalDamage += bonusDamage;
-                    }
-                    else
-                    {
-                        if (m_OwnerTank != null)
-                        {
-                            m_OwnerTank.StartCoroutine(ApplyRootEffectRoutine(enemy, rootDuration));
-                        }
-                        else
-                        {
-                            enemy.StartCoroutine(ApplyRootEffectRoutine(enemy, rootDuration));
-                        }
-
-                        if (rootEffectPrefab != null)
-                        {
-                            GameObject rootObj = Instantiate(rootEffectPrefab, enemy.transform.position, Quaternion.identity);
-                            GreenFox_RootEffect rootEffect = rootObj.GetComponent<GreenFox_RootEffect>();
-                            if (rootEffect == null)
-                            {
-                                rootEffect = rootObj.AddComponent<GreenFox_RootEffect>();
-                            }
-                            rootEffect.SetTarget(enemy, rootDuration);
-                        }
-                    }
+                    float bonus = m_OwnerTank.ScaledDamage(eliteBonusDamagePercent / 100f);
+                    m_OwnerTank.DamageEnemy(enemy, bonus, hitPos);
                 }
-
-                // Gọi hàm xử lý trúng đích chung (hồi năng lượng, kiểm tra điều kiện hồi thêm năng lượng từ mục tiêu bị đốt, kích hoạt đốt 1B)
-                if (m_OwnerTank != null)
+                else if (m_OwnerTank.RootEnemy(enemy, rootDuration))
                 {
-                    m_OwnerTank.HandleSkill0Hit(enemy, finalDamage);
+                    SpawnRootEffect(enemy);
                 }
-
-                ReturnSelf();
-                return;
             }
+
+            // Hồi năng lượng, thiêu đốt (1B), cộng dồn dấu ấn
+            m_OwnerTank.HandleSkill0Hit(enemy);
+
+            ReturnSelf();
         }
 
-        private static IEnumerator ApplyRootEffectRoutine(EnemyBrain enemy, float duration)
+        private void SpawnRootEffect(EnemyBrain enemy)
         {
-            if (enemy == null) yield break;
+            if (rootEffectPrefab == null) return;
 
-            float originalSpeed = enemy.Stats.MoveSpeed;
-            enemy.Stats.MoveSpeed = 0f;
-
-            yield return new WaitForSeconds(duration);
-
-            if (enemy != null)
-            {
-                enemy.Stats.MoveSpeed = originalSpeed;
-            }
+            GameObject rootObj = Instantiate(rootEffectPrefab, enemy.transform.position, Quaternion.identity);
+            GreenFox_RootEffect rootEffect = rootObj.GetComponent<GreenFox_RootEffect>();
+            if (rootEffect == null) rootEffect = rootObj.AddComponent<GreenFox_RootEffect>();
+            rootEffect.SetTarget(enemy, rootDuration);
         }
 
         private void ReturnSelf()
@@ -149,10 +116,7 @@ namespace IronWasteland.Tanks.GreenFox
             m_ReturnToPool = null;
             gameObject.SetActive(false);
 
-            if (returnToPool != null)
-            {
-                returnToPool(this);
-            }
+            returnToPool?.Invoke(this);
         }
 
         public void Clear()

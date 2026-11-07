@@ -81,16 +81,25 @@ MonoBehaviour:
   baseStats:
     Attack: 0
     Defense: 0
-    DamageMultiplier: 1
+    DamageRate: 0
     ArmorPenetration: 0
     MaxHealth: 0
     MaxEnergy: 0
     MoveSpeed: 0
     CooldownReduction: 0
-  bonusStats:
+  flatBonusStats:
     Attack: 0
     Defense: 0
-    DamageMultiplier: 0
+    DamageRate: 0
+    ArmorPenetration: 0
+    MaxHealth: 0
+    MaxEnergy: 0
+    MoveSpeed: 0
+    CooldownReduction: 0
+  percentBonusStats:
+    Attack: 0
+    Defense: 0
+    DamageRate: 0
     ArmorPenetration: 0
     MaxHealth: 0
     MaxEnergy: 0
@@ -106,29 +115,33 @@ MonoBehaviour:
   m_context:
     Level: 0
     IdView: 0
-    FirepowerEquipmentId: 0
-    DefenseEquipmentId: 0
-    MobilityEquipmentId: 0
+    EquipmentId: 0
     OptionSkill1: 0
     OptionSkill2: 0
-  baseHealAmount: 20
-  skill0Cooldown: 0.5
-  energyGainPerHeal: 15
+  m_EquippedAccessory: {fileID: 0}
   healingWaterPrefab: {fileID: 4484246724071856352, guid: cfb0a0efe92cae14b9f5072350eca862, type: 3}
-  shieldCapacity: 100
-  shieldDuration: 5
-  shieldHealOnBreak: 50
-  energyCostForShield: 40
+  healingCooldown: 0.6
+  healingEnergyGain: 10
+  healingAtkRatio: 0.8
+  healingMaxHpRatio: 0.01
   bubbleShieldPrefab: {fileID: 4152230224732511425, guid: 798b0f907646e1f4b9f755da62ab9c0d, type: 3}
+  shieldEnergyCost: 45
+  shieldCooldown: 9
+  shieldDuration: 5
+  shieldAtkRatio: 1.2
+  shieldMaxHpRatio: 0.1
+  shieldBreakHealAtkRatio: 1
+  shieldBreakHealMaxHpRatio: 0.05
+  shieldMaxCastRange: 12
   skill1SubDesign: {fileID: -2957460832437783227}
   skill2SubDesign: {fileID: -9026452789056875626}
-  skill1SubCooldown: 12
-  skill2SubCooldown: 10
   bubbleProtectorPrefab: {fileID: 9085398380949952740, guid: 10c965ceef4e5124b8311ca891a33920, type: 3}
+  lifeDrainStreamPrefab: {fileID: 0}
+  lifeDrainStreamCount: 2
   mobileAltarPrefab: {fileID: 1384006585347044756, guid: 0170b52e964c6aa4f9766ca4faa800f3, type: 3}
   waterTurretPrefab: {fileID: 834826092504559950, guid: 7e330e9fd294f7647ab9a9d48f550f21, type: 3}
-  energyGainPerTurretHit: 5
   maxPlacementRange: 8
+  aquaAssaultVisualPrefab: {fileID: 6277790139120650017, guid: 1b638755f71bcf44581da930cb6ac05e, type: 3}
 --- !u!114 &-2957460832437783227
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -141,17 +154,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffdd4485fc883514e99101a2d6805129, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  activeVariant: 0
-  sharedPercent: 1
-  sharedHealingLinkPrefab: {fileID: 2490352363854650707, guid: f5da3f94bad536b47b81cfe30590c8b3, type: 3}
+  sharedEnergyCost: 50
+  sharedCooldown: 12
   sharedHealingDuration: 10
+  sharedPercent: 1
   maxSelectRange: 10
-  drainPercent: 0.3
+  sharedHealingLinkPrefab: {fileID: 2490352363854650707, guid: f5da3f94bad536b47b81cfe30590c8b3, type: 3}
+  drainEnergyCost: 45
+  drainCooldown: 11
   drainDuration: 6
+  drainAttackBonusPercent: 0.25
+  drainPercent: 0.3
+  drainSearchRadius: 10
+  domeEnergyCost: 45
+  domeCooldown: 11
   domeDuration: 6
-  domeRadius: 5
-  domeHealOnEnd: 40
-  domeDefenseBonus: 1
+  domeDefenseBonus: 25
+  domeAttackBonusPercent: 0.25
+  domeHealAtkRatio: 1
+  domeHealMaxHpRatio: 0.06
 --- !u!114 &-9026452789056875626
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -164,17 +185,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fa1d39260c6cf242988db470cfa4e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  activeVariant: 1
+  altarEnergyCost: 75
+  altarCooldown: 16
   altarDuration: 8
   altarInterval: 1
-  altarHealPerTick: 5
+  altarHealAtkRatio: 0.5
+  altarHealMaxHpRatio: 0.02
+  altarShieldAtkRatio: 0.8
+  altarShieldMaxHpRatio: 0.05
+  altarShieldDuration: 5
+  turretEnergyCost: 75
+  turretCooldown: 14
   turretDuration: 10
+  turretCount: 3
   turretAttackInterval: 1.5
-  turretDamage: 15
-  energyRegenPerShot: 5
+  turretDamageAtkRatio: 0.5
+  energyRegenPerHit: 3
+  turretSpacing: 1.5
+  assaultEnergyCost: 65
+  assaultCooldown: 14
   assaultDuration: 6
-  cooldownMultiplier: 0.6
-  selfHealOnHitPercent: 0.2
+  assaultAttackBonusPercent: 0.25
+  assaultCooldownReduction: 0.2
+  assaultDamageBonus: 0.15
+  assaultArmorPenetration: 0.2
+  assaultProjectileSpeedMultiplier: 1.3
+  assaultProjectileSizeMultiplier: 1.5
 --- !u!58 &6307709474518011721
 CircleCollider2D:
   m_ObjectHideFlags: 0

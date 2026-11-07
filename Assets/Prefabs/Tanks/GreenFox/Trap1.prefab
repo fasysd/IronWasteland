@@ -142,3 +142,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2b89edbd6fb1f84d904e52de195dd82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.GreenFox.GreenFox_MagicTrap
+  explosionEffectPrefab: {fileID: 6710333050493302492, guid: 15063a101718ef14a85f2053fe6ec8da, type: 3}
+  explosionEffectLifetime: 1.5
+  eliteTriggerDelay: 2

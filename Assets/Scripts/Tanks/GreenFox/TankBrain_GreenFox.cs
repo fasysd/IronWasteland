@@ -1,69 +1,89 @@
-﻿using IronWasteland.Enemies;
+using IronWasteland.Enemies;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace IronWasteland.Tanks.GreenFox
 {
+    /// <summary>
+    /// Green Fox (DPS) - viết lại theo GDD, dùng cơ chế sẵn có của TankBrain:
+    /// - Năng lượng/hồi chiêu: GetSkillEnergyCost + GetBaseCooldown (UseSkill tự trừ năng lượng, KHÔNG trừ tay nữa)
+    /// - Buff chỉ số: AddBonusStats / RemoveBonusStats (percent cho %, flat cho cộng phẳng)
+    /// - Sát thương: Tấn công * hệ số kỹ năng * (1 + Tỉ lệ sát thương)
+    /// </summary>
     [DisallowMultipleComponent]
     public class TankBrain_GreenFox : TankBrain
     {
-        [Header("Skill 0 (Basic Attack) - Design")]
+        private const int Skill0Index = 0;
+        private const int Skill1Index = 1;
+        private const int Skill1SubIndex = 2;
+        private const int Skill2Index = 3;
+
+        private const string MarkExplosionBuffKey = "GreenFox_MarkExplosion_AttackBuff";
+
+        [Header("Skill 0 - Fox Fang")]
         [SerializeField] private GreenFox_Skill0 skill0Design;
         [SerializeField, Min(0)] private int skill0InitialPoolSize = 6;
-        [SerializeField, Min(0f)] private float skill0Damage = 15f;
         [SerializeField, Min(0.01f)] private float skill0Cooldown = 0.5f;
+        [SerializeField, Min(0f)] private float skill0EnergyGain = 10f;
+        [SerializeField, Min(0f)] private float skill0DamagePercent = 100f;      // 100% ATK
 
-        private const int Skill0Index = 0;
-        private readonly Stack<GreenFox_Skill0> m_Skill0Pool = new Stack<GreenFox_Skill0>();
-        private readonly HashSet<GreenFox_Skill0> m_AllSkill0s = new HashSet<GreenFox_Skill0>();
-
-        [Header("Skill 1 - Design (Fox Mark)")]
+        [Header("Skill 1 - Fox Mark")]
         [SerializeField] private GreenFox_Skill1 skill1Design;
         [SerializeField, Min(0)] private int initialPoolSize = 4;
-        [SerializeField, Min(0f)] private float skill1Damage = 30f;
         [SerializeField, Min(0.01f)] private float skill1Cooldown = 6f;
         [SerializeField, Min(0f)] private float skill1EnergyCost = 30f;
+        [SerializeField, Min(0.1f)] private float markLifetime = 8f;             // Thời gian tồn tại ấn
+        [SerializeField, Min(1)] private int markStacksPerAttack = 1;            // Cộng dồn mỗi đòn đánh
+        [SerializeField, Min(0f)] private float markExplosionDamagePercent = 200f; // Nổ ấn: 200% ATK
 
-        private const int Skill1Index = 1;
-
-        private readonly Stack<GreenFox_Skill1> m_SkillPool = new Stack<GreenFox_Skill1>();
-        private readonly HashSet<GreenFox_Skill1> m_AllSkills = new HashSet<GreenFox_Skill1>();
-
-        [Header("Skill 1 Sub (1A Mark Hunter / 1B Burn / 1C Trap)")]
+        [Header("Skill 1 Sub (1A Mark Hunter / 1B Burning Fox / 1C Fox Trap)")]
         [SerializeField] private GreenFox_Skill1Sub skill1SubDesign;
         [SerializeField] private Sign signPrefab;
-        [SerializeField] private GreenFox_EnergyAbsorbEffect energyAbsorbPrefab;
+        [Tooltip("1A: prefab luồng xanh chảy về Green Fox khi hạ gục (script GreenFox_KillStreamEffect). Để trống = tự tạo hiệu ứng mặc định.")]
+        [SerializeField] private GameObject killStreamPrefab;
+        [SerializeField, Min(1)] private int killStreamCount = 3;
         [SerializeField] private GreenFox_BurnEffect burnPrefab;
         [SerializeField] private GreenFox_BurnEffect skill1BEffectPrefab;
         [SerializeField] private GreenFox_MagicTrap trapPrefab;
-        private float skill1SubDynamicCooldown = 10f;
 
-        private const int Skill1SubIndex = 2;
-
-        [Header("Skill 2 Sub (2A / 2B / 2C)")]
+        [Header("Skill 2 Sub (2A Mark Explosion / 2B Fox Territory / 2C Nine-Tailed)")]
         [SerializeField] private GreenFox_Skill2Sub skill2SubDesign;
         [SerializeField] private GreenFox_Skill2 skill2ExplosionDesign;
         [SerializeField] private GreenFox_FoxTerritory territoryPrefab;
         [SerializeField] private GreenFox_NineTailedAssault nineTailedPrefab;
-        [SerializeField, Min(0f)] private float skill2BaseDamage = 40f;
-        [SerializeField, Min(0.01f)] private float skill2Cooldown = 6f;
+        [Tooltip("2C: prefab HÌNH ẢNH 9 đuôi (chỉ để hiển thị, gắn vào xe khi kích hoạt). Để trống = không hiện đuôi.")]
+        [SerializeField] private GameObject nineTailsVisualPrefab;
 
-        private const int Skill2Index = 3;
+        // Pool Fox Fang
+        private readonly Stack<GreenFox_Skill0> m_Skill0Pool = new Stack<GreenFox_Skill0>();
+        private readonly HashSet<GreenFox_Skill0> m_AllSkill0s = new HashSet<GreenFox_Skill0>();
 
-        private bool m_Is1ABuffActive = false;
+        // Pool Fox Mark
+        private readonly Stack<GreenFox_Skill1> m_SkillPool = new Stack<GreenFox_Skill1>();
+        private readonly HashSet<GreenFox_Skill1> m_AllSkills = new HashSet<GreenFox_Skill1>();
+
+        // Dấu ấn & thiêu đốt đang tồn tại (thay cho FindObjectsByType mỗi lần)
+        private readonly Dictionary<EnemyBrain, Sign> m_Signs = new Dictionary<EnemyBrain, Sign>();
+        private readonly Dictionary<EnemyBrain, GreenFox_BurnEffect> m_Burns = new Dictionary<EnemyBrain, GreenFox_BurnEffect>();
+
+        private bool m_Is1ABuffActive;
         private Coroutine m_1ABuffCoroutine;
 
-        private bool m_Is1BBuffActive = false;
+        private bool m_Is1BBuffActive;
         private Coroutine m_1BBuffCoroutine;
 
-        private bool m_Is2ABuffActive = false;
         private Coroutine m_2ABuffCoroutine;
+        private GreenFox_FoxTerritory m_ActiveTerritory;
+
+        private static FieldInfo s_CooldownField;
+
+        public bool IsMarkHunterActive => m_Is1ABuffActive;
+        public bool IsBurningFoxActive => m_Is1BBuffActive;
 
         // ------------------------------------------------------------------
-        // Chọn biến thể qua TankBrainContext (giống TankBrain_WaterB):
-        // OptionSkill1 / OptionSkill2: 0 = mặc định, 1 = biến thể 2, 2 = biến thể 3
+        // Biến thể chọn qua TankBrainContext (0 = mặc định, 1, 2)
         // ------------------------------------------------------------------
         private Skill1Variant GetSkill1Variant()
         {
@@ -85,35 +105,61 @@ namespace IronWasteland.Tanks.GreenFox
             }
         }
 
-        protected override float GetBaseCooldown(int index)
+        // ------------------------------------------------------------------
+        // Năng lượng & hồi chiêu (TankBrain.UseSkill tự áp dụng)
+        // ------------------------------------------------------------------
+        protected override float GetSkillEnergyCost(int index)
         {
-            if (index == Skill0Index) return skill0Cooldown;
-            if (index == Skill1Index) return skill1Cooldown;
-            if (index == Skill2Index)
+            switch (index)
             {
-                if (skill2SubDesign != null)
-                {
+                case Skill0Index: return 0f;
+                case Skill1Index: return skill1EnergyCost;
+                case Skill1SubIndex:
+                    if (skill1SubDesign == null) break;
+                    switch (GetSkill1Variant())
+                    {
+                        case Skill1Variant.Variant_1A: return skill1SubDesign.Buff1AEnergyCost;
+                        case Skill1Variant.Variant_1B: return skill1SubDesign.Buff1BEnergyCost;
+                        default: return skill1SubDesign.Buff1CEnergyCost;
+                    }
+                case Skill2Index:
+                    if (skill2SubDesign == null) break;
                     switch (GetSkill2Variant())
                     {
-                        case Skill2Variant.Variant_2A: return skill2SubDesign.Buff2ACooldown; // 12s
-                        case Skill2Variant.Variant_2B: return skill2SubDesign.Buff2BCooldown; // 15s
-                        case Skill2Variant.Variant_2C: return skill2SubDesign.Buff2CCooldown; // 16s
+                        case Skill2Variant.Variant_2A: return skill2SubDesign.Buff2AEnergyCost;
+                        case Skill2Variant.Variant_2B: return skill2SubDesign.Buff2BEnergyCost;
+                        default: return skill2SubDesign.Buff2CEnergyCost;
                     }
-                }
-                return skill2Cooldown;
             }
-            if (index == Skill1SubIndex)
+            return base.GetSkillEnergyCost(index);
+        }
+
+        // GDD: Fox Fang hồi năng lượng khi ĐÁNH TRÚNG (xử lý ở HandleSkill0Hit), không hồi lúc bắn
+        protected override float GetSkillEnergyGain(int index) => 0f;
+
+        protected override float GetBaseCooldown(int index)
+        {
+            switch (index)
             {
-                if (skill1SubDesign == null) return skill1SubDynamicCooldown;
-
-                switch (GetSkill1Variant())
-                {
-                    case Skill1Variant.Variant_1A: return skill1SubDesign.Buff1ACooldown;
-                    case Skill1Variant.Variant_1B: return skill1SubDesign.Buff1BCooldown;
-                    case Skill1Variant.Variant_1C: return skill1SubDesign.Buff1CCooldown;
-                }
+                case Skill0Index: return skill0Cooldown;
+                case Skill1Index: return skill1Cooldown;
+                case Skill1SubIndex:
+                    if (skill1SubDesign == null) break;
+                    switch (GetSkill1Variant())
+                    {
+                        case Skill1Variant.Variant_1A: return skill1SubDesign.Buff1ACooldown;
+                        case Skill1Variant.Variant_1B: return skill1SubDesign.Buff1BCooldown;
+                        default: return skill1SubDesign.Buff1CCooldown;
+                    }
+                case Skill2Index:
+                    if (skill2SubDesign == null) break;
+                    switch (GetSkill2Variant())
+                    {
+                        case Skill2Variant.Variant_2A: return skill2SubDesign.Buff2ACooldown;
+                        case Skill2Variant.Variant_2B: return skill2SubDesign.Buff2BCooldown;
+                        default: return skill2SubDesign.Buff2CCooldown;
+                    }
             }
-
             return base.GetBaseCooldown(index);
         }
 
@@ -125,14 +171,88 @@ namespace IronWasteland.Tanks.GreenFox
 
         protected override void OnUseSkill(int index)
         {
-            if (index == Skill0Index) { FireSkill0(); return; }
-            if (index == Skill1Index) { FireSkill1(); return; }
-            if (index == Skill2Index) { ExecuteSkill2(); return; }
-            if (index == Skill1SubIndex) { ActivateSkill1Sub(); return; }
+            bool success;
+            switch (index)
+            {
+                case Skill0Index: FireSkill0(); return;
+                case Skill1Index: success = CastFoxMark(); break;
+                case Skill1SubIndex: success = ActivateSkill1Sub(); break;
+                case Skill2Index: success = ExecuteSkill2(); break;
+                default: base.OnUseSkill(index); return;
+            }
 
-            base.OnUseSkill(index);
+            // Tung chiêu thất bại (trượt, thiếu prefab...) thì hoàn lại năng lượng và hồi chiêu
+            if (!success)
+            {
+                GainEnergy(GetSkillEnergyCost(index));
+                SetSkillCooldownRemaining(index, 0f);
+            }
         }
 
+        // ------------------------------------------------------------------
+        // Sát thương & hiệu ứng dùng chung
+        // ------------------------------------------------------------------
+
+        /// <summary>Sát thương cuối = Tấn công * hệ số * (1 + Tỉ lệ sát thương).</summary>
+        public float ScaledDamage(float atkRatio) => Stats.Attack * atkRatio * (1f + Stats.DamageRate);
+
+        /// <summary>Gây sát thương lên kẻ địch: hiện số, và báo Fox Territory (nếu đang có) để hồi năng lượng.</summary>
+        public void DamageEnemy(EnemyBrain enemy, float damage, Vector3 textPosition)
+        {
+            if (enemy == null || damage <= 0f) return;
+
+            bool wasAlive = enemy.IsAlive;
+            Vector3 deathPosition = enemy.transform.position;
+
+            enemy.TakeDamage(damage);
+            TextDamageManager.Instance?.Show(damage, textPosition);
+
+            if (m_ActiveTerritory != null) m_ActiveTerritory.NotifyDamageDealtInTerritory(enemy);
+
+            // Đòn này hạ gục kẻ địch => Mark Hunter (1A)
+            if (wasAlive && !enemy.IsAlive) NotifyEnemyKilled(deathPosition, enemy);
+        }
+
+
+        /// <summary>Trói chân (đặt tốc độ = 0). Tinh anh miễn nhiễm. Trả về true nếu trói được.</summary>
+        public bool RootEnemy(EnemyBrain enemy, float duration)
+        {
+            if (enemy == null || enemy is EliteEnemyBrain) return false;
+
+            GreenFox_EnemyMoveModifier.Apply(enemy, "GreenFox_Root", 0f, duration);
+            return true;
+        }
+
+        private void SetSkillCooldownRemaining(int index, float value)
+        {
+            float[] cooldowns = GetCooldownArray();
+            if (cooldowns != null && index >= 0 && index < cooldowns.Length)
+            {
+                cooldowns[index] = Mathf.Max(0f, value);
+            }
+        }
+
+        private void ReduceSkillCooldown(int index, float amount)
+        {
+            float[] cooldowns = GetCooldownArray();
+            if (cooldowns != null && index >= 0 && index < cooldowns.Length)
+            {
+                cooldowns[index] = Mathf.Max(0f, cooldowns[index] - amount);
+            }
+        }
+
+        private float[] GetCooldownArray()
+        {
+            if (s_CooldownField == null)
+            {
+                s_CooldownField = typeof(TankBrain).GetField("skillCooldowns", BindingFlags.NonPublic | BindingFlags.Instance);
+            }
+            return s_CooldownField != null ? s_CooldownField.GetValue(this) as float[] : null;
+        }
+
+        // ------------------------------------------------------------------
+        // Kỹ năng thường - Fox Fang
+        // ------------------------------------------------------------------
         private void PrewarmSkill0Pool()
         {
             if (skill0Design == null) return;
@@ -175,39 +295,39 @@ namespace IronWasteland.Tanks.GreenFox
         private void FireSkill0()
         {
             if (skill0Design == null) return;
+
             Vector2 spawnPos = (View != null && View.Muzzle != null) ? (Vector2)View.Muzzle.position : (Vector2)transform.position;
             Vector2 shootDirection = HasLookTarget ? (LookTarget - spawnPos).normalized : (Vector2)transform.right;
 
             GreenFox_Skill0 skill0 = GetSkill0FromPool();
             if (skill0 == null) return;
-            skill0.Initialize(this, spawnPos, shootDirection, skill0Damage, ReturnSkill0ToPool);
+
+            float damage = ScaledDamage(skill0DamagePercent / 100f);
+            skill0.Initialize(this, spawnPos, shootDirection, damage, ReturnSkill0ToPool);
         }
 
-        public void HandleSkill0Hit(EnemyBrain enemy, float damage)
+        /// <summary>Fox Fang trúng kẻ địch: hồi năng lượng, đính kèm thiêu đốt (1B), cộng dồn dấu ấn.</summary>
+        public void HandleSkill0Hit(EnemyBrain enemy)
         {
             if (enemy == null) return;
 
-            bool isTargetBurning = false;
-            GreenFox_BurnEffect[] activeBurns = FindObjectsByType<GreenFox_BurnEffect>(FindObjectsInactive.Exclude);
-            foreach (var burn in activeBurns)
-            {
-                if (burn != null && burn.OwnerEnemy == enemy && burn.IsBurning)
-                {
-                    isTargetBurning = true;
-                    break;
-                }
-            }
+            // Kiểm tra TRƯỚC khi đòn này đính kèm thiêu đốt mới
+            bool wasBurning = IsBurning(enemy);
 
-            GainEnergy(10f);
+            GainEnergy(skill0EnergyGain);
 
-            if (isTargetBurning && m_Is1BBuffActive && skill1SubDesign != null)
+            if (wasBurning && m_Is1BBuffActive && skill1SubDesign != null)
             {
                 GainEnergy(skill1SubDesign.EnergyOnHitBurnTarget);
             }
 
-            TryApplyBurn(enemy, damage);
+            TryApplyBurn(enemy);
+            AddMarkStacks(enemy);
         }
 
+        // ------------------------------------------------------------------
+        // Kỹ năng chuyên biệt - Fox Mark
+        // ------------------------------------------------------------------
         private void PrewarmSkillPool()
         {
             if (skill1Design == null) return;
@@ -247,17 +367,9 @@ namespace IronWasteland.Tanks.GreenFox
             if (!m_SkillPool.Contains(skill)) m_SkillPool.Push(skill);
         }
 
-        private void FireSkill1()
+        private bool CastFoxMark()
         {
-            if (skill1Design == null) return;
-
-            if (CurrentEnergy < skill1EnergyCost)
-            {
-                Debug.Log("[TankBrain_GreenFox] Không đủ năng lượng để sử dụng Fox Mark!");
-                return;
-            }
-
-            SpendEnergy(skill1EnergyCost);
+            if (skill1Design == null || signPrefab == null) return false;
 
             Vector2 targetPos;
             if (HasLookTarget) targetPos = LookTarget;
@@ -265,314 +377,143 @@ namespace IronWasteland.Tanks.GreenFox
             else targetPos = (Vector2)transform.position + (Vector2)transform.right * 3f;
 
             GreenFox_Skill1 skill = GetSkillFromPool();
-            if (skill == null) return;
+            if (skill == null) return false;
 
+            bool found = false;
             skill.transform.SetParent(null);
-            skill.Initialize(targetPos, (enemy) => ApplySignAndDamage(skill, enemy), ReturnSkillToPool);
+            skill.Initialize(targetPos, enemy =>
+            {
+                found = true;
+                ApplyMark(enemy);
+            }, ReturnSkillToPool);
+
+            return found; // trượt thì hoàn lại năng lượng và hồi chiêu
         }
 
-        private void ApplySignAndDamage(GreenFox_Skill1 skill, EnemyBrain enemy)
+        private void ApplyMark(EnemyBrain enemy)
         {
-            if (enemy == null) return;
+            if (enemy == null || signPrefab == null) return;
 
-            float baseAtk = Stats.Attack;
-            float baseDamage = baseAtk * 1.0f;
-            if (m_Is2ABuffActive && skill2SubDesign != null)
+            // Đã có ấn: chỉ làm mới thời gian tồn tại
+            if (m_Signs.TryGetValue(enemy, out Sign existing) && existing != null)
             {
-                baseDamage *= skill2SubDesign.AttackMultiplier;
+                existing.Refresh(markLifetime);
+                return;
             }
 
-            enemy.TakeDamage(baseDamage);
-            TextDamageManager.Instance?.Show(baseDamage, skill.transform.position);
+            Sign sign = Instantiate(signPrefab, enemy.transform.position, Quaternion.identity);
+            sign.SetTarget(enemy, markLifetime, OnSignRemoved);
+            sign.UpdateVisualState(m_Is1ABuffActive);
+            m_Signs[enemy] = sign;
+        }
 
-            int stacksToAdd = m_Is1ABuffActive && skill1SubDesign != null ? skill1SubDesign.Buff1AStackAmount : 1;
-
-            Sign enemySign = null;
-            Sign[] activeSigns = FindObjectsByType<Sign>(FindObjectsInactive.Exclude);
-
-            foreach (Sign sign in activeSigns)
+        private void OnSignRemoved(Sign sign)
+        {
+            EnemyBrain key = null;
+            bool found = false;
+            foreach (var kv in m_Signs)
             {
-                if (sign != null && sign.OwnerEnemy == enemy)
+                if (kv.Value == sign)
                 {
-                    enemySign = sign;
+                    key = kv.Key;
+                    found = true;
                     break;
                 }
             }
+            if (found) m_Signs.Remove(key);
+        }
 
-            if (enemySign == null)
-            {
-                if (signPrefab != null)
-                {
-                    enemySign = Instantiate(signPrefab, enemy.transform.position, Quaternion.identity);
-                    enemySign.SetTarget(enemy);
-                    enemySign.UpdateVisualState(m_Is1ABuffActive);
+        /// <summary>Khi Green Fox tấn công mục tiêu có dấu ấn: cộng dồn; đủ tối đa thì nổ.</summary>
+        private void AddMarkStacks(EnemyBrain enemy)
+        {
+            if (!m_Signs.TryGetValue(enemy, out Sign sign) || sign == null) return;
 
-                    if (stacksToAdd > 1)
-                    {
-                        enemySign.AddStack(stacksToAdd - 1);
-                    }
-                }
-            }
-            else
-            {
-                enemySign.AddStack(stacksToAdd);
+            int stacks = (m_Is1ABuffActive && skill1SubDesign != null) ? skill1SubDesign.Buff1AStackAmount : markStacksPerAttack;
+            sign.AddStack(stacks);
 
-                if (enemySign.CurrentStacks >= enemySign.MaxStacks)
-                {
-                    TriggerMarkExplosion(enemySign, enemy);
-                    return;
-                }
-            }
-
-            TryApplyBurn(enemy, baseDamage);
+            if (sign.IsFull) TriggerMarkExplosion(sign, enemy);
         }
 
         private void TriggerMarkExplosion(Sign sign, EnemyBrain enemy)
         {
             if (sign == null || enemy == null) return;
 
+            // Mark Hunter: nổ 300% ATK (thay cho 200%)
+            float percent = (m_Is1ABuffActive && skill1SubDesign != null)
+                ? skill1SubDesign.Buff1AExplosionDamagePercent
+                : markExplosionDamagePercent;
+
             Vector3 explosionPos = sign.transform.position;
-            float baseAtk = Stats.Attack;
+            DamageEnemy(enemy, ScaledDamage(percent / 100f), explosionPos);
+            SpawnExplosionEffect(explosionPos);
 
-            float bonusDamage = (m_Is1ABuffActive && skill1SubDesign != null) ? (baseAtk * (skill1SubDesign.Buff1AExplosionBonusDamage / 100f)) : 0f;
-            float explosionDamage = (baseAtk * 2.0f * sign.CurrentStacks) + bonusDamage;
-
-            enemy.TakeDamage(explosionDamage);
-            TextDamageManager.Instance?.Show(explosionDamage, explosionPos);
-
-            if (skill2ExplosionDesign != null)
-            {
-                GreenFox_Skill2 explosion = Instantiate(skill2ExplosionDesign, explosionPos, Quaternion.identity);
-                explosion.gameObject.SetActive(true);
-                explosion.Initialize();
-            }
-
-            TryApplyBurn(enemy, explosionDamage);
+            TryApplyBurn(enemy);
             Destroy(sign.gameObject);
         }
 
-        private void ExecuteSkill2()
+        private void SpawnExplosionEffect(Vector3 position)
         {
-            if (skill2SubDesign == null)
-            {
-                Execute2AMarkExplosion();
-                return;
-            }
+            if (skill2ExplosionDesign == null) return;
 
-            switch (GetSkill2Variant())
-            {
-                case Skill2Variant.Variant_2A: Execute2AMarkExplosion(); break;
-                case Skill2Variant.Variant_2B: Execute2BFoxTerritory(); break;
-                case Skill2Variant.Variant_2C: Execute2CNineTailedAssault(); break;
-            }
+            GreenFox_Skill2 explosion = Instantiate(skill2ExplosionDesign, position, Quaternion.identity);
+            explosion.gameObject.SetActive(true);
+            explosion.Initialize();
         }
 
-        private void Execute2AMarkExplosion()
+        // ------------------------------------------------------------------
+        // Kỹ năng tùy chọn 1
+        // ------------------------------------------------------------------
+        private bool ActivateSkill1Sub()
         {
-            float energyCost = skill2SubDesign != null ? skill2SubDesign.Buff2AEnergyCost : 55f;
-            if (CurrentEnergy < energyCost)
-            {
-                Debug.Log("[TankBrain_GreenFox] Không đủ năng lượng để kích hoạt Mark Explosion (2A)!");
-                return;
-            }
-            SpendEnergy(energyCost);
-
-            Sign[] allSigns = FindObjectsByType<Sign>(FindObjectsInactive.Exclude);
-            if (allSigns == null || allSigns.Length == 0) return;
-
-            float baseAtk = Stats.Attack;
-            float percentPerStack = skill2SubDesign != null ? skill2SubDesign.DamagePerStackPercent : 20f;
-            float damageMultiplier = m_Is1ABuffActive ? 1.5f : 1.0f;
-
-            foreach (Sign sign in allSigns)
-            {
-                if (sign == null) continue;
-                EnemyBrain enemy = sign.OwnerEnemy;
-                Vector3 explosionPos = sign.transform.position;
-
-                int stacks = sign.CurrentStacks;
-                float finalDamage = baseAtk * stacks * (percentPerStack / 100f) * damageMultiplier;
-
-                if (enemy != null) enemy.TakeDamage(finalDamage);
-                TextDamageManager.Instance?.Show(finalDamage, explosionPos);
-
-                if (skill2ExplosionDesign != null)
-                {
-                    GreenFox_Skill2 explosion = Instantiate(skill2ExplosionDesign, explosionPos, Quaternion.identity);
-                    explosion.gameObject.SetActive(true);
-                    explosion.Initialize();
-                }
-
-                if (enemy != null) TryApplyBurn(enemy, finalDamage);
-                Destroy(sign.gameObject);
-            }
-
-            m_Is2ABuffActive = true;
-            if (m_2ABuffCoroutine != null) StopCoroutine(m_2ABuffCoroutine);
-
-            float buffDuration = skill2SubDesign != null ? skill2SubDesign.AttackBuffDuration : 6f;
-            float buffPercent = skill2SubDesign != null ? skill2SubDesign.AttackBuffPercent : 0.3f;
-
-            TankStats bonusBuff = TankStats.Zeroed();
-            bonusBuff.Attack = baseAtk * buffPercent;
-            AddBonusStats("MarkExplosion_AttackBuff", bonusBuff);
-
-            m_2ABuffCoroutine = StartCoroutine(Buff2ARoutine(buffDuration));
-        }
-
-        private IEnumerator Buff2ARoutine(float duration)
-        {
-            yield return new WaitForSeconds(duration);
-            m_Is2ABuffActive = false;
-            RemoveBonusStats("MarkExplosion_AttackBuff");
-            m_2ABuffCoroutine = null;
-        }
-
-        private void Execute2BFoxTerritory()
-        {
-            if (territoryPrefab == null || skill2SubDesign == null) return;
-
-            float energyCost = skill2SubDesign.Buff2BEnergyCost;
-            if (CurrentEnergy < energyCost)
-            {
-                Debug.Log("[TankBrain_GreenFox] Không đủ năng lượng để triển khai Fox Territory (2B)!");
-                return;
-            }
-
-            SpendEnergy(energyCost);
-
-            Vector2 spawnPos = HasLookTarget ? LookTarget : (Vector2)transform.position + (Vector2)transform.right * 3f;
-            GreenFox_FoxTerritory territory = Instantiate(territoryPrefab, spawnPos, Quaternion.identity);
-
-            territory.Initialize(
-                this,
-                skill2SubDesign.TerritoryDuration,
-                skill2SubDesign.SlowAmount,
-                skill2SubDesign.SpeedBoostPercent,
-                skill2SubDesign.EnergyPerHit,
-                skill2SubDesign.MaxEnergyGain
-            );
-        }
-
-        private void Execute2CNineTailedAssault()
-        {
-            if (nineTailedPrefab == null || skill2SubDesign == null) return;
-
-            float energyCost = skill2SubDesign.Buff2CEnergyCost; // 75 năng lượng
-            if (CurrentEnergy < energyCost)
-            {
-                Debug.Log("[TankBrain_GreenFox] Không đủ năng lượng để kích hoạt Nine-Tailed Assault (2C)!");
-                return;
-            }
-
-            SpendEnergy(energyCost);
-
-            GreenFox_NineTailedAssault assault = Instantiate(nineTailedPrefab);
-
-            // Tính toán sát thương mỗi đuôi = 15% ATK
-            float calculatedTailDamage = Stats.Attack * (skill2SubDesign.TailDamagePercent / 100f);
-
-            assault.Initialize(
-                this,
-                transform,
-                skill2SubDesign.AssaultDuration,   // 6s
-                skill2SubDesign.AttackInterval,    // 1s
-                calculatedTailDamage               // 15% ATK
-            );
-        }
-
-        public void TryApplyBurn(EnemyBrain enemy, float damageSource)
-        {
-            if (enemy == null || !m_Is1BBuffActive || skill1SubDesign == null) return;
-
-            if (GetSkill1Variant() == Skill1Variant.Variant_1B)
-            {
-                GreenFox_BurnEffect existingBurn = null;
-                GreenFox_BurnEffect[] activeBurns = FindObjectsByType<GreenFox_BurnEffect>(FindObjectsInactive.Exclude);
-
-                foreach (GreenFox_BurnEffect burn in activeBurns)
-                {
-                    if (burn != null && burn.OwnerEnemy == enemy)
-                    {
-                        existingBurn = burn;
-                        break;
-                    }
-                }
-
-                if (existingBurn == null && burnPrefab != null)
-                {
-                    GreenFox_BurnEffect burnInstance = Instantiate(burnPrefab, enemy.transform.position, Quaternion.identity);
-                    burnInstance.ApplyBurn(
-                        enemy,
-                        Stats.Attack,
-                        skill1SubDesign.BurnDuration,
-                        skill1SubDesign.BurnInterval,
-                        skill1SubDesign.BurnDamagePercent
-                    );
-                }
-            }
-        }
-
-        private void ActivateSkill1Sub()
-        {
-            if (skill1SubDesign == null) return;
+            if (skill1SubDesign == null) return false;
 
             switch (GetSkill1Variant())
             {
-                case Skill1Variant.Variant_1A:
-                    if (CurrentEnergy < skill1SubDesign.Buff1AEnergyCost) return;
-                    SpendEnergy(skill1SubDesign.Buff1AEnergyCost);
-
-                    m_Is1ABuffActive = true;
-                    UpdateAllSignsState(true);
-
-                    if (m_1ABuffCoroutine != null) StopCoroutine(m_1ABuffCoroutine);
-                    m_1ABuffCoroutine = StartCoroutine(Buff1ARoutine(skill1SubDesign.Buff1ADuration));
-                    break;
-
-                case Skill1Variant.Variant_1B:
-                    if (CurrentEnergy < skill1SubDesign.Buff1BEnergyCost)
-                    {
-                        Debug.Log("[TankBrain_GreenFox] Không đủ năng lượng để kích hoạt Thiêu đốt ma thuật (1B)!");
-                        return;
-                    }
-                    SpendEnergy(skill1SubDesign.Buff1BEnergyCost);
-
-                    m_Is1BBuffActive = true;
-                    if (m_1BBuffCoroutine != null) StopCoroutine(m_1BBuffCoroutine);
-                    m_1BBuffCoroutine = StartCoroutine(Buff1BRoutine(skill1SubDesign.BurnDuration));
-
-                    if (skill1BEffectPrefab != null)
-                    {
-                        GreenFox_BurnEffect tankAura = Instantiate(skill1BEffectPrefab, transform.position, Quaternion.identity);
-                        tankAura.Initialize(transform, skill1SubDesign.BurnDuration);
-                    }
-                    break;
-
-                case Skill1Variant.Variant_1C:
-                    if (CurrentEnergy < skill1SubDesign.Buff1CEnergyCost)
-                    {
-                        Debug.Log("[TankBrain_GreenFox] Không đủ năng lượng để đặt Fox Trap (1C)!");
-                        return;
-                    }
-
-                    SpendEnergy(skill1SubDesign.Buff1CEnergyCost);
-
-                    if (trapPrefab != null)
-                    {
-                        Vector2 trapPosition = HasLookTarget ? LookTarget : (Vector2)transform.position + (Vector2)transform.right * 2f;
-                        GreenFox_MagicTrap trap = Instantiate(trapPrefab, trapPosition, Quaternion.identity);
-
-                        trap.Initialize(
-                            Stats.Attack,
-                            skill1SubDesign.TrapDamagePercent,
-                            skill1SubDesign.EliteTrapDamagePercent,
-                            skill1SubDesign.RootDuration,
-                            skill1SubDesign.TrapDuration
-                        );
-                    }
-                    break;
+                case Skill1Variant.Variant_1A: return Cast1AMarkHunter();
+                case Skill1Variant.Variant_1B: return Cast1BBurningFox();
+                case Skill1Variant.Variant_1C: return Cast1CFoxTrap();
             }
+            return false;
+        }
+
+        private bool Cast1AMarkHunter()
+        {
+            m_Is1ABuffActive = true;
+            UpdateAllSignsState(true);
+
+            if (m_1ABuffCoroutine != null) StopCoroutine(m_1ABuffCoroutine);
+            m_1ABuffCoroutine = StartCoroutine(Buff1ARoutine(skill1SubDesign.Buff1ADuration));
+            return true;
+        }
+
+        private bool Cast1BBurningFox()
+        {
+            m_Is1BBuffActive = true;
+            if (m_1BBuffCoroutine != null) StopCoroutine(m_1BBuffCoroutine);
+            m_1BBuffCoroutine = StartCoroutine(Buff1BRoutine(skill1SubDesign.BurnDuration));
+
+            if (skill1BEffectPrefab != null)
+            {
+                GreenFox_BurnEffect aura = Instantiate(skill1BEffectPrefab, transform.position, Quaternion.identity);
+                aura.Initialize(transform, skill1SubDesign.BurnDuration);
+            }
+            return true;
+        }
+
+        private bool Cast1CFoxTrap()
+        {
+            if (trapPrefab == null) return false;
+
+            Vector2 trapPosition = HasLookTarget ? LookTarget : (Vector2)transform.position + (Vector2)transform.right * 2f;
+            GreenFox_MagicTrap trap = Instantiate(trapPrefab, trapPosition, Quaternion.identity);
+
+            trap.Initialize(
+                this,
+                ScaledDamage(skill1SubDesign.TrapDamagePercent / 100f),
+                ScaledDamage(skill1SubDesign.EliteTrapDamagePercent / 100f),
+                skill1SubDesign.RootDuration,
+                skill1SubDesign.TrapDuration);
+            return true;
         }
 
         private IEnumerator Buff1ARoutine(float duration)
@@ -592,38 +533,196 @@ namespace IronWasteland.Tanks.GreenFox
 
         private void UpdateAllSignsState(bool is1AActive)
         {
-            Sign[] activeSigns = FindObjectsByType<Sign>(FindObjectsInactive.Exclude);
-            foreach (Sign sign in activeSigns)
+            foreach (var kv in m_Signs)
             {
-                if (sign != null) sign.UpdateVisualState(is1AActive);
+                if (kv.Value != null) kv.Value.UpdateVisualState(is1AActive);
             }
         }
 
-        public void NotifyEnemyKilled(Vector3 enemyPosition, EnemyBrain enemy)
+        // ------------------------------------------------------------------
+        // Thiêu đốt (Burning Fox 1B)
+        // ------------------------------------------------------------------
+        private bool IsBurning(EnemyBrain enemy)
         {
-            if (m_Is1ABuffActive && energyAbsorbPrefab != null)
-            {
-                GreenFox_EnergyAbsorbEffect effect = Instantiate(energyAbsorbPrefab);
-                effect.Initialize(transform);
-            }
-
-            if (skill1SubDesign != null && m_Is1ABuffActive)
-            {
-                ReduceSkillCooldown(Skill1Index, skill1SubDesign.Buff1ACooldownReductionOnKill);
-            }
+            return enemy != null
+                && m_Burns.TryGetValue(enemy, out GreenFox_BurnEffect burn)
+                && burn != null
+                && burn.IsBurning;
         }
 
-        private void ReduceSkillCooldown(int index, float amount)
+        /// <summary>Đính kèm thiêu đốt (25% ATK mỗi 0.5s trong 6s) nếu đang bật Burning Fox. Đã cháy thì làm mới.</summary>
+        public void TryApplyBurn(EnemyBrain enemy)
         {
-            System.Reflection.FieldInfo field = typeof(TankBrain).GetField("skillCooldowns", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (field != null)
+            if (enemy == null || !m_Is1BBuffActive || skill1SubDesign == null || burnPrefab == null) return;
+
+            float tickDamage = ScaledDamage(skill1SubDesign.BurnDamagePercent);
+
+            if (m_Burns.TryGetValue(enemy, out GreenFox_BurnEffect existing) && existing != null)
             {
-                float[] cooldowns = field.GetValue(this) as float[];
-                if (cooldowns != null && index >= 0 && index < cooldowns.Length)
+                existing.Refresh(tickDamage, skill1SubDesign.BurnDuration);
+                return;
+            }
+
+            GreenFox_BurnEffect burn = Instantiate(burnPrefab, enemy.transform.position, Quaternion.identity);
+            m_Burns[enemy] = burn;
+            burn.ApplyBurn(enemy, tickDamage, skill1SubDesign.BurnDuration, skill1SubDesign.BurnInterval, OnBurnEnded);
+        }
+
+        private void OnBurnEnded(GreenFox_BurnEffect burn)
+        {
+            EnemyBrain key = null;
+            bool found = false;
+            foreach (var kv in m_Burns)
+            {
+                if (kv.Value == burn)
                 {
-                    cooldowns[index] = Mathf.Max(0f, cooldowns[index] - amount);
+                    key = kv.Key;
+                    found = true;
+                    break;
                 }
             }
+            if (found) m_Burns.Remove(key);
+        }
+
+        // ------------------------------------------------------------------
+        // Hạ gục kẻ địch (Mark Hunter) - được hệ thống kẻ địch gọi khi 1 kẻ địch chết
+        // ------------------------------------------------------------------
+        public void NotifyEnemyKilled(Vector3 enemyPosition, EnemyBrain enemy)
+        {
+            if (!m_Is1ABuffActive || skill1SubDesign == null) return;
+
+            SpawnKillStreams(enemyPosition);
+            ReduceSkillCooldown(Skill1Index, skill1SubDesign.Buff1ACooldownReductionOnKill);
+        }
+
+        /// <summary>Mark Hunter (1A): các luồng xanh chảy từ chỗ kẻ địch chết về Green Fox.</summary>
+        private void SpawnKillStreams(Vector3 from)
+        {
+            for (int i = 0; i < killStreamCount; i++)
+            {
+                GameObject go = killStreamPrefab != null
+                    ? Instantiate(killStreamPrefab, from, Quaternion.identity)
+                    : new GameObject("GreenFox_KillStream");
+
+                GreenFox_KillStreamEffect stream = go.GetComponent<GreenFox_KillStreamEffect>();
+                if (stream == null) stream = go.AddComponent<GreenFox_KillStreamEffect>();
+                stream.Initialize(from, transform);
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // Kỹ năng tùy chọn 2
+        // ------------------------------------------------------------------
+        private bool ExecuteSkill2()
+        {
+            if (skill2SubDesign == null) return false;
+
+            switch (GetSkill2Variant())
+            {
+                case Skill2Variant.Variant_2A: return Execute2AMarkExplosion();
+                case Skill2Variant.Variant_2B: return Execute2BFoxTerritory();
+                case Skill2Variant.Variant_2C: return Execute2CNineTailedAssault();
+            }
+            return false;
+        }
+
+        private bool Execute2AMarkExplosion()
+        {
+            // Lấy các ấn trong vùng (bản sao vì nổ ấn sẽ làm thay đổi danh sách)
+            var signsInRange = new List<Sign>();
+            float range = skill2SubDesign.MarkExplosionRange;
+
+            foreach (var kv in m_Signs)
+            {
+                if (kv.Key == null || kv.Value == null) continue;
+                if (Vector2.Distance(transform.position, kv.Key.transform.position) <= range) signsInRange.Add(kv.Value);
+            }
+
+            if (signsInRange.Count == 0) return false; // không có ấn thì không tung chiêu
+
+            float damagePerStack = ScaledDamage(skill2SubDesign.DamagePerStackPercent / 100f);
+
+            foreach (Sign sign in signsInRange)
+            {
+                if (sign == null) continue;
+
+                EnemyBrain enemy = sign.OwnerEnemy;
+                Vector3 explosionPos = sign.transform.position;
+                float damage = damagePerStack * sign.CurrentStacks; // 20% ATK mỗi cộng dồn
+
+                if (enemy != null)
+                {
+                    DamageEnemy(enemy, damage, explosionPos);
+                    TryApplyBurn(enemy);
+                }
+
+                SpawnExplosionEffect(explosionPos);
+                Destroy(sign.gameObject);
+            }
+
+            // +30% Tấn công trong 6s (percent bonus)
+            TankStats percent = TankStats.Zeroed();
+            percent.Attack = skill2SubDesign.AttackBuffPercent;
+            AddBonusStats(MarkExplosionBuffKey, TankStats.Zeroed(), percent);
+
+            if (m_2ABuffCoroutine != null) StopCoroutine(m_2ABuffCoroutine);
+            m_2ABuffCoroutine = StartCoroutine(Buff2ARoutine(skill2SubDesign.AttackBuffDuration));
+            return true;
+        }
+
+        private IEnumerator Buff2ARoutine(float duration)
+        {
+            yield return new WaitForSeconds(duration);
+            RemoveBonusStats(MarkExplosionBuffKey);
+            m_2ABuffCoroutine = null;
+        }
+
+        private bool Execute2BFoxTerritory()
+        {
+            if (territoryPrefab == null) return false;
+
+            Vector2 spawnPos = HasLookTarget ? LookTarget : (Vector2)transform.position + (Vector2)transform.right * 3f;
+            GreenFox_FoxTerritory territory = Instantiate(territoryPrefab, spawnPos, Quaternion.identity);
+
+            territory.Initialize(
+                this,
+                skill2SubDesign.TerritoryDuration,
+                skill2SubDesign.SlowAmount,
+                skill2SubDesign.SpeedBoostPercent,
+                skill2SubDesign.EnergyPerHit,
+                skill2SubDesign.MaxEnergyGain);
+
+            m_ActiveTerritory = territory;
+            return true;
+        }
+
+        private bool Execute2CNineTailedAssault()
+        {
+            if (nineTailedPrefab == null) return false;
+
+            GreenFox_NineTailedAssault assault = Instantiate(nineTailedPrefab);
+            SpawnNineTailsVisual(skill2SubDesign.AssaultDuration);
+
+            assault.Initialize(
+                this,
+                transform,
+                skill2SubDesign.AssaultDuration,
+                skill2SubDesign.AttackInterval,
+                skill2SubDesign.TailCount,
+                ScaledDamage(skill2SubDesign.TailDamagePercent / 100f));
+            return true;
+        }
+
+        /// <summary>Hình ảnh 9 đuôi (không có chức năng): gắn vào xe suốt thời gian 2C rồi tự biến mất.</summary>
+        private void SpawnNineTailsVisual(float duration)
+        {
+            if (nineTailsVisualPrefab == null) return;
+
+            GameObject go = Instantiate(nineTailsVisualPrefab, transform.position, Quaternion.identity);
+            GreenFox_NineTailsVisual visual = go.GetComponent<GreenFox_NineTailsVisual>();
+            if (visual == null) visual = go.AddComponent<GreenFox_NineTailsVisual>();
+
+            visual.Initialize(this, duration);
         }
 
         private void OnDestroy()

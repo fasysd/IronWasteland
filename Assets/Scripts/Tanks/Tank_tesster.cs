@@ -15,9 +15,9 @@ public class TankTester : MonoBehaviour
         {
             Level = playerLevel,
             IdView = 0,
-            FirepowerEquipmentId = 0,
-            DefenseEquipmentId = 0,
-            MobilityEquipmentId = 0
+            //FirepowerEquipmentId = 0,
+            //DefenseEquipmentId = 0,
+            //MobilityEquipmentId = 0
         };
 
         // Gọi hàm khởi tạo chuẩn của hệ thống IronWasteland
