@@ -81,16 +81,25 @@ MonoBehaviour:
   baseStats:
     Attack: 0
     Defense: 0
-    DamageMultiplier: 1
+    DamageRate: 0
     ArmorPenetration: 0
     MaxHealth: 0
     MaxEnergy: 0
     MoveSpeed: 0
     CooldownReduction: 0
-  bonusStats:
+  flatBonusStats:
     Attack: 0
     Defense: 0
-    DamageMultiplier: 0
+    DamageRate: 0
+    ArmorPenetration: 0
+    MaxHealth: 0
+    MaxEnergy: 0
+    MoveSpeed: 0
+    CooldownReduction: 0
+  percentBonusStats:
+    Attack: 0
+    Defense: 0
+    DamageRate: 0
     ArmorPenetration: 0
     MaxHealth: 0
     MaxEnergy: 0
@@ -106,47 +115,68 @@ MonoBehaviour:
   m_context:
     Level: 0
     IdView: 0
-    FirepowerEquipmentId: 0
-    DefenseEquipmentId: 0
-    MobilityEquipmentId: 0
+    EquipmentId: 0
     OptionSkill1: 0
     OptionSkill2: 0
+  m_EquippedAccessory: {fileID: 0}
   earthBreakDesign: {fileID: 2105317830507849725}
   earthBreakPoolSize: 4
-  earthBreakMaxDamage: 45
-  earthBreakMinDamageRatio: 0.4
-  earthBreakMaxFalloffDistance: 12
-  earthBreakEnergyGain: 8
-  earthBreakCooldown: 1.2
+  earthBreakNearAttackRatio: 0.5
+  earthBreakNearDefenseRatio: 0.5
+  earthBreakFarAttackRatio: 0.2
+  earthBreakFarDefenseRatio: 0.1
+  earthBreakNearRange: 3
+  earthBreakFarRange: 7
+  earthBreakEnergyGain: 10
+  earthBreakCooldown: 0.6
   earthWallDesign: {fileID: 4692119365693708535}
   earthWallPoolSize: 2
-  earthWallEnergyCost: 15
-  earthWallCooldown: 8
+  earthWallEnergyCost: 45
+  earthWallCooldown: 10
+  earthWallDuration: 4
   optionSkill1Branch: 2
-  optionSkill1EnergyCost: 20
-  optionSkill1Cooldown: 10
   stoneFortressVisual: {fileID: 0}
-  stoneFortressHealAmount: 35
-  stoneFortressDefenseBonus: 0.25
-  stoneFortressMoveSpeedPenalty: 1.2
-  stoneFortressDuration: 4
+  stoneFortressEnergyCost: 50
+  stoneFortressCooldown: 12
+  stoneFortressDuration: 8
+  stoneFortressShieldHpRatio: 0.3
+  stoneFortressDefensePercent: 0.5
+  stoneFortressSpeedPenalty: 0.3
   guardianWallVisual: {fileID: 0}
-  guardianWallDefenseBonus: 0.2
-  guardianWallDuration: 4
+  guardianWallEnergyCost: 50
+  guardianWallCooldown: 10
+  guardianWallDuration: 5
+  guardianWallShieldHpRatio: 0.3
+  guardianWallRedirectRatio: 0.35
   earthPrisonDesign: {fileID: 8433354684311306794}
   earthPrisonPoolSize: 2
-  earthPrisonDamage: 50
+  earthPrisonAirAttackRatio: 1
+  earthPrisonDefenseRatio: 1.5
+  earthPrisonEnergyCost: 60
+  earthPrisonCooldown: 14
+  earthPrisonDuration: 4
   optionSkill2Branch: 2
-  optionSkill2EnergyCost: 20
-  optionSkill2Cooldown: 12
   immovableTitanVisual: {fileID: 0}
+  immovableTitanEnergyGain: 40
+  immovableTitanCooldown: 10
   immovableTitanDuration: 4
+  immovableTitanDefenseFlat: 50
   earthGuardianVisual: {fileID: 0}
-  earthGuardianDefenseBonus: 0.15
+  earthGuardianEnergyCost: 50
+  earthGuardianCooldown: 10
   earthGuardianDuration: 5
+  earthGuardianDefenseFlat: 35
+  earthGuardianRedirectRatio: 0.35
   earthquakeDesign: {fileID: 2152164404220080265}
   earthquakePoolSize: 2
-  earthquakeDamagePerTick: 12
+  earthquakeAttackRatio: 0.6
+  earthquakeDefenseRatio: 1
+  earthquakeSlowPercent: 0.35
+  earthquakeSlowDuration: 0.6
+  earthquakeEnergyCost: 65
+  earthquakeCooldown: 14
+  earthquakeDuration: 6
+  vfx: {fileID: 0}
 --- !u!1 &5823004365554492412
 GameObject:
   m_ObjectHideFlags: 0

@@ -968,6 +968,28 @@ namespace IronWasteland.Tanks
             return GetCooldownWithReduction(GetBaseCooldown(index));
         }
 
+        /// <summary>
+        /// Đặt lại thời gian hồi của một kỹ năng về 0 ngay lập tức.
+        /// Dùng cho các hiệu ứng "hồi lại toàn bộ/ một phần thời gian hồi" trong GDD.
+        /// </summary>
+        protected void ResetSkillCooldown(int index)
+        {
+            if (skillCooldowns == null || skillCooldowns.Length == 0)
+                return;
+
+            skillCooldowns[Mathf.Clamp(index, 0, SkillCount - 1)] = 0f;
+        }
+
+        /// <summary>Xoá hồi chiêu của cả 4 slot (dùng cho sân test kỹ năng).</summary>
+        public void ResetAllSkillCooldowns()
+        {
+            if (skillCooldowns == null)
+                return;
+
+            for (int i = 0; i < skillCooldowns.Length; i++)
+                skillCooldowns[i] = 0f;
+        }
+
         #endregion
     }
 }

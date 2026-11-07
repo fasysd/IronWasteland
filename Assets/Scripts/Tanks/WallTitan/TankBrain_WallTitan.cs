@@ -15,7 +15,7 @@ namespace IronWasteland.Tanks.WallTitan
     /// Toàn bộ thông số lấy theo GDD mục 4.3.
     /// </summary>
     [DisallowMultipleComponent]
-    public class TankBrain_WallTitan : TankBrain
+    public class TankBrain_WallTitan : TankBrain, ISkillBranchConfigurable
     {
         private const int SkillEarthBreakIndex = 0;
         private const int SkillEarthWallIndex = 1;
@@ -174,10 +174,48 @@ namespace IronWasteland.Tanks.WallTitan
             int fromContext = Context.OptionSkill2;
             return fromContext != 0 ? fromContext : optionSkill2Branch;
         }
+
+        /// <summary>
+        /// Chi phí năng lượng theo GDD. Lớp cha mặc định 30 EN cho slot khác 0 nên phải ghi đè,
+        /// nếu không mỗi chiêu bị trừ thêm 30 EN. Immovable Titan không tốn EN mà hồi 40 EN.
+        /// </summary>
+        protected override float GetSkillEnergyCost(int index)
+        {
+            switch (index)
+            {
+                case 1:
+                    return earthWallEnergyCost;
+
+                case 2:
+                    switch (ResolveOption1Branch())
+                    {
+                        case 1: return guardianWallEnergyCost;
+                        case 2: return earthPrisonEnergyCost;
+                        default: return stoneFortressEnergyCost;
+                    }
+
+                case 3:
+                    switch (ResolveOption2Branch())
+                    {
+                        case 1: return earthGuardianEnergyCost;
+                        case 2: return earthquakeEnergyCost;
+                        default: return 0f; // Immovable Titan: hồi 40 EN
+                    }
+
+                default:
+                    return 0f;
+            }
+        }
         #endregion
+
+        [Header("VFX (Assets/Art/Tank/VFX/WallTitan)")]
+        [SerializeField] private WallTitanVfx vfx;
 
         private void Start()
         {
+            if (vfx == null)
+                vfx = GetComponent<WallTitanVfx>();
+
             PrewarmEarthBreakPool();
             PrewarmEarthWallPool();
             PrewarmEarthPrisonPool();
@@ -347,6 +385,10 @@ namespace IronWasteland.Tanks.WallTitan
             float defenseRatio = Mathf.Lerp(earthBreakNearDefenseRatio, earthBreakFarDefenseRatio, t);
 
             ApplySkillDamage(enemy, CalculateRawDamage(attackRatio, defenseRatio), skill.transform.position);
+
+            if (vfx != null)
+                vfx.PlayEarthShards(skill.transform.position);
+
             GainEnergy(earthBreakEnergyGain);
         }
         #endregion
@@ -418,7 +460,6 @@ namespace IronWasteland.Tanks.WallTitan
             if (!HasLookTarget)
                 return;
 
-            SpendEnergy(earthWallEnergyCost);
 
             Skill_EarthWall wall = GetEarthWallFromPool();
             if (wall == null)
@@ -442,19 +483,16 @@ namespace IronWasteland.Tanks.WallTitan
             switch (ResolveOption1Branch())
             {
                 case 0:
-                    SpendEnergy(stoneFortressEnergyCost);
-                    ActivateStoneFortress();
+                            ActivateStoneFortress();
                     break;
 
                 case 1:
-                    SpendEnergy(guardianWallEnergyCost);
-                    ActivateGuardianWall();
+                            ActivateGuardianWall();
                     break;
 
                 case 2:
                 default:
-                    SpendEnergy(earthPrisonEnergyCost);
-                    FireEarthPrison();
+                            FireEarthPrison();
                     break;
             }
         }
@@ -481,10 +519,16 @@ namespace IronWasteland.Tanks.WallTitan
             if (stoneFortressVisual != null)
                 stoneFortressVisual.SetActive(true);
 
+            if (vfx != null)
+                vfx.SetFortressActive(true);
+
             yield return new WaitForSeconds(stoneFortressDuration);
 
             if (stoneFortressVisual != null)
                 stoneFortressVisual.SetActive(false);
+
+            if (vfx != null)
+                vfx.SetFortressActive(false);
 
             RemoveBonusStats(BonusKeyStoneFortress);
             m_StoneFortressCoroutine = null;
@@ -507,6 +551,12 @@ namespace IronWasteland.Tanks.WallTitan
 
             if (guardianWallVisual != null)
                 StartCoroutine(PlayVisualRoutine(guardianWallVisual, guardianWallDuration));
+
+            if (vfx != null)
+            {
+                vfx.SetGuardianActive(true);
+                StartCoroutine(DisableGuardianAfter(guardianWallDuration));
+            }
         }
 
         private void FireEarthPrison()
@@ -620,14 +670,12 @@ namespace IronWasteland.Tanks.WallTitan
                     break;
 
                 case 1:
-                    SpendEnergy(earthGuardianEnergyCost);
-                    ActivateEarthGuardian();
+                            ActivateEarthGuardian();
                     break;
 
                 case 2:
                 default:
-                    SpendEnergy(earthquakeEnergyCost);
-                    FireEarthquake();
+                            FireEarthquake();
                     break;
             }
         }
@@ -652,10 +700,16 @@ namespace IronWasteland.Tanks.WallTitan
             if (immovableTitanVisual != null)
                 immovableTitanVisual.SetActive(true);
 
+            if (vfx != null)
+                vfx.SetImmovableActive(true);
+
             yield return new WaitForSeconds(immovableTitanDuration);
 
             if (immovableTitanVisual != null)
                 immovableTitanVisual.SetActive(false);
+
+            if (vfx != null)
+                vfx.SetImmovableActive(false);
 
             IsCrowdControlImmune = false;
             RemoveBonusStats(BonusKeyStoneFortress + "_Immovable");
@@ -688,6 +742,14 @@ namespace IronWasteland.Tanks.WallTitan
 
             if (earthGuardianVisual != null)
                 StartCoroutine(PlayVisualRoutine(earthGuardianVisual, earthGuardianDuration));
+        }
+
+        private IEnumerator DisableGuardianAfter(float duration)
+        {
+            yield return new WaitForSeconds(duration);
+
+            if (vfx != null)
+                vfx.SetGuardianActive(false);
         }
 
         private void RegisterSharedDamageLink(TankBrain ally, float ratio, float duration)
@@ -758,6 +820,9 @@ namespace IronWasteland.Tanks.WallTitan
             quake.Duration = earthquakeDuration;
             quake.TargetFound += OnEarthquakeTargetFound;
             quake.StartSkill();
+
+            if (vfx != null)
+                vfx.ShowEarthquake(LookTarget);
         }
 
         private void OnEarthquakeTargetFound(Skill_Earthquake skill, EnemyBrain enemy)
@@ -860,6 +925,56 @@ namespace IronWasteland.Tanks.WallTitan
                 protector = m_Protector;
                 sharedAmount = info.RawDamage * m_Ratio;
                 return sharedAmount > 0f;
+            }
+        }
+        #endregion
+
+        #region Test API (Skill Arena)
+        public int Option1Branch
+        {
+            get => optionSkill1Branch;
+            set
+            {
+                optionSkill1Branch = Mathf.Clamp(value, 0, 2);
+                ResetSkillCooldown(SkillOption1Index);
+            }
+        }
+
+        public int Option2Branch
+        {
+            get => optionSkill2Branch;
+            set
+            {
+                optionSkill2Branch = Mathf.Clamp(value, 0, 2);
+                ResetSkillCooldown(SkillOption2Index);
+            }
+        }
+
+        public string GetSkillName(int slotIndex)
+        {
+            switch (slotIndex)
+            {
+                case SkillEarthBreakIndex: return "Earth Break";
+                case SkillEarthWallIndex: return "Earth Wall";
+
+                case SkillOption1Index:
+                    switch (optionSkill1Branch)
+                    {
+                        case 0: return "Stone Fortress";
+                        case 1: return "Guardian Wall";
+                        default: return "Earth Prison";
+                    }
+
+                case SkillOption2Index:
+                    switch (optionSkill2Branch)
+                    {
+                        case 0: return "Immovable Titan";
+                        case 1: return "Earth Guardian";
+                        default: return "Earthquake";
+                    }
+
+                default:
+                    return $"Skill {slotIndex}";
             }
         }
         #endregion

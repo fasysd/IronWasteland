@@ -1,0 +1,294 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <style>
+      .bg { fill: #131518; }
+      .panel { fill: #1C1F26; stroke: #2D333F; stroke-width: 1.5; rx: 8px; }
+      .panel-active { fill: #222834; stroke: #3D6EFF; stroke-width: 2; rx: 8px; }
+      .btn-primary { fill: #2F6BF2; rx: 6px; cursor: pointer; }
+      .btn-upgrade { fill: #9C27B0; rx: 6px; cursor: pointer; }
+      .btn-secondary { fill: #262B35; stroke: #414A5A; stroke-width: 1.5; rx: 6px; cursor: pointer; }
+      .btn-dismantle { fill: #332025; stroke: #E53935; stroke-width: 1.5; rx: 6px; cursor: pointer; }
+      .text-heading { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 20px; font-weight: 700; fill: #FFFFFF; }
+      .text-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; font-weight: 600; fill: #FFFFFF; }
+      .text-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; fill: #9BA2B0; }
+      .text-btn { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600; fill: #FFFFFF; text-anchor: middle; dominant-baseline: middle; }
+      .text-sub { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; fill: #6B7280; }
+      .placeholder-box { fill: #171920; stroke: #363E4D; stroke-width: 1.5; stroke-dasharray: 6 6; rx: 8px; }
+      .slot-box { fill: #181B22; stroke: #3A4252; stroke-width: 1.5; rx: 8px; }
+      .stat-bar-bg { fill: #232731; rx: 3px; }
+      .stat-bar-fill { fill: #388BFD; rx: 3px; }
+      .badge-opt { fill: #1E2E42; stroke: #3D6EFF; stroke-width: 1; rx: 4px; }
+    </style>
+  </defs>
+
+  <rect width="1920" height="1080" class="bg" />
+
+  <!-- TOP BAR: NAVIGATION & CURRENCY (NGỌC MA PHÁP) -->
+  <rect x="0" y="0" width="1920" height="70" fill="#1A1C22" stroke="#282D37" stroke-width="1" />
+  <g transform="translate(40, 15)">
+    <rect width="120" height="40" class="btn-secondary" />
+    <text x="60" y="20" class="text-btn" font-size="14">&lt; QUAY LẠI</text>
+  </g>
+  <text x="180" y="44" class="text-heading" font-size="22">HANGAR • QUẢN LÝ XE TĂNG &amp; PHỤ KIỆN</text>
+
+  <!-- Currency: Ngọc Ma Pháp (Theo đúng tài liệu thiết kế) -->
+  <g transform="translate(1620, 15)">
+    <rect width="260" height="40" class="panel" stroke="#BA68C8" />
+    <circle cx="25" cy="20" r="10" fill="#AB47BC" />
+    <text x="45" y="25" class="text-title" fill="#E1BEE7">Ngọc Ma Pháp: 125</text>
+  </g>
+
+  <!-- ==================== LEFT PANEL: ROSTER TANK SELECTOR ==================== -->
+  <g transform="translate(40, 95)">
+    <rect width="360" height="940" class="panel" />
+    <text x="25" y="40" class="text-heading">DANH SÁCH CHIẾN XA</text>
+    <text x="25" y="65" class="text-sub">Mở khóa theo số màn chơi hoàn thành</text>
+
+    <!-- Tank 1: Wall Titan (Tanker / Support) -->
+    <g transform="translate(20, 90)">
+      <rect width="320" height="105" class="panel-active" />
+      <rect x="15" y="15" width="75" height="75" class="placeholder-box" />
+      <text x="105" y="38" class="text-title">Wall Titan</text>
+      <text x="105" y="60" class="text-body">Vai trò: Tanker / Support</text>
+      <text x="105" y="82" class="text-sub" fill="#3D6EFF">Cấp 1 / 90 [ ĐANG CHỌN ]</text>
+    </g>
+
+    <!-- Tank 2: Red Nova (Firepower) -->
+    <g transform="translate(20, 210)">
+      <rect width="320" height="105" class="panel" />
+      <rect x="15" y="15" width="75" height="75" class="placeholder-box" />
+      <text x="105" y="38" class="text-title">Red Nova</text>
+      <text x="105" y="60" class="text-body">Vai trò: Hỏa Lực Tầm Xa</text>
+      <text x="105" y="82" class="text-sub">Cấp 10 / 90</text>
+    </g>
+
+    <!-- Tank 3: Black Shadow (Assassin) -->
+    <g transform="translate(20, 330)">
+      <rect width="320" height="105" class="panel" />
+      <rect x="15" y="15" width="75" height="75" class="placeholder-box" />
+      <text x="105" y="38" class="text-title">Black Shadow</text>
+      <text x="105" y="60" class="text-body">Vai trò: Sát thủ Cơ động</text>
+      <text x="105" y="82" class="text-sub">Cấp 5 / 90</text>
+    </g>
+
+    <!-- Tank 4: Green Fox (Locked) -->
+    <g transform="translate(20, 450)">
+      <rect width="320" height="105" class="panel" opacity="0.6" />
+      <rect x="15" y="15" width="75" height="75" class="placeholder-box" />
+      <text x="105" y="38" class="text-title">Green Fox</text>
+      <text x="105" y="60" class="text-sub">Phần thưởng Ải 2-5</text>
+    </g>
+  </g>
+
+  <!-- ==================== CENTER AREA: 3D/2D PREVIEW & SKILL SELECTION ==================== -->
+  <g transform="translate(425, 95)">
+    <!-- Tank Preview Box -->
+    <rect width="940" height="580" class="placeholder-box" />
+    <text x="470" y="270" class="text-btn" fill="#586071" font-size="20">[ KHUNG MÔ HÌNH CHIẾN XA CHI TIẾT ]</text>
+    <text x="470" y="305" class="text-sub" text-anchor="middle">Hiển thị ma pháp đất bao quanh thân xe (Wall Titan) • Di chuột xoay góc nhìn</text>
+
+    <!-- Tank Level & Upgrade Bar -->
+    <g transform="translate(30, 490)">
+      <rect width="880" height="65" class="panel" fill="#191C24" />
+      <text x="25" y="38" class="text-title" font-size="16">CẤP ĐỘ XE: CẤP 1 / 90</text>
+      <text x="250" y="38" class="text-sub">Tiêu hao 5 Ngọc Ma Pháp để lên Cấp 2</text>
+      <g transform="translate(680, 12)">
+        <rect width="180" height="40" class="btn-upgrade" />
+        <text x="90" y="20" class="text-btn" font-size="14">NÂNG CẤP (5 💎)</text>
+      </g>
+    </g>
+
+    <!-- BOTTOM SKILL SELECTION: THƯỜNG + CHUYÊN BIỆT + 2 TÙY CHỌN -->
+    <g transform="translate(0, 600)">
+      <rect width="940" height="335" class="panel" />
+      <text x="30" y="35" class="text-heading">THIẾT LẬP KỸ NĂNG XUẤT TRẬN (4 SKILLS)</text>
+      <text x="30" y="58" class="text-sub">Chọn Kỹ năng tùy chọn 1 &amp; 2 để bổ sung vai trò cốt lõi</text>
+
+      <g transform="translate(25, 75)">
+        <!-- Skill 1: Kỹ Năng Thường (Normal) -->
+        <g transform="translate(0, 0)">
+          <rect width="210" height="230" class="slot-box" />
+          <text x="15" y="30" class="text-title" fill="#81C784">1. KỸ NĂNG THƯỜNG</text>
+          <text x="15" y="52" class="text-sub">Phím J • Hồi chiêu: 0.6s</text>
+          <line x1="15" y1="65" x2="195" y2="65" stroke="#2B313D" />
+          <text x="15" y="90" class="text-title" font-size="14">Earth Break</text>
+          <text x="15" y="115" class="text-body">• Hồi: +10 Năng lượng</text>
+          <text x="15" y="135" class="text-body">• Tầm gần: 50% ATK + 50% DEF</text>
+          <text x="15" y="155" class="text-body">• Tầm xa: 20% ATK + 10% DEF</text>
+          <rect x="15" y="185" width="180" height="30" fill="#202530" rx="4" />
+          <text x="105" y="200" class="text-sub" text-anchor="middle" dominant-baseline="middle">[ Cố định theo xe ]</text>
+        </g>
+
+        <!-- Skill 2: Kỹ Năng Chuyên Biệt (Specialized) -->
+        <g transform="translate(225, 0)">
+          <rect width="210" height="230" class="slot-box" />
+          <text x="15" y="30" class="text-title" fill="#64B5F6">2. KỸ NĂNG CHUYÊN BIỆT</text>
+          <text x="15" y="52" class="text-sub">Phím K • Hồi chiêu: 10s</text>
+          <line x1="15" y1="65" x2="195" y2="65" stroke="#2B313D" />
+          <text x="15" y="90" class="text-title" font-size="14">Earth Wall</text>
+          <text x="15" y="115" class="text-body">• Tiêu hao: 45 Năng lượng</text>
+          <text x="15" y="135" class="text-body">• Tạo tường đá chặn quái &amp; đạn</text>
+          <text x="15" y="155" class="text-body">• Thời gian tồn tại: 4 giây</text>
+          <rect x="15" y="185" width="180" height="30" fill="#202530" rx="4" />
+          <text x="105" y="200" class="text-sub" text-anchor="middle" dominant-baseline="middle">[ Cố định theo xe ]</text>
+        </g>
+
+        <!-- Skill 3: Kỹ Năng Tùy Chọn 1 (Option Skill 1) -->
+        <g transform="translate(450, 0)">
+          <rect width="210" height="230" class="slot-box" stroke="#3D6EFF" />
+          <rect x="12" y="12" width="100" height="20" class="badge-opt" />
+          <text x="62" y="22" class="text-hotkey" fill="#82B1FF" text-anchor="middle" dominant-baseline="middle" font-size="10">TÙY CHỌN 1</text>
+          <text x="15" y="52" class="text-sub">Phím L • Hồi chiêu: 12s</text>
+          <line x1="15" y1="65" x2="195" y2="65" stroke="#2B313D" />
+          <text x="15" y="90" class="text-title" font-size="14">Stone Fortress</text>
+          <text x="15" y="115" class="text-body">• Tiêu hao: 50 Năng lượng</text>
+          <text x="15" y="135" class="text-body">• Nhận khiên + hồi máu</text>
+          <text x="15" y="155" class="text-body">• Tăng DEF, giảm tốc chạy</text>
+          <rect x="15" y="185" width="180" height="30" class="btn-secondary" />
+          <text x="105" y="200" class="text-btn" font-size="13">[ ĐỔI KỸ NĂNG ]</text>
+        </g>
+
+        <!-- Skill 4: Kỹ Năng Tùy Chọn 2 (Option Skill 2) -->
+        <g transform="translate(675, 0)">
+          <rect width="215" height="230" class="slot-box" stroke="#FF9800" />
+          <rect x="12" y="12" width="100" height="20" fill="#3E2723" stroke="#FF9800" stroke-width="1" rx="4" />
+          <text x="62" y="22" class="text-hotkey" fill="#FFB74D" text-anchor="middle" dominant-baseline="middle" font-size="10">TÙY CHỌN 2</text>
+          <text x="15" y="52" class="text-sub">Phím I • Hồi chiêu: 25s</text>
+          <line x1="15" y1="65" x2="200" y2="65" stroke="#2B313D" />
+          <text x="15" y="90" class="text-title" font-size="14" fill="#FFB74D">Tremor Quake</text>
+          <text x="15" y="115" class="text-body">• Tiêu hao: 80 Năng lượng</text>
+          <text x="15" y="135" class="text-body">• Địa chấn làm choáng diện rộng</text>
+          <text x="15" y="155" class="text-body">• Gây 150% ATK + Choáng 2s</text>
+          <rect x="15" y="185" width="185" height="30" class="btn-secondary" />
+          <text x="107" y="200" class="text-btn" font-size="13">[ ĐỔI KỸ NĂNG ]</text>
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== RIGHT PANEL: 8 STATS & 1 DUY NHẤT Ô PHỤ KIỆN ==================== -->
+  <g transform="translate(1400, 95)">
+    <rect width="480" height="940" class="panel" />
+
+    <!-- 1. BẢNG 8 CHỈ SỐ THEO ĐÚNG TÀI LIỆU THIẾT KẾ MỚI -->
+    <text x="35" y="40" class="text-heading">CHỈ SỐ CHIẾN XA (8 STATS)</text>
+    <text x="35" y="62" class="text-sub">Nội suy tuyến tính từ Cấp 1 đến Cấp 90</text>
+
+    <g transform="translate(35, 75)">
+      <!-- 1. Tấn công -->
+      <text x="0" y="16" class="text-title">1. Tấn Công (ATK): 15</text>
+      <text x="410" y="16" class="text-sub" text-anchor="end">Max Lv90: 50</text>
+      <rect x="0" y="24" width="410" height="6" class="stat-bar-bg" />
+      <rect x="0" y="24" width="120" height="6" class="stat-bar-fill" fill="#EF5350" />
+
+      <!-- 2. Giới hạn máu -->
+      <g transform="translate(0, 38)">
+        <text x="0" y="16" class="text-title">2. Giới Hạn Máu (Max HP): 1,200</text>
+        <text x="410" y="16" class="text-sub" text-anchor="end">Max Lv90: 6,500</text>
+        <rect x="0" y="24" width="410" height="6" class="stat-bar-bg" />
+        <rect x="0" y="24" width="90" height="6" class="stat-bar-fill" fill="#66BB6A" />
+      </g>
+
+      <!-- 3. Giới hạn năng lượng -->
+      <g transform="translate(0, 76)">
+        <text x="0" y="16" class="text-title">3. Giới Hạn Năng Lượng: 100</text>
+        <text x="410" y="16" class="text-sub" text-anchor="end">Max Lv90: 300</text>
+        <rect x="0" y="24" width="410" height="6" class="stat-bar-bg" />
+        <rect x="0" y="24" width="140" height="6" class="stat-bar-fill" fill="#29B6F6" />
+      </g>
+
+      <!-- 4. Phòng thủ -->
+      <g transform="translate(0, 114)">
+        <text x="0" y="16" class="text-title">4. Phòng Thủ (DEF): 25</text>
+        <text x="410" y="16" class="text-sub" text-anchor="end">Max Lv90: 55</text>
+        <rect x="0" y="24" width="410" height="6" class="stat-bar-bg" />
+        <rect x="0" y="24" width="190" height="6" class="stat-bar-fill" fill="#AB47BC" />
+      </g>
+
+      <!-- 5. Tốc độ di chuyển -->
+      <g transform="translate(0, 152)">
+        <text x="0" y="16" class="text-title">5. Tốc Độ Di Chuyển: 100</text>
+        <text x="410" y="16" class="text-sub" text-anchor="end">Max Lv90: 100</text>
+        <rect x="0" y="24" width="410" height="6" class="stat-bar-bg" />
+        <rect x="0" y="24" width="220" height="6" class="stat-bar-fill" fill="#FFA726" />
+      </g>
+
+      <!-- 6. Giảm hồi chiêu -->
+      <g transform="translate(0, 190)">
+        <text x="0" y="16" class="text-title">6. Tỉ Lệ Giảm Hồi Chiêu: 0%</text>
+        <text x="410" y="16" class="text-sub" text-anchor="end">Max 60% (Lv90: 20%)</text>
+        <rect x="0" y="24" width="410" height="6" class="stat-bar-bg" />
+        <rect x="0" y="24" width="10" height="6" class="stat-bar-fill" fill="#26A69A" />
+      </g>
+
+      <!-- 7. Tỉ lệ sát thương -->
+      <g transform="translate(0, 228)">
+        <text x="0" y="16" class="text-title">7. Tỉ Lệ Sát Thương: 0%</text>
+        <text x="410" y="16" class="text-sub" text-anchor="end">Max Lv90: 0%</text>
+        <rect x="0" y="24" width="410" height="6" class="stat-bar-bg" />
+        <rect x="0" y="24" width="5" height="6" class="stat-bar-fill" fill="#EC407A" />
+      </g>
+
+      <!-- 8. Tỉ lệ xuyên giáp -->
+      <g transform="translate(0, 266)">
+        <text x="0" y="16" class="text-title">8. Tỉ Lệ Xuyên Giáp: 0%</text>
+        <text x="410" y="16" class="text-sub" text-anchor="end">Tối đa 100%</text>
+        <rect x="0" y="24" width="410" height="6" class="stat-bar-bg" />
+        <rect x="0" y="24" width="5" height="6" class="stat-bar-fill" fill="#7E57C2" />
+      </g>
+    </g>
+
+    <line x1="35" y1="390" x2="445" y2="390" stroke="#2B313D" stroke-width="1.5" />
+
+    <!-- 2. DUY NHẤT 1 Ô TRANG BỊ PHỤ KIỆN (ACCESSORY SLOT) -->
+    <text x="35" y="425" class="text-heading">PHỤ KIỆN TRANG BỊ (1 Ô DUY NHẤT)</text>
+    <text x="35" y="450" class="text-sub">Mỗi xe chỉ mang 1 Phụ kiện: Tăng chỉ số + Kỹ năng bị động</text>
+
+    <!-- The 1 Accessory Card -->
+    <g transform="translate(35, 470)">
+      <rect width="410" height="230" class="slot-box" stroke="#AB47BC" stroke-width="2" />
+      
+      <!-- Icon phụ kiện -->
+      <rect x="20" y="20" width="80" height="80" class="placeholder-box" stroke="#BA68C8" />
+      <text x="60" y="65" class="text-title" fill="#BA68C8" text-anchor="middle" font-size="14">ICON</text>
+
+      <!-- Info Phụ Kiện -->
+      <text x="115" y="40" class="text-title" font-size="16">Trái Tim Nham Thạch</text>
+      <text x="115" y="65" class="text-body" fill="#CE93D8">Phụ kiện Bậc Tinh Anh</text>
+      <text x="115" y="90" class="text-body" fill="#81C784">Chỉ số: +15% Giới hạn máu, +10 DEF</text>
+
+      <line x1="20" y1="115" x2="390" y2="115" stroke="#2D333F" />
+
+      <!-- Kỹ năng bị động (Passive Skill) -->
+      <text x="20" y="140" class="text-title" font-size="14" fill="#FFD54F">⚡ Kỹ năng bị động (Passive):</text>
+      <text x="20" y="165" class="text-body" font-size="12">Khi HP dưới 30%, tự động kích hoạt lá chắn hấp thụ</text>
+      <text x="20" y="185" class="text-body" font-size="12">500 sát thương trong 5 giây (Hồi lại sau 60s).</text>
+
+      <!-- Action buttons for Accessory -->
+      <g transform="translate(20, 200)">
+        <!-- Empty spacing -->
+      </g>
+    </g>
+
+    <!-- 2 Action Buttons for Equipment: Đổi & Phân Rã -->
+    <g transform="translate(35, 720)">
+      <!-- Button: Đổi Phụ Kiện -->
+      <g transform="translate(0, 0)">
+        <rect width="195" height="48" class="btn-secondary" />
+        <text x="97" y="24" class="text-btn" font-size="14">ĐỔI PHỤ KIỆN</text>
+      </g>
+
+      <!-- Button: Phân Rã (nhận 8 - 12 Ngọc ma pháp) -->
+      <g transform="translate(215, 0)">
+        <rect width="195" height="48" class="btn-dismantle" />
+        <text x="97" y="24" class="text-btn" font-size="14" fill="#EF5350">PHÂN RÃ (8-12 💎)</text>
+      </g>
+    </g>
+
+    <!-- BIG CONFIRM BUTTON -->
+    <g transform="translate(35, 835)">
+      <rect width="410" height="65" class="btn-primary" />
+      <text x="205" y="32" class="text-btn" font-size="18">XÁC NHẬN RA TRẬN ➔</text>
+    </g>
+  </g>
+</svg>
