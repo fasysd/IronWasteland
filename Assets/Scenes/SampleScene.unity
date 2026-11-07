@@ -1051,6 +1051,7 @@ MonoBehaviour:
   dummyCount: 4
   ringRadius: 6
   showHud: 1
+  spawnOnStart: 0
 --- !u!4 &1141372370
 Transform:
   m_ObjectHideFlags: 0
