@@ -19,9 +19,9 @@ namespace IronWasteland.Tanks.WaterB
         [Header("Skill 0 - Healing Water")]
         [SerializeField] private WaterB_HealingProjectile healingWaterPrefab;
         [SerializeField, Min(0.01f)] private float healingCooldown = 0.6f;
-        [SerializeField, Min(0f)] private float healingEnergyGain = 10f;          // Hồi 10 năng lượng mỗi lần hồi máu thành công
-        [SerializeField, Min(0f)] private float healingAtkRatio = 0.8f;           // 80% Tấn công
-        [SerializeField, Min(0f)] private float healingMaxHpRatio = 0.01f;        // + 1% Giới hạn máu
+        [SerializeField, Min(0f)] private float healingEnergyGain = 10f;          // Hồi 10 năng lượng mỗi lần đánh trúng kẻ địch
+        [SerializeField, Min(0f)] private float healingAtkRatio = 0.8f;           // Sát thương: 80% Tấn công
+        [SerializeField, Min(0f)] private float healingMaxHpRatio = 0.01f;        //           + 1% Giới hạn máu
 
         [Header("Skill 1 - Bubble Shield")]
         [SerializeField] private WaterB_BubbleShield bubbleShieldPrefab;
@@ -45,6 +45,8 @@ namespace IronWasteland.Tanks.WaterB
         [Tooltip("Prefab luồng sáng chảy về đồng minh khi hút máu (gắn WaterB_LifeDrainStreamEffect). Để trống = tự tạo hiệu ứng mặc định.")]
         [SerializeField] private GameObject lifeDrainStreamPrefab;
         [SerializeField, Min(1)] private int lifeDrainStreamCount = 2;
+        [Tooltip("Prefab vòng tròn hiển thị vùng hồi máu đồng minh khi bật Life Drain (gắn WaterB_LifeDrainRangeVisual). Để trống = tự tạo vòng xanh nhạt mặc định.")]
+        [SerializeField] private GameObject lifeDrainRangeVisualPrefab;
 
         [Header("Skill Sub 2 Prefabs")]
         [SerializeField] private WaterB_MobileAltar mobileAltarPrefab;
@@ -71,6 +73,7 @@ namespace IronWasteland.Tanks.WaterB
 
         private bool m_IsMobileAltarActive;
         private WaterB_AquaAssaultVisual m_AquaAssaultVisual;
+        private WaterB_LifeDrainRangeVisual m_LifeDrainRangeVisual;
 
         private WaterB_SharedHealingLink m_ActiveLink;
         private readonly List<TankBrain> m_ScanBuffer = new List<TankBrain>();
@@ -127,7 +130,7 @@ namespace IronWasteland.Tanks.WaterB
             }
         }
 
-        // GDD: năng lượng của kỹ năng thường chỉ tích lũy khi hồi máu THÀNH CÔNG (xử lý ở CastHealingWater)
+        // GDD: năng lượng của kỹ năng thường chỉ tích lũy khi đạn trúng kẻ địch (xử lý ở CastHealingWater)
         protected override float GetSkillEnergyGain(int index) => 0f;
 
         protected override float GetBaseCooldown(int index)
@@ -196,14 +199,13 @@ namespace IronWasteland.Tanks.WaterB
             // Mobile Altar: Water B không thể tấn công
             if (m_IsMobileAltarActive) return false;
 
-            float power = Scaled(healingAtkRatio, healingMaxHpRatio);
-
             if (healingWaterPrefab == null)
             {
-                HealAlly(this, power);
-                GainEnergy(healingEnergyGain);
-                return true;
+                Debug.LogWarning("[WaterB] Chưa gán healingWaterPrefab nên không thể bắn Healing Water.");
+                return false;
             }
+
+            float power = Scaled(healingAtkRatio, healingMaxHpRatio);
 
             Vector3 mouse = WaterB_Utils.GetMouseWorldPosition();
             Vector3 dir = mouse - transform.position;
@@ -223,24 +225,34 @@ namespace IronWasteland.Tanks.WaterB
             }
 
             WaterB_HealingProjectile projectile = Instantiate(healingWaterPrefab, spawnPos, Quaternion.identity);
-            projectile.Initialize(this, dir, power, m_IsAquaAssaultActive,
-                _ => GainEnergy(healingEnergyGain), speedMul, sizeMul);
+            projectile.Initialize(this, dir, power, _ => GainEnergy(healingEnergyGain), speedMul, sizeMul);
             return true;
         }
 
-        /// <summary>Đạn Aqua Assault trúng kẻ địch: tính sát thương cuối và áp dụng Life Drain.</summary>
+        /// <summary>Đạn Healing Water trúng kẻ địch: tính sát thương cuối (Tỉ lệ sát thương) và áp dụng Life Drain nếu đang bật.</summary>
         public void HandleProjectileDamage(EnemyBrain enemy, float baseDamage)
         {
             if (enemy == null || baseDamage <= 0f) return;
 
+            float damage = baseDamage * (1f + Stats.DamageRate); // Tỉ lệ sát thương (vd. Aqua Assault +15%)
+            DealDamage(enemy, damage);
+        }
+
+        /// <summary>
+        /// Cổng chung cho MỌI sát thương Water B gây ra (bắn thường, trụ nước...): gây sát thương rồi áp dụng Life Drain.
+        /// Sát thương truyền vào là sát thương cuối (đã tính hệ số nếu cần).
+        /// </summary>
+        public void DealDamage(EnemyBrain enemy, float finalDamage)
+        {
+            if (enemy == null || finalDamage <= 0f) return;
+
             // Lấy vị trí trước khi TakeDamage vì kẻ địch có thể chết ngay
             Vector3 enemyPos = enemy.transform.position;
 
-            float damage = baseDamage * (1f + Stats.DamageRate); // Tỉ lệ sát thương (Aqua Assault +15%)
-            enemy.TakeDamage(damage);
-            TextDamageManager.Instance?.Show(damage, enemyPos);
+            enemy.TakeDamage(finalDamage);
+            TextDamageManager.Instance?.Show(finalDamage, enemyPos);
 
-            ApplyLifeDrain(damage, enemyPos);
+            ApplyLifeDrain(finalDamage, enemyPos);
         }
 
         // ------------------------------------------------------------------
@@ -310,7 +322,25 @@ namespace IronWasteland.Tanks.WaterB
             m_IsLifeDrainActive = true;
             if (m_LifeDrainCoroutine != null) StopCoroutine(m_LifeDrainCoroutine);
             m_LifeDrainCoroutine = StartCoroutine(LifeDrainRoutine(skill1SubDesign.DrainDuration));
+
+            SpawnLifeDrainRangeVisual(skill1SubDesign.DrainSearchRadius, skill1SubDesign.DrainDuration);
             return true;
+        }
+
+        /// <summary>Vòng tròn xanh nhạt thể hiện vùng hồi máu đồng minh của Life Drain (chỉ hình ảnh).</summary>
+        private void SpawnLifeDrainRangeVisual(float radius, float duration)
+        {
+            if (m_LifeDrainRangeVisual != null) Destroy(m_LifeDrainRangeVisual.gameObject); // tung lại thì thay cái cũ
+
+            GameObject go = lifeDrainRangeVisualPrefab != null
+                ? Instantiate(lifeDrainRangeVisualPrefab, transform.position, Quaternion.identity)
+                : new GameObject("WaterB_LifeDrainRangeVisual");
+
+            WaterB_LifeDrainRangeVisual visual = go.GetComponent<WaterB_LifeDrainRangeVisual>();
+            if (visual == null) visual = go.AddComponent<WaterB_LifeDrainRangeVisual>();
+
+            visual.Initialize(this, radius, duration);
+            m_LifeDrainRangeVisual = visual;
         }
 
         private IEnumerator LifeDrainRoutine(float duration)
@@ -436,7 +466,7 @@ namespace IronWasteland.Tanks.WaterB
 
                 WaterB_WaterTurret turret = Instantiate(waterTurretPrefab, center + offset, Quaternion.identity);
                 turret.Initialize(damage, skill2SubDesign.TurretDuration, skill2SubDesign.TurretAttackInterval,
-                    () => GainEnergy(energyPerHit));
+                    () => GainEnergy(energyPerHit), DealDamage);
             }
             return true;
         }

@@ -138,6 +138,7 @@ MonoBehaviour:
   bubbleProtectorPrefab: {fileID: 9085398380949952740, guid: 10c965ceef4e5124b8311ca891a33920, type: 3}
   lifeDrainStreamPrefab: {fileID: 0}
   lifeDrainStreamCount: 2
+  lifeDrainRangeVisualPrefab: {fileID: 0}
   mobileAltarPrefab: {fileID: 1384006585347044756, guid: 0170b52e964c6aa4f9766ca4faa800f3, type: 3}
   waterTurretPrefab: {fileID: 834826092504559950, guid: 7e330e9fd294f7647ab9a9d48f550f21, type: 3}
   maxPlacementRange: 8
@@ -157,7 +158,7 @@ MonoBehaviour:
   sharedEnergyCost: 50
   sharedCooldown: 12
   sharedHealingDuration: 10
-  sharedPercent: 1
+  sharedPercent: 0.5
   maxSelectRange: 10
   sharedHealingLinkPrefab: {fileID: 2490352363854650707, guid: f5da3f94bad536b47b81cfe30590c8b3, type: 3}
   drainEnergyCost: 45
@@ -188,7 +189,7 @@ MonoBehaviour:
   altarEnergyCost: 75
   altarCooldown: 16
   altarDuration: 8
-  altarInterval: 1
+  altarInterval: 2
   altarHealAtkRatio: 0.5
   altarHealMaxHpRatio: 0.02
   altarShieldAtkRatio: 0.8

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using IronWasteland.Enemies;
 
 namespace IronWasteland.Tanks.WaterB
 {
@@ -20,9 +21,12 @@ namespace IronWasteland.Tanks.WaterB
         private float m_FireTimer;
         private Transform m_CurrentTarget;
         private System.Action m_OnHitEnergyReturn;
+        private System.Action<EnemyBrain, float> m_DamageHandler;
 
-        public void Initialize(float damage, float lifetime, float attackInterval, System.Action onHitEnergyReturn)
+        public void Initialize(float damage, float lifetime, float attackInterval, System.Action onHitEnergyReturn,
+                               System.Action<EnemyBrain, float> damageHandler = null)
         {
+            m_DamageHandler = damageHandler;
             m_Damage = damage;
             m_AttackInterval = Mathf.Max(0.05f, attackInterval);
             m_FireTimer = m_AttackInterval; // có mục tiêu là bắn phát đầu ngay
@@ -82,7 +86,7 @@ namespace IronWasteland.Tanks.WaterB
             spawnPos.z = 0f;
 
             WaterB_TurretProjectile projectile = Instantiate(projectilePrefab, spawnPos, transform.rotation);
-            projectile.Initialize(m_CurrentTarget, m_Damage, () => m_OnHitEnergyReturn?.Invoke());
+            projectile.Initialize(m_CurrentTarget, m_Damage, () => m_OnHitEnergyReturn?.Invoke(), m_DamageHandler);
         }
 
         private void OnDrawGizmosSelected()

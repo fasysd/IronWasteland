@@ -99,7 +99,7 @@ MonoBehaviour:
   skill0DamagePercent: 100
   skill1Design: {fileID: 8617847460914158506, guid: db0035b9775a8ae42ae2cfec902eab40, type: 3}
   initialPoolSize: 4
-  skill1Cooldown: 1.5
+  skill1Cooldown: 6
   skill1EnergyCost: 30
   markLifetime: 8
   markStacksPerAttack: 1
@@ -136,9 +136,9 @@ MonoBehaviour:
   buff1ACooldownReductionOnKill: 3
   buff1BEnergyCost: 40
   buff1BCooldown: 11
-  burnDuration: 10
+  burnDuration: 6
   burnInterval: 1
-  burnDamagePercent: 0.1
+  burnDamagePercent: 0.25
   energyOnHitBurnTarget: 3
   buff1CEnergyCost: 50
   buff1CCooldown: 10

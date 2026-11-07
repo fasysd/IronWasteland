@@ -59,6 +59,34 @@ namespace IronWasteland.Tanks.WaterB
             return best;
         }
 
+        private static Sprite s_DiscSprite;
+
+        /// <summary>Sprite hình tròn trắng đường kính 1 đơn vị (tạo bằng code, dùng chung cho các vòng/hào quang).</summary>
+        public static Sprite GetDiscSprite()
+        {
+            if (s_DiscSprite != null) return s_DiscSprite;
+
+            const int size = 128;
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Bilinear;
+            tex.wrapMode = TextureWrapMode.Clamp;
+
+            float c = (size - 1) * 0.5f;
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float d = Mathf.Sqrt((x - c) * (x - c) + (y - c) * (y - c)) / c;
+                    float a = Mathf.Clamp01((1f - d) * c * 0.5f); // mép mềm vài pixel
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                }
+            }
+            tex.Apply();
+
+            s_DiscSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+            return s_DiscSprite;
+        }
+
         /// <summary>Co/giãn root để sprite phủ đúng đường kính = 2 * radius (đồng bộ hình ảnh với vùng ảnh hưởng thật).</summary>
         public static void FitVisualToRadius(Transform root, SpriteRenderer sr, float radius)
         {

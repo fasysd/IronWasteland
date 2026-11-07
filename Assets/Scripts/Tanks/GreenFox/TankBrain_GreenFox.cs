@@ -11,6 +11,7 @@ namespace IronWasteland.Tanks.GreenFox
     /// - Năng lượng/hồi chiêu: GetSkillEnergyCost + GetBaseCooldown (UseSkill tự trừ năng lượng, KHÔNG trừ tay nữa)
     /// - Buff chỉ số: AddBonusStats / RemoveBonusStats (percent cho %, flat cho cộng phẳng)
     /// - Sát thương: Tấn công * hệ số kỹ năng * (1 + Tỉ lệ sát thương)
+    /// - Dấu ấn: MỌI sát thương Green Fox gây ra qua DamageEnemy đều cộng dồn ấn (trừ nổ ấn và sát thương thưởng cùng đòn)
     /// </summary>
     [DisallowMultipleComponent]
     public class TankBrain_GreenFox : TankBrain
@@ -196,21 +197,27 @@ namespace IronWasteland.Tanks.GreenFox
         /// <summary>Sát thương cuối = Tấn công * hệ số * (1 + Tỉ lệ sát thương).</summary>
         public float ScaledDamage(float atkRatio) => Stats.Attack * atkRatio * (1f + Stats.DamageRate);
 
-        /// <summary>Gây sát thương lên kẻ địch: hiện số, và báo Fox Territory (nếu đang có) để hồi năng lượng.</summary>
-        public void DamageEnemy(EnemyBrain enemy, float damage, Vector3 textPosition)
+        /// <summary>
+        /// Gây sát thương lên kẻ địch: hiện số, báo Fox Territory (hồi năng lượng nếu hợp lệ), báo hạ gục (1A)
+        /// và CỘNG DỒN ẤN (nếu kẻ địch đang có ấn).
+        /// addMarkStacks = false cho sát thương của chính nổ ấn và sát thương thưởng của cùng 1 đòn (tránh cộng dồn lặp).
+        /// </summary>
+        public void DamageEnemy(EnemyBrain enemy, float damage, Vector3 textPosition, bool addMarkStacks = true)
         {
             if (enemy == null || damage <= 0f) return;
 
             bool wasAlive = enemy.IsAlive;
             Vector3 deathPosition = enemy.transform.position;
 
-            enemy.TakeDamage(damage);
+            DealDamage(enemy, damage); // Attacker = Green Fox, EnemyBrain tự báo Fox Territory
             TextDamageManager.Instance?.Show(damage, textPosition);
 
-            if (m_ActiveTerritory != null) m_ActiveTerritory.NotifyDamageDealtInTerritory(enemy);
 
             // Đòn này hạ gục kẻ địch => Mark Hunter (1A)
             if (wasAlive && !enemy.IsAlive) NotifyEnemyKilled(deathPosition, enemy);
+
+            // Mọi sát thương từ Green Fox đều cộng dồn ấn
+            if (addMarkStacks && enemy != null && enemy.IsAlive) AddMarkStacks(enemy);
         }
 
 
@@ -306,7 +313,10 @@ namespace IronWasteland.Tanks.GreenFox
             skill0.Initialize(this, spawnPos, shootDirection, damage, ReturnSkill0ToPool);
         }
 
-        /// <summary>Fox Fang trúng kẻ địch: hồi năng lượng, đính kèm thiêu đốt (1B), cộng dồn dấu ấn.</summary>
+        /// <summary>
+        /// Fox Fang trúng kẻ địch: hồi năng lượng, đính kèm thiêu đốt (1B).
+        /// (Cộng dồn ấn đã được xử lý trong DamageEnemy cho mọi nguồn sát thương.)
+        /// </summary>
         public void HandleSkill0Hit(EnemyBrain enemy)
         {
             if (enemy == null) return;
@@ -322,7 +332,6 @@ namespace IronWasteland.Tanks.GreenFox
             }
 
             TryApplyBurn(enemy);
-            AddMarkStacks(enemy);
         }
 
         // ------------------------------------------------------------------
@@ -423,7 +432,7 @@ namespace IronWasteland.Tanks.GreenFox
             if (found) m_Signs.Remove(key);
         }
 
-        /// <summary>Khi Green Fox tấn công mục tiêu có dấu ấn: cộng dồn; đủ tối đa thì nổ.</summary>
+        /// <summary>Khi Green Fox gây sát thương lên mục tiêu có dấu ấn: cộng dồn; đủ tối đa thì nổ.</summary>
         private void AddMarkStacks(EnemyBrain enemy)
         {
             if (!m_Signs.TryGetValue(enemy, out Sign sign) || sign == null) return;
@@ -444,7 +453,9 @@ namespace IronWasteland.Tanks.GreenFox
                 : markExplosionDamagePercent;
 
             Vector3 explosionPos = sign.transform.position;
-            DamageEnemy(enemy, ScaledDamage(percent / 100f), explosionPos);
+
+            // Sát thương nổ ấn KHÔNG cộng dồn ấn (addMarkStacks = false)
+            DamageEnemy(enemy, ScaledDamage(percent / 100f), explosionPos, false);
             SpawnExplosionEffect(explosionPos);
 
             TryApplyBurn(enemy);
@@ -565,7 +576,7 @@ namespace IronWasteland.Tanks.GreenFox
 
             GreenFox_BurnEffect burn = Instantiate(burnPrefab, enemy.transform.position, Quaternion.identity);
             m_Burns[enemy] = burn;
-            burn.ApplyBurn(enemy, tickDamage, skill1SubDesign.BurnDuration, skill1SubDesign.BurnInterval, OnBurnEnded);
+            burn.ApplyBurn(this, enemy, tickDamage, skill1SubDesign.BurnDuration, skill1SubDesign.BurnInterval, OnBurnEnded);
         }
 
         private void OnBurnEnded(GreenFox_BurnEffect burn)
@@ -652,7 +663,8 @@ namespace IronWasteland.Tanks.GreenFox
 
                 if (enemy != null)
                 {
-                    DamageEnemy(enemy, damage, explosionPos);
+                    // Sát thương nổ ấn KHÔNG cộng dồn ấn (ấn đang bị tiêu hao)
+                    DamageEnemy(enemy, damage, explosionPos, false);
                     TryApplyBurn(enemy);
                 }
 

@@ -197,7 +197,7 @@ namespace IronWasteland.Enemies
 
             OnDamaged(finalDamage);
             OnTakeDamageEvent?.Invoke(info);
-
+            IronWasteland.Tanks.GreenFox.GreenFox_FoxTerritory.ReportDamage(this, info.Attacker);
             if (currentHealth <= 0f)
             {
                 currentHealth = 0f;
@@ -209,6 +209,7 @@ namespace IronWasteland.Enemies
         public virtual void TakeDamage(float amount)
         {
             TakeDamage(new DamageInfo(null, this, amount));
+
         }
 
         public virtual void NotifyDealtDamage(DamageInfo info)
@@ -547,5 +548,6 @@ namespace IronWasteland.Enemies
             if (stats == null) stats = new EnemyStats();
             if (string.IsNullOrEmpty(displayName)) displayName = name;
         }
+
     }
 }

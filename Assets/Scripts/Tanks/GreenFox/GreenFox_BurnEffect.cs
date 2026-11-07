@@ -8,12 +8,15 @@ namespace IronWasteland.Tanks.GreenFox
     /// <summary>
     /// Dùng cho 2 việc:
     /// 1) ApplyBurn: hiệu ứng thiêu đốt gắn trên kẻ địch (gây sát thương mỗi 0.5s trong 6s, đòn mới làm mới thời gian).
+    ///    Mỗi nhịp sát thương đi qua TankBrain_GreenFox.DamageEnemy nên cũng CỘNG DỒN DẤU ẤN
+    ///    (và tính hạ gục cho Mark Hunter, hồi năng lượng Fox Territory như mọi sát thương khác của Green Fox).
     /// 2) Initialize: vòng tròn hiển thị buff Burning Fox quanh xe tăng.
     /// </summary>
     [DisallowMultipleComponent]
     public class GreenFox_BurnEffect : MonoBehaviour
     {
         private bool m_IsBurning;
+        private TankBrain_GreenFox m_Owner;
         private EnemyBrain m_OwnerEnemy;
         private Transform m_TargetTransform;
 
@@ -26,7 +29,7 @@ namespace IronWasteland.Tanks.GreenFox
         public EnemyBrain OwnerEnemy => m_OwnerEnemy;
 
         // --- DẤU ẤN CHÁY TRÊN KẺ ĐỊCH ---
-        public void ApplyBurn(EnemyBrain enemy, float tickDamage, float duration, float interval, Action<GreenFox_BurnEffect> onEnded)
+        public void ApplyBurn(TankBrain_GreenFox owner, EnemyBrain enemy, float tickDamage, float duration, float interval, Action<GreenFox_BurnEffect> onEnded)
         {
             if (enemy == null)
             {
@@ -34,6 +37,7 @@ namespace IronWasteland.Tanks.GreenFox
                 return;
             }
 
+            m_Owner = owner;
             m_OwnerEnemy = enemy;
             m_TargetTransform = enemy.transform;
             m_Interval = Mathf.Max(0.05f, interval);
@@ -97,10 +101,18 @@ namespace IronWasteland.Tanks.GreenFox
             {
                 yield return wait;
 
-                if (m_OwnerEnemy == null) break;
+                if (m_OwnerEnemy == null || !m_OwnerEnemy.IsAlive) break;
 
-                m_OwnerEnemy.TakeDamage(m_TickDamage);
-                TextDamageManager.Instance?.Show(m_TickDamage, transform.position);
+                if (m_Owner != null)
+                {
+                    // Qua DamageEnemy: hiện số, cộng dồn ấn, tính hạ gục (1A), hồi năng lượng Fox Territory
+                    m_Owner.DamageEnemy(m_OwnerEnemy, m_TickDamage, transform.position);
+                }
+                else
+                {
+                    m_OwnerEnemy.TakeDamage(m_TickDamage);
+                    TextDamageManager.Instance?.Show(m_TickDamage, transform.position);
+                }
             }
 
             m_IsBurning = false;

@@ -976,7 +976,12 @@ namespace IronWasteland.Tanks
         {
             return GetCooldownWithReduction(GetBaseCooldown(index));
         }
-
+        /// Mọi xe gây sát thương lên kẻ địch đều gọi hàm này thay vì enemy.TakeDamage(...)
+        public void DealDamage(IronWasteland.Enemies.EnemyBrain enemy, float amount)
+        {
+            if (enemy == null || amount <= 0f) return;
+            enemy.TakeDamage(new DamageInfo(this, enemy, amount));
+        }
         #endregion
     }
 }

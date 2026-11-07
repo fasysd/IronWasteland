@@ -13,14 +13,17 @@ namespace IronWasteland.Tanks.WaterB
         private Transform m_Target;
         private float m_Damage;
         private System.Action m_OnHitEnergyReturn;
+        private System.Action<EnemyBrain, float> m_DamageHandler; // Water B xử lý sát thương (kèm Life Drain)
         private float m_SpawnTime;
         private bool m_Hit; // chống trúng 2 lần (khoảng cách + trigger) trong cùng 1 frame
 
-        public void Initialize(Transform target, float damage, System.Action onHitEnergyReturn)
+        public void Initialize(Transform target, float damage, System.Action onHitEnergyReturn,
+                               System.Action<EnemyBrain, float> damageHandler = null)
         {
             m_Target = target;
             m_Damage = damage;
             m_OnHitEnergyReturn = onHitEnergyReturn;
+            m_DamageHandler = damageHandler;
             m_SpawnTime = Time.time;
 
             Destroy(gameObject, maxLifeTime);
@@ -84,23 +87,24 @@ namespace IronWasteland.Tanks.WaterB
             if (m_Hit) return;
             m_Hit = true;
 
-            // Nếu va chạm trực tiếp với EnemyBrain qua trigger
-            if (enemy != null)
+            // Va chạm trực tiếp qua trigger, hoặc bay tới mục tiêu đang theo dõi
+            EnemyBrain victim = enemy != null
+                ? enemy
+                : (m_Target != null ? m_Target.GetComponentInParent<EnemyBrain>() : null);
+
+            if (victim != null)
             {
-                enemy.TakeDamage(m_Damage);
-                TextDamageManager.Instance?.Show(m_Damage, enemy.transform.position);
-                Debug.Log($"[WaterTurret] Trụ nước bắn trúng kẻ địch {enemy.name} gây {m_Damage} sát thương!");
-            }
-            else if (m_Target != null)
-            {
-                // Hoặc nếu bay đến mục tiêu đang theo dõi
-                EnemyBrain targetEnemy = m_Target.GetComponentInParent<EnemyBrain>();
-                if (targetEnemy != null)
+                if (m_DamageHandler != null)
                 {
-                    targetEnemy.TakeDamage(m_Damage);
-                    TextDamageManager.Instance?.Show(m_Damage, m_Target.position);
-                    Debug.Log($"[WaterTurret] Trụ nước tiêu diệt mục tiêu gây {m_Damage} sát thương!");
+                    m_DamageHandler(victim, m_Damage); // Water B: gây sát thương + Life Drain
                 }
+                else
+                {
+                    Vector3 pos = victim.transform.position;
+                    victim.TakeDamage(m_Damage);
+                    TextDamageManager.Instance?.Show(m_Damage, pos);
+                }
+                Debug.Log($"[WaterTurret] Trụ nước bắn trúng {victim.name} gây {m_Damage} sát thương!");
             }
 
             // Hoàn trả năng lượng nước cho Water B
