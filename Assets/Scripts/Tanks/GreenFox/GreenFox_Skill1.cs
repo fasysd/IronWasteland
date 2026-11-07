@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace IronWasteland.Tanks.GreenFox
 {
+    /// <summary>Fox Mark: quét quanh điểm nhắm, chọn kẻ địch GẦN ĐIỂM NHẮM NHẤT để gắn dấu ấn.</summary>
     [DisallowMultipleComponent]
     public class GreenFox_Skill1 : MonoBehaviour
     {
@@ -22,9 +23,9 @@ namespace IronWasteland.Tanks.GreenFox
             transform.position = targetPosition;
             gameObject.SetActive(true);
 
-            // Quét kẻ địch
             Collider2D[] colliders = Physics2D.OverlapCircleAll(targetPosition, castRadius);
             EnemyBrain targetEnemy = null;
+            float bestDist = float.MaxValue;
 
             foreach (Collider2D col in colliders)
             {
@@ -34,22 +35,17 @@ namespace IronWasteland.Tanks.GreenFox
                 if (targetRef == null) continue;
 
                 EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
-                if (enemy != null)
+                if (enemy == null) continue;
+
+                float d = Vector2.Distance(targetPosition, enemy.transform.position);
+                if (d < bestDist)
                 {
+                    bestDist = d;
                     targetEnemy = enemy;
-                    break;
                 }
             }
 
-            if (targetEnemy != null)
-            {
-                onEnemyFound?.Invoke(targetEnemy);
-                Debug.Log($"[GreenFox_Skill1] Đã đặt dấu ấn lên: {targetEnemy.name}");
-            }
-            else
-            {
-                Debug.Log("[GreenFox_Skill1] Đặt dấu ấn bị trượt!");
-            }
+            if (targetEnemy != null) onEnemyFound?.Invoke(targetEnemy);
 
             StartCoroutine(WaitAndFinishRoutine());
         }
@@ -61,10 +57,8 @@ namespace IronWasteland.Tanks.GreenFox
             Action<GreenFox_Skill1> returnToPool = m_ReturnToPool;
             m_ReturnToPool = null;
 
-            if (returnToPool != null)
-                returnToPool(this);
-            else
-                gameObject.SetActive(false);
+            if (returnToPool != null) returnToPool(this);
+            else gameObject.SetActive(false);
         }
 
         public void Clear()

@@ -1,175 +1,94 @@
-﻿using System.Collections;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using IronWasteland.Enemies;
 
 namespace IronWasteland.Tanks.WaterB
 {
+    /// <summary>
+    /// Water B (Support / DPS mở rộng) - viết lại theo GDD, dùng các cơ chế sẵn có của TankBrain:
+    /// - Năng lượng: TankBrain.CurrentEnergy / GainEnergy / SpendEnergy (UseSkill tự trừ theo GetSkillEnergyCost)
+    /// - Hồi chiêu: GetBaseCooldown + CooldownReduction trong Stats
+    /// - Khiên: TankBrain.AddShield (ShieldEffect)
+    /// - Buff chỉ số: TankBrain.AddBonusStats / RemoveBonusStats
+    /// - Hồi máu: TankBrain.Heal(amount, false) để sự kiện OnHealed (Shared Healing) luôn kích hoạt
+    /// </summary>
     [DisallowMultipleComponent]
     public class TankBrain_WaterB : TankBrain
     {
-        [Header("Skill 0 (Healing Water) - Settings")]
-        [SerializeField, Min(0f)] private float baseHealAmount = 30f;
-        [SerializeField, Min(0.01f)] private float skill0Cooldown = 0.5f;
-        [SerializeField, Min(0f)] private float energyGainPerHeal = 15f;
+        [Header("Skill 0 - Healing Water")]
         [SerializeField] private WaterB_HealingProjectile healingWaterPrefab;
+        [SerializeField, Min(0.01f)] private float healingCooldown = 0.6f;
+        [SerializeField, Min(0f)] private float healingEnergyGain = 10f;          // Hồi 10 năng lượng mỗi lần hồi máu thành công
+        [SerializeField, Min(0f)] private float healingAtkRatio = 0.8f;           // 80% Tấn công
+        [SerializeField, Min(0f)] private float healingMaxHpRatio = 0.01f;        // + 1% Giới hạn máu
 
-        [Header("Skill 1 (Bubble Shield) - Settings")]
-        [SerializeField, Min(0f)] private float shieldCapacity = 100f;
-        [SerializeField, Min(0.1f)] private float shieldDuration = 5f;
-        [SerializeField, Min(0f)] private float shieldHealOnBreak = 50f;
-        [SerializeField, Min(0f)] private float energyCostForShield = 40f;
+        [Header("Skill 1 - Bubble Shield")]
         [SerializeField] private WaterB_BubbleShield bubbleShieldPrefab;
+        [SerializeField, Min(0f)] private float shieldEnergyCost = 45f;
+        [SerializeField, Min(0.1f)] private float shieldCooldown = 9f;
+        [SerializeField, Min(0.1f)] private float shieldDuration = 4f;
+        [SerializeField, Min(0f)] private float shieldAtkRatio = 1.2f;            // Khiên: 120% Tấn công
+        [SerializeField, Min(0f)] private float shieldMaxHpRatio = 0.10f;         //        + 10% Giới hạn máu
+        [SerializeField, Min(0f)] private float shieldBreakHealAtkRatio = 1.0f;   // Hồi khi vỡ: 100% Tấn công
+        [SerializeField, Min(0f)] private float shieldBreakHealMaxHpRatio = 0.05f;//            + 5% Giới hạn máu
+        [SerializeField, Min(1f)] private float shieldMaxCastRange = 12f;
 
-        [Header("Skill Sub 1 & Sub 2 References")]
+        [Header("Skill Sub 1 & Sub 2 (thông số từng biến thể)")]
         [SerializeField] private WaterB_Skill1Sub skill1SubDesign;
         [SerializeField] private WaterB_Skill2Sub skill2SubDesign;
-        [SerializeField, Min(0.01f)] private float skill1SubCooldown = 12f;
-        [SerializeField, Min(0.01f)] private float skill2SubCooldown = 10f;
 
-        [Header("Skill Sub 1 Prefabs (Variants)")]
+        [Header("Skill Sub 1 Prefabs")]
         [SerializeField] private WaterB_BubbleProtectorDome bubbleProtectorPrefab;
 
-        [Header("Skill 2 Prefabs (Option 2)")]
+        [Header("Life Drain Visual")]
+        [Tooltip("Prefab luồng sáng chảy về đồng minh khi hút máu (gắn WaterB_LifeDrainStreamEffect). Để trống = tự tạo hiệu ứng mặc định.")]
+        [SerializeField] private GameObject lifeDrainStreamPrefab;
+        [SerializeField, Min(1)] private int lifeDrainStreamCount = 2;
+
+        [Header("Skill Sub 2 Prefabs")]
         [SerializeField] private WaterB_MobileAltar mobileAltarPrefab;
         [SerializeField] private WaterB_WaterTurret waterTurretPrefab;
-        [SerializeField, Min(0f)] private float energyGainPerTurretHit = 5f;
         [SerializeField, Min(1f)] private float maxPlacementRange = 8f;
+
+        [Header("Aqua Assault Visual (2C)")]
+        [Tooltip("Prefab HÌNH ẢNH gắn vào giữa Water B khi bật Aqua Assault (gắn WaterB_AquaAssaultVisual). Để trống = tự tạo hiệu ứng mặc định.")]
+        [SerializeField] private GameObject aquaAssaultVisualPrefab;
 
         private const int Skill0Index = 0;
         private const int Skill1Index = 1;
         private const int Skill1SubIndex = 2;
         private const int Skill2SubIndex = 3;
 
-        private float m_WaterEnergy = 0f;
-        private const float MaxWaterEnergy = 100f;
+        private const string LifeDrainBonusKey = "WaterB_LifeDrain";
+        private const string AquaAssaultBonusKey = "WaterB_AquaAssault";
 
-        private bool m_IsAquaAssaultActive = false;
+        private bool m_IsAquaAssaultActive;
         private Coroutine m_AquaAssaultCoroutine;
 
-        private bool m_IsLifeDrainActive = false;
+        private bool m_IsLifeDrainActive;
         private Coroutine m_LifeDrainCoroutine;
 
-        private bool m_IsMobileAltarActive = false;
-        private Coroutine m_MobileAltarCoroutine;
+        private bool m_IsMobileAltarActive;
+        private WaterB_AquaAssaultVisual m_AquaAssaultVisual;
 
         private WaterB_SharedHealingLink m_ActiveLink;
+        private readonly List<TankBrain> m_ScanBuffer = new List<TankBrain>();
 
-        public float WaterEnergy => m_WaterEnergy;
+        /// <summary>Mã định danh riêng của Water B này (dùng làm Id khiên/buff, thay cho GetInstanceID đã lỗi thời).</summary>
+        public string InstanceKey { get; } = System.Guid.NewGuid().ToString("N");
+
         public bool IsAquaAssaultActive => m_IsAquaAssaultActive;
         public bool IsLifeDrainActive => m_IsLifeDrainActive;
         public bool IsMobileAltarActive => m_IsMobileAltarActive;
-        public float LifeDrainPercent => skill1SubDesign != null ? skill1SubDesign.DrainPercent : 0.3f;
 
-        protected override float GetBaseCooldown(int index)
-        {
-            float cdMultiplier = m_IsAquaAssaultActive && skill2SubDesign != null ? skill2SubDesign.CooldownMultiplier : 1f;
-
-            if (index == Skill0Index) return skill0Cooldown * cdMultiplier;
-            if (index == Skill1Index) return 3.0f;
-            if (index == Skill1SubIndex) return skill1SubCooldown;
-            if (index == Skill2SubIndex) return skill2SubCooldown;
-
-            return base.GetBaseCooldown(index);
-        }
-
-        protected override void OnUseSkill(int index)
-        {
-            if (m_IsMobileAltarActive && index != Skill2SubIndex)
-            {
-                Debug.Log("[WaterB] Đang trong trạng thái Đài Tế Thủy Triều (Mobile Altar) - Không thể tấn công hoặc dùng kỹ năng!");
-                return;
-            }
-
-            if (index == Skill0Index) { CastHealingWater(); return; }
-            if (index == Skill1Index) { CastBubbleShield(); return; }
-            if (index == Skill1SubIndex) { ActivateSkill1Sub(); return; }
-            if (index == Skill2SubIndex) { ActivateSkill2Sub(); return; }
-
-            base.OnUseSkill(index);
-        }
-
-        private void CastHealingWater()
-        {
-            float finalPower = m_IsAquaAssaultActive ? baseHealAmount * 1.3f : baseHealAmount;
-
-            if (healingWaterPrefab != null)
-            {
-                Vector2 mouseScreenPos = Vector2.zero;
-                if (Pointer.current != null) mouseScreenPos = Pointer.current.position.ReadValue();
-
-                Vector3 mouseWorldPos = Vector3.zero;
-                if (Camera.main != null)
-                {
-                    Vector3 screenPoint = new Vector3(mouseScreenPos.x, mouseScreenPos.y, Mathf.Abs(Camera.main.transform.position.z));
-                    mouseWorldPos = Camera.main.ScreenToWorldPoint(screenPoint);
-                }
-                mouseWorldPos.z = 0f;
-
-                Vector3 spawnPos = transform.position + (mouseWorldPos - transform.position).normalized * 0.2f;
-                spawnPos.z = 0f;
-
-                Vector3 shootDirection = (mouseWorldPos - transform.position);
-                if (shootDirection.sqrMagnitude < 0.001f) shootDirection = transform.up;
-                shootDirection.z = 0f;
-
-                WaterB_HealingProjectile projectile = Instantiate(healingWaterPrefab, spawnPos, Quaternion.identity);
-
-                projectile.Initialize(this, shootDirection.normalized, finalPower, m_IsAquaAssaultActive, (val) =>
-                {
-                    m_WaterEnergy = Mathf.Clamp(m_WaterEnergy + energyGainPerHeal, 0f, MaxWaterEnergy);
-                });
-            }
-            else
-            {
-                m_WaterEnergy = Mathf.Clamp(m_WaterEnergy + energyGainPerHeal, 0f, MaxWaterEnergy);
-                TextDamageManager.Instance?.Show(finalPower, transform.position);
-                TriggerHealAndShare(finalPower, false);
-            }
-        }
-
-        private void CastBubbleShield()
-        {
-            if (m_WaterEnergy < energyCostForShield) return;
-            if (bubbleShieldPrefab == null) return;
-
-            Vector2 mouseScreenPos = Vector2.zero;
-            if (Pointer.current != null) mouseScreenPos = Pointer.current.position.ReadValue();
-
-            Vector3 mouseWorldPos = Vector3.zero;
-            if (Camera.main != null)
-            {
-                Vector3 screenPoint = new Vector3(mouseScreenPos.x, mouseScreenPos.y, Mathf.Abs(Camera.main.transform.position.z));
-                mouseWorldPos = Camera.main.ScreenToWorldPoint(screenPoint);
-            }
-            mouseWorldPos.z = 0f;
-
-            Collider2D[] hits = Physics2D.OverlapCircleAll(mouseWorldPos, 1.5f);
-            Transform targetTransform = transform;
-
-            float minDistance = float.MaxValue;
-            foreach (var hit in hits)
-            {
-                TankBrain tank = hit.GetComponentInParent<TankBrain>();
-                if (tank != null)
-                {
-                    float dist = Vector2.Distance(transform.position, hit.transform.position);
-                    if (dist < minDistance)
-                    {
-                        minDistance = dist;
-                        targetTransform = tank.transform;
-                    }
-                }
-            }
-
-            m_WaterEnergy -= energyCostForShield;
-
-            WaterB_BubbleShield shield = Instantiate(bubbleShieldPrefab, targetTransform.position, Quaternion.identity);
-            shield.Initialize(targetTransform, shieldCapacity, shieldDuration, shieldHealOnBreak, 0.2f);
-        }
+        // Điểm duy nhất đọc chỉ số cuối của Water B (nếu TankStats đặt tên khác thì chỉ sửa ở đây)
+        private float Atk => Stats.Attack;
+        private float MaxHp => Stats.MaxHealth;
+        private float Scaled(float atkRatio, float maxHpRatio) => Atk * atkRatio + MaxHp * maxHpRatio;
 
         // ------------------------------------------------------------------
-        // Chọn biến thể qua TankBrainContext (giống TankBrain_BlackShadow):
-        // OptionSkill1 / OptionSkill2: 0 = mặc định, 1 = biến thể 2, 2 = biến thể 3
+        // Biến thể chọn qua TankBrainContext (0 = mặc định, 1, 2)
         // ------------------------------------------------------------------
         private Skill1WaterVariant GetSkill1Variant()
         {
@@ -191,92 +110,207 @@ namespace IronWasteland.Tanks.WaterB
             }
         }
 
-        private void ActivateSkill1Sub()
+        // ------------------------------------------------------------------
+        // Năng lượng & hồi chiêu (TankBrain.UseSkill tự áp dụng)
+        // ------------------------------------------------------------------
+        protected override float GetSkillEnergyCost(int index)
         {
-            if (skill1SubDesign == null) return;
+            switch (index)
+            {
+                case Skill0Index: return 0f;
+                case Skill1Index: return shieldEnergyCost;
+                case Skill1SubIndex:
+                    return skill1SubDesign != null ? skill1SubDesign.GetEnergyCost(GetSkill1Variant()) : base.GetSkillEnergyCost(index);
+                case Skill2SubIndex:
+                    return skill2SubDesign != null ? skill2SubDesign.GetEnergyCost(GetSkill2Variant()) : base.GetSkillEnergyCost(index);
+                default: return base.GetSkillEnergyCost(index);
+            }
+        }
+
+        // GDD: năng lượng của kỹ năng thường chỉ tích lũy khi hồi máu THÀNH CÔNG (xử lý ở CastHealingWater)
+        protected override float GetSkillEnergyGain(int index) => 0f;
+
+        protected override float GetBaseCooldown(int index)
+        {
+            switch (index)
+            {
+                case Skill0Index: return healingCooldown;
+                case Skill1Index: return shieldCooldown;
+                case Skill1SubIndex:
+                    return skill1SubDesign != null ? skill1SubDesign.GetCooldown(GetSkill1Variant()) : base.GetBaseCooldown(index);
+                case Skill2SubIndex:
+                    return skill2SubDesign != null ? skill2SubDesign.GetCooldown(GetSkill2Variant()) : base.GetBaseCooldown(index);
+                default: return base.GetBaseCooldown(index);
+            }
+        }
+
+        protected override void OnUseSkill(int index)
+        {
+            bool success;
+            switch (index)
+            {
+                case Skill0Index: success = CastHealingWater(); break;
+                case Skill1Index: success = CastBubbleShield(); break;
+                case Skill1SubIndex: success = ActivateSkill1Sub(); break;
+                case Skill2SubIndex: success = ActivateSkill2Sub(); break;
+                default: base.OnUseSkill(index); return;
+            }
+
+            // Tung chiêu thất bại (thiếu mục tiêu/prefab...) thì hoàn lại năng lượng đã trừ
+            if (!success && index != Skill0Index)
+            {
+                GainEnergy(GetSkillEnergyCost(index));
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // Dùng chung
+        // ------------------------------------------------------------------
+
+        /// <summary>Hồi máu cho 1 xe (kể cả bản thân). Heal(amount,false) -> OnHealed -> Shared Healing tự chia sẻ.</summary>
+        public void HealAlly(TankBrain target, float amount)
+        {
+            if (target == null || amount <= 0f) return;
+
+            target.Heal(amount, false);
+            TextDamageManager.Instance?.Show(amount, target.transform.position);
+        }
+
+        private Vector3 GetValidPlacementPosition()
+        {
+            Vector3 mouse = WaterB_Utils.GetMouseWorldPosition();
+            float distance = Vector2.Distance(transform.position, mouse);
+            if (distance > maxPlacementRange)
+            {
+                Vector3 direction = (mouse - transform.position).normalized;
+                return transform.position + direction * maxPlacementRange;
+            }
+            return mouse;
+        }
+
+        // ------------------------------------------------------------------
+        // Kỹ năng thường - Healing Water
+        // ------------------------------------------------------------------
+        private bool CastHealingWater()
+        {
+            // Mobile Altar: Water B không thể tấn công
+            if (m_IsMobileAltarActive) return false;
+
+            float power = Scaled(healingAtkRatio, healingMaxHpRatio);
+
+            if (healingWaterPrefab == null)
+            {
+                HealAlly(this, power);
+                GainEnergy(healingEnergyGain);
+                return true;
+            }
+
+            Vector3 mouse = WaterB_Utils.GetMouseWorldPosition();
+            Vector3 dir = mouse - transform.position;
+            dir.z = 0f;
+            if (dir.sqrMagnitude < 0.001f) dir = transform.up;
+            dir.Normalize();
+
+            Vector3 spawnPos = transform.position + dir * 0.2f;
+            spawnPos.z = 0f;
+
+            float speedMul = 1f;
+            float sizeMul = 1f;
+            if (m_IsAquaAssaultActive && skill2SubDesign != null)
+            {
+                speedMul = skill2SubDesign.AssaultProjectileSpeedMultiplier;
+                sizeMul = skill2SubDesign.AssaultProjectileSizeMultiplier;
+            }
+
+            WaterB_HealingProjectile projectile = Instantiate(healingWaterPrefab, spawnPos, Quaternion.identity);
+            projectile.Initialize(this, dir, power, m_IsAquaAssaultActive,
+                _ => GainEnergy(healingEnergyGain), speedMul, sizeMul);
+            return true;
+        }
+
+        /// <summary>Đạn Aqua Assault trúng kẻ địch: tính sát thương cuối và áp dụng Life Drain.</summary>
+        public void HandleProjectileDamage(EnemyBrain enemy, float baseDamage)
+        {
+            if (enemy == null || baseDamage <= 0f) return;
+
+            // Lấy vị trí trước khi TakeDamage vì kẻ địch có thể chết ngay
+            Vector3 enemyPos = enemy.transform.position;
+
+            float damage = baseDamage * (1f + Stats.DamageRate); // Tỉ lệ sát thương (Aqua Assault +15%)
+            enemy.TakeDamage(damage);
+            TextDamageManager.Instance?.Show(damage, enemyPos);
+
+            ApplyLifeDrain(damage, enemyPos);
+        }
+
+        // ------------------------------------------------------------------
+        // Kỹ năng chuyên biệt - Bubble Shield
+        // ------------------------------------------------------------------
+        private bool CastBubbleShield()
+        {
+            if (bubbleShieldPrefab == null) return false;
+
+            TankBrain target = this;
+            Vector3 mouse = WaterB_Utils.GetMouseWorldPosition();
+            TankBrain picked = WaterB_Utils.FindTankNearPoint(mouse, 1.5f, null);
+            if (picked != null && Vector2.Distance(transform.position, picked.transform.position) <= shieldMaxCastRange)
+            {
+                target = picked;
+            }
+
+            float shieldAmount = Scaled(shieldAtkRatio, shieldMaxHpRatio);
+            float healOnBreak = Scaled(shieldBreakHealAtkRatio, shieldBreakHealMaxHpRatio);
+
+            WaterB_BubbleShield shield = Instantiate(bubbleShieldPrefab, target.transform.position, Quaternion.identity);
+            shield.Initialize(this, target, shieldAmount, shieldDuration, healOnBreak);
+            return true;
+        }
+
+        // ------------------------------------------------------------------
+        // Kỹ năng tùy chọn 1
+        // ------------------------------------------------------------------
+        private bool ActivateSkill1Sub()
+        {
+            if (skill1SubDesign == null) return false;
 
             switch (GetSkill1Variant())
             {
-                case Skill1WaterVariant.SharedHealing:
-                    CastSharedHealing();
-                    break;
-
-                case Skill1WaterVariant.LifeDrain:
-                    m_IsLifeDrainActive = true;
-                    if (m_LifeDrainCoroutine != null) StopCoroutine(m_LifeDrainCoroutine);
-                    m_LifeDrainCoroutine = StartCoroutine(LifeDrainRoutine(skill1SubDesign.DrainDuration));
-                    break;
-
-                case Skill1WaterVariant.BubbleProtector:
-                    if (bubbleProtectorPrefab != null)
-                    {
-                        Vector3 spawnPos = GetValidPlacementPosition();
-                        WaterB_BubbleProtectorDome dome = Instantiate(bubbleProtectorPrefab, spawnPos, Quaternion.identity);
-                        dome.Initialize(skill1SubDesign.DomeDuration, skill1SubDesign.DomeHealOnEnd, skill1SubDesign.DomeDefenseBonus);
-                    }
-                    break;
+                case Skill1WaterVariant.SharedHealing: return CastSharedHealing();
+                case Skill1WaterVariant.LifeDrain: return CastLifeDrain();
+                case Skill1WaterVariant.BubbleProtector: return CastBubbleProtector();
             }
+            return false;
         }
 
-        private void CastSharedHealing()
+        private bool CastSharedHealing()
         {
-            if (skill1SubDesign.SharedHealingLinkPrefab == null) return;
+            Vector3 mouse = WaterB_Utils.GetMouseWorldPosition();
+            TankBrain ally = WaterB_Utils.FindTankNearPoint(mouse, 1.5f, this);
+            if (ally == null) return false;
+            if (Vector2.Distance(transform.position, ally.transform.position) > skill1SubDesign.MaxSelectRange) return false;
 
-            Vector2 mouseScreenPos = Vector2.zero;
-            if (Pointer.current != null) mouseScreenPos = Pointer.current.position.ReadValue();
+            if (m_ActiveLink != null) Destroy(m_ActiveLink.gameObject);
 
-            Vector3 mouseWorldPos = Vector3.zero;
-            if (Camera.main != null)
-            {
-                Vector3 screenPoint = new Vector3(mouseScreenPos.x, mouseScreenPos.y, Mathf.Abs(Camera.main.transform.position.z));
-                mouseWorldPos = Camera.main.ScreenToWorldPoint(screenPoint);
-            }
-            mouseWorldPos.z = 0f;
-
-            Collider2D[] hits = Physics2D.OverlapCircleAll(mouseWorldPos, 1.5f);
-            TankBrain bestAllyTank = null;
-            float minDistance = float.MaxValue;
-
-            foreach (var hit in hits)
-            {
-                TankBrain tank = hit.GetComponentInParent<TankBrain>();
-                if (tank != null && tank != this)
-                {
-                    float dist = Vector2.Distance(transform.position, hit.transform.position);
-                    if (dist <= skill1SubDesign.MaxSelectRange && dist < minDistance)
-                    {
-                        minDistance = dist;
-                        bestAllyTank = tank;
-                    }
-                }
-            }
-
-            if (bestAllyTank != null)
-            {
-                if (m_ActiveLink != null) Destroy(m_ActiveLink.gameObject);
-
-                m_ActiveLink = Instantiate(skill1SubDesign.SharedHealingLinkPrefab, transform.position, Quaternion.identity);
-                m_ActiveLink.Initialize(this, bestAllyTank, skill1SubDesign.SharedPercent, skill1SubDesign.SharedHealingDuration);
-            }
+            // Prefab không bắt buộc: để trống thì tự tạo sợi dây nước mặc định
+            WaterB_SharedHealingLink linkPrefab = skill1SubDesign.SharedHealingLinkPrefab;
+            m_ActiveLink = linkPrefab != null
+                ? Instantiate(linkPrefab, transform.position, Quaternion.identity)
+                : new GameObject("WaterB_SharedHealingLink").AddComponent<WaterB_SharedHealingLink>();
+            m_ActiveLink.Initialize(this, ally, skill1SubDesign.SharedPercent, skill1SubDesign.SharedHealingDuration);
+            return true;
         }
 
-        /// <summary>
-        /// Hàm chuyên biệt nhận máu do chia sẻ, đánh dấu là Healing By Share để không gọi ngược lại.
-        /// </summary>
-        public void HealByShare(float amount)
+        private bool CastLifeDrain()
         {
-            if (amount <= 0f) return;
-            Heal(amount, true);
-            TextDamageManager.Instance?.Show(amount, transform.position);
-            Debug.Log($"[TankBrain_WaterB] Nhận {amount} HP từ Healing By Share.");
-        }
+            // +25% Tấn công trong thời gian kích hoạt (percent bonus)
+            TankStats percent = TankStats.Zeroed();
+            percent.Attack = skill1SubDesign.DrainAttackBonusPercent;
+            AddBonusStats(LifeDrainBonusKey, TankStats.Zeroed(), percent);
 
-        public void TriggerHealAndShare(float amount, bool isHealingByShare = false)
-        {
-            if (amount <= 0f) return;
-
-            Heal(amount, isHealingByShare);   // event OnHealed tự lo phần chia sẻ
-            TextDamageManager.Instance?.Show(amount, transform.position);
+            m_IsLifeDrainActive = true;
+            if (m_LifeDrainCoroutine != null) StopCoroutine(m_LifeDrainCoroutine);
+            m_LifeDrainCoroutine = StartCoroutine(LifeDrainRoutine(skill1SubDesign.DrainDuration));
+            return true;
         }
 
         private IEnumerator LifeDrainRoutine(float duration)
@@ -284,76 +318,164 @@ namespace IronWasteland.Tanks.WaterB
             yield return new WaitForSeconds(duration);
             m_IsLifeDrainActive = false;
             m_LifeDrainCoroutine = null;
+            RemoveBonusStats(LifeDrainBonusKey);
         }
 
-        private void ActivateSkill2Sub()
+        /// <summary>Life Drain: 35% sát thương gây ra -> hồi cho đồng minh (kể cả bản thân) có máu thấp nhất xung quanh.</summary>
+        private void ApplyLifeDrain(float damageDealt, Vector3 fromPosition)
         {
-            if (skill2SubDesign == null) return;
+            if (!m_IsLifeDrainActive || skill1SubDesign == null) return;
+
+            float heal = damageDealt * skill1SubDesign.DrainPercent;
+            if (heal <= 0f) return;
+
+            WaterB_Utils.GetTanksInRadius(transform.position, skill1SubDesign.DrainSearchRadius, m_ScanBuffer);
+
+            TankBrain lowest = this;
+            float lowestRatio = float.MaxValue;
+            for (int i = 0; i < m_ScanBuffer.Count; i++)
+            {
+                TankBrain t = m_ScanBuffer[i];
+                float maxHp = Mathf.Max(1f, t.Stats.MaxHealth);
+                float ratio = t.CurrentHealth / maxHp;
+                if (ratio < lowestRatio)
+                {
+                    lowestRatio = ratio;
+                    lowest = t;
+                }
+            }
+
+            HealAlly(lowest, heal);
+            SpawnLifeDrainStreams(fromPosition, lowest.transform);
+        }
+
+        /// <summary>Life Drain: các luồng sáng chảy từ kẻ địch về người được hồi máu (chỉ hình ảnh).</summary>
+        private void SpawnLifeDrainStreams(Vector3 from, Transform target)
+        {
+            if (target == null) return;
+
+            for (int i = 0; i < lifeDrainStreamCount; i++)
+            {
+                GameObject go = lifeDrainStreamPrefab != null
+                    ? Instantiate(lifeDrainStreamPrefab, from, Quaternion.identity)
+                    : new GameObject("WaterB_LifeDrainStream");
+
+                WaterB_LifeDrainStreamEffect stream = go.GetComponent<WaterB_LifeDrainStreamEffect>();
+                if (stream == null) stream = go.AddComponent<WaterB_LifeDrainStreamEffect>();
+                stream.Initialize(from, target);
+            }
+        }
+
+        private bool CastBubbleProtector()
+        {
+            if (bubbleProtectorPrefab == null) return false;
+
+            Vector3 spawnPos = GetValidPlacementPosition();
+            float healOnEnd = Scaled(skill1SubDesign.DomeHealAtkRatio, skill1SubDesign.DomeHealMaxHpRatio);
+
+            WaterB_BubbleProtectorDome dome = Instantiate(bubbleProtectorPrefab, spawnPos, Quaternion.identity);
+            dome.Initialize(this,
+                skill1SubDesign.DomeDuration,
+                skill1SubDesign.DomeDefenseBonus,
+                skill1SubDesign.DomeAttackBonusPercent,
+                healOnEnd);
+            return true;
+        }
+
+        // ------------------------------------------------------------------
+        // Kỹ năng tùy chọn 2
+        // ------------------------------------------------------------------
+        private bool ActivateSkill2Sub()
+        {
+            if (skill2SubDesign == null) return false;
 
             switch (GetSkill2Variant())
             {
-                case Skill2WaterVariant.MobileAltar:
-                    if (mobileAltarPrefab != null)
-                    {
-                        float altarDuration = skill2SubDesign.AltarDuration > 0f ? skill2SubDesign.AltarDuration : 8f;
-                        m_IsMobileAltarActive = true;
-
-                        if (m_MobileAltarCoroutine != null) StopCoroutine(m_MobileAltarCoroutine);
-                        m_MobileAltarCoroutine = StartCoroutine(MobileAltarStateRoutine(altarDuration));
-
-                        WaterB_MobileAltar altar = Instantiate(mobileAltarPrefab, transform.position, Quaternion.identity);
-                        altar.Initialize(transform, skill2SubDesign.AltarDuration, skill2SubDesign.AltarInterval, skill2SubDesign.AltarHealPerTick);
-                    }
-                    break;
-
-                case Skill2WaterVariant.WaterTurrets:
-                    if (waterTurretPrefab != null)
-                    {
-                        Vector3 spawnPosition = GetValidPlacementPosition();
-                        WaterB_WaterTurret turret = Instantiate(waterTurretPrefab, spawnPosition, Quaternion.identity);
-                        turret.Initialize(() =>
-                        {
-                            m_WaterEnergy = Mathf.Clamp(m_WaterEnergy + energyGainPerTurretHit, 0f, MaxWaterEnergy);
-                        });
-                    }
-                    break;
-
-                case Skill2WaterVariant.AquaAssault:
-                    m_IsAquaAssaultActive = true;
-                    if (m_AquaAssaultCoroutine != null) StopCoroutine(m_AquaAssaultCoroutine);
-                    m_AquaAssaultCoroutine = StartCoroutine(AquaAssaultRoutine(skill2SubDesign.AssaultDuration));
-                    break;
+                case Skill2WaterVariant.MobileAltar: return CastMobileAltar();
+                case Skill2WaterVariant.WaterTurrets: return CastWaterTurrets();
+                case Skill2WaterVariant.AquaAssault: return CastAquaAssault();
             }
+            return false;
         }
 
-        private IEnumerator MobileAltarStateRoutine(float duration)
+        private bool CastMobileAltar()
         {
-            yield return new WaitForSeconds(duration);
-            m_IsMobileAltarActive = false;
-            m_MobileAltarCoroutine = null;
+            if (mobileAltarPrefab == null) return false;
+
+            m_IsMobileAltarActive = true;
+
+            WaterB_MobileAltar altar = Instantiate(mobileAltarPrefab, transform.position, Quaternion.identity);
+            altar.Initialize(this,
+                skill2SubDesign.AltarDuration,
+                skill2SubDesign.AltarInterval,
+                Scaled(skill2SubDesign.AltarHealAtkRatio, skill2SubDesign.AltarHealMaxHpRatio),
+                Scaled(skill2SubDesign.AltarShieldAtkRatio, skill2SubDesign.AltarShieldMaxHpRatio),
+                skill2SubDesign.AltarShieldDuration,
+                () => m_IsMobileAltarActive = false);
+            return true;
         }
 
-        private Vector3 GetValidPlacementPosition()
+        private bool CastWaterTurrets()
         {
-            Vector2 mouseScreenPos = Vector2.zero;
-            if (Pointer.current != null) mouseScreenPos = Pointer.current.position.ReadValue();
+            if (waterTurretPrefab == null) return false;
 
-            Vector3 mouseWorldPos = Vector3.zero;
-            if (Camera.main != null)
+            Vector3 center = GetValidPlacementPosition();
+            int count = Mathf.Max(1, skill2SubDesign.TurretCount);
+            float damage = Atk * skill2SubDesign.TurretDamageAtkRatio;
+            float energyPerHit = skill2SubDesign.EnergyRegenPerHit;
+
+            for (int i = 0; i < count; i++)
             {
-                Vector3 screenPoint = new Vector3(mouseScreenPos.x, mouseScreenPos.y, Mathf.Abs(Camera.main.transform.position.z));
-                mouseWorldPos = Camera.main.ScreenToWorldPoint(screenPoint);
-            }
-            mouseWorldPos.z = 0f;
+                Vector3 offset = Vector3.zero;
+                if (count > 1)
+                {
+                    // Xếp các tháp đều quanh điểm đặt
+                    float angle = 360f / count * i;
+                    offset = Quaternion.Euler(0f, 0f, angle) * Vector3.right * skill2SubDesign.TurretSpacing;
+                }
 
-            float distance = Vector2.Distance(transform.position, mouseWorldPos);
-            if (distance > maxPlacementRange)
-            {
-                Vector3 direction = (mouseWorldPos - transform.position).normalized;
-                return transform.position + direction * maxPlacementRange;
+                WaterB_WaterTurret turret = Instantiate(waterTurretPrefab, center + offset, Quaternion.identity);
+                turret.Initialize(damage, skill2SubDesign.TurretDuration, skill2SubDesign.TurretAttackInterval,
+                    () => GainEnergy(energyPerHit));
             }
+            return true;
+        }
 
-            return mouseWorldPos;
+        private bool CastAquaAssault()
+        {
+            // +25% Tấn công (percent); +20% giảm hồi chiêu, +15% tỉ lệ sát thương, +20% xuyên giáp (cộng phẳng)
+            TankStats flat = TankStats.Zeroed();
+            flat.CooldownReduction = skill2SubDesign.AssaultCooldownReduction;
+            flat.DamageRate = skill2SubDesign.AssaultDamageBonus;
+            flat.ArmorPenetration = skill2SubDesign.AssaultArmorPenetration;
+
+            TankStats percent = TankStats.Zeroed();
+            percent.Attack = skill2SubDesign.AssaultAttackBonusPercent;
+
+            AddBonusStats(AquaAssaultBonusKey, flat, percent);
+
+            m_IsAquaAssaultActive = true;
+            if (m_AquaAssaultCoroutine != null) StopCoroutine(m_AquaAssaultCoroutine);
+            m_AquaAssaultCoroutine = StartCoroutine(AquaAssaultRoutine(skill2SubDesign.AssaultDuration));
+
+            SpawnAquaAssaultVisual(skill2SubDesign.AssaultDuration);
+            return true;
+        }
+
+        /// <summary>Hình ảnh gắn vào giữa Water B suốt thời gian Aqua Assault (chỉ hình ảnh, không có chức năng).</summary>
+        private void SpawnAquaAssaultVisual(float duration)
+        {
+            if (m_AquaAssaultVisual != null) Destroy(m_AquaAssaultVisual.gameObject); // tung lại thì thay cái cũ
+
+            GameObject go = aquaAssaultVisualPrefab != null
+                ? Instantiate(aquaAssaultVisualPrefab, transform.position, Quaternion.identity)
+                : new GameObject("WaterB_AquaAssaultVisual");
+
+            WaterB_AquaAssaultVisual visual = go.GetComponent<WaterB_AquaAssaultVisual>();
+            if (visual == null) visual = go.AddComponent<WaterB_AquaAssaultVisual>();
+
+            visual.Initialize(this, duration);
+            m_AquaAssaultVisual = visual;
         }
 
         private IEnumerator AquaAssaultRoutine(float duration)
@@ -361,14 +483,12 @@ namespace IronWasteland.Tanks.WaterB
             yield return new WaitForSeconds(duration);
             m_IsAquaAssaultActive = false;
             m_AquaAssaultCoroutine = null;
+            RemoveBonusStats(AquaAssaultBonusKey);
         }
 
-        public void HandleProjectileHeal(TankBrain targetTank, float amount)
+        private void OnDestroy()
         {
-            if (amount <= 0f) return;
-
-            targetTank.Heal(amount, false);   // event OnHealed tự lo phần chia sẻ
-            TextDamageManager.Instance?.Show(amount, targetTank.transform.position);
+            if (m_ActiveLink != null) Destroy(m_ActiveLink.gameObject);
         }
     }
 }

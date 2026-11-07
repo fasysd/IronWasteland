@@ -27,14 +27,14 @@ namespace IronWasteland.Tanks
 
         [Header("Survivability")]
         [Tooltip("Luong mau toi da.")]
-        public float MaxHealth = 100f;
+        public float MaxHealth = 650f;
 
         [Tooltip("Luong nang luong toi da.")]
-        public float MaxEnergy = 50f;
+        public float MaxEnergy = 100f;
 
         [Header("Mobility")]
         [Tooltip("Toc do di chuyen (don vi/giay).")]
-        public float MoveSpeed = 3f;
+        public float MoveSpeed = 10f;
 
         [Header("Utility")]
         [Tooltip("Ti le giam hoi chieu (0..0.6, toi da 60%).")]

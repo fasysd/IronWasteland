@@ -4,6 +4,13 @@ using UnityEngine;
 
 namespace IronWasteland.Tanks.WaterB
 {
+    /// <summary>
+    /// Bubble Protector (GDD): vòm nước lớn, đồng minh bên trong được +25 Phòng thủ và +25% Tấn công.
+    /// Khi hết 6s, mọi đồng minh còn bên trong được hồi máu (100% ATK + 6% Giới hạn máu của Water B).
+    ///
+    /// Vùng ảnh hưởng = CircleCollider2D (Is Trigger) đã cài trên prefab.
+    /// Buff cộng qua TankBrain.AddBonusStats (flat Defense + percent Attack).
+    /// </summary>
     [RequireComponent(typeof(CircleCollider2D))]
     [RequireComponent(typeof(Rigidbody2D))]
     [DisallowMultipleComponent]
@@ -12,57 +19,40 @@ namespace IronWasteland.Tanks.WaterB
         [Header("Visual References")]
         [SerializeField] private SpriteRenderer domeSpriteRenderer;
 
+        private TankBrain_WaterB m_Caster;
         private float m_Duration;
-        private float m_HealOnEnd;
         private float m_DefenseBonus;
+        private float m_AttackBonusPercent;
+        private float m_HealOnEnd;
+        private string m_BonusKey;
+        private bool m_IsActive;
 
-        private readonly HashSet<TankBrain> m_InsideTanks = new HashSet<TankBrain>();
-        private readonly Dictionary<TankBrain, string> m_TankBonusKeys = new Dictionary<TankBrain, string>();
-        private bool m_IsActive = false;
+        // Số collider của từng xe đang nằm trong vòm (xe có nhiều collider vẫn tính là "còn trong vòm")
+        private readonly Dictionary<TankBrain, int> m_Inside = new Dictionary<TankBrain, int>();
 
-        public void Initialize(float duration, float healOnEnd, float defenseBonus = 1.0f)
+        public void Initialize(TankBrain_WaterB caster, float duration, float defenseBonus,
+                               float attackBonusPercent, float healOnEnd)
         {
+            m_Caster = caster;
             m_Duration = duration > 0f ? duration : 6f;
-            m_HealOnEnd = healOnEnd;
             m_DefenseBonus = defenseBonus;
+            m_AttackBonusPercent = attackBonusPercent;
+            m_HealOnEnd = healOnEnd;
+            m_BonusKey = $"WaterB_BubbleProtector_{System.Guid.NewGuid():N}";
             m_IsActive = true;
 
-            // Thay vì dùng Destroy có sẵn thời gian, ta dùng Coroutine để kiểm soát chính xác thứ tự thực thi
+            Rigidbody2D rb = GetComponent<Rigidbody2D>();
+            if (rb != null) rb.bodyType = RigidbodyType2D.Kinematic;
+
             StartCoroutine(DomeLifeRoutine());
         }
 
         private IEnumerator DomeLifeRoutine()
         {
-            // Chờ đúng thời gian tồn tại của vòm
             yield return new WaitForSeconds(m_Duration);
 
-            // Xử lý hiệu ứng kết thúc (gỡ giáp + hồi máu) TRƯỚC KHI hủy đối tượng
-            TriggerEndEffect();
-
-            // Sau khi đã hồi máu xong xuôi mới xóa GameObject
-            Destroy(gameObject);
-        }
-
-        private void TriggerEndEffect()
-        {
-            if (!m_IsActive) return;
-            m_IsActive = false;
-
-            // Gỡ buff giáp và hồi máu cho tất cả xe tăng còn đứng bên trong
-            foreach (var tank in m_InsideTanks)
-            {
-                if (tank != null)
-                {
-                    RemoveTankBuff(tank);
-
-                    tank.Heal(m_HealOnEnd);
-                    TextDamageManager.Instance?.Show(m_HealOnEnd, tank.transform.position);
-                    Debug.Log($"[BubbleProtector] Vòm tan vỡ! Hồi phục {m_HealOnEnd} HP cho {tank.name}. HP hiện tại: {tank.CurrentHealth}");
-                }
-            }
-
-            m_InsideTanks.Clear();
-            m_TankBonusKeys.Clear();
+            // Hồi máu + gỡ buff TRƯỚC khi hủy vòm
+            EndDome();
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
@@ -70,48 +60,77 @@ namespace IronWasteland.Tanks.WaterB
             if (!m_IsActive) return;
 
             TankBrain tank = collision.GetComponentInParent<TankBrain>();
-            if (tank != null && !m_InsideTanks.Contains(tank))
-            {
-                m_InsideTanks.Add(tank);
+            if (tank == null) return;
 
-                string bonusKey = "BubbleProtector_Def_" + tank.GetHashCode();
-                m_TankBonusKeys[tank] = bonusKey;
+            m_Inside.TryGetValue(tank, out int count);
+            m_Inside[tank] = count + 1;
 
-                TankStats bonus = TankStats.Zeroed();
-                bonus.Defense = m_DefenseBonus; // +100% Defense
-                tank.AddBonusStats(bonusKey, bonus);
-
-                Debug.Log($"[BubbleProtector] Xe tăng {tank.name} bước vào vòm, nhận +100% Defense.");
-            }
+            if (count == 0) ApplyBuff(tank); // collider đầu tiên của xe này chạm vào vòm
         }
 
         private void OnTriggerExit2D(Collider2D collision)
         {
+            if (!m_IsActive) return;
+
             TankBrain tank = collision.GetComponentInParent<TankBrain>();
-            if (tank != null && m_InsideTanks.Contains(tank))
+            if (tank == null || !m_Inside.TryGetValue(tank, out int count)) return;
+
+            count--;
+            if (count <= 0)
             {
-                RemoveTankBuff(tank);
-                m_InsideTanks.Remove(tank);
-                Debug.Log($"[BubbleProtector] Xe tăng {tank.name} rời khỏi vòm.");
+                RemoveBuff(tank);
+                m_Inside.Remove(tank);
+            }
+            else
+            {
+                m_Inside[tank] = count;
             }
         }
 
-        private void RemoveTankBuff(TankBrain tank)
+        private void ApplyBuff(TankBrain tank)
         {
-            if (tank != null && m_TankBonusKeys.TryGetValue(tank, out string key))
+            TankStats flat = TankStats.Zeroed();
+            flat.Defense = m_DefenseBonus;          // +25 Phòng thủ (cộng phẳng)
+
+            TankStats percent = TankStats.Zeroed();
+            percent.Attack = m_AttackBonusPercent;  // +25% Tấn công
+
+            tank.AddBonusStats(m_BonusKey, flat, percent);
+        }
+
+        private void RemoveBuff(TankBrain tank)
+        {
+            if (tank != null) tank.RemoveBonusStats(m_BonusKey);
+        }
+
+        private void EndDome()
+        {
+            if (!m_IsActive) return;
+            m_IsActive = false;
+
+            foreach (var kv in m_Inside)
             {
-                tank.RemoveBonusStats(key);
-                m_TankBonusKeys.Remove(tank);
+                TankBrain tank = kv.Key;
+                if (tank == null) continue;
+
+                RemoveBuff(tank);
+
+                if (m_Caster != null) m_Caster.HealAlly(tank, m_HealOnEnd);
+                else tank.Heal(m_HealOnEnd, false);
             }
+
+            m_Inside.Clear();
+            Destroy(gameObject);
         }
 
         private void OnDestroy()
         {
-            // Dự phòng trường hợp vòm bị xóa đột ngột bởi script khác bên ngoài
-            if (m_IsActive)
-            {
-                TriggerEndEffect();
-            }
+            // Dự phòng: vòm bị xóa đột ngột thì vẫn gỡ buff (không hồi máu)
+            if (!m_IsActive) return;
+            m_IsActive = false;
+
+            foreach (var kv in m_Inside) RemoveBuff(kv.Key);
+            m_Inside.Clear();
         }
     }
 }

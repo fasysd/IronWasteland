@@ -1,49 +1,44 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Enemies;
-using System.Collections.Generic;
+using UnityEngine;
 
 namespace IronWasteland.Tanks.GreenFox
 {
+    /// <summary>
+    /// Fox Territory (GDD): 6s, kẻ địch trong vùng giảm 30% tốc độ, đồng minh (kể cả Green Fox) tăng 30% tốc độ.
+    /// Đồng minh gây sát thương trong vùng giúp Green Fox hồi 3 năng lượng, tối đa 30.
+    ///
+    /// Vùng ảnh hưởng = CircleCollider2D (Is Trigger) trên prefab.
+    /// - Tốc độ đồng minh: AddBonusStats (percent MoveSpeed).
+    /// - Tốc độ kẻ địch: GreenFox_EnemyMoveModifier (hệ số nhân, tự hoàn trả đúng).
+    /// - Mỗi xe/kẻ địch được đếm theo số collider để không gỡ buff nhầm khi chỉ rời 1 collider.
+    /// </summary>
     [RequireComponent(typeof(CircleCollider2D))]
     public class GreenFox_FoxTerritory : MonoBehaviour
     {
         private TankBrain m_Owner;
-        private float m_Duration;
         private float m_SlowAmount;
         private float m_SpeedBoostPercent;
         private float m_EnergyPerHit;
         private float m_MaxEnergyGain;
+        private float m_TotalEnergyGained;
+        private string m_Key;
 
-        private float m_TotalEnergyGained = 0f;
-        private float m_ElapsedTime = 0f;
-
-        private const string TerritorySpeedKey = "FoxTerritory_SpeedBoost";
-
-        // Quản lý danh sách các xe tăng đang đứng trong vòng để cộng/trừ buff
-        private readonly HashSet<TankBrain> m_TanksInside = new HashSet<TankBrain>();
+        private readonly Dictionary<EnemyBrain, int> m_EnemiesInside = new Dictionary<EnemyBrain, int>();
+        private readonly Dictionary<TankBrain, int> m_TanksInside = new Dictionary<TankBrain, int>();
 
         public void Initialize(TankBrain owner, float duration, float slowAmount, float speedBoostPercent, float energyPerHit, float maxEnergyGain)
         {
             m_Owner = owner;
-            m_Duration = duration;
             m_SlowAmount = Mathf.Clamp01(slowAmount);
             m_SpeedBoostPercent = speedBoostPercent;
             m_EnergyPerHit = energyPerHit;
             m_MaxEnergyGain = maxEnergyGain;
             m_TotalEnergyGained = 0f;
-            m_ElapsedTime = 0f;
+            m_Key = $"GreenFox_Territory_{System.Guid.NewGuid():N}";
 
-            Destroy(gameObject, m_Duration);
-        }
-
-        private void Update()
-        {
-            m_ElapsedTime += Time.deltaTime;
-            if (m_ElapsedTime >= m_Duration)
-            {
-                OnDestroyCleanup();
-                Destroy(gameObject);
-            }
+            Destroy(gameObject, duration);
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
@@ -51,24 +46,32 @@ namespace IronWasteland.Tanks.GreenFox
             ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collision);
             if (targetRef == null) return;
 
-            // 1. Làm chậm kẻ địch bước vào lãnh địa (Giảm 30% Tốc độ di chuyển)
+            // Kẻ địch: giảm 30% tốc độ
             EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
-            if (enemy != null && enemy.Stats != null)
+            if (enemy != null)
             {
-                float slowValue = enemy.Stats.MoveSpeed * m_SlowAmount;
-                enemy.Stats.MoveSpeed = Mathf.Max(0.1f, enemy.Stats.MoveSpeed - slowValue);
+                m_EnemiesInside.TryGetValue(enemy, out int count);
+                m_EnemiesInside[enemy] = count + 1;
+
+                if (count == 0) GreenFox_EnemyMoveModifier.Apply(enemy, m_Key, 1f - m_SlowAmount);
             }
 
-            // 2. Tăng tốc cho Xe Tăng đồng minh hoặc Green Fox bước vào lãnh địa (Tăng 30% Tốc độ)
+            // Xe tăng (đồng minh hoặc Green Fox): tăng 30% tốc độ
             TankBrain tank = targetRef.GetOwner<TankBrain>();
-            if (tank != null && !m_TanksInside.Contains(tank))
+            if (tank != null)
             {
-                m_TanksInside.Add(tank);
+                m_TanksInside.TryGetValue(tank, out int count);
+                m_TanksInside[tank] = count + 1;
 
-                TankStats speedBonus = TankStats.Zeroed();
-                speedBonus.MoveSpeed = tank.BaseStats.MoveSpeed * m_SpeedBoostPercent;
+                if (count == 0)
+                {
+                    TankStats percent = TankStats.Zeroed();
+                    percent.MoveSpeed = m_SpeedBoostPercent; // Final = Base * (1 + 0.3)
+                    tank.AddBonusStats(m_Key, TankStats.Zeroed(), percent);
 
-                tank.AddBonusStats(TerritorySpeedKey, speedBonus);
+                    // Đồng minh khác gây sát thương -> Green Fox hồi năng lượng (Green Fox tự báo qua DamageEnemy)
+                    if (tank != m_Owner) tank.OnDealDamageEvent += HandleAllyDealDamage;
+                }
             }
         }
 
@@ -77,55 +80,70 @@ namespace IronWasteland.Tanks.GreenFox
             ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collision);
             if (targetRef == null) return;
 
-            // Phục hồi lại tốc độ di chuyển cho kẻ địch khi ra khỏi vòng
             EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
-            if (enemy != null && enemy.Stats != null)
+            if (enemy != null && m_EnemiesInside.TryGetValue(enemy, out int ec))
             {
-                float slowValue = enemy.Stats.MoveSpeed * (m_SlowAmount / (1f - m_SlowAmount));
-                enemy.Stats.MoveSpeed += slowValue;
+                ec--;
+                if (ec <= 0)
+                {
+                    m_EnemiesInside.Remove(enemy);
+                    GreenFox_EnemyMoveModifier.Remove(enemy, m_Key);
+                }
+                else m_EnemiesInside[enemy] = ec;
             }
 
-            // Gỡ bỏ buff tăng tốc di chuyển khi Xe Tăng rời lãnh địa
             TankBrain tank = targetRef.GetOwner<TankBrain>();
-            if (tank != null && m_TanksInside.Contains(tank))
+            if (tank != null && m_TanksInside.TryGetValue(tank, out int tc))
             {
-                tank.RemoveBonusStats(TerritorySpeedKey);
-                m_TanksInside.Remove(tank);
+                tc--;
+                if (tc <= 0)
+                {
+                    m_TanksInside.Remove(tank);
+                    ReleaseTank(tank);
+                }
+                else m_TanksInside[tank] = tc;
             }
+        }
+
+        private void ReleaseTank(TankBrain tank)
+        {
+            if (tank == null) return;
+            tank.RemoveBonusStats(m_Key);
+            tank.OnDealDamageEvent -= HandleAllyDealDamage;
+        }
+
+        private void HandleAllyDealDamage(DamageInfo info)
+        {
+            NotifyDamageDealtInTerritory(null);
         }
 
         /// <summary>
-        /// Gọi hàm này khi bất kỳ đồng minh hoặc bản thân gây sát thương lên kẻ địch nằm trong vùng lãnh địa
+        /// Gọi khi có đồng minh/Green Fox gây sát thương trong vùng. Truyền enemy để kiểm tra kẻ địch có nằm trong vùng;
+        /// truyền null nếu nguồn báo không biết mục tiêu (xem như đã nằm trong vùng).
         /// </summary>
-        public void NotifyDamageDealtInTerritory()
+        public void NotifyDamageDealtInTerritory(EnemyBrain enemy = null)
         {
             if (m_Owner == null || m_TotalEnergyGained >= m_MaxEnergyGain) return;
+            if (enemy != null && !m_EnemiesInside.ContainsKey(enemy)) return;
 
             float energyToGain = Mathf.Min(m_EnergyPerHit, m_MaxEnergyGain - m_TotalEnergyGained);
-            if (energyToGain > 0f)
-            {
-                m_Owner.GainEnergy(energyToGain);
-                m_TotalEnergyGained += energyToGain;
-                Debug.Log($"[FoxTerritory] Hồi {energyToGain} năng lượng cho Green Fox (Đã hồi tổng cộng: {m_TotalEnergyGained}/{m_MaxEnergyGain})");
-            }
-        }
+            if (energyToGain <= 0f) return;
 
-        private void OnDestroyCleanup()
-        {
-            // Thu hồi buff tốc độ di chuyển của toàn bộ xe tăng vẫn còn đang đứng trong lãnh địa khi hết thời gian duy trì
-            foreach (TankBrain tank in m_TanksInside)
-            {
-                if (tank != null)
-                {
-                    tank.RemoveBonusStats(TerritorySpeedKey);
-                }
-            }
-            m_TanksInside.Clear();
+            m_Owner.GainEnergy(energyToGain);
+            m_TotalEnergyGained += energyToGain;
         }
 
         private void OnDestroy()
         {
-            OnDestroyCleanup();
+            // Hết thời gian: gỡ toàn bộ buff/debuff còn lại
+            foreach (var kv in m_TanksInside) ReleaseTank(kv.Key);
+            foreach (var kv in m_EnemiesInside)
+            {
+                if (kv.Key != null) GreenFox_EnemyMoveModifier.Remove(kv.Key, m_Key);
+            }
+
+            m_TanksInside.Clear();
+            m_EnemiesInside.Clear();
         }
     }
 }

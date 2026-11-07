@@ -856,7 +856,12 @@ namespace IronWasteland.Tanks
         public virtual void Heal(float amount, bool isByShare = false)
         {
             if (amount <= 0f) return;
+            if (!IsAlive) return;
+            currentHealth = Mathf.Min(currentHealth + amount, m_FinalStats.MaxHealth);
+            OnHealEvent?.Invoke(amount);
+            OnHealed?.Invoke(this, amount, isByShare);
         }
+
         public virtual void Heal(float amount)
         {
             if (!IsAlive) return;

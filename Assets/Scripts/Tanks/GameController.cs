@@ -26,7 +26,6 @@ namespace IronWasteland.Tanks
         [Header("Look")]
         [Tooltip("Camera de tinh huong nhin. Neu rong se dung Camera.main.")]
         [SerializeField] private Camera targetCamera;
-
         private TankBrain m_PlayerTank;
 
         public TankBrain PlayerTank => m_PlayerTank;
@@ -42,7 +41,7 @@ namespace IronWasteland.Tanks
                 IdView = viewId,
                 EquipmentId = equipmentId,
                 OptionSkill1 = 0,
-                OptionSkill2 = 0,
+                OptionSkill2 = 1,
             };
 
             // Khoi tao 1 lan duy nhat (guard).

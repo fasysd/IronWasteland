@@ -14,6 +14,7 @@ namespace IronWasteland.Tanks.WaterB
         private float m_Damage;
         private System.Action m_OnHitEnergyReturn;
         private float m_SpawnTime;
+        private bool m_Hit; // chống trúng 2 lần (khoảng cách + trigger) trong cùng 1 frame
 
         public void Initialize(Transform target, float damage, System.Action onHitEnergyReturn)
         {
@@ -37,6 +38,8 @@ namespace IronWasteland.Tanks.WaterB
 
         private void Update()
         {
+            if (m_Hit) return;
+
             if (m_Target == null)
             {
                 Destroy(gameObject);
@@ -78,6 +81,9 @@ namespace IronWasteland.Tanks.WaterB
 
         private void HitTarget(EnemyBrain enemy = null)
         {
+            if (m_Hit) return;
+            m_Hit = true;
+
             // Nếu va chạm trực tiếp với EnemyBrain qua trigger
             if (enemy != null)
             {
