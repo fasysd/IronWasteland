@@ -80,6 +80,13 @@ namespace IronWasteland.Enemies
         public bool IsAlive => !m_Dead && currentHealth > 0f;
 
         public bool IsCrowdControlImmune { get; set; }
+
+        /// <summary>
+        /// True nếu là kẻ địch Tinh anh (Elite/Boss).
+        /// Các kỹ năng dựa vào cờ này để đổi hành vi (ví dụ Water Bubble: Tinh anh chịu sát thương
+        /// và làm chậm thay vì bị nhốt).
+        /// </summary>
+        public virtual bool IsElite => false;
         public bool CanMove => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Root);
         public bool CanLook => IsAlive && !HasCC(CrowdControlType.Stun);
         public bool CanUseSkill => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Silence);
@@ -243,7 +250,7 @@ namespace IronWasteland.Enemies
         {
             if (type == CrowdControlType.None) return;
 
-            if (IsCrowdControlImmune)
+            if (IsImmuneToCrowdControl(type))
             {
                 OnCrowdControlResisted(type, strength);
                 return;
@@ -279,6 +286,13 @@ namespace IronWasteland.Enemies
             }
             m_ActiveCC.Clear();
         }
+
+        /// <summary>
+        /// True neu dang mien nhiem loai khong che nay.
+        /// Mac dinh phu thuoc hoan toan vao <see cref="IsCrowdControlImmune"/>; lop con co the
+        /// thu hep lai (vi du Tinh anh chi mien nhiem khong che cung Root/Stun, van bi lam cham).
+        /// </summary>
+        public virtual bool IsImmuneToCrowdControl(CrowdControlType type) => IsCrowdControlImmune;
 
         /// <summary>
         /// Hook khi ke dich khang/mien nhiem khong che (vi du: Boss Tinh anh nhan them sat thuong thay vi bi troi).

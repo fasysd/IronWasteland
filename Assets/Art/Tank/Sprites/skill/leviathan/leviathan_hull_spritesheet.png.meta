@@ -1,0 +1,257 @@
+fileFormatVersion: 2
+guid: 412fcaa0a307fb34297ed10b369cc75d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4640345294499017613
+    second: leviathan_hull_spritesheet_0
+  - first:
+      213: -641953032941328160
+    second: leviathan_hull_spritesheet_1
+  - first:
+      213: 4776245844484891812
+    second: leviathan_hull_spritesheet_2
+  - first:
+      213: 8582444575103029997
+    second: leviathan_hull_spritesheet_3
+  - first:
+      213: 1090261665944990902
+    second: leviathan_hull_spritesheet_4
+  - first:
+      213: -8511611035446153297
+    second: leviathan_hull_spritesheet_5
+  - first:
+      213: 8542137348874953051
+    second: leviathan_hull_spritesheet_6
+  - first:
+      213: -2665236853416397129
+    second: leviathan_hull_spritesheet_7
+  - first:
+      213: 5199853521589543595
+    second: leviathan_hull_spritesheet_8
+  - first:
+      213: 854886259454635621
+    second: leviathan_hull_spritesheet_9
+  - first:
+      213: 4429718891494536579
+    second: leviathan_hull_spritesheet_10
+  - first:
+      213: -4283433998540003119
+    second: leviathan_hull_spritesheet_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 256
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: leviathan_hull_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 512, y: 512}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7228d0a984996ec408505bc755d0f12a
+      internalID: -150841218
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: leviathan_hull_1
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 1024
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 512, y: 512}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca8f74b510bc9d347a81b93206fa68f8
+      internalID: 1637093318
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: leviathan_hull_2
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 512, y: 512}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1d2ac995cd82bff4a832e1a0a43bc55f
+      internalID: -1588369967
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: leviathan_hull_3
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 0
+        width: 1024
+        height: 1024
+      alignment: 0
+      pivot: {x: 512, y: 512}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 779c9fb13f115c349bf8d54343067ef4
+      internalID: 1313738393
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: ed3e154c78e10124abeb55bea14ad666
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      leviathan_hull_0: -150841218
+      leviathan_hull_1: 1637093318
+      leviathan_hull_2: -1588369967
+      leviathan_hull_3: 1313738393
+      leviathan_hull_spritesheet_0: -4640345294499017613
+      leviathan_hull_spritesheet_1: -641953032941328160
+      leviathan_hull_spritesheet_10: 4429718891494536579
+      leviathan_hull_spritesheet_11: -4283433998540003119
+      leviathan_hull_spritesheet_2: 4776245844484891812
+      leviathan_hull_spritesheet_3: 8582444575103029997
+      leviathan_hull_spritesheet_4: 1090261665944990902
+      leviathan_hull_spritesheet_5: -8511611035446153297
+      leviathan_hull_spritesheet_6: 8542137348874953051
+      leviathan_hull_spritesheet_7: -2665236853416397129
+      leviathan_hull_spritesheet_8: 5199853521589543595
+      leviathan_hull_spritesheet_9: 854886259454635621
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

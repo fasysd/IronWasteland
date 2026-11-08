@@ -17,48 +17,31 @@ MonoBehaviour:
     t\u1EA1i v\xF9ng \u0111\u1EA5t  nguy\xEAn t\u1ED1,d\u1EF1a tr\xEAn nh\u1EEFng
     v\u1EADt li\u1EC7u xe tank c\xF3 s\u1EB5n l\u1EA5y t\u1EEB Black Shadow v\xE0
     Water B."
-  statsTable:
-  - baseLevel: 1
-    baseStats:
-      Attack: 10
-      Defense: 10
-      DamageMultiplier: 1
-      ArmorPenetration: 0
-      MaxHealth: 100
-      MaxEnergy: 50
-      MoveSpeed: 3
-      CooldownReduction: 0
-  - baseLevel: 30
-    baseStats:
-      Attack: 59
-      Defense: 11.6
-      DamageMultiplier: 1.29
-      ArmorPenetration: 0.087
-      MaxHealth: 492
-      MaxEnergy: 242
-      MoveSpeed: 4.45
-      CooldownReduction: 0.116
-  - baseLevel: 60
-    baseStats:
-      Attack: 120
-      Defense: 23.6
-      DamageMultiplier: 1.59
-      ArmorPenetration: 0.177
-      MaxHealth: 940
-      MaxEnergy: 460
-      MoveSpeed: 5.95
-      CooldownReduction: 0.236
-  - baseLevel: 90
-    baseStats:
-      Attack: 180
-      Defense: 35.6
-      DamageMultiplier: 1.89
-      ArmorPenetration: 0.267
-      MaxHealth: 1400
-      MaxEnergy: 680
-      MoveSpeed: 7.45
-      CooldownReduction: 0.356
+  baseStatsLevel1:
+    Attack: 5
+    Defense: 28
+    DamageRate: 0
+    ArmorPenetration: 0
+    MaxHealth: 1300
+    MaxEnergy: 120
+    MoveSpeed: 100
+    CooldownReduction: 0
+  baseStatsLevel90:
+    Attack: 45
+    Defense: 60
+    DamageRate: 0
+    ArmorPenetration: 0
+    MaxHealth: 7000
+    MaxEnergy: 350
+    MoveSpeed: 100
+    CooldownReduction: 0.1
   tankPrefab: {fileID: 2337791876944670423, guid: 4a102341224b4b046811d123862baf86, type: 3}
   viewPrefabs:
   - {fileID: 4035724410283292367, guid: cac13e460e67f7f40876455c0df39994, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
+  context:
+    Level: 0
+    IdView: 0
+    EquipmentId: 0
+    OptionSkill1: 0
+    OptionSkill2: 0
