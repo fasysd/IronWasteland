@@ -43,6 +43,8 @@ TagManager:
     locked: 0
   - name: Enemy
     uniqueID: 1219870377
+  - name: skill
+    uniqueID: 2048329533
     locked: 0
   m_RenderingLayers:
   - Default
