@@ -265,7 +265,16 @@ namespace IronWasteland.Tanks.BlackShadow
         protected override float GetSkillEnergyCost(int index)
         {
             if (index == specializedSkillIndex)
+            {
+                // Bấm lần 1 (chưa có ảo ảnh) = đặt bóng: tốn năng lượng.
+                // Bấm lần 2 (ảo ảnh đang ở State 0) = hoán đổi vị trí + kích nổ: MIỄN PHÍ năng lượng,
+                // vì lần bấm này không tạo thêm ảo ảnh nào — chỉ dùng lại cái đã trả năng lượng để đặt.
+                // Điều kiện này trùng với cách tính hồi chiêu trong GetBaseCooldown.
+                if (activeSpecializedSkill != null && activeSpecializedSkill.SkillState == 0)
+                    return 0f;
+
                 return specializedSkillEnergyCost;
+            }
 
             if (index == optionalSkill1Index)
             {
