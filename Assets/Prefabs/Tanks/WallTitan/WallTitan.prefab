@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 987192533526621700}
   - component: {fileID: 569371263267873161}
   - component: {fileID: 2337791876944670423}
+  - component: {fileID: 2778788964113928922}
   m_Layer: 6
   m_Name: WallTitan
   m_TagString: Untagged
@@ -177,6 +178,34 @@ MonoBehaviour:
   earthquakeCooldown: 14
   earthquakeDuration: 6
   vfx: {fileID: 0}
+--- !u!114 &2778788964113928922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2007533005529995649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 793b0c9e743d5dc4894512b902bc4fd1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.WallTitan.WallTitanVfx
+  fortressAura: {fileID: 21300000, guid: d645d9233b0645e699b06875366c8425, type: 3}
+  stoneArmor: {fileID: 21300000, guid: adebaa2983404e60b2f91887757ff0d7, type: 3}
+  metallicGlow: {fileID: 21300000, guid: 1e365a59404447488823cc2eefa3a308, type: 3}
+  anchorSpikes: {fileID: 21300000, guid: 318fd4b71736441a91b1c4fb7265b8a1, type: 3}
+  guardianBarrier: {fileID: 21300000, guid: e4423e7c9d3347d09be2c38c6e9e088f, type: 3}
+  guardianMist: {fileID: 21300000, guid: 77aa007a71cd4bfd85815a5a1943e50a, type: 3}
+  prisonActive: {fileID: 21300000, guid: 4c76644a70a1498f8d50fa051195a6c3, type: 3}
+  prisonCollapse: {fileID: 21300000, guid: e7c898978cc641ea9ba606d6c7d02d9a, type: 3}
+  earthquakeFissures: {fileID: 21300000, guid: 4cb60770450e49129bed72e63aeaf6d1, type: 3}
+  earthquakeShockwave: {fileID: 21300000, guid: 101c499471384835acea9483b8b41707, type: 3}
+  earthShards: {fileID: 21300000, guid: c1d678daeed648d7a26486d2853333c0, type: 3}
+  earthBoulder: {fileID: 21300000, guid: c943f120d36a4a5aa55c46292dcc4a6f, type: 3}
+  auraScale: 2.6
+  auraSortingOrder: 3
+  fxSortingOrder: 8
+  fissureDuration: 2
 --- !u!1 &5823004365554492412
 GameObject:
   m_ObjectHideFlags: 0

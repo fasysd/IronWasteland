@@ -41,6 +41,8 @@ namespace IronWasteland.Tanks.WallTitan
         private SpriteRenderer m_GuardianBarrier;
         private SpriteRenderer m_GuardianMist;
 
+        private readonly System.Collections.Generic.List<GameObject> m_SpawnedTargetEffects = new System.Collections.Generic.List<GameObject>();
+
         private void Awake()
         {
             m_FortressAura = CreateChild("VFX_FortressAura", fortressAura, auraSortingOrder, auraScale);
@@ -72,6 +74,80 @@ namespace IronWasteland.Tanks.WallTitan
         {
             SetActive(m_GuardianBarrier, active);
             SetActive(m_GuardianMist, active);
+        }
+
+        /// <summary>Earth Guardian: lớp sương bảo vệ (không chiếm màn chắn của Guardian Wall).</summary>
+        public void SetEarthGuardianActive(bool active) => SetActive(m_GuardianMist, active);
+
+        private void OnDestroy()
+        {
+            for (int i = 0; i < m_SpawnedTargetEffects.Count; i++)
+            {
+                if (m_SpawnedTargetEffects[i] != null)
+                    Destroy(m_SpawnedTargetEffects[i]);
+            }
+            m_SpawnedTargetEffects.Clear();
+        }
+
+        // ---------- Hiển thị Sprite Effect trên mục tiêu áp dụng hiệu ứng ----------
+
+        /// <summary>Guardian Wall: hiển thị màn chắn + sương bao quanh mục tiêu áp dụng hiệu ứng.</summary>
+        public Coroutine ShowGuardianOnTarget(Transform target, float duration)
+        {
+            if (target == null)
+                return null;
+
+            return StartCoroutine(AttachGuardianRoutine(target, duration, showBarrier: true));
+        }
+
+        /// <summary>Earth Guardian: hiển thị lớp sương bảo vệ bao quanh mục tiêu áp dụng hiệu ứng.</summary>
+        public Coroutine ShowEarthGuardianOnTarget(Transform target, float duration)
+        {
+            if (target == null)
+                return null;
+
+            return StartCoroutine(AttachGuardianRoutine(target, duration, showBarrier: false));
+        }
+
+        private IEnumerator AttachGuardianRoutine(Transform target, float duration, bool showBarrier)
+        {
+            if (target == null)
+                yield break;
+
+            System.Collections.Generic.List<GameObject> fxObjects = new System.Collections.Generic.List<GameObject>();
+
+            if (showBarrier && guardianBarrier != null)
+            {
+                GameObject barrierObj = CreateEffectObject("VFX_GuardianBarrier", guardianBarrier, auraSortingOrder + 1);
+                barrierObj.transform.SetParent(target, false);
+                barrierObj.transform.localPosition = Vector3.zero;
+                barrierObj.transform.localRotation = Quaternion.identity;
+                barrierObj.transform.localScale = Vector3.one * auraScale;
+                fxObjects.Add(barrierObj);
+                m_SpawnedTargetEffects.Add(barrierObj);
+            }
+
+            if (guardianMist != null)
+            {
+                GameObject mistObj = CreateEffectObject("VFX_GuardianMist", guardianMist, auraSortingOrder);
+                mistObj.transform.SetParent(target, false);
+                mistObj.transform.localPosition = Vector3.zero;
+                mistObj.transform.localRotation = Quaternion.identity;
+                mistObj.transform.localScale = Vector3.one * (auraScale * 1.15f);
+                fxObjects.Add(mistObj);
+                m_SpawnedTargetEffects.Add(mistObj);
+            }
+
+            yield return new WaitForSeconds(duration);
+
+            for (int i = 0; i < fxObjects.Count; i++)
+            {
+                if (fxObjects[i] != null)
+                {
+                    m_SpawnedTargetEffects.Remove(fxObjects[i]);
+                    Destroy(fxObjects[i]);
+                }
+            }
         }
 
         // ---------- Hiệu ứng một lần ----------

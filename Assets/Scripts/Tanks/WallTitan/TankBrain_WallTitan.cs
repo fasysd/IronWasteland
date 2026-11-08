@@ -69,6 +69,8 @@ namespace IronWasteland.Tanks.WallTitan
         [SerializeField, Min(0.1f)] private float guardianWallDuration = 5f;
         [SerializeField, Range(0f, 2f)] private float guardianWallShieldHpRatio = 0.30f;
         [SerializeField, Range(0f, 1f)] private float guardianWallRedirectRatio = 0.35f;
+        [Tooltip("Bán kính quanh con trỏ để chọn đồng minh; ngoài bán kính này thì tự buff mình.")]
+        [SerializeField, Min(0.5f)] private float allyCastRange = 8f;
 
         [Header("Option 1.2 - Earth Prison  [60 EN, CD 14s, tồn tại 4s, 100% ATK + 150% DEF]")]
         [Tooltip("GameObject mẫu inactive của vòng giam đá.")]
@@ -131,6 +133,10 @@ namespace IronWasteland.Tanks.WallTitan
         private Coroutine m_StoneFortressCoroutine;
         private Coroutine m_ImmovableTitanCoroutine;
 
+        /// <summary>Đã đổi nhánh bằng Test API/Skill Arena hay chưa (override context).</summary>
+        private bool m_Option1BranchOverridden;
+        private bool m_Option2BranchOverridden;
+
         #region Cooldown
         protected override float GetBaseCooldown(int index)
         {
@@ -163,16 +169,25 @@ namespace IronWasteland.Tanks.WallTitan
             }
         }
 
+        /// <summary>
+        /// Nhánh kỹ năng tùy chọn 1. Context lấy từ TankDefinition là nguồn chuẩn và
+        /// 0..2 đều là ID hợp lệ (0 = Stone Fortress), không dùng 0 làm sentinel nữa.
+        /// Khi test/arena đổi nhánh lúc chạy thì override được ưu tiên.
+        /// </summary>
         private int ResolveOption1Branch()
         {
-            int fromContext = Context.OptionSkill1;
-            return fromContext != 0 ? fromContext : optionSkill1Branch;
+            if (m_Option1BranchOverridden)
+                return Mathf.Clamp(optionSkill1Branch, 0, 2);
+
+            return Mathf.Clamp(Context.OptionSkill1, 0, 2);
         }
 
         private int ResolveOption2Branch()
         {
-            int fromContext = Context.OptionSkill2;
-            return fromContext != 0 ? fromContext : optionSkill2Branch;
+            if (m_Option2BranchOverridden)
+                return Mathf.Clamp(optionSkill2Branch, 0, 2);
+
+            return Mathf.Clamp(Context.OptionSkill2, 0, 2);
         }
 
         /// <summary>
@@ -206,6 +221,13 @@ namespace IronWasteland.Tanks.WallTitan
                     return 0f;
             }
         }
+
+        /// <summary>
+        /// GDD: Earth Break chỉ hồi EN khi TRÚNG mục tiêu (+10 trong OnEarthBreakTargetFound),
+        /// không hồi lúc bấm. Lớp cha cộng 10 EN ngay khi dùng slot 0 nên phải chặn tại đây,
+        /// nếu không mỗi phát trúng sẽ hồi 20 EN và bắn trượt vẫn được 10 EN.
+        /// </summary>
+        protected override float GetSkillEnergyGain(int index) => 0f;
         #endregion
 
         [Header("VFX (Assets/Art/Tank/VFX/WallTitan)")]
@@ -265,16 +287,28 @@ namespace IronWasteland.Tanks.WallTitan
             TextDamageManager.Instance?.Show(info.FinalDamage, hitPosition);
         }
 
-        /// <summary>Tìm đồng minh gần nhất (khác bản thân) tại vị trí chỉ định; không có thì trả về chính mình.</summary>
-        private TankBrain FindAllyNear(Vector2 point)
+        /// <summary>Tìm đồng minh gần nhất có ColliderOwnerRef sở hữu bởi TankBrain quanh điểm chỉ định; không có thì trả về null.</summary>
+        private TankBrain FindAllyNear(Vector2 point, float maxDistance)
         {
-            TankBrain[] tanks = FindObjectsOfType<TankBrain>();
+            Collider2D[] hits = Physics2D.OverlapCircleAll(point, maxDistance);
+
             TankBrain best = null;
             float bestSqr = float.MaxValue;
 
-            for (int i = 0; i < tanks.Length; i++)
+            for (int i = 0; i < hits.Length; i++)
             {
-                TankBrain candidate = tanks[i];
+                Collider2D hit = hits[i];
+                if (hit == null)
+                    continue;
+
+                ColliderOwnerRef ownerRef = hit.GetComponent<ColliderOwnerRef>();
+                if (ownerRef == null)
+                    ownerRef = hit.GetComponentInParent<ColliderOwnerRef>();
+
+                if (ownerRef == null)
+                    continue;
+
+                TankBrain candidate = ownerRef.GetOwner<TankBrain>();
                 if (candidate == null || candidate == this || !candidate.IsAlive)
                     continue;
 
@@ -286,7 +320,7 @@ namespace IronWasteland.Tanks.WallTitan
                 }
             }
 
-            return best != null ? best : this;
+            return best;
         }
         #endregion
 
@@ -369,9 +403,13 @@ namespace IronWasteland.Tanks.WallTitan
                 return;
 
             skill.transform.SetParent(null);
-            skill.gameObject.SetActive(true);
+
+            // Đặt đúng vị trí/hướng TRƯỚC khi bật object: nếu SetActive trước,
+            // collider sẽ được kích hoạt tại vị trí cũ trong pool và có thể ăn
+            // nhầm mục tiêu hoặc trượt mục tiêu thật.
             skill.Initialize(spawnPos, direction, ReturnEarthBreakToPool);
             skill.TargetFound += OnEarthBreakTargetFound;
+            skill.gameObject.SetActive(true);
         }
 
         private void OnEarthBreakTargetFound(Skill_EarthBreak skill, EnemyBrain enemy, float travelDistance)
@@ -536,26 +574,26 @@ namespace IronWasteland.Tanks.WallTitan
 
         private void ActivateGuardianWall()
         {
-            TankBrain ally = FindAllyNear(LookTarget);
+            TankBrain ally = FindAllyNear(LookTarget, allyCastRange);
             if (ally == null)
+            {
+                // Không có ColliderOwnerRef nào có Owner là TankBrain thì thôi.
                 return;
+            }
 
-            float shieldValue = ally == this
-                ? Stats.MaxHealth * guardianWallShieldHpRatio
-                : ally.Stats.MaxHealth * guardianWallShieldHpRatio;
+            // Áp dụng khiên lên bản thân
+            float selfShieldValue = Stats.MaxHealth * guardianWallShieldHpRatio;
+            AddShield(selfShieldValue, guardianWallDuration, "WallTitan_GuardianWall_Self", this, "Khiên Hộ Vệ");
 
-            ally.AddShield(shieldValue, guardianWallDuration, "WallTitan_GuardianWall", this, "Khiên Hộ Vệ");
-
-            if (ally != this)
-                RegisterSharedDamageLink(ally, guardianWallRedirectRatio, guardianWallDuration);
-
-            if (guardianWallVisual != null)
-                StartCoroutine(PlayVisualRoutine(guardianWallVisual, guardianWallDuration));
+            // Áp dụng khiên và chia sẻ sát thương lên đồng minh được chọn
+            float allyShieldValue = ally.Stats.MaxHealth * guardianWallShieldHpRatio;
+            ally.AddShield(allyShieldValue, guardianWallDuration, "WallTitan_GuardianWall", this, "Khiên Hộ Vệ");
+            RegisterSharedDamageLink(ally, guardianWallRedirectRatio, guardianWallDuration);
 
             if (vfx != null)
             {
-                vfx.SetGuardianActive(true);
-                StartCoroutine(DisableGuardianAfter(guardianWallDuration));
+                vfx.ShowGuardianOnTarget(transform, guardianWallDuration);
+                vfx.ShowGuardianOnTarget(ally.transform, guardianWallDuration);
             }
         }
 
@@ -575,11 +613,10 @@ namespace IronWasteland.Tanks.WallTitan
                 return;
 
             prison.transform.SetParent(null);
-            prison.transform.position = LookTarget;
-            prison.gameObject.SetActive(true);
             prison.Initialize(LookTarget, ReturnEarthPrisonToPool);
             prison.Duration = earthPrisonDuration;
             prison.TargetFound += OnEarthPrisonTargetFound;
+            prison.gameObject.SetActive(true);
             prison.StartSkill();
         }
 
@@ -718,38 +755,24 @@ namespace IronWasteland.Tanks.WallTitan
 
         private void ActivateEarthGuardian()
         {
-            TankBrain ally = FindAllyNear(LookTarget);
+            TankBrain ally = FindAllyNear(LookTarget, allyCastRange);
             if (ally == null)
+            {
+                // Không có ColliderOwnerRef nào có Owner là TankBrain thì thôi.
                 return;
-
-            if (ally == this)
-            {
-                TankStats flatSelf = TankStats.Zeroed();
-                flatSelf.Defense = earthGuardianDefenseFlat;
-                AddBonusStats(BonusKeyStoneFortress + "_EarthGuardian", flatSelf);
-                StartCoroutine(ClearBonusAfterDelay(BonusKeyStoneFortress + "_EarthGuardian", earthGuardianDuration));
-            }
-            else
-            {
-                // Đồng minh nhận trực tiếp +DEF và chuyển 35% sát thương sang Wall Titan.
-                TankStats flat = TankStats.Zeroed();
-                flat.Defense = earthGuardianDefenseFlat;
-                ally.AddBonusStats("WallTitan_EarthGuardian", flat);
-                ally.StartCoroutine(ClearAllyBonusAfterDelay(ally, "WallTitan_EarthGuardian", earthGuardianDuration));
-
-                RegisterSharedDamageLink(ally, earthGuardianRedirectRatio, earthGuardianDuration);
             }
 
-            if (earthGuardianVisual != null)
-                StartCoroutine(PlayVisualRoutine(earthGuardianVisual, earthGuardianDuration));
-        }
+            TankStats flat = TankStats.Zeroed();
+            flat.Defense = earthGuardianDefenseFlat;
+            ally.AddBonusStats("WallTitan_EarthGuardian", flat);
+            ally.StartCoroutine(ClearAllyBonusAfterDelay(ally, "WallTitan_EarthGuardian", earthGuardianDuration));
 
-        private IEnumerator DisableGuardianAfter(float duration)
-        {
-            yield return new WaitForSeconds(duration);
+            RegisterSharedDamageLink(ally, earthGuardianRedirectRatio, earthGuardianDuration);
 
             if (vfx != null)
-                vfx.SetGuardianActive(false);
+            {
+                vfx.ShowEarthGuardianOnTarget(ally.transform, earthGuardianDuration);
+            }
         }
 
         private void RegisterSharedDamageLink(TankBrain ally, float ratio, float duration)
@@ -814,11 +837,10 @@ namespace IronWasteland.Tanks.WallTitan
                 return;
 
             quake.transform.SetParent(null);
-            quake.transform.position = LookTarget;
-            quake.gameObject.SetActive(true);
             quake.Initialize(LookTarget, ReturnEarthquakeToPool);
             quake.Duration = earthquakeDuration;
             quake.TargetFound += OnEarthquakeTargetFound;
+            quake.gameObject.SetActive(true);
             quake.StartSkill();
 
             if (vfx != null)
@@ -932,20 +954,22 @@ namespace IronWasteland.Tanks.WallTitan
         #region Test API (Skill Arena)
         public int Option1Branch
         {
-            get => optionSkill1Branch;
+            get => ResolveOption1Branch();
             set
             {
                 optionSkill1Branch = Mathf.Clamp(value, 0, 2);
+                m_Option1BranchOverridden = true;
                 ResetSkillCooldown(SkillOption1Index);
             }
         }
 
         public int Option2Branch
         {
-            get => optionSkill2Branch;
+            get => ResolveOption2Branch();
             set
             {
                 optionSkill2Branch = Mathf.Clamp(value, 0, 2);
+                m_Option2BranchOverridden = true;
                 ResetSkillCooldown(SkillOption2Index);
             }
         }
@@ -958,7 +982,7 @@ namespace IronWasteland.Tanks.WallTitan
                 case SkillEarthWallIndex: return "Earth Wall";
 
                 case SkillOption1Index:
-                    switch (optionSkill1Branch)
+                    switch (ResolveOption1Branch())
                     {
                         case 0: return "Stone Fortress";
                         case 1: return "Guardian Wall";
@@ -966,7 +990,7 @@ namespace IronWasteland.Tanks.WallTitan
                     }
 
                 case SkillOption2Index:
-                    switch (optionSkill2Branch)
+                    switch (ResolveOption2Branch())
                     {
                         case 0: return "Immovable Titan";
                         case 1: return "Earth Guardian";
