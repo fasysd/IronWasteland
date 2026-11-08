@@ -146,6 +146,20 @@ namespace IronWasteland.Tanks
             SetFloat(HashMoveSpeed, direction.magnitude);
         }
 
+        /// <summary>Xoay toan than Tank theo huong chi dinh ma khong di chuyen (giu animation Idle).</summary>
+        public void RotateBody(Vector2 direction)
+        {
+            if (direction.sqrMagnitude > 0.0001f)
+            {
+                bodyPivot.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
+            }
+
+            Stop();
+        }
+
+        /// <summary>Xoay than xe theo huong chi dinh.</summary>
+        public void Rotate(Vector2 direction) => RotateBody(direction);
+
         /// <summary>
         /// Nhin ve mot diem trong world (vi du vi tri con tro chuot).
         /// Day la action lien tuc, chay SONG SONG voi Move va UseSkill.

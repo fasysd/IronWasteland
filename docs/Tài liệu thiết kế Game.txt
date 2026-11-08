@@ -1,0 +1,1550 @@
+﻿TRƯỜNG ĐẠI HỌC THỦY LỢI
+KHOA CÔNG NGHỆ THÔNG TIN
+	  
+
+	ĐỒ ÁN MÔN HỌC
+THIẾT KẾ VÀ PHÁT TRIỂN GAME
+	ĐỀ TÀI:
+THIẾT KẾ VÀ PHÁT TRIỂN DỰ ÁN GAME IRON WASTELAND
+	Nhóm thực hiện: Nhóm 9
+Thành viên:
+Nguyễn Mạnh Hùng
+	2351060451
+	Nguyễn Đỗ Quốc Khánh
+	2351060454 
+	Nguyễn Văn Khiếu
+	2351060455 
+	Dương Đăng Khoa
+	2351060456 
+	
+
+	Giảng viên phụ trách môn học: ThS. Trương Xuân Nam
+Hà Nội, 2026
+	PHÂN CÔNG
+Họ và tên
+	Mã sinh viên
+	Phân công
+	Nguyễn Mạnh Hùng (Nhóm trưởng)
+	2351060451
+	- Thiết kế Gameplay, Mechanics Game.
+- Thiết kế và làm asset cho phụ kiện.
+- Thiết kế kỹ năng cho Tank
+- Làm asset cho kẻ địch thường và tinh anh.
+	Nguyễn Đỗ Quốc Khánh 
+	2351060454 
+	- Làm asset cho Tank: Wall Titan, Red Nova, Black Shadow
+- Thiết kế màn chơi: Chương 1
+- Thiết kế bố cục UI Game.
+	Nguyễn Văn Khiếu 
+	2351060455 
+	- Làm asset Tank: Leviathan, Water B, Green Fox
+- Thiết kế màn chơi: Chương 2
+- Thiết kế chi tiết UI Game: MainMenu, Quản lý Tank&Phụ kiện, Phụ kiện, Setting.
+	Dương Đăng Khoa 
+	2351060456 
+	- Xây dựng bối cảnh, cốt truyện cho Game, Tank, Kẻ địch.
+- Thiết kế kỹ năng cho kẻ địch thường và tinh anh.
+- Thiết kế chi tiết UI Game: Chọn ải, Gameplay HUD, Giao diện kết quả trận đấu .
+	________________
+MỤC LỤC
+PHÂN CÔNG        2
+MỤC LỤC        3
+1. Giới thiệu        5
+2. Tổng quan trò chơi        5
+2.1. Giới thiệu chung        5
+2.2. Game flow        6
+2.3. Nhóm người chơi        6
+2.4. Mục tiêu trải nghiệm        6
+3. Gameplay & Mechanics        6
+3.1. Gameplay        6
+3.2. Game Mechanics        7
+3.2.1. Hệ thống quản lý xe tank        7
+3.2.2. Hệ thống quản lý phụ kiện        8
+3.2.3. Hệ thống chiến đấu        8
+3.2.3. Chế độ        10
+4. Cốt truyện, bối cảnh        10
+4.1. Cốt truyện        10
+4.2. Bối cảnh        12
+4.3. Xe tank        13
+❖ Wall Titan:        13
+❖ Red Nova:        15
+❖ Black Shadow:        18
+❖ Leviathan:        21
+❖ Water B:        24
+❖ Green Fox:        26
+4.4 Phụ kiện        29
+5. Màn chơi        32
+5.1. Tổng quan        32
+5.2. Cấu trúc màn chơi        32
+5.3. Mục tiêu        33
+5.4. Kẻ địch        33
+5.4.1. Hệ thống Kẻ địch & Boss Chương 1: Lục Địa Đen        33
+5.4.2. Hệ thống Kẻ địch & Boss Chương 2: Vùng Đất Nguyên Tố        36
+5.5 Cơ chế Môi trường & Vật thể tương tác trong màn chơi        41
+5.6. Phần thưởng        41
+5.7. Các ải        42
+5.7.1. CHƯƠNG 1: LỤC ĐỊA ĐEN & VÒNG XOÁY NHẬT THỰC (4 MÀN)        42
+5.7.2 CHƯƠNG 2: VÙNG ĐẤT NGUYÊN TỐ & PHÁO ĐÀI HIRA (5 MÀN)        43
+6. Giao diện        45
+7. Một số hình ảnh của game        49
+________________
+1. Giới thiệu
+* High concept: Game điều khiển xe tank góc nhìn top-down co-op 1-4 người, nơi người chơi cùng lái xe tank độ chế, chia sẻ tài nguyên và phối hợp tiêu diệt các sinh vật đột biến khổng lồ trong thế giới hậu tận thế.
+* Tổng quan dự án: 
+   * Tên trò chơi: Iron Wasteland
+   * Thể loại: Game hành động bắn súng 2D, góc nhìn từ trên xuống (Top-down shooter), kết hợp yếu tố khoa học viễn tưởng và kỳ ảo phép thuật.
+   * Chế độ chơi: Hỗ trợ cả Chơi đơn (Single-player) và Chơi phối hợp (Co-op từ 2–4 người).
+   * Nền tảng mục tiêu: PC / Desktop
+* Động lực & Cảm hứng phát triển:
+   * Ý tưởng cốt lõi: Lấy cảm hứng từ dòng game bắn súng sinh tồn góc nhìn từ trên xuống, kết hợp cơ chế điều khiển xe tăng, quản lý tài nguyên và phối hợp chiến thuật nhóm để đối đầu với các sinh vật ngoài hành tinh khổng lồ trong thế giới hậu tận thế.
+   * Điểm nhấn độc đáo: Thay vì điều khiển lính bộ binh thông thường, người chơi sẽ vận hành những cỗ Siêu xe tăng ma pháp — sản phẩm tích hợp giữa công nghệ tiên tiến của nhân loại và lõi tinh thể năng lượng ngoài hành tinh. Trò chơi đề cao tính chiến thuật trong việc lựa chọn vai trò (Tanker, DPS, Support) và phối hợp phá hủy các cơ chế, kỹ năng của Boss Tinh Anh để tiêu diệt kẻ địch và dành chiến thắng.
+* Nhóm làm thực hiện:
+   * Tên nhóm: Nhóm 9
+   * Thành viên:
+      * Nguyễn Mạnh Hùng (Trưởng nhóm): 2351060451
+      * Nguyễn Đỗ Quốc Khánh: 2351060454 
+      * Nguyễn Văn Khiếu: 2351060455 
+      * Dương Đăng Khoa: 2351060456 
+2. Tổng quan trò chơi
+  2.1. Giới thiệu chung
+* Tên game: Iron Wasteland
+* Thể loại: Game hành động bắn súng 2D, góc nhìn từ trên xuống, hỗ trợ chơi đơn và chơi phối hợp (Co-op) từ 2–4 người.
+*  Nội dung
+   * Người chơi điều khiển xe tank
+   * Dùng chọn, chỉnh sửa xe tank để phù hợp chiến đấu với kẻ thù để qua ải, sau đó thu thập tài nguyên
+   * Người chơi có thể kết hợp với người chơi khác để hỗ trợ nhau qua ải
+   * Người chơi cố gắng tìm kiếm tài nguyên để tăng cường sức mạnh
+   * Các màn chơi được diễn ra tại các thành phố đã bị quái vật tấn công
+* Chủ đề
+   * Trái Đất bị các sinh vật ngoài hành tinh tấn công để xâm chiếm. Những sinh vật này sở hữu khả năng sử dụng phép thuật, khiến con người gặp nhiều khó khăn trong cuộc chiến chống lại chúng.
+   * Để chống lại cuộc xâm lược, con người sử dụng công nghệ tiên tiến để kết hợp với thân xác và sức mạnh của những sinh vật ngoài hành tinh đã bị đánh bại, từ đó tạo ra những chiếc xe tăng có khả năng chiến đấu vượt trội. Người chơi sẽ điều khiển những chiếc xe tăng này để chiến đấu chống lại quân xâm lược và giành lại Trái Đất.
+* Phong cách: 2D art, góc nhìn từ trên xuống, kết hợp giữa các yếu tố khoa học viễn tưởng và kỳ ảo phép thuật.
+* Trình tự: Chọn ải → Chọn chế độ chơi → Chơi đơn hoặc tạo/tham gia phòng Co-op → Chọn xe tăng → Bắt đầu màn chơi → Chiến đấu với sinh vật ngoài hành tinh → Hoàn thành mục tiêu của màn → Nhận phần thưởng → Nâng cấp xe tăng → Tiếp tục màn chơi tiếp theo. 
+2.2. Game flow
+* Khi khởi động game, sẽ mở Menu để người chơi chọn:
+   * Chơi mới: bắt đầu trò chơi với tiến trình mới hoàn toàn. Người chơi sẽ bắt đầu ở ải 1 và được hướng dẫn cũng như giới thiệu bối cảnh và thế giới game. Sau khi xong sẽ mở “Sảnh chính”.
+   * Chơi tiếp: bắt đầu trò chơi với tiến trình cũ đang được lưu và bắt đầu ở “Sảnh chính”.
+   * Cài đặt
+   * Thoát
+* Trong sảnh chính, người chơi có thể chọn:
+   * Chọn ải: người chơi lựa chọn ải để chiến đấu. Sau khi chọn thì cho phép chọn giữa 2 chế độ là “Chơi đơn” và “Co op”. Nếu chọn Co op sẽ tạo phòng và chờ người chơi khác vào phòng, tối đa 4 người 1 phòng, bao gồm người tạo phòng. Sau khi chọn chế độ sẽ bắt đầu chọn tank. Cuối cùng chọn xác nhận để bắt đầu màn chơi.
+   * Quản lý tank: người chơi lựa chọn tank để xem, nâng cấp để tăng sức chiến đấu của tank.
+   * Cài đặt
+   * Về Menu
+* Trong màn chơi, người chơi điều khiển tank của bản thân, dùng WASD để di chuyển, dùng chuột và các phím kỹ năng để tấn công và dùng kỹ năng. Nếu màn chơi thành công thì sẽ nhận được phần thưởng rồi quay lại sảnh chính. Nếu màn chơi thất bại sẽ không nhận được phần thưởng, nếu chơi đơn thì quay lại giao diện chọn ải, nếu chơi Co op sẽ ở trong phòng của màn chơi này cùng với các người chơi khác vừa nãy.
+2.3. Nhóm người chơi
+Game hướng đến người chơi yêu thích thể loại hành động bắn súng góc nhìn từ trên xuống, đặc biệt là những người yêu thích điều khiển Tank, chiến đấu và nâng cấp sức mạnh cũng như phong cách công nghệ kết hợp hệ thống ma pháp, phép thuật. Game hỗ trợ cả chơi đơn và Co-op từ 2–4 người, trong đó Co-op là hình thức chơi được tập trung phát triển nhằm khuyến khích người chơi phối hợp với nhau trong chiến đấu. 
+2.4. Mục tiêu trải nghiệm
+Game hướng đến trải nghiệm hành động nhanh và trực quan, trong đó người chơi cảm nhận được sức mạnh khi điều khiển Tank, kỹ năng để chiến đấu với Alien. Người chơi có thể phát triển sức mạnh của Tank thông qua nâng cấp. Đặc biệt, chế độ Co-op hướng đến việc tạo ra trải nghiệm phối hợp giữa 2–4 người chơi, trong đó mỗi người có thể hỗ trợ và kết hợp với đồng đội để vượt qua các thử thách trong màn chơi. 
+3. Gameplay & Mechanics
+3.1. Gameplay
+        Gameplay trong game được di theo một vòng lặp như sau:
+1. Chọn ải: Người chơi lựa chọn màn chơi muốn tham gia.
+2. Chọn chế độ: Người chơi lựa chọn Chơi đơn hoặc Co-op 2–4 người.
+3. Chuẩn bị Tank: Người chơi lựa chọn Tank phù hợp trước khi bắt đầu màn chơi.
+4. Chiến đấu: Người chơi điều khiển Tank, di chuyển, tấn công và sử dụng kỹ năng để tiêu diệt kẻ địch và hoàn thành mục tiêu của màn chơi.
+5. Kết quả:
+   1. Thành công: Người chơi nhận phần thưởng từ màn chơi.
+   2. Thất bại: Người chơi không nhận được phần thưởng hoàn thành và có thể tiếp tục chơi lại.
+6. Phát triển Tank: Phần thưởng được sử dụng để nâng cấp Tank, giúp tăng khả năng chiến đấu.
+Tiếp tục: Sau khi chuẩn bị lại Tank, người chơi lựa chọn màn chơi tiếp theo hoặc chơi lại màn chơi trước, tạo thành vòng lặp gameplay.
+3.2. Game Mechanics
+3.2.1. Hệ thống quản lý xe tank
+* Người chơi quản lý những xe tank đang sở hữu. Có thể xem, nâng cấp Tank.
+* Xe tank gồm:
+   * Các chỉ số:
+      * Tấn công: xác định lượng sát thương cơ bản gây ra
+      * Giới hạn máu: xác định lượng máu tối đa của Tank
+      * Giới hạn năng lượng: xác định lượng năng lượng tối đa mà Tank có thể lưu trữ. 
+      * Phòng thủ: giảm lượng sát thương mà Tank nhận từ các đòn tấn công của kẻ thù.
+      * Tốc độ di chuyển: xác định tốc độ di chuyển của Tank. 
+      * Tỉ lệ giảm hồi chiêu: giảm thời gian hồi chiêu của các kỹ năng của Tank, tối đa 60%.
+      * Tỉ lệ sát thương: tăng sát thương cuối cùng gây ra bởi tank.
+      * Tỉ lệ xuyên giáp: cho phép đòn tấn công bỏ qua chỉ số phòng thủ của mục tiêu, tối đa 100%.
+   * Mỗi Tank có 3 loại chỉ số là:
+      * Chỉ số cơ bản: là chỉ số phụ thuộc vào cấp độ của Tank. Được dùng để tính toán chỉ số giá trị phần trăm có nguồn gốc từ phụ kiện, kỹ năng. Bao gồm Giới hạn máu, Giới hạn năng lượng, Phòng thủ, Tốc độ di chuyển.
+      * Chỉ số cộng thêm: là chỉ số có nguồn gốc phụ kiện, kỹ năng. Giá trị có thể là giá trị cố định hoặc giá trị phần trăm được tính dựa bào chỉ số cơ bản.
+      * Chỉ số cuối cùng: là chỉ số thực tế của Tank, được tính từ Chỉ số cơ bản và chỉ số cộng thêm. Được dùng để tính toán giá trị trong mô tả kỹ năng, phụ kiện. Có công thức là:
+
+         * : Chỉ số cơ bản
+         * : Chỉ số cộng thêm là giá trị phần trăm
+         * : Chỉ số cộng thêm là giá trị cố định
+
+
+   * Trang bị phụ kiện: Tank có một ô để mang trang bị.
+   * Kỹ năng:
+   * Kỹ năng thường: không tiêu hao năng lượng khi sử dụng và hồi một lượng năng lượng cho Tank. Có thời gian hồi chiêu ngắn. 
+   * Kỹ năng chuyên biệt: khi dùng sẽ tiêu hao lượng năng lượng nhất định.
+   * Kỹ năng tùy chọn 1: Người chơi lựa chọn một kỹ năng từ danh sách kỹ năng tùy chọn 1 của Tank. Kỹ năng này có thể bổ sung hoặc thay đổi một phần vai trò cốt lõi của Tank. Khi sử dụng, kỹ năng tiêu hao một lượng năng lượng nhất định.
+   * Kỹ năng tùy chọn 2: Người chơi lựa chọn một kỹ năng từ danh sách kỹ năng tùy chọn 2 của Tank. Kỹ năng này có thể bổ sung hoặc thay đổi một phần vai trò cốt lõi của Tank. Khi sử dụng, kỹ năng tiêu hao một lượng năng lượng nhất định.
+   * Tăng cấp độ của xe tăng:
+   * Bắt đầu từ cấp 1, tối đa lên cấp 90.
+   * Tài nguyên nâng cấp: 
+   * Tên: Ngọc ma pháp.
+   * Icon:   
+      * Lượng Ngọc ma phap tiêu hao để lên cấp:
+      * Cấp 2 đến 20: 5 Ngọc ma pháp / cấp.
+      * Cấp 21 đến 40: 10 Ngọc ma pháp / cấp.
+      * Cấp 41 đến 60: 15 Ngọc ma pháp / cấp.
+      * Cấp 61 đến 80: 20 Ngọc ma pháp / cấp.
+      * Cấp 81 đến 90: 25 Ngọc ma pháp / cấp.
+      * Có thể tiêu hao lượng tài nguyên Ngọc ma pháp nhất định để nâng cấp. Mỗi khi nâng 1 cấp sẽ tăng chỉ số cơ bản của Tank.
+      * Mỗi xe sẽ có 2 mốc chỉ số cơ bản ở cấp 1 và cấp 90, các cấp còn lại sẽ được tính toán bằng công thức nội suy tuyến tính từ cấp 1 và cấp 90:
+      * Công thức: 
+      * Trong đó:
+         * L: cấp độ cần tính
+         * Stat: là chỉ số của Tank. Bao gồm Tấn công, Giới hạn máu, Giới hạn năng lượng, Phòng thủ, Tốc độ di chuyển, Tỉ lệ giảm hồi chiêu, Tỉ lệ sát thương, Tỉ lệ xuyên giáp.
+         * Xe Tank sẽ nhận được khi qua phần thưởng của số màn chơi nhất định.
+3.2.2. Hệ thống quản lý phụ kiện
+         * Người chơi quản lý và trang bị Phụ kiện cho Tank. Mỗi Tank có thể mang một Phụ kiện.
+         * Khi Tank được trang bị Phụ kiện sẽ nhận được một hiệu ứng giúp tăng sức mạnh cho Tank. Hiệu quả giúp cung cấp:
+         * Chỉ số:
+         * Kỹ năng bị động: là kỹ năng tự động kích hoạt khi Tank trang bị thỏa mãn điều kiện nhất định khi chiến đấu.
+         * Phụ kiện có thể ngẫu nhiên nhận được từ phần thưởng qua các màn chơi.
+         * Phân rã Phụ kiện: khi phân rã Phụ kiện sẽ nhận được ngẫu nhiên từ 8 đến 12 Ngọc ma pháp cho mỗi Phụ kiện.
+3.2.3. Hệ thống chiến đấu
+         * Xe tank
+         * Điều khiển trong game
+         * Dùng WASD để di chuyển.
+         * Dùng chuột để điều khiển hướng, vị trí dùng kỹ năng.
+         * Dùng phím kỹ năng để dùng kỹ năng.
+         * Gây sát thương: dùng kỹ năng cho phép tấn công để gây sát thương cho kẻ địch dựa trên chỉ số Tấn công. Chỉ số Phòng thủ của kẻ địch có thể làm giảm sát thương gây ra thực tế.
+         * Máu: Khi nhận sát thương, HP của Tank giảm tương ứng với lượng sát thương. Chỉ số Phòng thủ của tank có thể làm giảm lượng sát thương nhận. Khi HP giảm về 0, Tank bị đánh bại. Khi hồi máu, giá trị máu hiện tại không thể lớn hơn chỉ số máu tối đa của tank. Khi bắt đầu màn chơi, máu hiện tại có giá trị bằng với chỉ số máu tối đa của tank.
+         * Năng lượng: một số kỹ năng có thể hồi hoặc tiêu hao năng lượng hiện tại. Khi hồi năng lượng, giá trị năng lượng hiện tại không thể cao hơn chỉ số năng lượng tối đa của tank.
+         * Thi triển kỹ năng: khi thi triển kỹ năng, nếu yêu cầu tiêu hao năng lượng thì năng lượng hiện tại phải lớn hơn hoặc bằng giá trị yêu cầu. Sau khi bắt đầu thi triển sẽ bắt đầu tính thời gian chờ, trong khi đó sẽ không thể thi triển kỹ năng. Thời gian chờ sẽ được giảm dựa trên chỉ số Tỷ lệ giảm hồi chiều.
+         * Kẻ địch:
+         * Trong mỗi màn chơi, sẽ xuất hiện lượng và loại kẻ địch nhất định.
+         * Mỗi kẻ địch báo gồm các chỉ số, kỹ năng riêng:
+         * Chỉ số:
+         * Tấn công: xác định lượng sát thương gây ra
+         * Máu: xác định lượng máu tối đa
+         * Phòng thủ: xác định lượng giảm sát thương nhận từ Tank
+         * Tốc độ di chuyển: xác định tốc độ di chuyển của kẻ địch.
+         * Kỹ năng: 
+         * Kẻ địch có thể sở hữu một hoặc nhiều kỹ năng.
+         * Kỹ năng được thi triển khi đạt điều kiện nhất định hoặc sau một khoảng thời gian.
+         * Mỗi loại kẻ địch có thể có cách thi triển và hiệu ứng kỹ năng khác nhau.
+         * Loại kẻ địch
+         * Loại thường: là kẻ địch bình thường
+         * Loại Tinh anh: là kẻ địch mạnh, có lượng chỉ số lớn và khó bị tiêu diệt. Tồn tại cơ chế Mạch Năng Lượng xuất hiện trên kẻ địch.
+         * Bùng nổ năng lượng:
+         * Là một cơ chế đặc biệt chỉ xuất hiện trên các kẻ địch cấp Tinh anh. Khi kẻ địch dưới ngưỡng máu nhất định sẽ mở ra giai đoạn Bùng nổ năng lượng.
+         * Trong giai đoạn Bùng nổ năng lượng, người chơi cần thực hiện các điều kiện nhất định để phá hủy trạng thái. Nếu phá thành công thì kẻ địch sẽ bị giảm lượng lớn phòng thủ trong khoảng thời gian nhất định. Nếu không phá toàn bộ trong khoảng thời gian nhất định, kẻ địch sẽ thi triển một kỹ năng khiến người chơi nhận lượng lớn sát thương và phải chịu hiệu ứng bất lợi.
+         * Trong chế độ Coop, từng thành viên có thể phối hợp với nhau để hỗ trợ nhau phá hủy mạch năng lượng nhanh và dễ dàng hơn.
+         * Công thức tính sát thương gốc khi chưa áp dụng giảm sát thương do phòng thủ của:
+         * Tank: 
+            *  Kẻ địch: 
+               * Công thức tính tỷ lệ giảm sát thương nhận vào của Tank và Kẻ địch:
+               * Công thức tính :
+                  * Tank: 
+                  * Kẻ địch: 
+                     * Phòng thủ từ :  
+                        *  
+                           * Phòng thủ từ  :  
+                              *                                  * Phòng thủ từ  :  
+                                    *                                        * Phòng thủ từ :
+                                          *                                              * Công thức tính sát thương gây ra của Tank và Kẻ địch:
+                                             * 3.2.3. Chế độ
+        Có 2 chế độ khi bắt đầu màn chơi:
+                                                * Chơi đơn:
+                                                * Người chơi cần hoàn thành các mục tiêu được đặt ra trong từng màn chơi.
+                                                * Người chơi điều khiển 1 xe tank.
+                                                * Người chơi cố gắng tự hoàn thành mục tiêu sẽ đưa màn chơi đến trạng thái thành công.
+                                                * Khi Tank của người chơi bị đánh bại hoặc không hoàn thành điều kiện của màn chơi, màn chơi sẽ thất bại.
+                                                * Co op:
+                                                * Chế độ Co-op hỗ trợ từ 2–4 người chơi trong cùng một màn chơi. 
+                                                * Mỗi người chơi điều khiển một Tank riêng. 
+                                                * Người chơi có thể phối hợp với nhau thông qua việc lựa chọn Tank, sử dụng kỹ năng và hỗ trợ đồng đội. 
+                                                * Điều kiện hoàn thành hoặc thất bại của màn chơi được áp dụng cho toàn bộ nhóm người chơi theo thiết kế của từng màn. 
+                                                * Khi toàn bộ Tank bị đánh bại, màn chơi sẽ thất bại.
+                                                * Các chế độ coop nhiều người sẽ khó hơn chế độ một người dựa theo số lượng người tham gia.
+4. Cốt truyện, bối cảnh
+4.1. Cốt truyện
+          Chương 1: Thảm Họa Thiên Thạch Và Sự Trỗi Dậy Của Iron Wasteland 
+Vào giữa thế kỷ 30, nền văn minh nhân loại bất ngờ rơi vào thảm họa diệt vong khi những vật thể lạ từ khoảng không vũ trụ đổ hàng ngàn thiên thạch xuống Trái Đất. Các vụ nổ kinh hoàng bùng phát liên tiếp làm biến dạng cấu trúc địa cầu, kích hoạt những trận sóng thần dâng trào, vô số cơn bão nguyên tố cuồng phong cùng hàng loạt trận rung chấn làm sụp đổ hoàn toàn các thành phố hiện đại. Từ tâm những hố sâu thiên thạch, một quần thể sinh vật dị hình xuất hiện với ma pháp và năng lượng tâm linh siêu nhiên, dễ dàng đè bẹp những thứ vũ khí cơ khí tân tiến nhất của con người. Chỉ trong vài tháng ngắn ngủi, toàn bộ quân đội chính quy bị quét sạch, buộc phần còn lại của nhân loại phải rút lui sâu vào lòng đất, xây dựng các căn cứ boongke kiên cố để sống sót và nuôi hy vọng du kích trong tuyệt vọng.
+Bước ngoặt sinh tồn đến từ một cuộc phản công thất bại, khi loài người may mắn thu giữ được một phần thân xác của quái vật đó là tinh thể năng lượng, thứ được gắn trên ngực nó. Nhận thấy đây là cội nguồn của sức mạnh ma pháp nguyên tố, các nhà khoa học đã tìm cách tích hợp vào máy móc để chế tạo nên những cỗ siêu cơ khí chiến đấu. Tuy nhiên, thử nghiệm ban đầu phải trả giá bằng vô số mạng sống khi cơ thể người bình thường hoàn toàn không chịu nổi bức xạ chí mạng phát ra từ lõi tinh thể. Đúng lúc hy vọng dường như dập tắt, một đội trinh sát đã vô tình phát hiện ra một nhóm lính xe tăng sống sót kỳ diệu sau hơn một tháng mất tích giữa vùng tử địa. Mặc dù phần lớn đồng đội bị tử vong do nhiễm xạ, thể trạng của những người còn lại lại trải qua một cuộc đột biến sinh học kỳ diệu, giúp họ hoàn toàn thích nghi với thứ năng lượng kỳ lạ đó. Những chiến binh tái sinh từ cõi chết này trở thành lực lượng đặc nhiệm mang tên Iron Wasteland, những người duy nhất đủ khả năng kết nối trực tiếp với cỗ cỗ siêu xe tăng ma pháp để mang trên mình sứ mệnh cứu rỗi nhân loại.
+Chương 2: Lạc Vào Lục Địa Đen 
+Khởi đầu là cuộc càn quét vào đám quái vật lảng vảng xung quanh ngoài vành đai. Nhờ sức mạnh của siêu cơ các chiến binh đã có thể áp đảo đám quái vật. Khi chiến dịch tấn công toàn diện vừa bắt đầu một sự cố nghiêm trọng đã xảy ra. Đoàn quân thiết giáp Iron Wasteland khi tiến sâu vào chiến địa đã bị nuốt chửng bởi một lớp sương mù dị thường mang sắc tím dày đặc, bóp nghẹt tầm nhìn và làm nhiễu loạn toàn bộ hệ thống định vị. Đến khi sương mù tan biến, những người lính sững sờ nhận ra họ đã lỡ bước vào Lục Địa Đen, một phân vùng tử địa bí ẩn chưa từng có dấu chân khai phá và là nơi “không một ai trở về sống sót”. Họ buộc phải chiến đấu để sinh tồn trước những đợt tấn công điên cuồng của lũ quái vật dị dạng.
+Trong một trận chiến khốc liệt tại hoang mạc chết, sau khi hạ gục lớp phòng thủ của kẻ thù, Biết đội đã vô tình giải cứu một sinh vật ngoài hành tinh đang bị giam cầm. Thực thể này tự xưng là Mones đến từ Hành Tinh Đỏ, người đã hé lộ sự thật chấn động về thảm họa Trái Đất. Thì ra, Trái Đất đã bị chọn làm một nhà tù thí nghiệm khổng lồ của Đế chế quân phiệt Hira – một thế lực hùng mạnh đang chinh phạt cả dải ngân hà. Cơn mưa thiên thạch tàn phá địa cầu thực chất là những kén giam thả xuống vô số kẻ phản loạn và quái vật hung tàn nhất của chúng.
+Nhận thấy tiềm năng mạnh mẽ từ cỗ xe tăng ma pháp của con người, Mones đã đề nghị một giao kèo sinh tử. Mones sẽ chỉ đường biệt đội chiến binh loài người thoát khỏi Lục Địa Đen thông qua Vùng Đất Xoáy vào thời điểm nhật thực xuất hiện, với điều kiện cỗ xe tăng phải được nâng cấp bộ giáp và động cơ tới mức tối đa để chịu được sức ép xé rách không gian. Đổi lại, sau khi thoát ra ngoài, dẹp tan mọi mối hiểm họa để giải phóng hoàn toàn Trái Đất, lực lượng loài người phải giữ lời hứa vươn ra vũ trụ để hỗ trợ Mones giải phóng Hành Tinh Đỏ khỏi sự kìm kẹp của kẻ thù.
+Chương 3: Tìm thấy Vùng Đất Xoáy và một mối nguy hiểm rình rập xuất hiện 
+Trên đường đi tìm Vùng Đất Xoáy họ đã chạm chán với rất nhiều kẻ địch nguy hiểm, nhờ sự giúp đỡ của tiến sĩ hành tinh đỏ (Mones), biệt đội đã tiến hóa và chế tạo thêm những chiến cơ ma pháp uy lực khác, cuối cùng nhờ sự kiên trì không bỏ cuộc và vô vàn may mắn, họ đã tìm thấy Vùng đất xoáy trước khi nhật thực bắt đầu. Nhưng đang chờ bọn họ ở đó là một tên quái vật cực kỳ mạnh  SeauBearus, một con quái vật 3 đầu. Sở hữu sức mạnh tấn công đáng kinh ngạc, nó bắt đầu gầm rú tạo một cơn chấn động cực lớn mặt đất như vỡ vụn, các cột lửa bắt đầu trồi lên, cả địa hình bỗng chốc biến thành dung nham, các đòn tấn công của người lính dường như không hiệu quả trước lớp khiên bao bọc trong cơ thể nó, Mones xác nhận đây là 1 thực thể Tinh Anh thuộc lớp quái vật cao cấp được coi là 1 cỗ máy bất khả chiến bại, là một sinh vật trung thành đối với Hira, dùng để cai quản nhà tù chết chóc này, thế nhưng nhờ kinh nghiệm giao chiến với đế chế Hira của hành tinh đỏ, Monas đã chỉ ra rằng cách duy nhất để đánh bại lũ tinh anh là phải tìm ra mạch năng lượng và phá hủy nó, thứ cung cấp sức mạnh chính cho SeauBearus. Sau nhiều lần thất bại rút lui và thử đi thử lại các chiến binh cũng tìm ra mạch ngầm và thành công phá hủy nó, nhân cơ hội các chiến binh đã dùng hết sức lực để tiêu diệt nó, nhưng điều không ngờ đã diễn ra. Quái vật ”Bóng ma tử địa”, con quái vật có sức mạnh cực kì lớn bất ngờ xuất hiện và gây ra nhiều sát thương chí mạng cho các chiến binh khiến họ bị dồn đến đường cùng , ở khoảnh khắc sinh tử dường như tuyệt vọng thì nhật thực xuất hiện,Vòng xoáy kích hoạt khiến cả chiến binh và quái vật đều bị kéo vào trong vòng xoáy, nhờ việc sử dụng tấm khiên năng lượng những chiến binh đã sống sót, còn con quái vật đã bị xé xác thành trăm mảnh, từ xác con quái vật, các chiến binh đã nâng cấp siêu cơ lên mức tinh anh để chuẩn bị cho những cuộc đối đầu còn nguy hiểm hơn nữa ở vùng đất nguyên tố.
+Chương 4: Vùng Đất Nguyên Tố và những trận quyết chiến sinh tử
+Đặt chân đến vùng đất nguyên tố, chiến binh bàng hoàng nhận ra đây là những vùng đất mới được hình thành bởi cơn bão nguyên tố, các thành phố trên trái đất đã bị biến đổi thành các vùng đất chứa lượng lớn các năng lượng ma pháp để giam giữ những tên quái vật. Những vùng đất này trói buộc những con quái vật ở lại đây mãi mãi nhưng cũng đồng thời cung cấp cho chúng nguồn năng lượng cực lớn để khiến chúng phụ thuộc dần vào nơi này, tiếp tục là những cuộc chiến với những quái vật nhưng khó khăn hơn, việc là vùng đất này cho bọn quái vật một nguồn sức mạnh cực kì dồi dào, quái vật trở nên mạnh gấp bội nhưng đây cũng là cơ hội để phô ra sức mạnh của thứ vũ khí mới “siêu cơ tinh anh ma pháp”. Trải qua nhiều cửa ải cuối cùng tên người ngoài hành tinh thuộc Hira đã xuất hiện, hắn là phó quản ngục “The2Face”  đã nhận ra điều bất thường và xuất hiện, thuộc loại cấp Tinh Anh, nhờ kinh nghiệm đã có khi đối đầu với con quái vật Tinh Anh trước, sau bao vô vàn thử thách các chiến binh đã tiêu diệt được phó quản ngục “The2Face”. Nhờ bản đồ của tên phó quản ngục kia Chiến binh đã tìm đến  trưởng quản ngục “D1onk”, tên cuồng bạo trên sở hữu cơ thể của tàu chiến với hàng loạt vũ khí hủy diệt, sau nhiều đợt tấn công mạch năng lượng của hắn (Trái tim) cuối cùng cũng bị phá vỡ, sau cùng tên D1onk cũng đã bị tiêu diệt. Trước lúc tan biến hắn đã cho rằng bản thân đã quá tự tin vì hệ mặt trời chỉ mới hình thành nên chưa quá mạnh, với lại khả năng tìm ra hệ mặt trời rất khó, vậy nên muốn dùng hệ này như một hình phạt giam lỏng những tên tù binh và thí nghiệm lên chúng. Kết thúc chiến binh để lại trái đất cho những người còn lại tái thiết, còn mình và các chiến binh khác sẽ thực hiện lời hứa với Mones. Iron Wasteland tiến thẳng ra ngoài vũ trụ, hiện thực hóa giao kèo bảo vệ Hành Tinh Đỏ khỏi đế chế Hira.
+4.2. Bối cảnh
+  1.Tổng quan Thế giới: 
+                                                * Trò chơi mở ra vào giữa thế kỷ 30, khi Trái Đất không còn là hành tinh xanh của loài người mà đã bị biến thành một nhà tù thí nghiệm khổng lồ dưới ách thống trị của Đế chế quân phiệt Hira.Sau vụ va chạm thiên thạch,  cấu trúc địa cầu biến đổi, bề mặt trái  giờ đây là một bức tranh hoang tàn, u ám, những đô thị tan hoang đổ nát, bị bao phủ bởi nguồn năng lượng nguyên tố ma mị.
+  2.Không gian Ngầm & Pháo đài Sinh tồn:
+                                                * Hệ thống boongke cốt thép và các thành phố ngầm. Đây là pháo đài sinh tồn duy nhất của loài người.
+ 
+  3.Hệ thống Bản đồ & Thiết kế Môi trường: 
+                                                * Lục Địa Đen: Dị điểm không gian, vùng đất chết gần như không có lối thoát,bị bao vây bởi luồng sương mù dày đặc, những bãi tử địa ngập tràn quái vật biến dị ẩn mình trong bóng tối, đồng thời ẩn chứa Vùng Đất Xoáy – một dị điểm từ trường chỉ xuất hiện khi nhật thực diễn ra.
+                                                * Vùng Đất Nguyên Tố: Hình thành sau đợt mưa thiên thạch phá hủy và làm thay đổi cấu trúc địa cầu cùng với đó là sự bồi đắp của ma trận năng lượng nguyên tố. Một vùng đất rộng lớn và hỗn loạn được hình thành, nơi giam giữ nhưng đám quái vật sừng sỏ và cũng là nơi canh gác của Hira.
+4.3. Xe tank
+                                                * Wall Titan:
+                                                * Bối cảnh: Cỗ xe tank ma pháp hạng nặng đầu tiên của nhân loại, được tạo ra bên trong thành phố ngầm, kết hợp giữa xe tank và tinh thể  ma pháp đất.
+                                                * Vai trò: Tanker.
+                                                * Vai trò mở rộng: Support.
+                                                * Chỉ số cơ bản:
+
+
+
+	Cấp 1
+	Cấp 90
+	Tấn công
+	15
+	50
+	Giới hạn máu
+	1200
+	6500
+	Giới hạn năng lượng
+	100
+	300
+	Phòng thủ
+	25
+	55
+	Tốc độ di chuyển
+	100
+	100
+	Tỉ lệ giảm hồi chiêu
+	0%
+	20%
+	Tỉ lệ sát thương
+	0%
+	0%
+	Tỉ lệ xuyên giáp
+	0%
+	0%
+	
+
+                                                   * Bộ kĩ năng:
+                                                   * Kỹ năng thường — Earth Break:
+                                                   * Mô tả hiệu quả: Wall Titan ngưng tụ ma thuật đất để tấn công kẻ địch. Khi mục tiêu ở phạm vi xung quanh 3 mét sẽ gây lượng sát thương cao nhất; lực này giảm dần theo khoảng cách bay, tối đa 7 mét. Mỗi khi cú đánh trúng mục tiêu, xe tăng hồi phục một lượng năng lượng chiến đấu.
+                                                   * Mô tả trực quan: Tạo ra một khối đá gồ ghề phóng thẳng về phía mục tiêu chỉ định. Khi va chạm, khối đá vỡ vụn thành các mảnh vụn bắn ra xung quanh.
+                                                   * Thông số:
+                                                   * Năng lượng hồi: 10 năng lượng
+                                                   * Thời gian hồi: 0.6s
+                                                   * Thông số sát thương ở phạm vi gần nhỏ hơn 3 mét: 50% ATK + 50% Phòng thủ.
+                                                   * Thông số sát thương ở phạm vi xa hơn 7 mét: 20% Tấn công + 10% Phòng thủ.
+                                                   * Kỹ năng chuyên biệt — Earth Wall:
+                                                   * Mô tả hiệu quả: Tiêu hao năng lượng để dựng một chướng ngại vật vững chắc. Bức tường hoàn toàn ngăn cản đường di chuyển của kẻ địch cũng như chặn đứng các đòn tấn công dạng đạn bay đi qua vị trí của nó. Khi hết thời gian duy trì, hiệu ứng kết thúc.
+                                                   * Mô tả trực quan: Một bức tường đá kiên cố nhô lên từ mặt đất tại vị trí chỉ định. Kết cấu tường vỡ rạn và sụp đổ hoàn toàn khi hết thời gian tồn tại.
+                                                   * Thông số:
+                                                   * Năng lượng tiêu hao: 45 năng lượng
+                                                   * Thời gian hồi: 10s
+                                                   * Thời gian tồn tại của bức tường: 4s
+                                                   * Kỹ năng tùy chọn 1:
+                                                   * Stone Fortress:
+                                                   * Mô tả hiệu quả: Wall Titan gia cố lớp giáp, giúp nhận một lớp khiên, tăng phòng thủ và ngay lập tức hồi phục một lượng máu. Đổi lại, trọng lượng tăng thêm khiến tốc độ di chuyển của xe tăng bị giảm trong thời gian hiệu lực.
+                                                   * Mô tả trực quan: Bao phủ quanh thân xe tank là một lớp giáp đá kiên cố và tỏa ra ánh sáng ma pháp đất màu vàng nâu dày đặc.
+                                                   * Thông số:
+                                                   * Năng lượng tiêu hao: 50 năng lượng
+                                                   * Thời gian hồi: 12s
+                                                   * Thời gian tồn tại của khiên: 8s
+                                                   * Giá trị khiên: 30% Giới hạn máu
+                                                   * Giá trị phòng thủ tăng thêm: 50% Phòng thủ
+                                                   * Giá trị tốc độ bị giảm: 30 Tốc độ.
+                                                   * Guardian Wall:
+                                                   * Mô tả hiệu quả: Bảo vệ bản thân hoặc một đồng minh được chọn bằng lớp bảo hộ ma thuật giúp nhận một lớp khiên. Trong thời gian duy trì, Wall Titan sẽ gánh chịu một phần sát thương thay cho mục tiêu được bảo vệ. Lượng sát thương được chuyển sang cho Wall Tank được coi là trừ trực tiếp vào Máu.
+                                                   * Mô tả trực quan: Một lớp màn chắn năng lượng ma thuật đất màu nâu nhạt bao bọc quanh mục tiêu, xuất hiện đường liên kết ma pháp nối giữa Wall Titan và đồng minh.
+                                                   * Thông số:
+                                                   * Năng lượng tiêu hao: 50 năng lượng
+                                                   * Thời gian hồi: 10s
+                                                   * Thời gian tồn tại của lớp bảo hộ và khiên: 5s
+                                                   * Giá trị khiên: 30% Giới hạn máu
+                                                   * Tỉ lệ chuyển sát thương: 35%
+                                                   * Earth Prison:
+                                                   * Mô tả hiệu quả: Dựng nên cấu trúc giam giữ khép kín, nhốt hoàn toàn kẻ địch trong một vùng hình tròn. Sau một khoảng thời gian trì hoãn ngắn, vách đá sụp đổ đè nát và gây sát thương diện rộng lên các mục tiêu bên trong.
+                                                   * Mô tả trực quan: Các khối đá lớn đồng loạt mọc lên xếp thành vòng tròn khép kín quanh vùng chỉ định, sau đó đổ ập vào trung tâm gây ra hiệu ứng vỡ nát bụi đất.
+                                                   * Thông số:
+                                                   * Năng lượng tiêu hao: 60 năng lượng
+                                                   * Thời gian hồi: 14s
+                                                   * Thời gian tồn tại: 4s
+                                                   * Giá trị sát thương khi sụp đổ: 100% Tấn công + 150% Phòng thủ.
+                                                   * Kỹ năng tùy chọn 2:
+                                                   * Immovable Titan:
+                                                   * Mô tả hiệu quả: Biến Wall Titan thành một khối kiên cố bất động, hoàn toàn miễn nhiễm với mọi hiệu ứng khống chế và tăng Phòng thủ trong thời gian hiệu lực.
+                                                   * Mô tả trực quan: Thân xe tăng cắm chặt xuống mặt đất với hiệu ứng các chốt đá neo vững chắc quanh chân xe và hào quang kim loại nặng xung quanh.
+                                                   * Thông số:
+                                                   * Năng lượng hồi: 40 năng lượng
+                                                   * Thời gian hồi: 10s
+                                                   * Thời gian tồn tại: 5s
+                                                   * Giá trị Phòng thủ tăng thêm: 50 Phòng thủ
+                                                   * Earth Guardian:
+                                                   * Mô tả hiệu quả: Đánh dấu một đồng minh đồng thời bao phủ mục tiêu bằng lớp bảo vệ ma thuật đất giúp tăng Phòng thủ cho đồng minh. Một phần sát thương mà đồng minh nhận phải sẽ chuyển sang cho Wall Titan gánh chịu khi đồng minh có lớp bảo vệ. Lượng sát thương được chuyển sang cho Wall Tank được coi là trừ trực tiếp vào Máu.
+                                                   * Mô tả trực quan: Xuất hiện biểu tượng ấn ký đất đá trên đầu đồng minh cùng lớp giáp đá mờ ảo bảo vệ xung quanh mục tiêu.
+                                                   * Thông số:
+                                                   * Năng lượng tiêu hao: 50 năng lượng
+                                                   * Thời gian hồi: 10s
+                                                   * Thời gian tồn tại của lớp bảo vệ: 5s
+                                                   * Giá trị Phòng thủ tăng thêm: 35 Phòng thủ
+                                                   * Tỉ lệ chuyển sát thương: 35%
+                                                   * Earthquake:
+                                                   * Mô tả hiệu quả: Tạo ra cơn chấn động địa chấn trên diện rộng, liên tục gây sát thương định kỳ và làm giảm tốc độ di chuyển của toàn bộ kẻ địch đứng trong phạm vi tác động.
+                                                   * Mô tả trực quan: Mặt đất xung quanh nứt nẻ lan rộng theo hình tròn với hiệu ứng các đợt sóng rung chấn nảy lên liên tục cùng đá văng dồn dập.
+                                                   * Thông số:
+                                                   * Năng lượng tiêu hao: 65 năng lượng
+                                                   * Thời gian hồi: 14s
+                                                   * Thời gian tồn tại: 6s
+                                                   * Giãn cách gây sát thương: 0.5s
+                                                   * Giá trị sát thương: 60% Tấn công + 100% Phòng thủ
+                                                   * Giá trị Tốc độ bị giảm: 35% Tốc độ
+                                                   * Hình ảnh:
+                                                   * Ngoại hình:    
+
+                                                      * Red Nova:
+                                                      * Bối cảnh: Cỗ xe tank tinh anh ma pháp đầu tiên xuất hiện sau khi đánh bại SeauBearus, được chế tạo với sự giúp đỡ của Mones.
+                                                      * Vai trò:DPS
+                                                      * Vai trò mở rộng:DPS.
+                                                      * Chỉ số cơ bản:
+
+
+
+	Cấp 1
+	Cấp 90
+	Tấn công
+	25
+	95
+	Giới hạn máu
+	600
+	3200
+	Giới hạn năng lượng
+	100
+	300
+	Phòng thủ
+	10
+	15
+	Tốc độ di chuyển
+	100
+	100
+	Tỉ lệ giảm hồi chiêu
+	0%
+	0%
+	Tỉ lệ sát thương
+	0%
+	15%
+	Tỉ lệ xuyên giáp
+	0%
+	25%
+	
+
+                                                         * Bộ kĩ năng:  
+                                                         * Kỹ năng thường — Nova Shot:
+                                                         * Mô tả hiệu quả: Bắn một đòn năng lượng ma pháp đỏ cực nhanh về phía kẻ địch, gây sát thương trực tiếp. Mỗi lần tấn công trúng mục tiêu giúp tích lũy một phần năng lượng chiến đấu.
+                                                         * Mô tả trực quan: Một luồng tia năng lượng màu đỏ chói xé gió bay thẳng, để lại vệt sáng đỏ rực trên đường đi và bùng nổ vệt lửa nhỏ khi va chạm.
+                                                         * Thông số:
+                                                         * Năng lượng hồi: 10 năng lượng
+                                                         * Thời gian hồi: 0.5s
+                                                         * Giá trị sát thương: 110% Tấn công
+                                                         * Kỹ năng chuyên biệt — Triple Nova:
+                                                         * Mô tả hiệu quả: Tiêu hao năng lượng để phóng cùng lúc nhiều đạn năng lượng đỏ. Các viên đạn có thể hội tụ vào một mục tiêu duy nhất để dồn sát thương hoặc phân tán sang các kẻ địch lân cận.
+                                                         * Mô tả trực quan: Bắn ra chùm ba cầu lửa năng lượng đỏ rực theo hình quạt hoặc cùng lao dồn về phía trước, tạo nên quầng sáng đỏ rực rỡ.
+                                                         * Thông số:
+                                                         * Năng lượng tiêu hao: 40 năng lượng
+                                                         * Thời gian hồi: 5s
+                                                         * Số lượng đạn: 3
+                                                         * Giá trị sát thương: 90% Tấn công
+                                                         * Kỹ năng tùy chọn 1:
+                                                         * Overdrive:
+                                                         * Mô tả hiệu quả: Nâng công suất động cơ lên tối đa, giúp gia tăng mạnh tốc độ di chuyển và đặt lại thời gian hồi đòn đánh thường. Đồng thời sẽ tăng Tỉ lệ sát thương, khi gây sát thương sẽ mất hiệu ứng này.
+                                                         * Mô tả trực quan: Red Nova tỏa ra tàn lửa và tia lửa điện đỏ rực quanh thân xe, để lại vệt sáng năng lượng kéo dài theo hướng di chuyển.
+                                                         * Thông số:
+                                                         * Năng lượng tiêu hao: 20 năng lượng
+                                                         * Thời gian hồi: 1s
+                                                         * Giá trị tốc độ tăng thêm: 35% Tốc độ
+                                                         * Thời gian duy trì tăng tốc độ: 1s
+                                                         * Giá trị Tỉ lệ sát thương tăng: 20%
+                                                         * Laser Cannon:
+                                                         * Mô tả hiệu quả: Chuyển đổi trạng thái Kỹ năng thường thành chùm tia laser xuyên thấu hàng loạt mục tiêu trên đường thẳng và tăng hệ số sát thương gây ra. Trong trạng thái này, thời gian hồi đòn đánh gia tăng và không thể kích hoạt Triple Nova. Dùng lại kỹ năng sẽ tắt trạng thái.
+                                                         * Mô tả trực quan: Nòng pháo tích năng lượng rực sáng rồi phóng ra một luồng chùm tia laser đỏ dày xuyên suốt tầm nhìn màn hình.
+                                                         * Thông số:
+                                                         * Thời gian hồi: 1s
+                                                         * Năng lượng tiêu hao mỗi lần dùng Kỹ năng thường laser: 5 năng lượng
+                                                         * Hệ số sát thương Kỹ năng thường laser: 150% Tấn công
+                                                         * Thời gian hồi Kỹ năng thường laser: 1s
+                                                         * Execution Core:
+                                                         * Mô tả hiệu quả: Tăng mạnh Tỉ lệ sát thương và Tỉ lệ xuyên giáp, duy trì khi gây sát thương sẽ mất hiệu ứng này. Khi tiêu diệt thành công một mục tiêu trong thời gian hiệu lực, thời gian hồi của kỹ năng này được hồi lại ngay lập tức và lần thi triển tiếp theo sẽ không tốn năng lượng.
+                                                         * Mô tả trực quan: Lõi năng lượng đỏ trên thân Red Nova bùng cháy dữ dội; khi hạ gục mục tiêu sẽ phát ra hiệu ứng sóng xung kích đỏ bùng nổ tại vị trí kẻ địch bị kết liễu.
+                                                         * Thông số:
+                                                         * Năng lượng tiêu hao: 45 năng lượng
+                                                         * Thời gian hồi: 10s
+                                                         * Giá trị Tỉ lệ sát thương tăng thêm: 55%
+                                                         * Giá trị Tỉ lệ tăng xuyên giáp tăng thêm: 30%
+                                                         * Kỹ năng tùy chọn 2:
+                                                         * Nova Barrage:
+                                                         * Mô tả hiệu quả: Triệu hồi mưa đạn năng lượng oanh kích liên tục xuống khu vực chỉ định, gây sát thương dồn dập nhiều lần lên mọi kẻ địch nằm trong vùng ảnh hưởng.
+                                                         * Mô tả trực quan: Xuất hiện một vòng tròn cảnh báo màu đỏ dưới đất, sau đó hàng loạt đạn mưa đỏ từ trên không rơi dội dập xuống khu vực.
+                                                         * Thông số:
+                                                         * Năng lượng tiêu hao: 65 năng lượng
+                                                         * Thời gian hồi: 12s
+                                                         * Thời gian tồn tại: 3s
+                                                         * Giãn cách gây sát thương: 0.5s
+                                                         * Giá trị sát thương: 75% Tấn công
+                                                         * Nova Pierce:
+                                                         * Mô tả hiệu quả: Tăng cường Tấn công, Tỉ lệ sát thương và Tỉ lệ xuyên giáp.
+                                                         * Mô tả trực quan: Các đòn đánh bắn ra phủ một lớp ánh sáng nhọn hoắt sắc bén, tạo hiệu ứng tia sáng đâm thấu qua giáp kẻ địch.
+                                                         * Thông số:
+                                                         * Năng lượng tiêu hao: 55 năng lượng
+                                                         * Thời gian hồi: 12s
+                                                         * Thời gian duy trì: 5s
+                                                         * Giá trị Tấn công tăng thêm: 50% Tấn công
+                                                         * Giá trị Tỉ lệ sát thương tăng thêm: 25%
+                                                         * Giá trị Tỉ lệ tăng xuyên giáp tăng thêm: 75%
+                                                         * Nova Rush:
+                                                         * Mô tả hiệu quả: Thực hiện pha lướt nhanh tức thì về vị trí chỉ định. Lần tấn công thành công ngay sau khi kết thúc cú lướt sẽ thi triển một đòn tấn công gây thêm một lượng sát thương lớn.
+                                                         * Mô tả trực quan: Xe tăng biến thành một vệt sáng đỏ lao đi cực nhanh, để lại tàn ảnh ma thuật trên chặng đường lướt.
+                                                         * Thông số:
+                                                         * Năng lượng tiêu hao: 35 năng lượng
+                                                         * Thời gian hồi: 7s
+                                                         * Giá trị sát thương do đòn tấn công thêm: 200% Tấn công.
+                                                         * Hình ảnh:
+                                                         * Ngoại hình:    
+                                                            * Black Shadow:
+                                                            * Bối cảnh: Là một cỗ xe tăng ma pháp đã từng bị thất bại trong vài đợt thử nghiệm chế tạo siêu cơ khí ma pháp, nhưng trong quá trình khám phá lục địa đen nhờ việc tìm thấy những nguyên liệu phù hợp, chiếc xe tank đã có thể trở lại kết hợp với ma pháp bóng tối.
+                                                            * Vai trò:DPS
+                                                            * Vai trò mở rộng:Support
+                                                            * Chỉ số cơ bản:
+
+
+
+	Cấp 1
+	Cấp 90
+	Tấn công
+	20
+	90
+	Giới hạn máu
+	650
+	3400
+	Giới hạn năng lượng
+	120
+	300
+	Phòng thủ
+	12
+	18
+	Tốc độ di chuyển
+	110
+	130
+	Tỉ lệ giảm hồi chiêu
+	0%
+	15%
+	Tỉ lệ sát thương
+	0%
+	15%
+	Tỉ lệ xuyên giáp
+	0%
+	0%
+	
+
+                                                               * Bộ kĩ năng:  
+                                                               * Kỹ năng thường — Shadow Claw:
+                                                               * Mô tả hiệu quả: Phóng đòn đao bóng tối có khả năng bay xuyên qua mọi địa hình và chướng ngại vật để gây sát thương. Mỗi lần đánh trúng mục tiêu giúp tích nạp năng lượng.
+                                                               * Mô tả trực quan: Bắn ra một đao khí bóng tối màu đen tím lướt mờ ảo qua các vật thể và kẻ địch trên đường bay.
+                                                               * Thông số:
+                                                               * Năng lượng hồi: 10 năng lượng
+                                                               * Thời gian hồi: 0.5s
+                                                               * Giá trị sát thương: 90% Tấn công
+                                                               * Kỹ năng chuyên biệt — Shadow Step:
+                                                               * Mô tả hiệu quả: Tiêu hao năng lượng đặt một phân thân bóng tối tại điểm chọn. Kích hoạt lần hai để lập tức hoán đổi vị trí với bóng, đồng thời bùng nổ sát thương ra khu vực xung quanh điểm đến mới.
+                                                               * Mô tả trực quan: Tạo ra một hình ảo ảnh mờ tối đứng yên; khi dịch chuyển sẽ xuất hiện luồng khói đen bùng lên ở cả hai vị trí.
+                                                               * Thông số:
+                                                               * Năng lượng tiêu hao: 40 năng lượng
+                                                               * Thời gian hồi: 8s
+                                                               * Thời gian tồn tại bóng: 5s
+                                                               * Giá trị sát thương: 150% Tấn công.
+                                                               * Kỹ năng tùy chọn 1:
+                                                               * Shadow Predator:
+                                                               * Mô tả hiệu quả: Cường hóa đòn tấn công bóng tối giúp gia tăng kích cỡ đạn trong Shadow Claw và tăng Tấn công. Mỗi khi kết liễu một kẻ địch, thời gian hồi chiêu của kỹ năng dịch chuyển Shadow Step được giảm lập tức.
+                                                               * Mô tả trực quan: Đao khí phát ra ánh hào quang bóng tối sắc lạnh đậm màu hơn, kèm hiệu ứng tàn hỏa đen hút về thân xe khi có kẻ địch ngã xuống.
+                                                               * Thông số:
+                                                               * Năng lượng tiêu hao: 45 năng lượng
+                                                               * Thời gian hồi: 10s
+                                                               * Thời gian duy trì: 4s
+                                                               * Giá trị Tấn công tăng: 20% Tấn công.
+                                                               * Kích thước đạn trong Shadow Claw tăng: 25%
+                                                               * Shadow Link:
+                                                               * Mô tả hiệu quả: Tạo dải liên kết bóng tối với một đồng minh, giúp tăng tốc độ di chuyển cho cả hai đồng thời giảm thời gian hồi kỹ năng cho đồng minh đó.
+                                                               * Mô tả trực quan: Một sợi dây xích năng lượng bóng tối màu đen kết nối giữa Black Shadow và đồng minh, tỏa ra khói đen dưới bánh xe hai bên.
+                                                               * Thông số:
+                                                               * Năng lượng tiêu hao: 50 năng lượng
+                                                               * Thời gian hồi: 12s
+                                                               * Thời gian duy trì: 6s
+                                                               * Giá trị Tốc độ tăng thêm: 25% Tốc độ
+                                                               * Giá trị Tỉ lệ giảm hồi chiêu tăng: 20%
+                                                               * Shadow Guard:
+                                                               * Mô tả hiệu quả: Bao phủ đồng minh bằng một bóng vệ tinh bảo vệ. Khi đồng minh phải chịu đòn tấn công từ kẻ địch, bóng này sẽ lập tức triệt tiêu hoàn toàn đòn đánh đó rồi biến mất và hồi cho Black Shadow một lượng năng lượng.
+                                                               * Mô tả trực quan: Một ảo ảnh bóng ma màu đen xoay quanh đồng minh; khi đỡ đòn sẽ bùng tan thành một làn khói đen triệt tiêu đòn đánh.
+                                                               * Thông số:
+                                                               * Năng lượng tiêu hao: 40 năng lượng
+                                                               * Thời gian hồi: 8s
+                                                               * Thời gian duy trì: 3s
+                                                               * Giá trị năng lượng hồi khi đỡ thành công: 20 Năng lượng
+                                                               * Kỹ năng tùy chọn 2:
+                                                               * Shadow Ambush:
+                                                               * Mô tả hiệu quả: Dịch chuyển bóng tối ra ngay phía sau lưng mục tiêu và gây sát thương. Đòn tấn công kế tiếp nếu đánh trúng từ phía sau lưng sẽ tạo một đòn tấn công thêm vào mục tiêu trúng đòn.
+                                                               * Mô tả trực quan: Xe tăng biến mất vào lòng đất bóng tối và tức thì xuất hiện sau lưng mục tiêu trong hiệu ứng móng nanh ma quỷ.
+                                                               * Thông số:
+                                                               * Năng lượng tiêu hao: 50 năng lượng
+                                                               * Thời gian hồi: 9s
+                                                               * Giá trị sát thương của đòn tấn công thêm: 200% Tấn công
+                                                               * Shadow Possession:
+                                                               * Mô tả hiệu quả: Hòa làm một vào bóng của đồng minh, khiến Black Shadow không thể bị chỉ định hay nhận sát thương trực tiếp. Trong trạng thái này, tốc độ di chuyển của cả hai cùng được gia tăng.
+                                                               * Mô tả trực quan: Thân xe chìm nghỉm xuống bóng dưới chân đồng minh, làm bóng của đồng minh lớn hơn và phát ra làn hào quang màu đen dưới đất.
+                                                               * Thông số:
+                                                               * Năng lượng tiêu hao: 60 năng lượng
+                                                               * Thời gian hồi: 15s
+                                                               * Thời gian duy trì: 10s
+                                                               * Giá trị Tốc độ tăng thêm: 35% Tốc độ
+                                                               * Shadow Exchange:
+                                                               * Mô tả hiệu quả: Tạo ra một bản sao bóng tối của đồng minh có thể hấp thụ đòn đánh để bảo vệ đồng minh. Kích hoạt kỹ năng cho phép đổi vị trí trực tiếp với bản sao này và bản thân tăng Tốc độ.
+                                                               * Mô tả trực quan: Tạo hình ảnh bản sao màu xám đen đứng bên cạnh đồng minh; xuất hiện vệt khói đen hoán đổi khi kích hoạt hoán đổi.
+                                                               * Thông số:
+                                                               * Năng lượng tiêu hao: 65 năng lượng
+                                                               * Thời gian hồi: 14s
+                                                               * Thời gian tồn tại của bản sao: 10s
+                                                               * Giá trị Giới hạn máu của bản sao: 50% Giới hạn máu của đồng minh
+                                                               * Giá trị tốc độ tăng thêm sau khi hoán đổi: 20% Tốc độ
+                                                               * Thời gian duy trì tốc độ tăng thêm: 2s
+                                                               * Hình ảnh:
+                                                               * Ngoại hình:    
+                                                                  * Leviathan:
+                                                                  * Bối cảnh: Được tạo ra trong những trận chiến tại vùng đất  nguyên tố,dựa trên những vật liệu xe tank có sẵn lấy từ Black Shadow và Water B. 
+                                                                  * Vai trò: Tanker
+                                                                  * Vai trò mở rộng:Tanker
+                                                                  * Chỉ số cơ bản:
+
+
+
+	Cấp 1
+	Cấp 90
+	Tấn công
+	5
+	45
+	Giới hạn máu
+	1300
+	7000
+	Giới hạn năng lượng
+	120
+	350
+	Phòng thủ
+	28
+	60
+	Tốc độ di chuyển
+	100
+	100
+	Tỉ lệ giảm hồi chiêu
+	0%
+	10%
+	Tỉ lệ sát thương
+	0%
+	0%
+	Tỉ lệ xuyên giáp
+	0%
+	0%
+	
+
+                                                                     * Bộ kĩ năng:  
+                                                                     * Kỹ năng thường — Water Pulse:
+                                                                     * Mô tả hiệu quả: Phóng ra sóng xung kích bằng nước ma thuật gây sát thương lên kẻ địch. Mỗi đòn đánh trúng giúp tích lũy năng lượng cho xe tăng.
+                                                                     * Mô tả trực quan: Bắn ra các vòng sóng nước ma thuật màu xanh lam lan rộng ra phía trước, văng ra các giọt nước khi va chạm.
+                                                                     * Thông số:
+                                                                     * Năng lượng hồi: 12 năng lượng
+                                                                     * Thời gian hồi: 0.6s
+                                                                     * Giá trị sát thương: 50% ATK + 0.5% Giới hạn máu.
+                                                                     * Kỹ năng chuyên biệt — Water Bubble:
+                                                                     * Mô tả hiệu quả: Tiêu hao năng lượng bắn ra bong bóng nước khổng lồ nhốt cố định kẻ địch trong thời gian ngắn, nếu là Tinh anh sẽ thay thành gây sát thương và làm chậm. Khi bong bóng nổ tung sẽ gây sát thương diện rộng xung quanh.
+                                                                     * Mô tả trực quan: Một bong bóng nước trong suốt màu xanh lam bao trọn lấy kẻ địch nâng lên khỏi mặt đất, rồi nổ tung thành đợt sóng bạt ra xung quanh.
+                                                                     * Thông số:
+                                                                     * Năng lượng tiêu hao: 50 năng lượng
+                                                                     * Thời gian hồi: 9s
+                                                                     * Thời gian bong bóng nước khống chế: 2s
+                                                                     * Giá trị Tốc độ bị giảm khi trúng Tinh anh: 50% Tốc độ
+                                                                     * Giá trị sát thương khi bong bóng trúng Tinh anh: 100% Tấn công + 3% Giới hạn máu.
+                                                                     * Giá trị sát thương bong bóng nổ:150% Tấn công + 2% Giới hạn máu
+                                                                     * Kỹ năng tùy chọn 1:
+                                                                     * Water Armor:
+                                                                     * Mô tả hiệu quả: Tạo màng nước bao phủ làm tăng đáng kể Phòng thủ; khi hết thời gian, giáp nước phát nổ gây sát thương diện rộng. Trong thời gian giáp duy trì, sát thương gây ra của Leviathan bị giảm nhẹ.
+                                                                     * Mô tả trực quan: Màn nước dòng chảy xoáy luân chuyển liên tục quanh thân xe tăng, sau đó vỡ ra bùng nổ nước sang xung quanh.
+                                                                     * Thông số:
+                                                                     * Năng lượng tiêu hao: 55 năng lượng
+                                                                     * Thời gian hồi: 12s
+                                                                     * Thời gian duy trì: 6s
+                                                                     * Giá trị Phòng thủ tăng lên: 50% Phòng thủ
+                                                                     * Giá trị sát thương: 100% Tấn công + 2% Giới hạn máu
+                                                                     * Guardian Current:
+                                                                     * Mô tả hiệu quả: Liên kết dòng nước với đồng minh. Một phần sát thương đồng minh chịu sẽ gánh bởi Leviathan, đồng thời đồng minh được hồi máu liên tục. Liên kết sẽ đứt nếu khoảng cách quá xa. Lượng sát thương được chuyển sang cho Leviathan được coi là trừ trực tiếp vào Máu.
+                                                                     * Mô tả trực quan: Dòng nước màu xanh trong suốt uốn lượn nối giữa hai xe tăng, tỏa ra hiệu ứng bong bóng hồi phục nhỏ bao quanh đồng minh.
+                                                                     * Thông số:
+                                                                     * Năng lượng tiêu hao: 60 năng lượng
+                                                                     * Thời gian hồi: 13s
+                                                                     * Thời gian tồn tại của liên kết: 6s
+                                                                     * Tỉ lệ chuyển sát thương: 30%
+                                                                     * Giãn cách hồi máu: 1s
+                                                                     * Giá trị hồi máu: 3.5% Giới hạn máu
+                                                                     * Regenerative Shell:
+                                                                     * Mô tả hiệu quả: Bao phủ Leviathan bằng lớp nước trị liệu liên tục hồi máu. Nếu không nhận sát thương trong suốt thời gian duy trì, hiệu quả hồi phục được gia tăng mạnh mẽ.
+                                                                     * Mô tả trực quan: Kén nước xanh ngọc bích sáng rực bao trọn lấy xe tăng, phát ra hiệu ứng dòng chảy dịu nhẹ dọc theo thân xe.
+                                                                     * Thông số:
+                                                                     * Năng lượng tiêu hao: 50 năng lượng
+                                                                     * Thời gian hồi: 15s
+                                                                     * Thời gian duy trì: 5s
+                                                                     * Giãn cách hồi máu: 0.5s
+                                                                     * Giá trị hồi máu: 4% Giới hạn máu
+                                                                     * Kỹ năng tùy chọn 2:
+                                                                     * Tidal Return:
+                                                                     * Mô tả hiệu quả: Đánh dấu vị trí kẻ địch trong vùng. Sau thời gian trì hoãn ngắn, một đợt thủy triều cưỡng chế kéo toàn bộ kẻ địch trở lại vị trí đã đánh dấu và gây sát thương.
+                                                                     * Mô tả trực quan: Một vùng hiệu ứng nước xoáy xuất hiện dưới chân nhóm kẻ địch, kết thúc bằng sóng nước dội ngược lôi các mục tiêu về tâm xoáy.
+                                                                     * Thông số:
+                                                                     * Năng lượng tiêu hao: 60 năng lượng
+                                                                     * Thời gian hồi: 14s
+                                                                     * Thời gian trì hoãn: 2s
+                                                                     * Giá trị sát thương: 150% Tấn công + 3% Giới hạn máu
+                                                                     * Leviathan Form:
+                                                                     * Mô tả hiệu quả: Chuyển sang dạng thủy quái phòng thủ, tăng mạnh giới hạn máu và liên tục hồi máu. Đổi lại, chỉ số tấn công và thời gian hồi chiêu thường bị giảm.
+                                                                     * Mô tả trực quan: Cơ thể xe tăng phình to bao phủ bởi linh ảnh đầu rồng nước xanh đậm rống lên chấn động toàn bộ khung hình.
+                                                                     * Thông số:
+                                                                     * Năng lượng tiêu hao: 80 năng lượng
+                                                                     * Thời gian hồi: 18s
+                                                                     * Thời gian duy trì: 10s
+                                                                     * Giá trị Phòng thủ tăng: 50 Phòng thủ
+                                                                     * Giá trị Giới hạn máu tăng: 50% Giới hạn máu
+                                                                     * Giãn cách hồi máu: 1s
+                                                                     * Giá trị hồi máu: 1% Giới hạn máu
+                                                                     * Giá trị Tấn công giảm: 50% Tấn công
+                                                                     * Thời gian hồi của Water Pulse: 1.5s
+                                                                     * Tide Commander:
+                                                                     * Mô tả hiệu quả: Tạo ra vùng thủy triều di chuyển theo xe tăng. Đồng minh đi trong vùng được gia tăng tốc độ di chuyển và nhận lớp giáp nước hấp thụ sát thương. Nếu như đồng minh ở trên vùng đã có khiến thì sẽ chuyển thành hồi lại giá trị khiên và đặt lại thời gian duy trì khiên.
+                                                                     * Mô tả trực quan: Tạo một mảng vòng tròn nước cuộn sóng lan rộng dưới bánh xe, di chuyển đồng bộ theo thân xe và bao phủ các đồng minh đứng trong đó.
+                                                                     * Thông số:
+                                                                     * Năng lượng tiêu hao: 70 năng lượng
+                                                                     * Thời gian hồi: 16s
+                                                                     * Thời gian duy trì: 7s
+                                                                     * Giá trị tốc độ tăng thêm: 35% Tốc độ
+                                                                     * Thời gian duy trì khiên: 5s
+                                                                     * Giá trị khiên ban đầu: 10% Giới hạn máu
+                                                                     * Giá trị hồi khiên: 5% Giới hạn máu
+                                                                     * Giãn cách hồi khiên: 1s
+                                                                     * Giá trị khiên tối đa: 15% Giới hạn máu
+        Hình ảnh:
+                                                                     * Ngoại hình:    
+                                                                        * Water B:
+                                                                        * Bối cảnh: Được tạo ra trong thành phố ngầm, sau khi tìm ra người lái được xe tank ma pháp, các thế hệ tiếp theo đã được tạo ra trong đó có Water B.
+                                                                        * Vai trò: Support
+                                                                        * Vai trò mở rộng: DPS
+                                                                        * Chỉ số cơ bản:
+
+
+
+	Cấp 1
+	Cấp 90
+	Tấn công
+	15
+	75
+	Giới hạn máu
+	650
+	3500
+	Giới hạn năng lượng
+	100
+	300
+	Phòng thủ
+	12
+	18
+	Tốc độ di chuyển
+	100
+	110
+	Tỉ lệ giảm hồi chiêu
+	0%
+	30%
+	Tỉ lệ sát thương
+	0%
+	0%
+	Tỉ lệ xuyên giáp
+	0%
+	0%
+	
+
+                                                                           * Bộ kĩ năng:  
+                                                                           * Kỹ năng thường — Healing Water:
+                                                                           * Mô tả hiệu quả: Phóng dòng nước trị liệu phục hồi lượng máu cho bản thân hoặc đồng minh chỉ định. Mỗi lần hồi máu thành công sẽ tích lũy lại năng lượng cho Water B.
+                                                                           * Mô tả trực quan: Bắn ra đòn suối nước xanh ngọc uốn lượn bay tới mục tiêu, tỏa hiệu ứng bong bóng nước lấp lánh khi chạm vào.
+                                                                           * Thông số:
+                                                                           * Năng lượng hồi: 10 năng lượng
+                                                                           * Thời gian hồi: 0.6s
+                                                                           * Giá trị sát thương: 80% ATK + 1%Giới hạn máu.
+                                                                           * Kỹ năng chuyên biệt — Bubble Shield:
+                                                                           * Mô tả hiệu quả: Tiêu hao năng lượng tạo bóng bong bảo vệ giúp hấp thụ sát thương nhận vào. Khi lớp bóng này vỡ hoặc hết thời gian duy trì sẽ lập tức hồi máu cho mục tiêu.
+                                                                           * Mô tả trực quan: Bong bóng nước màu xanh bầu trời bao bọc hoàn toàn thân xe; khi vỡ phát ra làn ánh sáng hồi phục xanh nhạt.
+                                                                           * Thông số:
+                                                                           * Năng lượng tiêu hao: 45 năng lượng
+                                                                           * Thời gian hồi: 9s
+                                                                           * Thời gian duy trì: 4s
+                                                                           * Giá trị khiên: 120% Tấn công + 10% Giới hạn máu
+                                                                           * Giá trị hồi máu khi vỡ khiên: 100% Tấn công + 5% Giới hạn máu
+                                                                           * Kỹ năng tùy chọn 1:
+                                                                           * Shared Healing:
+                                                                           * Mô tả hiệu quả: Thiết lập liên kết hồi phục với một đồng minh. Bất kỳ hiệu quả hồi máu nào mà một bên nhận được cũng sẽ tự động san sẻ một phần sang cho bên còn lại.
+                                                                           * Mô tả trực quan: Sợi dây nước trong suốt lấp lánh liên kết nối hai xe tăng, tỏa hiệu ứng hồi phục đồng thì khi có hiệu ứng hồi máu.
+                                                                           * Thông số:
+                                                                           * Năng lượng tiêu hao: 50 năng lượng
+                                                                           * Thời gian hồi: 12s
+                                                                           * Thời gian duy trì: 10s
+                                                                           * Tỉ lệ san sẻ lượng hồi máu: 50%
+                                                                           * Life Drain:
+                                                                           * Mô tả hiệu quả: Trong thời gian kích hoạt, sẽ tăng Tấn công. Mỗi khi đòn tấn công của Water B gây sát thương lên kẻ địch, nó sẽ chuyển hóa một phần sát thương đó thành lượng máu phục hồi cho đồng minh có máu thấp nhất xung quanh.
+                                                                           * Mô tả trực quan: Các tia nước ma thuật từ kẻ địch bị trúng đòn tự động chảy ngược về thân xe Water B để hồi phục.
+                                                                           * Thông số:
+                                                                           * Năng lượng tiêu hao: 45 năng lượng
+                                                                           * Thời gian hồi: 11s
+                                                                           * Thời gian duy trì: 5s
+                                                                           * Giá trị Tấn công tăng: 25% Tấn công
+                                                                           * Tỉ lệ chuyển hóa sát thương gây ra thành hồi máu cho bản thân và đồng đội: 35%
+                                                                           * Bubble Protector:
+                                                                           * Mô tả hiệu quả: Tạo ra vòm bong bóng nước lớn bảo vệ nhiều đồng minh trong phạm vi, tăng Phòng thủ và Tấn công; khi hết thời gian, tất cả đồng minh bên trong được hồi máu.
+                                                                           * Mô tả trực quan: Một vòm cầu nước đại dương xanh bao bọc toàn bộ khu vực nhóm đồng minh, phát ra tiếng nổ dịu nhẹ khi tan vỡ.
+                                                                           * Thông số:
+                                                                           * Năng lượng tiêu hao: 45 năng lượng
+                                                                           * Thời gian hồi: 11s
+                                                                           * Thời gian duy trì: 6s
+                                                                           * Giá trị Phòng thủ tăng: 25 Phòng thủ
+                                                                           * Giá trị Tấn công tăng: 25% Tấn công
+                                                                           * Giá trị hồi máu: 100% Tấn công + 6% Giới hạn máu của Water B
+                                                                           * Kỹ năng tùy chọn 2:
+                                                                           * Mobile Altar:
+                                                                           * Mô tả hiệu quả: Triển khai đài tế thủy triều di động. Water B không thể tấn công trong thời gian này nhưng liên tục chữa lành và tạo khiên bảo vệ cho mọi đồng minh xung quanh. Nếu đồng đổi đã có khiên thì sẽ đặt lại giá trị và thời gian duy trì.
+                                                                           * Mô tả trực quan: Xe tăng tỏa ra một đài hoa nước linh thiêng lan rộng, chiếu các luồng ánh sáng trị liệu màu xanh ngọc liên tục lên các đồng minh.
+                                                                           * Thông số:
+                                                                           * Năng lượng tiêu hao: 75 năng lượng
+                                                                           * Thời gian hồi: 16s
+                                                                           * Thời gian duy trì: 10s
+                                                                           * Giá trị hồi máu: 50% Tấn công + 2% Giới hạn máu của Water B
+                                                                           * Giá trị khiên: 80% Tấn công + 5% Giới hạn máu của Water B
+                                                                           * Giãn cách hồi máu và khiên: 2s
+                                                                           * Thời gian duy trì khiên: 5s
+                                                                           * Water Turrets:
+                                                                           * Mô tả hiệu quả: Triệu hồi các tháp nước tự động tấn công kẻ địch đang gây nguy hiểm cho đồng minh. Các phát bắn của tháp đồng thời hồi phục một phần năng lượng cho Water B theo thời gian.
+                                                                           * Mô tả trực quan: Các cột tháp nước xoáy mọc lên tại vị trí chỉ định, tự động bắn ra các tia nước liên tục về phía mục tiêu gần nhất.
+                                                                           * Thông số:
+                                                                           * Năng lượng tiêu hao: 75 năng lượng
+                                                                           * Thời gian hồi: 14s
+                                                                           * Thời gian duy trì: 8s
+                                                                           * Số lượng tháp: 3
+                                                                           * Giãn cách tháp bắn: 1s
+                                                                           * Giá trị sát thương tháp gây ra: 50% Tấn công
+                                                                           * Năng lượng hồi mỗi khi đánh trúng: 3 Năng lượng
+                                                                           * Aqua Assault:
+                                                                           * Mô tả hiệu quả: Chuyển đổi sang thiên hướng tấn công: tăng Tỉ lệ giảm thời gian hồi chiêu, tăng Tấn công, tăng Tỉ lệ sát thương, tăng Tỉ lệ xuyên giáp.
+                                                                           * Mô tả trực quan: Thân xe Water B bao bọc bởi sóng nước xoáy nhọn màu xanh đậm rực rỡ, các phát bắn nước tung ra có tốc độ và kích thước lớn hơn.
+                                                                           * Thông số:
+                                                                           * Năng lượng tiêu hao: 65 năng lượng
+                                                                           * Thời gian hồi: 14s
+                                                                           * Thời gian duy trì: 7s
+                                                                           * Giá trị Tấn công tăng: 25% Tấn công
+                                                                           * Giá trị Tỉ lệ giảm hồi chiêu tăng: 20%
+                                                                           * Giá trị Tỉ lệ sát thương tăng: 15%
+                                                                           * Giá trị Tỉ lệ xuyên giáp tăng: 20%
+                Hình ảnh:
+                                                                           * Ngoại hình:    
+                                                                              * Green Fox:
+                                                                              * Bối cảnh: Được tạo ra trong thành phố ngầm, sau khi tìm ra người lái được xe tank ma pháp, các thế hệ tiếp theo đã được tạo ra trong đó có Green Fox.
+                                                                              * Vai trò:DPS
+                                                                              * Vai trò mở rộng: DPS
+                                                                              * Chỉ số cơ bản:
+
+
+
+	Cấp 1
+	Cấp 90
+	Tấn công
+	25
+	85
+	Giới hạn máu
+	700
+	3600
+	Giới hạn năng lượng
+	100
+	300
+	Phòng thủ
+	12
+	20
+	Tốc độ di chuyển
+	100
+	100
+	Tỉ lệ giảm hồi chiêu
+	0%
+	0%
+	Tỉ lệ sát thương
+	0%
+	10%
+	Tỉ lệ xuyên giáp
+	0%
+	5%
+	
+
+                                                                                 * Bộ kĩ năng:  
+                                                                                 * Kỹ năng thường — Fox Fang:
+                                                                                 * Mô tả hiệu quả: Bắn ra đòn ma thuật hình nanh cáo gây sát thương và có khả năng trói chân mục tiêu trong thời gian ngắn, nếu trúng Tinh anh sẽ tăng sát thương thay vì trói chân. Đánh trúng đòn giúp hồi năng lượng cho xe tăng.
+                                                                                 * Mô tả trực quan: Bắn ra luồng đạn ma thuật hình móng nanh cáo màu xanh lá cây rực rỡ; khi trúng mục tiêu sẽ xuất hiện chòm rễ cây/nanh ma thuật khóa chân mục tiêu.
+                                                                                 * Thông số:
+                                                                                 * Năng lượng hồi: 10 năng lượng
+                                                                                 * Thời gian hồi: 0.5s
+                                                                                 * Tỉ lệ trói chân: 25%
+                                                                                 * Thời gian trói chân: 1s
+                                                                                 * Giá trị sát thương cơ bản: 100% ATK.
+                                                                                 * Giá trị sát thương thay cho trói chân Tinh anh: 120% Tấn công
+                                                                                 * Kỹ năng chuyên biệt — Fox Mark:
+                                                                                 * Mô tả hiệu quả: Tiêu hao năng lượng gắn dấu ấn dồn dập lên mục tiêu. Khi Green Fox tấn công mục tiêu có dấu ấn sẽ tăng cộng dồn. Khi đủ cộng dồn, kích hoạt nổ sát thương.
+                                                                                 * Mô tả trực quan: Biểu tượng ấn đầu cáo màu xanh mờ xuất hiện trên đầu mục tiêu và phát sáng bùng nổ lửa xanh khi đạt tối đa cộng dồn.
+                                                                                 * Thông số:
+                                                                                 * Năng lượng tiêu hao: 30 năng lượng
+                                                                                 * Thời gian hồi: 6s
+                                                                                 * Thời gian tồn tại ấn: 8s
+                                                                                 * Số cộng dồn ấn tăng khi tấn công: 1
+                                                                                 * Số cộng dồn ấn tối đa: 10
+                                                                                 * Giá trị sát thương khi nổ ấn: 200% ATK.
+                                                                                 * Kỹ năng tùy chọn 1:
+                                                                                 * Mark Hunter:
+                                                                                 * Mô tả hiệu quả: Gia tăng tốc độ tích dấu ấn cáo và đẩy cao sát thương bùng nổ khi kích hoạt ấn. Hạ gục kẻ địch giúp lập tức rút ngắn thời gian hồi kỹ năng Fox Mark.
+                                                                                 * Mô tả trực quan: Ấn dấu ấn xuất hiện dồn dập rực rỡ hơn; xuất hiện tia sáng xanh lục sệt chảy về phía Green Fox mỗi khi hạ gục mục tiêu.
+                                                                                 * Thông số:
+                                                                                 * Năng lượng tiêu hao: 45 năng lượng
+                                                                                 * Thời gian hồi: 10s
+                                                                                 * Thời gian duy trì: 5s
+                                                                                 * Số cộng dồn ấn tăng khi tấn công: 2
+                                                                                 * Giá trị sát thương khi nổ ấn: 300% ATK.
+                                                                                 * Giảm hồi chiêu Fox Mark: 3s
+                                                                                 * Burning Fox:
+                                                                                 * Mô tả hiệu quả: Khiến tất cả đòn đánh và chiêu thức đính kèm hiệu ứng thiêu đốt ma thuật gây sát thương theo thời gian. Khi Fox Fang đánh trúng kẻ địch đang bị thiêu đốt sẽ hồi thêm năng lượng chiến đấu.
+                                                                                 * Mô tả trực quan: Kẻ địch trúng đòn bùng cháy ngọn lửa ma thuật màu xanh lục lục bảo rực cháy dồn dập.
+                                                                                 * Thông số:
+                                                                                 * Năng lượng tiêu hao: 40 năng lượng
+                                                                                 * Thời gian hồi: 11s
+                                                                                 * Thời gian duy trì hiệu ứng thiêu đốt: 6s
+                                                                                 * Sát thương hiệu ứng thiêu đốt: 25% tấn công
+                                                                                 * Giãn cách gây sát thương hiệu ứng thiêu đốt: 0.5s
+                                                                                 * Năng lượng hồi khi Fox Fang đánh trúng kẻ địch có thiêu đốt: 3 Năng lượng
+                                                                                 * Fox Trap:
+                                                                                 * Mô tả hiệu quả: Đặt bẫy ma thuật dưới đất. Kẻ địch dẫm phải sẽ bị trói chân cố định, sau đó bẫy nổ tung gây sát thương lớn. Nếu mục tiêu là Tinh anh, sẽ thay trói chân thành gây lượng sát thương lớn hơn.
+                                                                                 * Mô tả trực quan: Một ấn vòng tròn ma pháp xanh lá mờ dưới đất khép lại thành hàm nanh sập vào chân mục tiêu rồi nổ tung thành quầng lửa xanh.
+                                                                                 * Thông số:
+                                                                                 * Năng lượng tiêu hao: 50 năng lượng
+                                                                                 * Thời gian hồi: 10s
+                                                                                 * Thời gian tồn tại bẫy: 15s
+                                                                                 * Thời gian trói chân: 2s
+                                                                                 * Giá trị sát thương cơ bản: 150% ATK.
+                                                                                 * Giá trị sát thương thay cho trói chân Tinh anh: 230% Tấn công
+                                                                                 * Kỹ năng tùy chọn 2:
+                                                                                 * Mark Explosion:
+                                                                                 * Mô tả hiệu quả: Kích nổ tức thì toàn bộ dấu ấn trên kẻ địch trong vùng. Sau vụ nổ, Green Fox nhận được hiệu ứng tăng cường sức mạnh tấn công.
+                                                                                 * Mô tả trực quan: Một cột sóng nổ ánh sáng lửa xanh bùng lên tại vị trí mục tiêu;Green Fox phủ lên mình lớp vầng sáng lửa xanh lá.
+                                                                                 * Thông số:
+                                                                                 * Năng lượng tiêu hao: 55 năng lượng
+                                                                                 * Thời gian hồi: 12s
+                                                                                 * Giá trị sát thương với mỗi cộng dồn ấn: 20% ATK.
+                                                                                 * Thời gian duy trì: 6s
+                                                                                 * Giá trị Tấn công tăng: 30% Tấn công
+                                                                                 * Fox Territory:
+                                                                                 * Mô tả hiệu quả: Tạo ra một vùng lãnh địa ma thuật làm chậm kẻ địch và tăng tốc di chuyển cho đồng minh. Gây sát thương trong vùng giúp Green Fox tích nạp năng lượng.
+                                                                                 * Mô tả trực quan: Xuất hiện vòm lãnh địa ma trận màu xanh lục mờ rực sáng trên mặt đất với các biểu tượng cáo xoay quanh vòm.
+                                                                                 * Thông số:
+                                                                                 * Năng lượng tiêu hao: 60 năng lượng
+                                                                                 * Thời gian hồi: 15s
+                                                                                 * Thời gian duy trì: 6s
+                                                                                 * Giá trị Tốc độ kẻ địch giảm: 30% Tốc độ
+                                                                                 * Giá trị Tốc độ đồng minh tăng: 30% Tốc độ
+                                                                                 * Năng lượng hồi khi đồng minh gây sát thương: 3 Năng lượng.
+                                                                                 * Năng lượng hồi tối đa do đồng minh gây sát thương: 30 Năng lượng.
+                                                                                 * Nine-Tailed Assault:
+                                                                                 * Mô tả hiệu quả: Bộc phát dạng chín đuôi ma thuật, các đuôi tự động hỗ trợ tấn công dồn dập vào các kẻ địch xung quanh.
+                                                                                 * Mô tả trực quan: Phía sau Green Fox xòe rộng 9 chiếc đuôi lửa ma thuật màu xanh lá rực rỡ tự động quất liên tục về phía đối thủ.
+                                                                                 * Thông số:
+                                                                                 * Năng lượng tiêu hao: 75 năng lượng
+                                                                                 * Thời gian hồi: 16s
+                                                                                 * Thời gian duy trì: 6s
+                                                                                 * Số đuôi: 9
+                                                                                 * Giãn cách tấn công mỗi đuôi: 1s
+                                                                                 * Giá trị sát thương của mỗi đuôi: 15%
+                                                                                 * Hình ảnh:
+                                                                                 * Ngoại hình:    
+4.4 Phụ kiện
+STT
+	Tên
+	Icon
+	Mô tả hiệu quả cung cấp
+	1
+	Lõi Động Cơ Trọng Lực Địa Mạch
+	  
+
+	+35% Phòng thủ. 
+Đứng yên sau 1.5s giúp miễn đẩy lùi và +35% Phòng thủ. 
+	2
+	Lõi Huyết Tinh Sinh Học 
+	  
+
+	+15% Tấn công, +15% Giới hạn máu. 
+Chuyển 12% sát thương kỹ năng thành máu sửa chữa cho bản thân và 1 xe đồng minh thấp máu nhất trong phạm vi 5m xung quanh. Lượng sát thương được chuyển sang cho Tank trang bị được coi là trừ trực tiếp vào Máu. 
+	3
+	Lõi Năng Lượng Thiên Thạch Nổ 
+	  
+
+	+20% Giới hạn máu, +20% Phòng thủ.
+Mỗi khi mất 15% máu tối đa, giáp phát nổ trong phạm vi bán kính 1.5m gây sát thương bằng 100% Phòng thủ và đẩy lùi địch loại thường xung quanh.
+	4
+	Lõi Ma Pháp Hội Tụ Quang Tử 
+	  
+
+	+18% Tỉ lệ sát thương, +15% Tỉ lệ xuyên giáp. 
+Khi dùng Kỹ năng thương tấn công trúng mục tiêu, nếu khoảng cách tới mục tiêu lớn hơn 7m sẽ tăng 25% Tỉ lệ sát thương trong 1s. Kích hoạt lại hiệu ứng sẽ đặt lại thời gian hồi.
+	5
+	Động Cơ Xung Kích Tinh Thể Thạch Anh  
+	  
+
+	+15% Tấn công, +25% Tỉ lệ xuyên giáp. 
+Bắn liên tiếp vào cùng 1 mục tiêu trong 2s giúp tăng sát thương gây ra(+5% mỗi lần, tối đa +20%). Nếu trúng mục tiêu đó và kích hoạt hiệu ứng sẽ đặt lại thời gian hồi, nếu trúng mục tiêu khác sẽ đặt lại cộng dồn hiệu ứng tăng sát thương và đặt lại thời gian hồi.
+	6
+	Lõi Ma Pháp Hắc Nguyệt 
+	  
+
+	+25% Giới hạn máu. 
+Phát trường bức xạ xung quanh xe trong phạm vi bán kính 2.5m làm kẻ địch bị giảm 20% Tốc độ di chuyển và giảm 15% Tấn công. 
+	7
+	Động Cơ Tua-Bin Linh Hỏa 
+	  
+
+	+25% Tốc độ di chuyển, +15% Giới hạn máu. 
+Cứ di chuyển 3m sẽ để lại vùng lửa xanh có bán kính 1.2m giúp xe đồng minh đi qua +20% Tốc độ di chuyển, kẻ địch di chuyển vào sẽ làm giảm 20% tốc độ. 
+	8
+	Lõi Ma Trận Cộng Hưởng Mones 
+	  
+
+	+80 Giới hạn năng lượng, +15% Tỉ lệ giảm hồi chiêu. 
+Dùng kỹ năng thường hồi năng lượng sẽ chia sẻ 50% lượng hồi cho đồng minh trong phạm vi 7m ở gần nhất và cho họ +10% Giảm hồi chiêu. 
+	9
+	Động Cơ Phân Pha Hư Không 
+	  
+
+	+25% Tấn công, +15% Tốc độ di chuyển. 
+Sau khi di chuyển một quãng 3m, sẽ nhận 30% Tỉ lệ xuyên giáp và 40% Tỉ lệ sát thương, hiệu quả sẽ biến mất khi gây sát thương. 
+	10
+	Lõi Nhiệt Hạch Ba Lõi 
+	  
+
+	+20% Tấn công, +10% Tỉ lệ sát thương. 
+Kỹ năng thường trúng địch gây Thiêu đốt (tối đa 3 cộng dồn) duy trì 3s, thêm công dồn sẽ không đặt lại thời gian duy trì. Hiệu ứng thiêu đốt gây 25% Tấn công/s cho cho mỗi cộng dồn cho mục tiêu. khi bất kỳ kỹ năng nào bắn vào mục tiêu đủ 3 cộng dồn sẽ thêm 25% tăng sát thương trong 3s và xóa mọi cộng dồn Thiêu đốt. 
+	11
+	Động Cơ Thủy Lực Ma Pháp Đầm Lầy 
+	  
+
+	+30% Phòng thủ, +10% Tỷ lệ giảm hồi chiêu. 
+Nhận sát thương giúp cộng dồn giảm sát thương (3%/tầng, tối đa 18%); đủ 6 tầng được miễn nhiễm làm chậm và 15% Tỷ lệ giảm hồi chiêu trong 5s, sau khi hết thời gian hiệu lực sẽ xóa hết cộng dồn.
+	12
+	Động Cơ Tua-Bin Xoáy Nước 
+	  
+
+	+15% Tỉ lệ sát thương, +15%Tốc độ. 
+Khi có kẻ địch bị hạ gục địch trong phạm vi 10 mét sẽ hồi 25 Năng lượng và +20% Tốc độ di chuyển trong 2s. Đồng thời nhận 25% Tấn công, hiệu ứng tăng Tấn công có thể cộng dồn tối đa 2 tầng. Khi kích hoạt hiệu ứng sẽ đặt lại thời gian duy trì.
+	13
+	Lõi Ma Pháp Bào Tử Độc 
+	  
+
+	+50 Giới hạn năng lượng, +15% Tỉ lệ giảm hồi chiêu. 
+Kỹ năng gây sát thương phủ khói độc xung quanh 2.5m và làm kẻ địch bị giảm 20% Phòng thủ.
+	14
+	Lõi Tụ Điện Ma Pháp Sấm Sét 
+	  
+
+	+20% Tấn công. 
+Mỗi lần thi triển Kỹ năng thường thứ 3 sẽ phóng tia sét chuỗi lan qua 4 kẻ địch đứng gần nhau, gây 65% sát thương Tấn công và làm chậm 20% trong 5s.
+	15
+	Lõi Ma Trận Khiên Nhật Thực 
+	  
+
+	+20% Giới hạn máu, +60 Giới hạn năng lượng. 
+Mỗi khi dùng kỹ năng tiêu hao năng lượng, nhận lá chắn hấp thụ sát thương bằng 12% máu tối đa trong 6s (hồi 6s) 
+	16
+	Lõi Động Cơ Tái Sinh Chữ Thập  
+	  
+
+	+30% Giới hạn máu. 
+Tự sửa chữa 1.5% máu tối đa mỗi giây; khi máu dưới 40%, tốc độ sửa chữa tăng gấp đôi (3%/s) và +25% phòng thủ.
+	17
+	Lõi Thủy Tinh Trị Liệu 
+	  
+
+	+15% Giới hạn máu, +20% Tỉ lệ giảm hồi chiêu.
+Khi hồi máu sẽ tạo khiên bằng 50% lượng hồi phục nhận, tồn tại trong 5s. Khi nhận hồi phục trong thời gian có khiên sẽ tăng lượng khiên hiện tại bằng 50% lượng hồi phục đó và đặt lại thời gian tồn tại giáp. Giá trị khiên tối đa bằng 30% Giới hạn máu.
+	18
+	Lõi Liên Kết Song Tinh Nguyên Tố 
+	  
+
+	+15% Giới hạn máu, +25% Phòng thủ. 
+Nối cáp với 1 xe đồng minh thấp máu nhất ở gần, chuyển 20% sát thương nhận vào của đồng minh sang cho bản thân. Sát thương chuyển này sẽ trừ trực tiếp vào máu. Khi không có đồng minh xung quanh để nối cáp, sẽ nhận 50% Phòng thủ.
+	19
+	Lõi Động Cơ Lưỡng Cực THE2FACE 
+	  
+
+	+15% Tấn công, +15% Tỉ lệ giảm hồi chiêu. 
+Gây sát thương khiến địch nhận giảm 10% phòng thủ trong 4s; Hồi máu/tạo giáp giúp xe đồng minh +15% Tấn công trong 4s. Cả hai hiệu ứng cộng dồn tối đa 2 tầng, mỗi tâng có thời gian duy trì độc lập.
+	20
+	Lõi Siêu Cơ Giáp Thống Lĩnh D1ONK  
+	  
+
+	+50% Tấn công, 50% Giới hạn máu, 50% Phòng thủ, 15% Tỉ lệ sát thương, +30% Tỉ lệ xuyên giáp. 
+Khi nhận phần thưởng từ kẻ địch Tinh anh, sẽ hồi 50% Giới hạn năng lượng, +30 Tỉ lệ giảm hồi chiêu và +30% Tỉ lệ sát thương trong 10s. 
+	
+5. Màn chơi
+5.1. Tổng quan
+Hệ thống màn chơi trong Iron Wasteland được thiết kế theo cấu trúc chiến dịch tuyến tính, kết hợp chặt chẽ giữa diễn biến cốt truyện và sự gia tăng độ khó của cơ chế chiến đấu.
+                                                                                    * Quy mô chiến dịch: Toàn bộ trò chơi bao gồm 9 màn chơi, được chia thành 2 Chương chính:
+                                                                                    * Chương 1 – Lục Địa Đen & Vòng Xoáy Nhật Thực (Màn 1-1 đến 1-4): Giai đoạn làm quen với cơ chế điều khiển, đối phó với các chủng quái vật đột biến tầm gần/tầm xa cơ bản và lần đầu tiếp cận cơ chế phá Bùng nổ năng lượng của Boss Tinh Anh.
+                                                                                    * Chương 2 – Vùng Đất Nguyên Tố & Pháo Đài Hira (Màn 2-1 đến 2-5): Giai đoạn thử thách nâng cao khi quái vật được cường hóa bởi ma trận nguyên tố (có khả năng tàng hình, trói chân, hồi máu, gọi viện binh), đỉnh điểm là các trận đánh Boss đa trạng thái và trận quyết chiến cuối cùng với Đại Cơ Giáp D1onk trên kỳ hạm Hira.
+                                                                                    * Thời lượng tiêu chuẩn: Mỗi màn chơi có nhịp độ hành động nhanh, kéo dài từ 90 giây đến 240 giây tùy theo loại nhiệm vụ (càn quét, sinh tồn, hộ tống hay đấu Boss).
+                                                                                    * Hỗ trợ chế độ chơi: Tất cả 9 màn chơi đều hỗ trợ cả 2 chế độ Chơi đơn (1 người) và Co-op (2–4 người). Khi tham gia ở chế độ Co-op, lượng Máu (HP) của toàn bộ kẻ địch thường và Tinh Anh sẽ được nhân đôi (x2 HP) để cân bằng với hỏa lực của cả đội và thúc đẩy sự phối hợp khi giải quyết cơ chế màn chơi.
+
+
+5.2. Cấu trúc màn chơi
+Các màn chơi được phân loại thành 3 nhóm cấu trúc thiết kế và tái sử dụng thông minh trên 3 bản đồ môi trường lớn:
+                                                                                    * Màn chơi Tiêu chuẩn (Màn 1-1, 1-2, 1-3 và 2-1, 2-2, 2-3):
+                                                                                    * Chia thành 2 đến 3 đợt quái (Waves) xuất hiện theo tiến độ thời gian hoặc theo điểm kích hoạt nhiệm vụ trên bản đồ.
+                                                                                    * Kết hợp đa dạng chủng loại kẻ địch được thiết kế cho mỗi chương.
+                                                                                    * Màn Boss Kép 2 Phase (Màn 1-4 và Màn 2-4):
+                                                                                    * Là màn cuối mỗi khu vực bản đồ chung, được thiết kế theo kịch bản 4 giai đoạn (4 Phases) nối tiếp nhau:
+                                                                                    1. Phase 1 (Đợt quái mở đầu): Tiêu diệt toán quái vật tinh nhuệ phong tỏa lối vào đấu trường.
+                                                                                    2. Phase 2 (Boss Tinh Anh thứ nhất): Đối đầu và đánh bại Boss đầu tiên.
+                                                                                    3. Phase 3 (Đợt quái tiếp viện): Cổng không gian hoặc hệ thống báo động kích hoạt, triệu hồi đợt quái vật cản trở trong lúc chuyển giao.
+                                                                                    4. Phase 4 (Boss Tinh Anh thứ hai): Quyết chiến với Boss thứ hai để hoàn thành màn chơi.
+                                                                                    * Màn Boss Cuối Độc lập (Màn 2-5):
+                                                                                    * Không có đợt quái phụ mở màn; người chơi bước thẳng vào buồng chỉ huy lõi để đối đầu trực diện với Final Boss Trưởng Quản Ngục D1onk cùng cơ chế phá hủy 3 lớp Mạch Năng Lượng liên hoàn.
+                                                                                    * Phân bổ Bản đồ & Môi trường (3 Maps):
+                                                                                    * Map 1 – Hoang Mạc Tử Địa & Vòng Xoáy Hắc Ám (Dùng chung cho Màn 1-1 đến 1-4): Địa hình bình nguyên cát sỏi xám đen bao phủ bởi sương mù tím, rải rác hố thiên thạch cổ, xác xe bọc thép rỉ sét, trạm radar bỏ hoang và các hẻm núi đá tạo điểm thắt địa hình (chokepoint).
+                                                                                    * Map 2 – Thung Lũng Nguyên Tố & Ngoại Vi Pháo Đài Hira (Dùng chung cho Màn 2-1 đến 2-4): Địa hình chia cắt phức tạp với nền đá bazan nứt nẻ dòng magma đỏ rực, vùng trũng đầm lầy hóa chất lục bảo, thềm đá tích điện kết hợp hàng rào kim loại và lô cốt phòng thủ của Hira.
+                                                                                    * Map 3 – Kỳ Hạm Không Gian Hira / Buồng Chỉ Huy Lõi D1onk (Dành riêng cho Màn 2-5): Sàn đấu kim loại đen hình lục giác khổng lồ nằm giữa không gian vũ trụ, bố trí 4 trụ phát điện plasma ở 4 góc sân đấu và ống xả năng lượng lò phản ứng ở trung tâm.
+5.3. Mục tiêu
+Điều kiện chiến thắng và thất bại của 9 màn chơi được thiết kế xoay quanh 5 dạng mục tiêu chiến thuật:
+                                                                                    * Tiêu diệt: Tiêu diệt đủ số lượng quái vật yêu cầu qua các đợt tấn công.
+                                                                                    * Sinh tồn & Phá hủy mục tiêu: Sống sót trước các đợt quái tràn ra liên tục trong thời gian quy định.
+                                                                                    * Hộ tống & Công kích cứ điểm: Kích hoạt 2 Trạm Radar và hộ tống xe tù binh Mones di chuyển an toàn; hoặc bảo vệ Xe phá thành tiến lên đập phá 3 Trụ Điện Trường của pháo đài.
+                                                                                    * Chinh phục Boss Tinh Anh: Phối hợp giải mã cơ chế Bùng nổ năng lượng và hạ gục hoàn toàn các Boss Tinh Anh của màn chơi.
+                                                                                    * Điều kiện thất bại chung:
+                                                                                    * Ở chế độ Chơi đơn: Xe tăng của người chơi bị hạ gục (HP về 0) hoặc phương tiện cần hộ tống/bảo vệ bị phá hủy.
+                                                                                    * Ở chế độ Co-op: Toàn bộ xe tăng của cả đội đều bị hạ gục (HP về 0) hoặc mục tiêu hộ tống/bảo vệ bị phá hủy.
+5.4. Kẻ địch
+5.4.1. Hệ thống Kẻ địch & Boss Chương 1: Lục Địa Đen
+Ngoại hình
+	Kẻ địch & Vai trò
+	Thông số
+	Mô tả & Cơ chế Chiến đấu
+	  
+
+	Ký sinh thiên thạch
+	HP: 100 (Co-op: 200)
+ATK: 150
+Giáp: 0
+SPD: 125
+	• Cơ chế: Di chuyển cực nhanh áp sát tank. Chạm trúng tank tự phát nổ gây sát thương diện nhỏ và làm chậm 30% tốc độ chạy trong 5s.Vụ nổ gây bằng sát thương 100% Tấn công. Khi bị tiêu diệt cũng nổ lan tương tự tại vị trí chết.
+	  
+
+	Xạ Thủ Tinh Thể
+	HP: 200 (Co-op: 400)
+ATK: 75
+Giáp: 25
+SPD: 80
+CD: 1.5s
+	• Cơ chế: Giữ khoảng cách tầm xa, tích tụ năng lượng bắn ra một tia laser thẳng xuyên thấu về phía mục tiêu. Viên đạn gây sát thương bằng 100% Tấn công.
+	  
+
+	Quái Vật Thạch Anh
+	HP: 220 (Co-op: 440)
+ATK: 50
+Giáp: 15
+SPD: 85
+CD: 1.5s
+	• Cơ chế: Tấn công từ xa, mỗi đợt phóng 3-5 gai nhọn đuổi theo mục tiêu. Gai nhọn gây sát thương bằng 100% Tấn công. Nếu mục tiêu trúng từ 2 gai trở lên trong cùng đợt, các gai nhọn sau sẽ tăng thêm 25% hệ số sát thương.
+	  
+
+	Mặt Trăng Đen
+	HP: 260 (Co-op: 520)
+ATK: 15
+Giáp: 50
+SPD: 95
+CD: 2.0s
+	• Cơ chế: Lao vào tấn công tầm gần, phát xung tỏa ra trường bức xạ năng lượng xung quanh 2.5m và gây sát thương diện rộng mỗi 0.5s bằng 100% Tấn công.
+	  
+
+	Tinh Linh Nghĩa Địa
+	HP: 250 (Co-op: 500)
+ATK: 35
+Giáp: 10
+SPD: 135
+	• Cơ chế: Không tấn công trực diện mà mỗi khi di chuyển 3m sẽ để lại các vệt lửa thiêu đốt bán kính 1.5m, tồn tại 5s. Kẻ địch ở trên vệt lửa sẽ nhận sát thương băng 100% Tấn công mỗi 1s. Đồng thời kẻ địch bị giảm 20% Tốc độ trong 2s, kích hoạt lại sẽ đạt lại thời gian duy trì.
+	  
+
+	Bóng Ma Tử Địa
+	HP: 2.000 (Co-op: 4000)
+ATK: 120
+Giáp: 45
+SPD: 90
+	• Bị động: Kẻ địch hay đồng minh hi sinh sẽ có 10% tạo ra 1 vết nứt, sau 10 giây có khả năng tàng hình trong 1 thời gian ngắn.
+• Kỹ năng:
+                                                                                    * Vết nứt không gian: Tạo ra một vết nứt ngẫu nhiên trên bản đồ, kẻ địch đi vào sẽ bị dịch chuyển tới vị trí của Bóng ma. Vết nứt cứ sau 8 giây sẽ xuất hiện 1 kẻ địch thường ngẫu nhiên.
+                                                                                    * Vết chém tử địa: Chém một phát cực mạnh gây sát thương 100% Tấn công xung quanh 4m, nếu mục tiêu trong phạm vi 2m sẽ đổi thành gây 150% Tấn công.
+                                                                                    * Triệu vệ linh hồn: Làm chậm 20% Tốc độ các mục tiêu trong phạm vi 10m trong 5s. Sau đó triệu hồi 5 linh hồn đuổi theo các mục tiêu đó, khi trúng gây 50% Tấn công.
+• Bùng nổ năng lượng:
+                                                                                    * Điều kiện: khi dưới 50% Giới hạn máu lần đầu.
+                                                                                    * Cơ chế:
+                                                                                    * Duy trì 30s.
+                                                                                    * Tăng 200% Phòng thủ, 25% Tấn công.
+                                                                                    * Vận sức trong 2 giây, nhốt 1 đồng mình gần nhất vào Vùng tăm tối, đồng thời tạo một lớp khiên bằng 40% Giới hạn máu bao bọc Bóng ma tử địa. Bên trong Vùng tăm tối sẽ xuất hiện một bản sao của Bóng ma tử địa có khiên đồng bộ với bản gốc ở trên sân, bản sao sẽ liên tục dùng Triệu vệ linh hồn với phạm vi toàn bộ Vùng tăm tối mỗi 3s.
+                                                                                    * Lớp khiên có thể bị tấn công ở 1 trong 4 hướng, mỗi 3 giây sẽ mở một hướng có thể tấn công và đóng hướng cũ vừa mở, mỗi khi lớp Khiên mất 10% giá trị tối đa sẽ hồi phục 10% Giới hạn máu của Tank đứng bên trong “Vùng tăm tối”. Mỗi một đòn tấn công sai hướng, lớp khiên sẽ hồi phục 5% giá trị tối đa.
+                                                                                    * Nếu tank bên trong “Vùng tăm tối” bị tiêu diệt sẽ ngay lập tức kết thúc Bùng nổ năng lượng và sẽ thực hiện hình phạt.
+                                                                                    * Nếu lớp khiên bị phá hủy, trạng thái Bùng nổ năng lượng kết thúc, chuyển Tank bên trong Vùng tăm tối ra ngoài và kích hoạt phần thưởng.
+                                                                                    * Nếu kết thúc trạng thái Bùng Nổ năng lượng mà lớp khiên chưa bị phá hủy sẽ kích hoạt hình phạt.
+                                                                                    * Phần thưởng:
+- Giảm 90% Phòng thủ, đồng thời mất đi 20% Giới hạn máu.
+- Các Tank trên sân nhận 25% Tấn công trong 8s, hồi 10% Giới hạn máu. Tank bị đưa vào Vùng tăm tối sẽ hồi thêm 10% Giới hạn máu.
+                                                                                    * Hình phạt: gây sát thương 200% Tấn công và làm chậm 20% Tốc độ trong 10s toàn bản đồ. Đồng thời hiệu ứng tăng Tấn công và Phòng thủ sẽ duy trì thêm 10s.
+	  
+
+	SeauBearus
+	HP: 1800 (Co-op: 3600)
+ATK: 180
+Giáp: 40
+SPD: 85
+	• Bị động: Mỗi 10 giây gây sát thương bằng 10% hp của kẻ địch và hồi máu cho bản thân.
+• Kỹ năng:
+                                                                                    * Phun lửa: Phun ra ngọn lửa hình quạt về phía trước gây 100% Tấn công. Đồng thời để lại vệt lửa tồn tại 8s gây 20% Tấn công mỗi 0.5s và làm chậm 20% Tốc độ cho mục tiêu ở trên vệt lửa.
+                                                                                    * Gầm thét: Làm chậm 30% Tốc độ cho mọi mục tiêu trong phạm vi 10m. Sau 0.5s sẽ nhận 25% Tấn công, 30% Tốc độ trong 5s và triệu hồi cột lửa dưới chân tất cả mục tiêu trong phạm vi gây 100% Tấn công.
+                                                                                    * Khiên gai: tăng 25% Phòng thủ trong 10s. Khi bị tấn công trong thời gian duy trì sẽ gây sát thương 25% Tấn công lên đối tượng gây sát thương.
+• Bùng nổ năng lượng:
+                                                                                    * Điều kiện: khi dưới 60% Giới hạn máu lần đầu.
+                                                                                    * Cơ chế:
+                                                                                    * Duy trì 35s.
+                                                                                    * Tăng 25% Tấn công, 50% Phòng thủ.
+                                                                                    * Dịch chuyển sang giữa tâm map, liên tục tạo ra tia lửa tới kẻ địch xa nhất. Mỗi 0.5s phóng một tia và gây sát thương bằng 25% Tấn công.
+                                                                                    * Tạo một lớp đỏ ở bên phải và một lớp khiển xanh ở bên trái. Khi cả hai lớp khiên cùng tồn tại, SeauBearus sẽ không nhận sát thương. Khiên đỏ có giá trị bằng 30% Giới hạn máu, chỉ có thể nhận sát thương từ phía bên phải SeauBearus, Khiên xanh sẽ tự động bị phá hủy sau 30s kể từ khi xuất hiện.
+                                                                                    * Xuất hiện một Mặt trăng đen ở phía bên trái, sau mỗi 10s sẽ tạo thêm Mặt trăng đen tại vị trí xuất hiện, Mặt trăng đen không thể nhận sát thương và thi triển tấn công, sẽ luôn di chuyển về phía SeauBearus, khi Mặt trăng đen tồn tại quá 10s sẽ tự động biến mất. Khi Mặt trăng đen chạm vào SeauBearus, khiên xanh sẽ không tự động biến mất nữa, Mặt trăng đen cũng sẽ không được tạo nữa.
+                                                                                    * Nếu cả hai lớp khiên bị phá hủy, trạng thái Bùng nổ năng lượng kết thúc và kích hoạt phần thưởng.
+                                                                                    * Nếu kết thúc trạng thái Bùng Nổ năng lượng mà một trong hai lớp khiên chưa bị phá hủy sẽ kích hoạt hình phạt.
+                                                                                    * Phần thưởng:
+- Giảm 90% Phòng thủ, đồng thời bị choáng trong 3s.
+- Các Tank trên sân nhận 25% Tấn công trong 8s, hồi máu trong 8s với tổng giá trị là 10% Giới hạn máu. Đồng thời đặt lại thời gian hồi cho toàn bộ kỹ năng.
+                                                                                    * Hình phạt: gây sát thương 200% Tấn công và làm choáng 2s toàn bản đồ. Đồng thời hiệu ứng tăng Tấn công và Phòng thủ sẽ duy trì thêm 10s.
+	5.4.2. Hệ thống Kẻ địch & Boss Chương 2: Vùng Đất Nguyên Tố
+Ngoại hình
+	Kẻ địch & Vai trò
+	Thông số
+	Mô tả & Cơ chế Chiến đấu
+	  
+
+	Kiến Lửa Khổng Lồ
+	HP: 420 (Co-op: 840)
+ATK: 130
+Giáp: 30
+SPD: 105
+CD: 2.0s
+	• Cơ chế: Lao vào cắn cận chiến liên tục, đòn đánh trúng gây sát thương 100% Tấn công và kèm hiệu ứng thiêu đốt gây 15% Tấn công mỗi 1s, duy trì 5s. Gán lại hiệu ứng thiêu đốt lên mục tiêu sẽ đặt lại thời gian duy trì.
+	  
+
+	Quái Vật Đầm Lầy
+	HP: 380 (Co-op: 760)
+ATK: 180
+Giáp: 35
+SPD: 75
+CD: 3.5s
+	• Cơ chế: Bò nhanh tới mục tiêu tạo vũng bùn lầy khiến tank bị sa lầy giảm 40% tốc độ, sau 3 giây vũng bùn tự phát nổ diện rộng gây 100% Tấn công.
+	  
+
+	Nấm Độc Gai Thạch
+	HP: 380 (Co-op: 760)
+ATK: 110
+Giáp: 25
+SPD: 0
+CD: 6.0s
+	• Cơ chế: Bất động, luôn tàng hình dưới đất. Định kỳ ngoi lên phun dịch độc xung quanh 2.5m và rải đám mây bào tử độc tồn tại 5s và gây sát thương 100% Tấn công mỗi 0.5s.
+	  
+
+	Sao Đen
+	HP: 450 (Co-op: 900)
+ATK: 100
+Giáp: 18
+SPD: 0
+CD: 3.0s
+	• Cơ chế: Bất động, định kỳ phát xung năng lượng hồi phục 100% Tấn công và thêm 25% Tân công của Sao đen trong 3s cho toàn bộ quái vật đồng minh xung quanh phạm vi bán kính 2.5m.
+	  
+
+	Mặt Trời Đỏ
+	HP: 720 (Co-op: 1.400)
+ATK: 240
+Giáp: 40
+SPD: 0
+CD: 8.0s
+	• Cơ chế: Cố định vị trí, định vị tank và sau 2s triệu hồi thiên thạch rơi xuống phát nổ gây sát thương lớn trong phạm vi 2.5m; thiên thạch vỡ sinh ra thêm 2-5 con Ký sinh thiên thạch.
+	  
+
+	Xén Nước
+(Hệ Thủy / Tiên phong)
+	HP: 360 (Co-op: 720)
+ATK: 150
+Giáp: 24
+SPD: 140
+CD: 2.5s
+	• Cơ chế: Khóa mục tiêu rồi lao vút thẳng với tốc độ lớn; tông trúng gây sát thương 100% Tấn công và đẩy lùi tank; nếu trượt sẽ khựng lại 1.5s.
+	  
+
+	Tinh Linh Sấm Sét
+(Hệ Lôi / Tầm xa lan)
+	HP: 260 (Co-op: 520)
+ATK: 170
+Giáp: 10
+SPD: 95
+CD: 2.0s
+	• Cơ chế: Bắn đòn điện tầm xa giật sét mục tiêu gây sát thương bằng 100% Tấn công, có khả năng lan sát thương sang các mục tiêu đứng gần (tối đa 2 mục tiêu cạnh nhau).
+	  
+
+	Tử Thần Nguyên Tố
+(BOSS 1 ẢI 2-4)
+	HP: 9.500 (Co-op: 18.000)
+ATK: 250
+Giáp: 25
+SPD: 90
+	• Bị động — Chuyển Dạng Nguyên Tố: Mỗi 15 giây tự động chuyển đổi trạng thái (luân chuyển: Thủy -> Độc -> Hỏa).
+• Kỹ năng:
+                                                                                    * Hệ Thủy: 
+                                                                                    * Thủy Triều: gây 100% ATK về phía trước 4m, đẩy lùi 3m. 
+                                                                                    * Thủy liệu: hồi 5% Giới hạn máu và tăng 25% Phòng thủ trong 5s.
+                                                                                    * Hệ Độc: 
+                                                                                    * Độc quật: Quẹt 1 góc 180 độ bán kính 4m về phía trước gây sát thương 100% Tấn công và làm giảm 20% Tốc độ, giảm 10% Phòng thủ trong 5s
+                                                                                    * Loạn chuyển: Dịch chuyển đến một Tank bất kỳ, sau khi dịch chuyển đến sẽ gây ra vụ nổ phạm vi 3m gây 100% Tấn công và làm choáng 2s..
+                                                                                    * Hệ Hỏa: 
+                                                                                    * Phun dung nham: phun dung nham thẳng về phía trước 16m gây 120% Tấn công.
+                                                                                    * Hỏa tốc: vận sức 1.5s, trong lúc vận sức xuất hiện một lốc xoáy lửa tại mục tiêu xa nhất gây 10% Tấn công mỗi 0.5s. Sau khi vận sức sẽ di chuyển nhanh đến lốc xoáy , nếu trên đường di chuyển trúng Tank sẽ đẩy lùi ra 2 bên và gây 100% Tấn công. Khi di chuyển sẽ để lại vệt lửa tồn tại 10s gây cho các mục tiêu ở trên vệt lửa 20% Tấn công mỗi 0.5s
+• Bùng nổ năng lượng:
+                                                                                    * Điều kiện: Khi dưới 45% Giới hạn máu lần đầu.
+                                                                                    * Cơ chế:
+                                                                                    * Duy trì 30s.
+                                                                                    * Hồi 20% HP, tăng 100% Phòng thủ, 25% ATK và 20% SPD.
+                                                                                    * Tử Thần Nguyên Tố nhận lớp khiên bằng 25% Giới hạn máu. Thoát trạng thái Bùng nổ năng lượng sẽ xóa khiên.
+                                                                                    * Kéo tối đa 3 Tank vào 3 tế đàn riêng tách biệt với sân đấu (gần nhất: Hỏa, xa nhất: Độc, còn lại: Thủy). Trong mỗi tế đàn sẽ xuất hiện các bản sao của Tử Thần Nguyên Tố với trạng thái tương ứng với tế đàn. Bản sao có chỉ số bằng 25% Giới hạn máu, 100% Phòng thủ, 100% Tốc độ của bản gốc. Khi tiêu diệt được bản sao sẽ đưa Tank trong tế đàn lại sân đấu.
+                                                                                    * Liên tục xuất hiện các tinh thể nguyên tố xuất hiện trên sân đấu và các tế đàn. Các tinh thể có các hình dạng và màu sắc khác nhau. Khi Tank tiếp xúc với các tinh thể sẽ gây hiệu ứng lên các bản sao trong tế đàn tương ứng với màu của tinh thể. Hình tròn sẽ gây choáng 2s lên bản sao, hình vuông sẽ giảm 10% máu tối đa của bản sao, hình tam giác sẽ giúp Tank trong tế đàn nhận khiên đỡ một đòn sát thương và nhận 25% Tỷ lệ xuyên giáp trong 3s.
+                                                                                    * Khi toàn bộ Tank rời khỏi tế đàn, trạng thái Bùng nổ năng lượng kết thúc và kích hoạt phần thưởng.
+                                                                                    * Khi khi thoát trạng thái Bùng nổ năng lượng mà toàn bộ Tank chưa thoát hết khỏi tế đàn. Chuyển toàn bộ tank ra khỏi tế đàn và kích hoạt hình phạt
+                                                                                    * Phần thưởng: giảm 80% Phòng thủ trong 10s, làm choáng Boss 3s; Toàn bộ Tank nhận 25% ATK và hồi 20% HP.
+                                                                                    * Hình phạt: Với mỗi bản sao chưa bị tiêu diệt, gây vụ nổ 100% ATK toàn bản đồ. Đồng thời Boss hồi 10% HP và sở hữu vĩnh viễn bộ chiêu thức cả 3 hệ.
+	  
+
+	The2Face
+(BOSS 2 ẢI 2-4)
+	HP: 16.000 (Co-op: 32.000)
+ATK: 350
+Giáp: 30
+SPD: 100
+	• Bị động: Làm chậm kẻ địch xung quanh 4m; mỗi 10 giây nhận lá chắn triệt tiêu 1 đòn tấn công.
+• Kỹ năng:
+                                                                                    * Tụ nhiệt: Ném quả cầu năng lượng vào vùng chỉ định tạo vùng duy trì trong 5s. Mỗi giây gây sát thương 20% Tấn công và ngẫu nhiên áp dụng 1 trong 2 hiệu ứng lên Tank: Buồn bã (Giảm 20% SPD, -10% ATK và DEF trong 4s) hoặc Tức giận (Gây thêm 20% Tấn công mỗi lần, giảm 20% Năng lượng hiện tại).
+                                                                                    * Câm lặng: Khiến một Tank không thể sử dụng kỹ năng trong 5s.
+                                                                                    * Hút: Hút Tank về phía bản thân. Đồng thời triệu hồi 8 viên đá từ ngoài bản đồ lao về phía Boss; va chạm với Tank gây 20% ATK sát thương và làm choáng 0.8s mỗi viên.
+• Bùng nổ năng lượng:
+                                                                                    * Điều kiện: Khi HP giảm xuống dưới 50% lần đầu tiên.
+                                                                                    * Cơ chế:
+                                                                                    * Duy trì 35s
+                                                                                    * Ngay lập tức hồi 20% HP tối đa, tăng 50% ATK, tăng 50% DEF.
+                                                                                    * Gây hiệu ứng câm lặng khóa toàn bộ chiêu thức của Tank.
+                                                                                    * Xuất hiện các điểm sáng trên bản đồ ( số lượng bằng số Tank trên sân, tối đa 4 điểm). Các điểm sáng được coi là đồng minh của Tank và sẽ di chuyển theo Tank gần nhất xung quanh, có Giới hạn máu là 4000, Phòng thủ 0, Tốc độ 10. Khi có Tank ở 2m xung quanh điểm sáng sẽ bật điểm sáng, khi không có Tank xung quanh thì điểm sáng sẽ tắt. Khi số lượng đèn mở lần lượt là 1, 2, 3, 4 sẽ mở khóa Kỹ năng thường, Kỹ năng chuyển biệt, Kỹ năng tùy chọn 1, Kỹ năng tùy chọn 2. Khi toàn bộ điểm sáng trên sân đều mở và chưa có điểm sáng nào biến mất thì sẽ mở khóa toàn bộ kỹ năng cho Tank trên sân.
+                                                                                    * Triệu hồi các Tinh linh sấm sét tấn công Tank và các Quái vật đầm lầy di chuyển tiếp cận để phá hủy điểm sáng.
+- Khi kết thúc trạng thái Bùng nổ năng lượng mà trên sân vẫn còn ít nhất một điểm sáng sẽ kích hoạt phần thưởng.
+- Khi toàn bộ điểm sáng bị phá hủy thì sẽ kết thúc trạng thái Bùng nổ năng lượng và kích hoạt hình phạt.
+                                                                                    * Phần thưởng: Giảm lượng lớn 50% ATK và 50% DEF của kẻ địch trong 8s. Toàn bộ Tank tăng 50% ATK và hồi lại toàn bộ thời gian hồi chiêu.
+                                                                                    * Hình phạt: Boss phát tán bức xạ cực lớn trên toàn sân làm giảm 20% Tấn công, 20% Phòng thủ, 30% Tốc độ.
+	  
+
+	Trưởng Quản Ngục D1onk
+(FINAL BOSS ẢI 2-15)
+	HP: 27.000 (Co-op: 54.000)
+ATK: 500
+Giáp: 60
+SPD: 70
+	• Bị động — Pháo Hạm Đa Nòng: Boss trang bị nhiều pháo đài ma pháp hạng nặng. Mỗi khi thi triển kỹ năng sẽ tạo ra 5 viên đạn truy đuổi mục tiêu ngẫu nhiên trên sân. Mỗi viên gây 20% Tấn công. Mỗi 5s cũng sẽ tạo 2 viên đạn tương tự.
+• Kỹ năng:
+                                                                                    * Trừng Phạt: Giảm 20% Phòng thủ trong 5s và gây sát thương bằng 150% ATK lên Tank đứng gần nhất. Đồng thời giảm 30% Tấn công và 10% Tốc độ di chuyển của Tank đứng xa nhất trong 5s.
+                                                                                    * Laze Nguyên Tố: Phóng ra một chùm tia laser thiêu đốt mục tiêu ở xa nhất liên tục trong 5s. Giãn cách gây sát thương mỗi 0.5s, mỗi đợt gây 40% ATK.
+                                                                                    * Tỏa Nhiệt Diện Rộng: Phát nổ sóng nhiệt ra toàn bộ bản đồ gây sát thương 100% Tấn công lên tất cả Tank. Tank nhận đòn đầu tiên chịu x2 sát thương, các Tank phía sau giảm dần: Tank 2 chịu x1.7, Tank 3 chịu x1.3 , Tank 4 chịu x1.
+                                                                                    * Viện Binh Tinh Linh: Triệu hồi 1–3 bản sao thu nhỏ có sức mạnh bằng 20% HP/ATK/DEF của Boss gốc, không có Mạch Năng Lượng.
+• Bùng nổ năng lượng:
+                                                                                    * Điều kiện: Khi HP giảm xuống dưới 60% lần đầu tiên.
+                                                                                    * Cơ chế:
+                                                                                    * Duy trì 40s.
+                                                                                    * Hồi 100% HP, tăng 30% ATK, tăng 100% DEF.
+                                                                                    * Vận sức trong 5s, sau đó kéo 2 Tank ở gần nhất vào không gian BÊN TRONG pháo hạm.
+                                                                                    * BÊN TRONG pháo hạm: Trái Tim Boss nằm ở trung tâm bản đồ, sở hữu 10% HP tối đa của Boss, sử dụng toàn bộ kỹ năng và bị động của Boss và được bảo vệ bởi lớp khiên Bất Hoại khiến không thể nhận sát thương. Xuất hiện thêm 1 quái vật thường ngẫu nhiên ở Vùng Đất Nguyên Tố mỗi 5s. Xuất hiện 4 cột năng lượng ở 4 góc (1 cột Trắng, 1 cột Đỏ, 1 cột Vàng, 1 cột Xanh) có 500 HP. Khi hoàn thành 3 thử thách bất kỳ sẽ xóa khiên Bất hoại.
+                                                                                    * BÊN NGOÀI pháo hạm: Boss tạo các bản sao của 2 Tank bị kéo vào trong để chiến đấu với các Tank còn lại bên ngoài. Kế thừa toàn bộ chỉ số của bản gốc, không kế thừa phụ kiện, chỉ có thể sử dụng Kỹ năng thường của bản gốc.
+                                                                                    * Khi BÊN TRONG phá hủy 1 cột năng lượng năng lượng. Dựa vào màu cột bị phá, BÊN NGOÀI xuất hiện thử thách (có thể xuất hiện nhiều thử thách cùng lúc): 
+                                                                                    * Phá cột Trắng: Bên ngoài xuất hiện 10 Tinh Linh Sấm Sét. Tiêu diệt hết sẽ hoàn thành thử thách
+                                                                                    * Phá cột Đỏ: Bên ngoài xuất hiện 2 cột phát điện và thu diện. Cột phát điện sẽ truyền điện thẳng về hướng cột thu điện, mỗi 0.5s sẽ truyền 1 điểm Điện năng. Nếu trên đường truyền có Tank, địa hình hoặc tường, đường truyền sẽ bị ngắt, nếu Tank chặn đường điện sẽ nhận sát thương bằng 20% Tấn công mỗi 0.5s. Nếu như trong 10s kể từ khi xuất hiện, cột thu điện chưa tích được 5 điểm sẽ hoàn thành thử thách
+                                                                                    * Phá cột Vàng: Xuất hiện 2 Ký sinh thiên thạch và 2 cột điện. Nếu Ký sinh thiên thạch phát nổ trúng cột điện thì sẽ bị phá hủy. Trong 10s kể từ khi xuất hiện cột điện, phá hủy 2 cột điện sẽ hoàn thành thủ thách.
+                                                                                    * Phá cột Xanh: Trong 10s khi thử thách bắt đầu, tiêu diệt thành công cả tất cả bản sao.
+                                                                                    * Khi Trái Tim Boss bị tiêu diệt, thoát trạng thái Bùng nổ năng lượng và đưa các Tank ở BÊN TRONG ra ngoài. Đồng thời kích hoạt phần thưởng.
+                                                                                    * Khi kết thúc trạng thái Bùng nổ năng lượng mà Trái Tim Boss chưa bị tiêu diệt sẽ đưa các Tank ở BÊN TRONG ra ngoài và kích hoạt hình phạt.
+                                                                                    * Phần thưởng: Boss bị trừ 30% HP tối đa, giảm 50% ATK & DEF trong 10s, bị choáng trong 5s. 2 Tank ở BÊN TRONG trở ra được tăng 100% toàn bộ chỉ số trong 10s. 2 Tank ở BÊN NGOÀI được giảm 50% hồi chiêu và vô hạn năng lượng trong 10s. Toàn bộ Tank hồi 100% thời gian hồi chiêu.
+Hình phạt: D1onk xả hàng trăm đạn pháo càn quét toàn bộ bản đồ, tiêu diệt lập tức toàn bộ người chơi, không thể ngăn chặn.
+	5.5 Cơ chế Môi trường & Vật thể tương tác trong màn chơi
+                                                                                    * Trạm Radar (Màn 1-3): Vật thể tương tác yêu cầu ít nhất 1 xe tăng đứng trong vòng bán kính 3m suốt 5 giây (sau khi đã dọn sạch quái canh gác) để kích hoạt tín hiệu mở đường.
+                                                                                    * Xe Tù Binh Mones (Màn 1-3) & Xe Phá Thành (Màn 2-3): Các phương tiện đồng minh di chuyển tự động theo lộ trình cố định với lượng máu độc lập (HP: 2.000). Nếu có xe tăng người chơi đi kèm trong bán kính 5m, tốc độ di chuyển của xe hộ tống tăng thêm 20%; nếu xe bị quái vật đánh nổ trước khi tới đích, nhiệm vụ lập tức thất bại.
+                                                                                    * Cụm Nấm Mẹ (Màn 2-2) & Trụ Điện Trường (Màn 2-3): Các công trình phòng thủ cố định của phe địch (HP: 1.500/công trình, Giáp: 30). Cụm Nấm Mẹ định kỳ sinh thêm Nấm độc gai thạch, còn Trụ Điện Trường duy trì hàng rào chắn đường cho đến khi bị Xe Phá Thành và người chơi bắn sập
+5.6. Phần thưởng
+Khi hoàn thành mục tiêu của màn chơi (Trạng thái Chiến thắng), toàn bộ người chơi tham gia sẽ nhận được các phần thưởng dùng để phát triển sức mạnh trong Quản lý Tank:
+                                                                                    * Ngọc Ma Pháp:
+                                                                                    * Rơi cố định mỗi khi vượt ải thành công.
+                                                                                    * Lượng Ngọc Ma Pháp tăng dần theo độ khó của ải: Các ải Chương 1 thưởng từ 10 – 30 Ngọc Ma Pháp/lượt; các ải Chương 2 thưởng từ 35 – 80 Ngọc Ma Pháp/lượt.
+                                                                                    * Phụ Kiện:
+                                                                                    * Mỗi màn chơi có một Tỷ lệ rơi Phụ kiện (%) ngẫu nhiên khi hoàn thành (dao động từ 25% đến 50% ở các ải thường, ví dụ Ải 1-2 có tỷ lệ rơi 35%, và đạt 100% chắc chắn rơi ở các ải Boss 1-4, 2-4, 2-5).
+                                                                                    * Phụ kiện không dùng đến có thể mang vào giao diện Quản lý Xe Tăng & Phụ Kiện để Phân rã thành Ngọc Ma Pháp.
+                                                                                    * Mở khóa Xe Tăng mới (Phần thưởng mốc cốt truyện lần đầu):
+                                                                                    * Vượt qua các ải Boss quan trọng lần đầu tiên sẽ mở khóa quyền sử dụng các mẫu xe tăng mới trong Garage.
+5.7. Các ải
+Quy tắc thiết kế màn chơi & Môi trường:
+                                                                                    * Phân bổ cấu trúc: Tinh gọn thành 2 chương gồm 8 màn chơi chính (mỗi chương 4 màn: Màn 1-1 → 1-4 và Màn 2-1 → 2-4) cùng 1 màn riêng biệt quyết chiến Boss cuối toàn game (Màn 2-5).
+                                                                                    * Thiết kế Màn Boss kép 2 Phase (Màn 1-4 & Màn 2-4): Màn 1-4 và 2-4 là màn Boss đặc biệt được chia thành 4 giai đoạn nối tiếp theo lộ trình: Đánh đợt quái mở đầu → Đánh bại Boss thứ nhất → Đánh đợt quái tiếp viện → Đánh bại Boss thứ hai.
+                                                                                    * Màn Boss Cuối độc lập (Màn 2-5): Màn đại chiến tối thượng chống lại Trưởng Quản Ngục D1onk trên kỳ hạm Hira được thiết kế thành một màn chơi riêng biệt với cơ chế phá hủy 3 lõi năng lượng hộ thể.
+                                                                                    * Quy tắc Map chung: Các màn chơi trong cùng một phân đoạn sử dụng chung 1 Map môi trường đồng nhất (Chương 1 chung Map Hoang Mạc Tử Địa & Vòng Xoáy Hắc Ám; Chương 2 chung Map Thung Lũng Nguyên Tố & Ngoại Vi Pháo Đài; Màn 2-5 sử dụng Map Kỳ Hạm Không Gian Hira). Cột Map được gộp ô trải dài cho toàn bộ các màn tương ứng.
+                                                                                    * Cân bằng hỏa lực & thời gian: Đòn bắn thường của xe tank có delay 0.5 giây (tốc độ bắn 2.0 phát/giây). Các chỉ số kẻ địch (Giáp số nguyên, Tốc độ chuẩn 100, ATK tăng cường) đã được chuẩn hóa chi tiết tại mục 5.4. Kẻ địch.
+5.7.1. CHƯƠNG 1: LỤC ĐỊA ĐEN & VÒNG XOÁY NHẬT THỰC (4 MÀN)
+Bối cảnh: Đoàn xe tank Iron Wasteland bị sương mù tím nuốt chửng vào Lục Địa Đen, vượt qua các đợt phục kích của quái vật đột biến, giải cứu sinh vật ngoài hành tinh Mones và tiến vào tâm dị điểm Vòng Xoáy Không Gian khi nhật thực diễn ra để đánh bại liên tiếp 2 Boss: Bóng Ma Tử Địa và Seau Bearus.
+Màn
+	Tên ải
+	Điều kiện thắng & Thời lượng
+	Các đợt quái (Waves) & Lộ trình chiến đấu
+	Phần thưởng
+	Map / Môi trường
+	1-1
+	Sương Mù Tím
+	• Tiêu diệt 40 quái vật
+• Thời lượng: ~90s
+	• W1: 15 Ký sinh thiên thạch
+• W2: 15 Ký sinh + 5 Mặt trăng đen
+• W3: 10 Ký sinh thiên thạch cường hóa tốc độ
+	• 20 Ngọc Ma Pháp.
+• Tỷ lệ rơi Phụ kiện (20% - rơi 1 món ngẫu nhiên, tỷ lệ giữa các phụ kiện độc lập, chắc chắn ra 1 phụ kiện): Lõi Động Cơ Trọng Lực Địa Mạch, Lõi Năng Lượng Thiên Thạch Nổ, Lõi Ma Pháp Hắc Nguyệt.
+	Map 1: Hoang Mạc Tử Địa & Vòng Xoáy Hắc Ám
+(Dùng chung Màn 1-1 → 1-4)
+
+
+• Bối cảnh: Vùng bình nguyên hoang mạc chết chóc bao phủ bởi cát sỏi xám đen khô cằn và sương mù tím đậm đặc tại rìa ngoài Lục Địa Đen.
+• Địa hình & Asset: Đất đá cằn cỗi rải rác các hố thiên thạch va chạm cổ, hẻm núi đá dốc đứng tạo điểm thắt địa hình hẹp (chokepoint), xác xe bọc thép rỉ sét thời tiền chiến, phế tích trạm radar Hira bỏ hoang và cổng đá dẫn vào đấu trường Vòng Xoáy Hắc Ám.
+	1-2
+	Hang Đá Gai
+	• Sinh tồn trong 100 giây
+• Thời lượng: 100s
+	• 0s - 40s: 20 Ký sinh thiên thạch tràn ra từ hai cánh vách đá
+• 40s - 70s: 6 Xạ thủ tinh thể + 10 Ký sinh thiên thạch
+• 70s - 100s: 6 Quái vật thạch anh + 6 Tinh linh nghĩa địa
+	• Thưởng vượt ải lần đầu: Mở khóa xe Black Shadow
+• 30 Ngọc Ma Pháp.
+• Tỷ lệ rơi Phụ kiện (20% - rơi 1 món ngẫu nhiên, tỷ lệ giữa các phụ kiện độc lập, chắc chắn ra 1 phụ kiện): Lõi Ma Pháp Hội Tụ Quang Tử, Động Cơ Xung Kích Tinh Thể Thạch Anh, Động Cơ Tua-Bin Linh Hỏa.
+	1-3
+	Dấu Vết Tù Binh
+	• Kích hoạt 2 Trạm Radar & Hộ tống xe Mones đi 150m
+• Thời lượng: ~120s
+	• Trạm 1: 12 Ký sinh thiên thạch + 4 Xạ thủ tinh thể canh giữ trạm radar
+• Hộ tống: 3 đợt phục kích cơ động chặn đầu xe (Mặt trăng đen + Thạch anh)
+• Trạm 2: Đợt tổng tấn công 15 quái vật hỗn hợp tinh nhuệ mở khóa lối vào ngục tối
+	• Thưởng vượt ải lần đầu: Mở khóa xe Leviathan.
+• 40 Ngọc Ma Pháp.
+• Tỷ lệ rơi Phụ kiện (20% - rơi 1 món ngẫu nhiên, tỷ lệ giữa các phụ kiện độc lập, chắc chắn ra 1 phụ kiện): Lõi Huyết Tinh Sinh Học, Lõi Ma Trận Cộng Hưởng Mones, Động Cơ Xung Kích Tinh Thể Thạch Anh.
+	1-4
+	Vòng Xoáy Không Gian
+	• ĐÁNH BẠI CẢ 2 BOSS LIÊN TIẾP (BÓNG MA TỬ ĐỊA & SEAUBEARUS)
+• Thời lượng: ~180s
+	LỘ TRÌNH 4 GIAI ĐOẠN:
+• Phase 1: Quái tràn ra phong tỏa lối vào — tiêu diệt 20 Ký sinh thiên thạch + 6 Tinh linh nghĩa địa tốc độ cao.
+• Phase 2: BOSS BÓNG MA TỬ ĐỊA: Tiêu diệt Boss 1 để giải trừ bùa phong ấn.
+• Phase 3: Cổng xoáy không gian bùng nổ, 8 Quái vật thạch anh + 6 Mặt trăng đen.
+• Phase 4: ĐẠI BOSS SEAUBEARUS.
+	• 60 Ngọc Ma Pháp.
+• Tỷ lệ rơi Phụ kiện (20% - rơi 1 món ngẫu nhiên, tỷ lệ giữa các phụ kiện độc lập, chắc chắn ra 3 phụ kiện): Lõi Động Cơ Trọng Lực Địa Mạch, Lõi Năng Lượng Thiên Thạch Nổ, Lõi Ma Pháp Hắc Nguyệt, Lõi Ma Pháp Hội Tụ Quang Tử, Động Cơ Xung Kích Tinh Thể Thạch Anh, Động Cơ Tua-Bin Linh Hỏa, Lõi Huyết Tinh Sinh Học, Lõi Ma Trận Cộng Hưởng Mones, Động Cơ Phân Pha Hư Không, Lõi Nhiệt Hạch Ba Lõi.
+	5.7.2 CHƯƠNG 2: VÙNG ĐẤT NGUYÊN TỐ & PHÁO ĐÀI HIRA (5 MÀN)
+Bối cảnh: Đặt chân đến Vùng Đất Nguyên Tố với xe tank Siêu Cơ Tinh Anh, đội đối đầu các loài quái vật mang nguồn năng lượng nguyên tố dồi dào, đột kích ngoại vi pháo đài Hira đánh bại 2 Boss liên tiếp (Tử Thần Nguyên Tố & The2Face), sau đó xâm nhập kỳ hạm tối cao để quyết chiến với đại cơ giáp của Trưởng Quản Ngục D1onk.
+Màn
+	Tên ải
+	Điều kiện thắng & Thời lượng
+	Các đợt quái (Waves) & Lộ trình chiến đấu
+	Phần thưởng
+	Map / Môi trường
+	2-1
+	Vành Đai Bão Lửa
+	• Tiêu diệt 50 quái vật
+• Thời lượng: ~90s
+	• W1: 15 Kiến lửa khổng lồ + 10 Xén nước
+• W2: 15 Kiến lửa + 10 Xén nước
+	• Thưởng vượt ải lần đầu: Mở khóa xe Water B
+• 50 Ngọc Ma Pháp
+• Tỷ lệ rơi Phụ kiện (20% - rơi 1 món ngẫu nhiên, tỷ lệ giữa các phụ kiện độc lập, chắc chắn ra 1 phụ kiện): Động Cơ Thủy Lực Ma Pháp Đầm Lầy, Lõi Ma Pháp Bào Tử Độc, Lõi Ma Trận Khiên Nhật Thực
+	Map 2: Thung Lũng Nguyên Tố & Ngoại Vi Pháo Đài Hira
+(Dùng chung Màn 2-1 → 2-4)
+
+
+• Bối cảnh: Vùng địa hình chia cắt phức tạp nơi giao thoa của 4 nguồn năng lượng nguyên tố và tuyến phòng thủ kiên cố bảo vệ khu pháo đài Hira.
+• Địa hình & Asset: Đất đá bazan núi lửa nứt nẻ dòng magma đỏ rực, vùng trũng đầm lầy hóa chất lục bảo sủi bọt khí độc, thềm đá dẫn điện tích cao, hẻm núi đá xám với tháp thu lôi, hàng rào kim loại phòng hộ và lô cốt canh gác Hira.
+	2-2
+	Đầm Lầy Độc Khí & Bão Điện
+	• Phá hủy 4 Cụm Nấm Mẹ & Sinh tồn 120s
+• Thời lượng: 120s
+	• Canh gác 4 Cụm Nấm: 12 Nấm độc gai thạch + 4 Sao đen
+• Quấy nhiễu: 12 Tinh linh sấm và 12 Quái vật đầm lầy.
+	• 60 Ngọc Ma Pháp
+• Tỷ lệ rơi Phụ kiện (20% - rơi 1 món ngẫu nhiên, tỷ lệ giữa các phụ kiện độc lập, chắc chắn ra 1 phụ kiện): Động Cơ Tua-Bin Xoáy Nước, Lõi Tụ Điện Ma Pháp Sấm Sét, Lõi Động Cơ Tái Sinh Chữ Thập
+	2-3
+	Đột Kích Tiền Đồn
+	• Bảo vệ Xe phá thành phá 3 Trụ Điện Trường
+• Thời lượng: ~130s
+	• Trụ 1 & 2: Mỗi trụ được bảo vệ bởi 2 Sao đen, 8 Kiến lửa khổng lồ và 5 Xén nước.
+• Trụ 3 (Cổng thành): 4 Mặt Trời Đỏ + 10 Tinh linh sét.
+	• Thưởng vượt ải lần đầu: Mở khóa xe Green Fox
+• 70 Ngọc Ma Pháp
+• Tỷ lệ rơi Phụ kiện (20% - rơi 1 món ngẫu nhiên, tỷ lệ giữa các phụ kiện độc lập, chắc chắn ra 1 phụ kiện): Lõi Thủy Tinh Trị Liệu, Lõi Liên Kết Song Tinh Nguyên Tố, Lõi Động Cơ Lưỡng Cực THE2FACE.
+	2-4
+	Phi Thuyền Hai Mặt & Pháo Đài Hira
+	• ĐÁNH BẠI CẢ 2 BOSS LIÊN TIẾP (TỬ THẦN NGUYÊN TỐ & THE2FACE)
+• Thời lượng: ~200s
+	LỘ TRÌNH 4 GIAI ĐOẠN:
+• Phase 1: Quân tinh nhuệ gác cổng — 15 Kiến lửa khổng lồ + 10 Xén nước.
+• Phase 2: BOSS TỬ THẦN NGUYÊN TỐ. Tiêu diệt Boss 1 để vô hiệu hóa lá chắn năng lượng sân đỗ.
+• Phase 3: Hệ thống báo động réo vang, 8 Nấm độc + 4 Sao đen + 8 Tinh linh sét.
+• Phase 4: BOSS THE2FACE: Tiêu diệt The2Face để mở khóa đường dẫn lên kỳ hạm tối cao!
+	• 90 Ngọc Ma Pháp
+• Tỷ lệ rơi Phụ kiện (20% - rơi 1 món ngẫu nhiên, tỷ lệ giữa các phụ kiện độc lập, chắc chắn ra 2 phụ kiện): Động Cơ Thủy Lực Ma Pháp Đầm Lầy, Động Cơ Tua-Bin Xoáy Nước, Lõi Ma Pháp Bào Tử Độc, Lõi Tụ Điện Ma Pháp Sấm Sét, Lõi Ma Trận Khiên Nhật Thực, Lõi Động Cơ Tái Sinh Chữ Thập, Lõi Thủy Tinh Trị Liệu, Lõi Liên Kết Song Tinh Nguyên Tố, Lõi Động Cơ Lưỡng Cực THE2FACE.
+	2-5
+	Chiến Hạm D1ONK
+	• ĐÁNH BẠI ĐẠI CƠ GIÁP: TRƯỞNG QUẢN NGỤC D1ONK
+• Thời lượng: ~240s
+	TRẬN QUYẾT CHIẾN FINAL BOSS TOÀN GAME:
+• Đối thủ tối cao: TRƯỞNG QUẢN NGỤC D1ONK.
+• Tiêu diệt hoàn toàn D1onk để giải cứu liên minh tù binh và kết thúc chiến dịch toàn game!
+	• 120 Ngọc Ma Pháp
+• Tỷ lệ rơi Phụ kiện (20% - rơi 1 món ngẫu nhiên, tỷ lệ giữa các phụ kiện độc lập, chắc chắn ra 3 phụ kiện): Động Cơ Thủy Lực Ma Pháp Đầm Lầy, Động Cơ Tua-Bin Xoáy Nước, Lõi Ma Pháp Bào Tử Độc, Lõi Tụ Điện Ma Pháp Sấm Sét, Lõi Ma Trận Khiên Nhật Thực, Lõi Động Cơ Tái Sinh Chữ Thập, Lõi Thủy Tinh Trị Liệu, Lõi Liên Kết Song Tinh Nguyên Tố, Lõi Động Cơ Lưỡng Cực THE2FACE, Lõi Siêu Cơ Giáp Thống Lĩnh D1ONK.
+	Map 3: Kỳ Hạm Không Gian Hira / Buồng Chỉ Huy Lõi D1onk
+(Dành riêng Màn Boss Cuối 2-5)
+
+
+• Bối cảnh: Sàn đấu kim loại đen hình lục giác khổng lồ đặt tại buồng phản ứng trung tâm của đại kỳ hạm pháo đài Hira, nhìn thẳng ra không gian vũ trụ tối thẳm với vành đai thiên thạch lơ lửng.
+• Địa hình & Asset: Sàn kim loại chịu nhiệt cao, 4 trụ phát điện plasma cực đại ở 4 góc sân đấu, ống xả năng lượng lò phản ứng hạt nhân ở trung tâm, bảng điều khiển kỳ hạm hiển thị dữ liệu pháo đài.
+	6. Giao diện
+                                                                                    * Giao diện Màn hình chính của game, sẽ xuất hiện khi bắt đầu trò chơi:
+  
+
+                                                                                    * Giao diện Chọn ải, xuất hiện khi trong Màn hình chính chọn “Chọn màn chơi”:
+  
+
+                                                                                    * Giao diện Garage, xuất hiện khi trong Màn hình chính chọn “Nhà xe & Nâng cấp” hoặc trong Chọn ải chọn yêu cầu “Chọn xe ra trận”:
+  
+
+                                                                                    * Giao diện Phụ kiện, xuất hiện khi trong Garage chọn “Đổi phụ kiện”:
+  
+
+                                                                                    * Giao diện Cài đặt, xuất hiện khi trong Màn hình chính chọn “Cài đặt” hoặc trong khi tiến hành Ải chọn “Tạm dừng”:
+  
+
+                                                                                    * Giao hiện HUD trong Ải, xuất hiện khi bắt đầu và tiến hành chiến đấu Ải bất kỳ:
+  
+
+                                                                                    * Giao diện hiển thị kết quả trận đấu, hiển thị khi hoàn thành một Ải:
+  
+
+7. Một số hình ảnh của game

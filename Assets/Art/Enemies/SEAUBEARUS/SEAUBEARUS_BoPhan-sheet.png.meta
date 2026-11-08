@@ -1,0 +1,312 @@
+fileFormatVersion: 2
+guid: a0b5290a51166fc4797b4a94aa9ae58e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2207573946725967595
+    second: SEAUBEARUS_BoPhan-sheet_0
+  - first:
+      213: -8720238604104459049
+    second: SEAUBEARUS_BoPhan-sheet_1
+  - first:
+      213: -7716869789791455416
+    second: SEAUBEARUS_BoPhan-sheet_2
+  - first:
+      213: 5939551447651201698
+    second: SEAUBEARUS_BoPhan-sheet_3
+  - first:
+      213: 6149169825032036265
+    second: SEAUBEARUS_BoPhan-sheet_4
+  - first:
+      213: -3944840106447448713
+    second: SEAUBEARUS_BoPhan-sheet_5
+  - first:
+      213: -2097614633606508758
+    second: SEAUBEARUS_BoPhan-sheet_6
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: SEAUBEARUS_BoPhan-sheet_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 459
+        width: 645
+        height: 560
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be6220eeec0e2ae10800000000000000
+      internalID: 2207573946725967595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SEAUBEARUS_BoPhan-sheet_1
+      rect:
+        serializedVersion: 2
+        x: 696
+        y: 739
+        width: 268
+        height: 278
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7dc94bdf03d7bf680800000000000000
+      internalID: -8720238604104459049
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SEAUBEARUS_BoPhan-sheet_2
+      rect:
+        serializedVersion: 2
+        x: 707
+        y: 474
+        width: 282
+        height: 282
+      alignment: 9
+      pivot: {x: 0.67838734, y: 0.6948177}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8477989dfcb28e490800000000000000
+      internalID: -7716869789791455416
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SEAUBEARUS_BoPhan-sheet_3
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 153
+        width: 255
+        height: 319
+      alignment: 9
+      pivot: {x: 0.578723, y: 0.7030779}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a2386292968d6250800000000000000
+      internalID: 5939551447651201698
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SEAUBEARUS_BoPhan-sheet_4
+      rect:
+        serializedVersion: 2
+        x: 364
+        y: 154
+        width: 282
+        height: 282
+      alignment: 9
+      pivot: {x: 0.68420863, y: 0.6432734}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9afd59c406d365550800000000000000
+      internalID: 6149169825032036265
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SEAUBEARUS_BoPhan-sheet_5
+      rect:
+        serializedVersion: 2
+        x: 712
+        y: 0
+        width: 303
+        height: 477
+      alignment: 9
+      pivot: {x: 0.6321439, y: 0.753783}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7755c77e2dc1149c0800000000000000
+      internalID: -3944840106447448713
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SEAUBEARUS_BoPhan-sheet_6
+      rect:
+        serializedVersion: 2
+        x: 207
+        y: 0
+        width: 134
+        height: 139
+      alignment: 9
+      pivot: {x: 0.58351046, y: 0.62075967}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2f0938ba96c3e2e0800000000000000
+      internalID: -2097614633606508758
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: f0db8dce963d4504da1a99f4b50d2311
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      SEAUBEARUS_BoPhan-sheet_0: 2207573946725967595
+      SEAUBEARUS_BoPhan-sheet_1: -8720238604104459049
+      SEAUBEARUS_BoPhan-sheet_2: -7716869789791455416
+      SEAUBEARUS_BoPhan-sheet_3: 5939551447651201698
+      SEAUBEARUS_BoPhan-sheet_4: 6149169825032036265
+      SEAUBEARUS_BoPhan-sheet_5: -3944840106447448713
+      SEAUBEARUS_BoPhan-sheet_6: -2097614633606508758
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
