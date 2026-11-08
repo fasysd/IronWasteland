@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7746891480567035692}
   - component: {fileID: 5463585335127079883}
   - component: {fileID: 8695156545866576300}
+  - component: {fileID: 2929604750911808153}
   m_Layer: 0
   m_Name: Square
   m_TagString: Untagged
@@ -182,3 +183,16 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &2929604750911808153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 585388903987844119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
+  owner: {fileID: 2007533005529995649, guid: 95ecc0b7748deb645871624e4527b5b1, type: 3}

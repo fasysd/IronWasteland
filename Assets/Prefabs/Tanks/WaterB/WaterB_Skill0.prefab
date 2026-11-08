@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 8804196293835352181}
   - component: {fileID: 1543211344189737402}
   - component: {fileID: 226860460851734066}
-  - component: {fileID: 6897612104966158974}
   - component: {fileID: 4484246724071856352}
+  - component: {fileID: 4852059703683595422}
   m_Layer: 0
   m_Name: WaterB_Skill0
   m_TagString: Untagged
@@ -169,19 +169,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &6897612104966158974
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7342997024562963732}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
-  owner: {fileID: 0}
 --- !u!114 &4484246724071856352
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -196,3 +183,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.WaterB.WaterB_HealingProjectile
   speed: 12
   maxLifeTime: 2
+  hitEffectPrefab: {fileID: 0}
+  hitEffectLifetime: 2
+--- !u!114 &4852059703683595422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7342997024562963732}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
+  owner: {fileID: 2007533005529995649, guid: 95ecc0b7748deb645871624e4527b5b1, type: 3}

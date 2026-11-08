@@ -21,13 +21,10 @@ namespace IronWasteland.Tanks.GreenFox
     [RequireComponent(typeof(CircleCollider2D))]
     public class GreenFox_FoxTerritory : MonoBehaviour
     {
-        [Header("Energy Rule")]
-        [Tooltip("Bật: người gây sát thương phải đang đứng trong vùng mới hồi năng lượng (kẻ địch ở đâu cũng được). Tắt: mọi sát thương đều hồi.")]
-        [SerializeField] private bool requireAttackerInside = true;
-
-        [Tooltip("Khi bật requireAttackerInside: nguồn sát thương không khai báo người đánh (Attacker = null, code cũ của cả đội) có được tính không. " +
-                 "Bật = tính nếu đang có ít nhất 1 xe nằm trong vòng (xấp xỉ, không phân biệt được ai đánh). Tắt = không tính.")]
-        [SerializeField] private bool allowUnknownAttacker = true;
+        // Quy tắc hồi năng lượng (hằng số trong code để không bị giá trị cũ lưu trong prefab che mất).
+        private const bool RequireAttackerInside = true;  // Người gây sát thương phải đang được buff / đứng trong vòng.
+        private const bool AllowUnknownAttacker = true;   // Đòn không khai báo Attacker: tính nếu có ít nhất 1 xe trong vòng.
+        private const bool DebugLog = true;               // Bật log lý do hồi / không hồi. Đặt false khi xong.
 
         // Danh sách Territory đang hoạt động, để báo sát thương từ bất kỳ nguồn nào.
         private static readonly List<GreenFox_FoxTerritory> s_Active = new List<GreenFox_FoxTerritory>();
@@ -88,7 +85,7 @@ namespace IronWasteland.Tanks.GreenFox
             }
         }
 
-        /// <summary>Không biết người đánh (xem allowUnknownAttacker).</summary>
+        /// <summary>Không biết người đánh (xem AllowUnknownAttacker).</summary>
         public static void ReportDamage(EnemyBrain enemy)
         {
             ReportDamage(enemy, (UnityEngine.Object)null);
@@ -100,8 +97,10 @@ namespace IronWasteland.Tanks.GreenFox
             if (targetRef == null) return;
 
             // Kẻ địch: giảm 30% tốc độ
+            // Chỉ tính collider thuộc THÂN kẻ địch/xe (nằm trong hierarchy của chúng), không tính đạn/vật thể
+            // do chúng bắn ra (cũng mang ColliderOwnerRef có Owner là chúng nhưng bay độc lập).
             EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
-            if (enemy != null)
+            if (enemy != null && IsPartOf(collision, enemy))
             {
                 m_EnemiesInside.TryGetValue(enemy, out int count);
                 m_EnemiesInside[enemy] = count + 1;
@@ -111,7 +110,7 @@ namespace IronWasteland.Tanks.GreenFox
 
             // Xe tăng (đồng minh hoặc Green Fox): tăng 30% tốc độ
             TankBrain tank = targetRef.GetOwner<TankBrain>();
-            if (tank != null)
+            if (tank != null && IsPartOf(collision, tank))
             {
                 m_TanksInside.TryGetValue(tank, out int count);
                 m_TanksInside[tank] = count + 1;
@@ -131,7 +130,7 @@ namespace IronWasteland.Tanks.GreenFox
             if (targetRef == null) return;
 
             EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
-            if (enemy != null && m_EnemiesInside.TryGetValue(enemy, out int ec))
+            if (enemy != null && IsPartOf(collision, enemy) && m_EnemiesInside.TryGetValue(enemy, out int ec))
             {
                 ec--;
                 if (ec <= 0)
@@ -143,7 +142,7 @@ namespace IronWasteland.Tanks.GreenFox
             }
 
             TankBrain tank = targetRef.GetOwner<TankBrain>();
-            if (tank != null && m_TanksInside.TryGetValue(tank, out int tc))
+            if (tank != null && IsPartOf(collision, tank) && m_TanksInside.TryGetValue(tank, out int tc))
             {
                 tc--;
                 if (tc <= 0)
@@ -153,6 +152,13 @@ namespace IronWasteland.Tanks.GreenFox
                 }
                 else m_TanksInside[tank] = tc;
             }
+        }
+
+        /// <summary>True nếu collider nằm trong hierarchy của chủ (thân xe/kẻ địch), false nếu là đạn/vật thể độc lập.</summary>
+        private static bool IsPartOf(Collider2D collider, Component owner)
+        {
+            if (collider == null || owner == null) return false;
+            return collider.transform == owner.transform || collider.transform.IsChildOf(owner.transform);
         }
 
         private void ReleaseTank(TankBrain tank)
@@ -168,31 +174,51 @@ namespace IronWasteland.Tanks.GreenFox
         /// </summary>
         public void NotifyDamageDealtInTerritory(EnemyBrain enemy = null, UnityEngine.Object attacker = null)
         {
-            if (m_Owner == null || m_TotalEnergyGained >= m_MaxEnergyGain) return;
+            if (m_Owner == null)
+            {
+                if (DebugLog) Debug.Log("[Territory] Bỏ qua: m_Owner = null (Initialize chưa được gọi?)", this);
+                return;
+            }
 
-            // Vị trí kẻ địch KHÔNG liên quan. Chỉ cần người gây sát thương đang đứng trong vùng
-            // (kiểm tra theo vị trí, dùng được cho cả trụ/bẫy)
-            if (requireAttackerInside)
+            if (m_TotalEnergyGained >= m_MaxEnergyGain)
+            {
+                if (DebugLog) Debug.Log($"[Territory] Bỏ qua: đã đạt tối đa {m_MaxEnergyGain} năng lượng.", this);
+                return;
+            }
+
+            // Vị trí kẻ địch KHÔNG liên quan. Chỉ cần người gây sát thương đang được buff / đứng trong vùng.
+            if (RequireAttackerInside)
             {
                 if (attacker == null)
                 {
-                    // Không biết ai đánh: chỉ tính khi có ít nhất 1 xe đang đứng trong vòng.
-                    if (!allowUnknownAttacker || m_TanksInside.Count == 0) return;
+                    // Không biết ai đánh: chỉ tính khi TẤT CẢ đồng minh (trừ Green Fox) đều đang trong vòng,
+                    // để chắc chắn người đánh không đứng ngoài. Có đồng minh ở ngoài vòng thì không tính.
+                    if (!AllowUnknownAttacker || !IsUnknownAttackerSafelyInside())
+                    {
+                        if (DebugLog) Debug.Log($"[Territory] Bỏ qua: Attacker=NULL và có đồng minh đứng ngoài vòng (hoặc không có xe nào trong vòng). Số xe trong vòng = {m_TanksInside.Count}", this);
+                        return;
+                    }
                 }
                 else
                 {
-                    // Xe tăng: chỉ tính khi đang có buff Fox Territory (nằm trong m_TanksInside).
-                    // Hết buff (ra vòng / hết thời gian) thì không hồi nữa.
                     TankBrain attackerTank = ResolveTank(attacker);
                     if (attackerTank != null)
                     {
-                        if (!m_TanksInside.ContainsKey(attackerTank)) return;
+                        // Xe tăng: chỉ tính khi đang có buff Fox Territory (nằm trong m_TanksInside).
+                        if (!m_TanksInside.ContainsKey(attackerTank))
+                        {
+                            if (DebugLog) Debug.Log($"[Territory] Bỏ qua: xe '{attackerTank.name}' KHÔNG có buff (không nằm trong vòng). Số xe trong vòng = {m_TanksInside.Count}", this);
+                            return;
+                        }
                     }
                     else
                     {
                         // Nguồn không phải xe tăng (trụ, bẫy...): kiểm tra theo vị trí.
-                        if (!TryGetPosition(attacker, out Vector2 attackerPos)) return;
-                        if (!IsInsideZone(attackerPos)) return;
+                        if (!TryGetPosition(attacker, out Vector2 attackerPos) || !IsInsideZone(attackerPos))
+                        {
+                            if (DebugLog) Debug.Log($"[Territory] Bỏ qua: nguồn '{attacker.name}' ({attacker.GetType().Name}) không phải xe tăng và nằm ngoài vòng.", this);
+                            return;
+                        }
                     }
                 }
             }
@@ -202,14 +228,65 @@ namespace IronWasteland.Tanks.GreenFox
 
             m_Owner.GainEnergy(energyToGain);
             m_TotalEnergyGained += energyToGain;
+
+            if (DebugLog) Debug.Log($"[Territory] HỒI +{energyToGain} năng lượng (tổng {m_TotalEnergyGained}/{m_MaxEnergyGain}). Attacker={(attacker != null ? attacker.name : "NULL")}", this);
         }
 
+        // Cache danh sách xe tăng theo frame (tránh tìm lại mỗi lần có sát thương).
+        private static TankBrain[] s_TankCache;
+        private static int s_TankCacheFrame = -1;
+
+        private static TankBrain[] GetAllTanks()
+        {
+            if (s_TankCache == null || s_TankCacheFrame != Time.frameCount)
+            {
+                s_TankCache = Object.FindObjectsByType<TankBrain>();
+                s_TankCacheFrame = Time.frameCount;
+            }
+            return s_TankCache;
+        }
+
+        /// <summary>
+        /// Với đòn không rõ người đánh: true chỉ khi mọi đồng minh (không tính Green Fox) đều đang trong vòng.
+        /// Nếu không có đồng minh nào khác thì xét chính Green Fox có đang trong vòng không.
+        /// </summary>
+        private bool IsUnknownAttackerSafelyInside()
+        {
+            bool anyOther = false;
+            TankBrain[] tanks = GetAllTanks();
+            for (int i = 0; i < tanks.Length; i++)
+            {
+                TankBrain t = tanks[i];
+                if (t == null || !t.isActiveAndEnabled || t == m_Owner) continue;
+
+                anyOther = true;
+                if (!m_TanksInside.ContainsKey(t)) return false; // có đồng minh đứng ngoài vòng
+            }
+
+            if (anyOther) return true;
+            return m_Owner != null && m_TanksInside.ContainsKey(m_Owner);
+        }
+
+        /// <summary>
+        /// Từ "người gây sát thương" (xe tăng, đạn, vật thể phụ...) lần ra xe tăng chủ.
+        /// Ưu tiên OwnerRef (hệ thống chủ sở hữu dùng chung của project), sau đó mới tìm TankBrain ở object cha.
+        /// </summary>
         private static TankBrain ResolveTank(UnityEngine.Object obj)
         {
             if (obj is TankBrain tb) return tb;
-            if (obj is Component c && c != null) return c.GetComponentInParent<TankBrain>();
-            if (obj is GameObject go && go != null) return go.GetComponentInParent<TankBrain>();
-            return null;
+
+            GameObject go = obj as GameObject;
+            if (go == null && obj is Component c && c != null) go = c.gameObject;
+            if (go == null) return null;
+
+            OwnerRef ownerRef = go.GetComponentInParent<OwnerRef>();
+            if (ownerRef != null)
+            {
+                TankBrain ownerTank = ownerRef.GetOwner<TankBrain>();
+                if (ownerTank != null) return ownerTank;
+            }
+
+            return go.GetComponentInParent<TankBrain>();
         }
 
         private static bool TryGetPosition(UnityEngine.Object obj, out Vector2 position)
