@@ -71,7 +71,8 @@ namespace IronWasteland.Tests
 
             float energyBefore = brain.CurrentEnergy;
             float hpBefore = dummy != null ? dummy.CurrentHealth : 0f;
-            float shieldBefore = brain.CurrentShield;
+            TankBrain targetTank = allySkill && ally != null ? ally : brain;
+            float shieldBefore = targetTank.CurrentShield;
 
             Vector2 target = allySkill && ally != null ? (Vector2)ally.transform.position : new Vector2(6f, 0f);
             brain.SetLookTarget(target);
@@ -84,8 +85,8 @@ namespace IronWasteland.Tests
 
             float hpAfter = dummy != null ? dummy.CurrentHealth : 0f;
             float damage = hpBefore - hpAfter;
-            float shieldGain = brain.CurrentShield - shieldBefore;
-            int vfxChildren = CountVfx(brain.transform);
+            float shieldGain = targetTank.CurrentShield - shieldBefore;
+            int vfxChildren = CountVfx(targetTank.transform);
 
             m_Report.AppendLine(string.Format(
                 "{0,-16} EN {1:0}->{2:0} (-{3:0})  CD {4:0.00}  DMG {5:0}  SHIELD {6:0}  VFX {7}",

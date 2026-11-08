@@ -287,12 +287,9 @@ namespace IronWasteland.Tanks.WallTitan
             TextDamageManager.Instance?.Show(info.FinalDamage, hitPosition);
         }
 
-        /// <summary>Tìm đồng minh gần nhất (khác bản thân) tại vị trí chỉ định; không có thì trả về chính mình.</summary>
+        /// <summary>Tìm đồng minh gần nhất có ColliderOwnerRef sở hữu bởi TankBrain quanh điểm chỉ định; không có thì trả về null.</summary>
         private TankBrain FindAllyNear(Vector2 point, float maxDistance)
         {
-            // Dùng collider + ColliderOwnerRef để lấy đúng TankBrain quanh điểm ngắm
-            // thay vì quét toàn bộ scene: tank đặt sẵn nhưng chưa Initialize chưa
-            // RegisterOwner nên GetOwner<TankBrain>() trả null và tự động bị loại.
             Collider2D[] hits = Physics2D.OverlapCircleAll(point, maxDistance);
 
             TankBrain best = null;
@@ -300,8 +297,18 @@ namespace IronWasteland.Tanks.WallTitan
 
             for (int i = 0; i < hits.Length; i++)
             {
-                ColliderOwnerRef ownerRef = ColliderOwnerRef.FromCollider(hits[i]);
-                TankBrain candidate = ownerRef != null ? ownerRef.GetOwner<TankBrain>() : null;
+                Collider2D hit = hits[i];
+                if (hit == null)
+                    continue;
+
+                ColliderOwnerRef ownerRef = hit.GetComponent<ColliderOwnerRef>();
+                if (ownerRef == null)
+                    ownerRef = hit.GetComponentInParent<ColliderOwnerRef>();
+
+                if (ownerRef == null)
+                    continue;
+
+                TankBrain candidate = ownerRef.GetOwner<TankBrain>();
                 if (candidate == null || candidate == this || !candidate.IsAlive)
                     continue;
 
@@ -313,7 +320,7 @@ namespace IronWasteland.Tanks.WallTitan
                 }
             }
 
-            return best != null ? best : this;
+            return best;
         }
         #endregion
 
@@ -568,27 +575,25 @@ namespace IronWasteland.Tanks.WallTitan
         private void ActivateGuardianWall()
         {
             TankBrain ally = FindAllyNear(LookTarget, allyCastRange);
-            // Không có đồng minh quanh điểm ngắm: tự bọc khiên cho mình thay vì
-            // im lặng đốt EN/cooldown mà không có hiệu ứng gì.
             if (ally == null)
-                ally = this;
+            {
+                // Không có ColliderOwnerRef nào có Owner là TankBrain thì thôi.
+                return;
+            }
 
-            float shieldValue = ally == this
-                ? Stats.MaxHealth * guardianWallShieldHpRatio
-                : ally.Stats.MaxHealth * guardianWallShieldHpRatio;
+            // Áp dụng khiên lên bản thân
+            float selfShieldValue = Stats.MaxHealth * guardianWallShieldHpRatio;
+            AddShield(selfShieldValue, guardianWallDuration, "WallTitan_GuardianWall_Self", this, "Khiên Hộ Vệ");
 
-            ally.AddShield(shieldValue, guardianWallDuration, "WallTitan_GuardianWall", this, "Khiên Hộ Vệ");
-
-            if (ally != this)
-                RegisterSharedDamageLink(ally, guardianWallRedirectRatio, guardianWallDuration);
-
-            if (guardianWallVisual != null)
-                StartCoroutine(PlayVisualRoutine(guardianWallVisual, guardianWallDuration));
+            // Áp dụng khiên và chia sẻ sát thương lên đồng minh được chọn
+            float allyShieldValue = ally.Stats.MaxHealth * guardianWallShieldHpRatio;
+            ally.AddShield(allyShieldValue, guardianWallDuration, "WallTitan_GuardianWall", this, "Khiên Hộ Vệ");
+            RegisterSharedDamageLink(ally, guardianWallRedirectRatio, guardianWallDuration);
 
             if (vfx != null)
             {
-                vfx.SetGuardianActive(true);
-                StartCoroutine(DisableGuardianAfter(guardianWallDuration));
+                vfx.ShowGuardianOnTarget(transform, guardianWallDuration);
+                vfx.ShowGuardianOnTarget(ally.transform, guardianWallDuration);
             }
         }
 
@@ -751,52 +756,23 @@ namespace IronWasteland.Tanks.WallTitan
         private void ActivateEarthGuardian()
         {
             TankBrain ally = FindAllyNear(LookTarget, allyCastRange);
-            // Không có đồng minh quanh điểm ngắm: tự nhận +DEF thay vì im lặng.
             if (ally == null)
-                ally = this;
-
-            if (ally == this)
             {
-                TankStats flatSelf = TankStats.Zeroed();
-                flatSelf.Defense = earthGuardianDefenseFlat;
-                AddBonusStats(BonusKeyStoneFortress + "_EarthGuardian", flatSelf);
-                StartCoroutine(ClearBonusAfterDelay(BonusKeyStoneFortress + "_EarthGuardian", earthGuardianDuration));
-            }
-            else
-            {
-                // Đồng minh nhận trực tiếp +DEF và chuyển 35% sát thương sang Wall Titan.
-                TankStats flat = TankStats.Zeroed();
-                flat.Defense = earthGuardianDefenseFlat;
-                ally.AddBonusStats("WallTitan_EarthGuardian", flat);
-                ally.StartCoroutine(ClearAllyBonusAfterDelay(ally, "WallTitan_EarthGuardian", earthGuardianDuration));
-
-                RegisterSharedDamageLink(ally, earthGuardianRedirectRatio, earthGuardianDuration);
+                // Không có ColliderOwnerRef nào có Owner là TankBrain thì thôi.
+                return;
             }
 
-            if (earthGuardianVisual != null)
-                StartCoroutine(PlayVisualRoutine(earthGuardianVisual, earthGuardianDuration));
+            TankStats flat = TankStats.Zeroed();
+            flat.Defense = earthGuardianDefenseFlat;
+            ally.AddBonusStats("WallTitan_EarthGuardian", flat);
+            ally.StartCoroutine(ClearAllyBonusAfterDelay(ally, "WallTitan_EarthGuardian", earthGuardianDuration));
+
+            RegisterSharedDamageLink(ally, earthGuardianRedirectRatio, earthGuardianDuration);
 
             if (vfx != null)
             {
-                vfx.SetEarthGuardianActive(true);
-                StartCoroutine(DisableEarthGuardianVfxAfter(earthGuardianDuration));
+                vfx.ShowEarthGuardianOnTarget(ally.transform, earthGuardianDuration);
             }
-        }
-
-        private IEnumerator DisableEarthGuardianVfxAfter(float duration)
-        {
-            yield return new WaitForSeconds(duration);
-
-            if (vfx != null)
-                vfx.SetEarthGuardianActive(false);
-        }
-
-        private IEnumerator DisableGuardianAfter(float duration)
-        {
-            yield return new WaitForSeconds(duration);
-
-            if (vfx != null)
-                vfx.SetGuardianActive(false);
         }
 
         private void RegisterSharedDamageLink(TankBrain ally, float ratio, float duration)

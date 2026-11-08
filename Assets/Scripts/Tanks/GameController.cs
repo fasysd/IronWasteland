@@ -41,8 +41,8 @@ namespace IronWasteland.Tanks
                 Level = playerLevel,
                 IdView = viewId,
                 EquipmentId = equipmentId,
-                OptionSkill1 = 0,
-                OptionSkill2 = 0
+                OptionSkill1 = 1,
+                OptionSkill2 = 1
             };
 
             // Khoi tao 1 lan duy nhat (guard).
