@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <style>
+      .bg { fill: #15171B; }
+      .panel { fill: #1F2229; stroke: #313745; stroke-width: 1.5; rx: 8px; }
+      .btn-primary { fill: #2F6BF2; rx: 8px; cursor: pointer; }
+      .btn-secondary { fill: #252933; stroke: #414959; stroke-width: 1.5; rx: 8px; cursor: pointer; }
+      .text-title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 58px; font-weight: 800; fill: #FFFFFF; }
+      .text-heading { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 22px; font-weight: 700; fill: #FFFFFF; }
+      .text-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; fill: #9BA1B0; }
+      .text-btn { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 18px; font-weight: 700; fill: #FFFFFF; text-anchor: middle; dominant-baseline: middle; }
+      .text-sub { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; fill: #6B7281; }
+      .placeholder-box { fill: #181A20; stroke: #373E4D; stroke-width: 1.5; stroke-dasharray: 6 6; rx: 8px; }
+      .tag { fill: #2A2F3D; rx: 4px; }
+    </style>
+  </defs>
+
+  <rect width="1920" height="1080" class="bg" />
+
+  <!-- Top Status Bar -->
+  <rect x="0" y="0" width="1920" height="70" fill="#1A1C22" stroke="#282D37" stroke-width="1" />
+  <text x="50" y="42" class="text-heading" font-size="20">IRON WASTELAND</text>
+  <rect x="235" y="24" width="85" height="24" class="tag" />
+  <text x="245" y="40" class="text-sub" fill="#8E95A5">v0.2.0-Alpha</text>
+
+  <!-- Currency / Gems on Top Right -->
+  <g transform="translate(1620, 15)">
+    <rect width="250" height="40" class="panel" stroke="#BA68C8" />
+    <circle cx="25" cy="20" r="10" fill="#AB47BC" />
+    <text x="45" y="25" class="text-title" font-size="16" fill="#E1BEE7">Ngọc Ma Pháp: 125</text>
+  </g>
+
+  <!-- LEFT HERO AREA & MAIN ACTION BUTTONS (FLOW CHUẨN GDD) -->
+  <g transform="translate(140, 220)">
+    <text x="0" y="60" class="text-title" letter-spacing="2">IRON WASTELAND</text>
+    <text x="0" y="105" class="text-body" font-size="18" fill="#7E8696">Bắn Súng Chiến Xa Ma Pháp 2D • Solo &amp; Co-op 2-4 Người</text>
+
+    <!-- Navigation Buttons -->
+    <g transform="translate(0, 160)">
+      
+      <!-- Button 1: CHỌN MÀN CHƠI (PRIMARY BUTTON) -->
+      <g transform="translate(0, 0)">
+        <rect width="380" height="68" class="btn-primary" />
+        <text x="190" y="34" class="text-btn">⚔ CHỌN ẢI (MÀN CHƠI)</text>
+      </g>
+
+      <!-- Button 2: QUẢN LÝ TANK & PHỤ KIỆN -->
+      <g transform="translate(0, 88)">
+        <rect width="380" height="64" class="btn-secondary" />
+        <text x="190" y="32" class="text-btn">🛡 QUẢN LÝ TANK &amp; PHỤ KIỆN</text>
+      </g>
+
+      <!-- Button 3: CÀI ĐẶT -->
+      <g transform="translate(0, 172)">
+        <rect width="380" height="58" class="btn-secondary" />
+        <text x="190" y="29" class="text-btn" font-size="17">⚙ CÀI ĐẶT (SETTINGS)</text>
+      </g>
+
+      <!-- Button 4: THOÁT GAME -->
+      <g transform="translate(0, 250)">
+        <rect width="380" height="54" fill="#20232B" stroke="#363C4A" stroke-width="1.5" rx="8" />
+        <text x="190" y="27" class="text-btn" font-size="16" fill="#8F95A3">THOÁT GAME</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- RIGHT HERO PREVIEW: TANK SHOWCASE -->
+  <g transform="translate(780, 130)">
+    <rect width="1000" height="840" class="placeholder-box" />
+    <text x="500" y="400" class="text-btn" fill="#586071" font-size="22">[ KHÔNG GIAN SHOWCASE XE TĂNG ĐANG TRANG BỊ ]</text>
+    <text x="500" y="435" class="text-sub" text-anchor="middle">Hiển thị xe Wall Titan (Tanker) với ma pháp đất bao quanh nòng súng</text>
+
+    <!-- Tank Quick Badge -->
+    <rect x="40" y="700" width="460" height="100" class="panel" />
+    <text x="70" y="740" class="text-heading" font-size="19">XE ĐANG CHỌN: WALL TITAN</text>
+    <text x="70" y="770" class="text-body" font-size="14">Cấp 1 / 90 • Tanker / Support • Phụ kiện: Trái Tim Nham Thạch</text>
+  </g>
+
+  <!-- Footer -->
+  <text x="50" y="1040" class="text-sub">Luồng điều hướng: MainMenu ➔ Chọn ải ➔ Chọn chế độ &amp; Chọn Tank ➔ Bắt đầu trận chiến</text>
+</svg>

@@ -16,48 +16,31 @@ MonoBehaviour:
   description: "C\u1ED7 xe tank tinh anh ma ph\xE1p  \u0111\u1EA7u ti\xEAn xu\u1EA5t
     hi\u1EC7n sau khi \u0111\xE1nh b\u1EA1i Seau Bearus, \u0111\u01B0\u1EE3c ch\u1EBF
     t\u1EA1o v\u1EDBi s\u1EF1 gi\xFAp \u0111\u1EE1 c\u1EE7a Mones."
-  statsTable:
-  - baseLevel: 1
-    baseStats:
-      Attack: 10
-      Defense: 10
-      DamageMultiplier: 1
-      ArmorPenetration: 0
-      MaxHealth: 100
-      MaxEnergy: 50
-      MoveSpeed: 3
-      CooldownReduction: 0
-  - baseLevel: 30
-    baseStats:
-      Attack: 59
-      Defense: 11.6
-      DamageMultiplier: 1.29
-      ArmorPenetration: 0.087
-      MaxHealth: 492
-      MaxEnergy: 242
-      MoveSpeed: 4.45
-      CooldownReduction: 0.116
-  - baseLevel: 60
-    baseStats:
-      Attack: 120
-      Defense: 23.6
-      DamageMultiplier: 1.59
-      ArmorPenetration: 0.177
-      MaxHealth: 940
-      MaxEnergy: 460
-      MoveSpeed: 5.95
-      CooldownReduction: 0.236
-  - baseLevel: 90
-    baseStats:
-      Attack: 180
-      Defense: 35.6
-      DamageMultiplier: 1.89
-      ArmorPenetration: 0.267
-      MaxHealth: 1400
-      MaxEnergy: 680
-      MoveSpeed: 7.45
-      CooldownReduction: 0.356
+  baseStatsLevel1:
+    Attack: 25
+    Defense: 10
+    DamageRate: 0
+    ArmorPenetration: 0
+    MaxHealth: 600
+    MaxEnergy: 100
+    MoveSpeed: 5
+    CooldownReduction: 0
+  baseStatsLevel90:
+    Attack: 95
+    Defense: 15
+    DamageRate: 0.15
+    ArmorPenetration: 0.25
+    MaxHealth: 3200
+    MaxEnergy: 300
+    MoveSpeed: 5
+    CooldownReduction: 0
   tankPrefab: {fileID: 2337791876944670423, guid: d7abe239519376749b6303f6197df9d8, type: 3}
   viewPrefabs:
   - {fileID: 4035724410283292367, guid: ce283254f52e72c4ea1b39034ee5282e, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
+  context:
+    Level: 1
+    IdView: 0
+    EquipmentId: -1
+    OptionSkill1: 0
+    OptionSkill2: 0
