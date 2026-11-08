@@ -130,14 +130,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.GreenFox.GreenFox_Skill1Sub
   buff1AEnergyCost: 45
   buff1ACooldown: 10
-  buff1ADuration: 8
+  buff1ADuration: 5
   buff1AStackAmount: 2
   buff1AExplosionDamagePercent: 300
   buff1ACooldownReductionOnKill: 3
   buff1BEnergyCost: 40
   buff1BCooldown: 11
   burnDuration: 6
-  burnInterval: 1
+  burnInterval: 0.5
   burnDamagePercent: 0.25
   energyOnHitBurnTarget: 3
   buff1CEnergyCost: 50
@@ -161,7 +161,7 @@ MonoBehaviour:
   buff2AEnergyCost: 55
   buff2ACooldown: 12
   damagePerStackPercent: 20
-  attackBuffDuration: 5
+  attackBuffDuration: 6
   attackBuffPercent: 0.3
   markExplosionRange: 20
   buff2BEnergyCost: 60
@@ -173,7 +173,7 @@ MonoBehaviour:
   maxEnergyGain: 30
   buff2CEnergyCost: 75
   buff2CCooldown: 16
-  assaultDuration: 5
+  assaultDuration: 6
   tailCount: 9
   attackInterval: 1
   tailDamagePercent: 15

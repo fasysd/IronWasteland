@@ -215,22 +215,6 @@ MonoBehaviour:
   tankDefinition: {fileID: 11400000, guid: da2adcc56c23bf94abe7b8768551c551, type: 2}
   playerLevel: 1
   spawnPosition: {x: 0, y: 0}
---- !u!114 &127188133
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 127188128}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c1c497e02b0ead846b73d1141b5ef637, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.WaterB.WaterB_ShieldDebug
-  autoDamage: 1
-  damagePerTick: 20
-  tickInterval: 1
-  showDamageText: 1
 --- !u!1 &245635553
 GameObject:
   m_ObjectHideFlags: 0
@@ -260,7 +244,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90ca2f8cafd86134b87881b257253f06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.GameController
-  tankDefinition: {fileID: 11400000, guid: da2adcc56c23bf94abe7b8768551c551, type: 2}
+  tankDefinition: {fileID: 11400000, guid: cd7492e832ea8ad44a7d0a1a553c551f, type: 2}
   playerLevel: 1
   viewId: 0
   spawnPosition: {x: 0, y: 0}
@@ -777,9 +761,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2007533005529995649, guid: dd9a410d742d54c4d87ae5d966767971, type: 3}
       insertIndex: -1
       addedObject: {fileID: 127188129}
-    - targetCorrespondingSourceObject: {fileID: 2007533005529995649, guid: dd9a410d742d54c4d87ae5d966767971, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 127188133}
   m_SourcePrefab: {fileID: 100100000, guid: dd9a410d742d54c4d87ae5d966767971, type: 3}
 --- !u!1 &1867623650 stripped
 GameObject:

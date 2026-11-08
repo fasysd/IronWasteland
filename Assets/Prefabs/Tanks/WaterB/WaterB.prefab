@@ -127,7 +127,7 @@ MonoBehaviour:
   bubbleShieldPrefab: {fileID: 4152230224732511425, guid: 798b0f907646e1f4b9f755da62ab9c0d, type: 3}
   shieldEnergyCost: 45
   shieldCooldown: 9
-  shieldDuration: 5
+  shieldDuration: 4
   shieldAtkRatio: 1.2
   shieldMaxHpRatio: 0.1
   shieldBreakHealAtkRatio: 1
@@ -163,9 +163,9 @@ MonoBehaviour:
   sharedHealingLinkPrefab: {fileID: 2490352363854650707, guid: f5da3f94bad536b47b81cfe30590c8b3, type: 3}
   drainEnergyCost: 45
   drainCooldown: 11
-  drainDuration: 6
+  drainDuration: 5
   drainAttackBonusPercent: 0.25
-  drainPercent: 0.3
+  drainPercent: 0.35
   drainSearchRadius: 10
   domeEnergyCost: 45
   domeCooldown: 11
@@ -188,7 +188,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   altarEnergyCost: 75
   altarCooldown: 16
-  altarDuration: 8
+  altarDuration: 10
   altarInterval: 2
   altarHealAtkRatio: 0.5
   altarHealMaxHpRatio: 0.02
@@ -197,15 +197,15 @@ MonoBehaviour:
   altarShieldDuration: 5
   turretEnergyCost: 75
   turretCooldown: 14
-  turretDuration: 10
+  turretDuration: 8
   turretCount: 3
-  turretAttackInterval: 1.5
+  turretAttackInterval: 1
   turretDamageAtkRatio: 0.5
   energyRegenPerHit: 3
   turretSpacing: 1.5
   assaultEnergyCost: 65
   assaultCooldown: 14
-  assaultDuration: 6
+  assaultDuration: 7
   assaultAttackBonusPercent: 0.25
   assaultCooldownReduction: 0.2
   assaultDamageBonus: 0.15
