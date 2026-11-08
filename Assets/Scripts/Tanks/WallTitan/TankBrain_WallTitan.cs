@@ -69,6 +69,8 @@ namespace IronWasteland.Tanks.WallTitan
         [SerializeField, Min(0.1f)] private float guardianWallDuration = 5f;
         [SerializeField, Range(0f, 2f)] private float guardianWallShieldHpRatio = 0.30f;
         [SerializeField, Range(0f, 1f)] private float guardianWallRedirectRatio = 0.35f;
+        [Tooltip("Bán kính quanh con trỏ để chọn đồng minh; ngoài bán kính này thì tự buff mình.")]
+        [SerializeField, Min(0.5f)] private float allyCastRange = 8f;
 
         [Header("Option 1.2 - Earth Prison  [60 EN, CD 14s, tồn tại 4s, 100% ATK + 150% DEF]")]
         [Tooltip("GameObject mẫu inactive của vòng giam đá.")]
@@ -286,11 +288,12 @@ namespace IronWasteland.Tanks.WallTitan
         }
 
         /// <summary>Tìm đồng minh gần nhất (khác bản thân) tại vị trí chỉ định; không có thì trả về chính mình.</summary>
-        private TankBrain FindAllyNear(Vector2 point)
+        private TankBrain FindAllyNear(Vector2 point, float maxDistance = float.PositiveInfinity)
         {
             TankBrain[] tanks = FindObjectsOfType<TankBrain>();
             TankBrain best = null;
             float bestSqr = float.MaxValue;
+            float maxSqr = maxDistance * maxDistance;
 
             for (int i = 0; i < tanks.Length; i++)
             {
@@ -298,7 +301,16 @@ namespace IronWasteland.Tanks.WallTitan
                 if (candidate == null || candidate == this || !candidate.IsAlive)
                     continue;
 
+                // Bỏ qua tank đặt sẵn trong scene nhưng chưa Initialize (hp 1/max 1):
+                // nếu không, Guardian Wall/Earth Guardian sẽ "dính" vào chúng thay vì
+                // đồng minh thật hoặc chính mình.
+                if (!candidate.IsInitialized)
+                    continue;
+
                 float sqr = ((Vector2)candidate.transform.position - point).sqrMagnitude;
+                if (sqr > maxSqr)
+                    continue;
+
                 if (sqr < bestSqr)
                 {
                     bestSqr = sqr;
@@ -560,7 +572,7 @@ namespace IronWasteland.Tanks.WallTitan
 
         private void ActivateGuardianWall()
         {
-            TankBrain ally = FindAllyNear(LookTarget);
+            TankBrain ally = FindAllyNear(LookTarget, allyCastRange);
             // Không có đồng minh quanh điểm ngắm: tự bọc khiên cho mình thay vì
             // im lặng đốt EN/cooldown mà không có hiệu ứng gì.
             if (ally == null)
@@ -743,7 +755,7 @@ namespace IronWasteland.Tanks.WallTitan
 
         private void ActivateEarthGuardian()
         {
-            TankBrain ally = FindAllyNear(LookTarget);
+            TankBrain ally = FindAllyNear(LookTarget, allyCastRange);
             // Không có đồng minh quanh điểm ngắm: tự nhận +DEF thay vì im lặng.
             if (ally == null)
                 ally = this;
