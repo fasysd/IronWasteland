@@ -80,6 +80,13 @@ namespace IronWasteland.Enemies
         public bool IsAlive => !m_Dead && currentHealth > 0f;
 
         public bool IsCrowdControlImmune { get; set; }
+
+        /// <summary>
+        /// True nếu là kẻ địch Tinh anh (Elite/Boss).
+        /// Các kỹ năng dựa vào cờ này để đổi hành vi (ví dụ Water Bubble: Tinh anh chịu sát thương
+        /// và làm chậm thay vì bị nhốt).
+        /// </summary>
+        public virtual bool IsElite => false;
         public bool CanMove => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Root);
         public bool CanLook => IsAlive && !HasCC(CrowdControlType.Stun);
         public bool CanUseSkill => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Silence);
@@ -197,7 +204,7 @@ namespace IronWasteland.Enemies
 
             OnDamaged(finalDamage);
             OnTakeDamageEvent?.Invoke(info);
-            IronWasteland.Tanks.GreenFox.GreenFox_FoxTerritory.ReportDamage(this, ResolveAttacker(info));
+
             if (currentHealth <= 0f)
             {
                 currentHealth = 0f;
@@ -209,249 +216,7 @@ namespace IronWasteland.Enemies
         public virtual void TakeDamage(float amount)
         {
             TakeDamage(new DamageInfo(null, this, amount));
-
         }
-
-        #region Attacker inference (cho nguồn sát thương không khai báo Attacker)
-
-        private Collider2D[] m_OwnColliders;
-        private readonly System.Collections.Generic.List<Collider2D> m_OverlapBuffer = new System.Collections.Generic.List<Collider2D>(16);
-
-        // Bật log để xem đòn nào không suy ra được người đánh. Đặt false khi xong.
-        private const bool LogAttackerInference = true;
-
-        /// <summary>
-        /// Trả về người gây sát thương. Nếu nguồn không khai báo (Attacker = null) thì suy ra xe tăng chủ
-        /// từ các collider đang chạm kẻ địch này (đạn/vật thể có OwnerRef trỏ tới TankBrain).
-        /// </summary>
-        private UnityEngine.Object ResolveAttacker(DamageInfo info)
-        {
-            if (info.Attacker != null) return info.Attacker;
-
-            // Cách 1: xem hàm nào của xe tăng nào đã gọi TakeDamage (mỗi xe có thể có DealDamage riêng).
-            var fromStack = InferTankFromCallStack(out string stackHow);
-            if (fromStack != null)
-            {
-                if (LogAttackerInference) Debug.Log($"[Dmg] Attacker=NULL -> suy ra xe '{fromStack.name}' (qua {stackHow})", this);
-                return fromStack;
-            }
-
-            // Cách 2: suy ra từ các collider đang chạm kẻ địch (đạn/skill có OwnerRef).
-            if (m_OwnColliders == null || m_OwnColliders.Length == 0)
-                m_OwnColliders = GetComponentsInChildren<Collider2D>();
-
-            ContactFilter2D filter = ContactFilter2D.noFilter;
-            filter.useTriggers = true;
-
-            System.Text.StringBuilder names = LogAttackerInference ? new System.Text.StringBuilder() : null;
-
-            for (int i = 0; i < m_OwnColliders.Length; i++)
-            {
-                Collider2D own = m_OwnColliders[i];
-                if (own == null || !own.enabled) continue;
-
-                m_OverlapBuffer.Clear();
-                own.Overlap(filter, m_OverlapBuffer);
-
-                for (int j = 0; j < m_OverlapBuffer.Count; j++)
-                {
-                    Collider2D other = m_OverlapBuffer[j];
-                    if (other == null) continue;
-                    if (names != null) names.Append(other.name).Append(", ");
-
-                    // Bỏ qua kẻ địch khác và chính vòng Fox Territory (không phải nguồn sát thương của xe tăng).
-                    if (other.GetComponentInParent<EnemyBrain>() != null) continue;
-                    if (other.GetComponentInParent<IronWasteland.Tanks.GreenFox.GreenFox_FoxTerritory>() != null) continue;
-
-                    string how = "OwnerRef/TankBrain";
-                    IronWasteland.OwnerRef ownerRef = other.GetComponentInParent<IronWasteland.OwnerRef>();
-                    IronWasteland.Tanks.TankBrain tank = ownerRef != null ? ownerRef.GetOwner<IronWasteland.Tanks.TankBrain>() : null;
-                    if (tank == null) tank = other.GetComponentInParent<IronWasteland.Tanks.TankBrain>();
-
-                    // OwnerRef có Owner nhưng không phải TankBrain (vd GameObject / prefab asset của xe): ánh xạ sang xe đang chạy.
-                    if (tank == null && ownerRef != null) tank = ResolveTankFromOwnerObject(ownerRef.Owner, out how);
-
-                    // Skill/đạn không có OwnerRef: dò field nào trong script của nó đang giữ TankBrain (owner, caster...).
-                    if (tank == null) tank = FindTankReference(other.gameObject, out how);
-
-                    if (tank != null)
-                    {
-                        if (LogAttackerInference) Debug.Log($"[Dmg] Attacker=NULL -> suy ra xe '{tank.name}' từ collider '{other.name}' (qua {how})", this);
-                        return tank;
-                    }
-                }
-            }
-
-            if (LogAttackerInference)
-                Debug.Log($"[Dmg] Attacker=NULL, KHÔNG suy ra được xe tăng. Collider đang chạm kẻ địch: [{(names != null ? names.ToString() : "")}]", this);
-
-            return null;
-        }
-
-        /// <summary>
-        /// Duyệt call stack tìm hàm của một lớp xe tăng (TankBrain_X) đã gọi TakeDamage, rồi ánh xạ sang xe đang chạy
-        /// thuộc đúng lớp đó. Chỉ trả về khi tìm được DUY NHẤT một xe (nhiều xe cùng loại thì không đoán, trả về null).
-        /// Lưu ý: có thể không hoạt động trong bản build IL2CPP đã strip; khi đó rơi về cách suy ra khác.
-        /// </summary>
-        private static IronWasteland.Tanks.TankBrain InferTankFromCallStack(out string how)
-        {
-            how = null;
-            try
-            {
-                var stack = new System.Diagnostics.StackTrace(false);
-                int frames = Mathf.Min(stack.FrameCount, 12);
-                for (int i = 0; i < frames; i++)
-                {
-                    var method = stack.GetFrame(i)?.GetMethod();
-                    System.Type type = method != null ? method.DeclaringType : null;
-                    if (type == null) continue;
-                    if (typeof(EnemyBrain).IsAssignableFrom(type)) continue;
-                    if (!typeof(IronWasteland.Tanks.TankBrain).IsAssignableFrom(type)) continue;
-
-                    IronWasteland.Tanks.TankBrain found = null;
-                    int count = 0;
-                    var live = GetLiveTanks();
-                    for (int k = 0; k < live.Length; k++)
-                    {
-                        var t = live[k];
-                        if (t == null || !t.isActiveAndEnabled) continue;
-                        if (!type.IsAssignableFrom(t.GetType())) continue;
-                        count++;
-                        found = t;
-                    }
-
-                    // Lớp cha chung (vd TankBrain.DealDamage) khớp nhiều xe -> đi tiếp lên frame trên.
-                    if (count == 1)
-                    {
-                        how = $"call stack {type.Name}.{method.Name}";
-                        return found;
-                    }
-                }
-            }
-            catch (System.Exception) { }
-
-            return null;
-        }
-
-        private static IronWasteland.Tanks.TankBrain[] s_LiveTanks;
-        private static int s_LiveTanksFrame = -1;
-
-        private static IronWasteland.Tanks.TankBrain[] GetLiveTanks()
-        {
-            if (s_LiveTanks == null || s_LiveTanksFrame != Time.frameCount)
-            {
-                s_LiveTanks = UnityEngine.Object.FindObjectsByType<IronWasteland.Tanks.TankBrain>();
-                s_LiveTanksFrame = Time.frameCount;
-            }
-            return s_LiveTanks;
-        }
-
-        /// <summary>
-        /// Owner có thể là TankBrain, hoặc GameObject/Component của xe. Nếu là object trong Scene thì dùng luôn;
-        /// nếu là prefab asset (không thuộc Scene) thì tìm xe đang chạy được tạo từ prefab đó (cùng tên "X(Clone)" hoặc cùng kiểu).
-        /// </summary>
-        private static IronWasteland.Tanks.TankBrain ResolveTankFromOwnerObject(UnityEngine.Object owner, out string how)
-        {
-            how = null;
-            if (owner == null) return null;
-
-            if (owner is IronWasteland.Tanks.TankBrain direct) { how = "Owner là TankBrain"; return direct; }
-
-            GameObject go = owner as GameObject;
-            if (go == null && owner is Component comp) go = comp.gameObject;
-            if (go == null) return null;
-
-            // Object thật trong Scene: lấy TankBrain trên nó.
-            if (go.scene.IsValid())
-            {
-                var t = go.GetComponentInParent<IronWasteland.Tanks.TankBrain>();
-                if (t != null) { how = "Owner (GameObject trong Scene)"; return t; }
-            }
-
-            // Prefab asset: tìm xe đang chạy tương ứng.
-            IronWasteland.Tanks.TankBrain prefabTank = go.GetComponent<IronWasteland.Tanks.TankBrain>();
-            string prefabName = go.name;
-            var live = GetLiveTanks();
-
-            for (int i = 0; i < live.Length; i++)
-            {
-                var t = live[i];
-                if (t == null) continue;
-                if (t.name == prefabName + "(Clone)" || t.name == prefabName)
-                {
-                    how = $"Owner là prefab '{prefabName}' -> xe đang chạy cùng tên";
-                    return t;
-                }
-            }
-
-            if (prefabTank != null)
-            {
-                for (int i = 0; i < live.Length; i++)
-                {
-                    var t = live[i];
-                    if (t != null && t.GetType() == prefabTank.GetType())
-                    {
-                        how = $"Owner là prefab '{prefabName}' -> xe đang chạy cùng kiểu";
-                        return t;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private static readonly System.Collections.Generic.Dictionary<System.Type, System.Reflection.FieldInfo[]> s_TankFieldCache
-            = new System.Collections.Generic.Dictionary<System.Type, System.Reflection.FieldInfo[]>();
-
-        /// <summary>Danh sách field của type có thể đang giữ một TankBrain (kể cả field private / ở lớp cha).</summary>
-        private static System.Reflection.FieldInfo[] GetTankFields(System.Type type)
-        {
-            if (s_TankFieldCache.TryGetValue(type, out var cached)) return cached;
-
-            var result = new System.Collections.Generic.List<System.Reflection.FieldInfo>();
-            const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance
-                | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic
-                | System.Reflection.BindingFlags.DeclaredOnly;
-
-            for (System.Type t = type; t != null && t != typeof(MonoBehaviour) && t != typeof(object); t = t.BaseType)
-            {
-                foreach (var f in t.GetFields(flags))
-                {
-                    System.Type ft = f.FieldType;
-                    bool holdsTank = typeof(IronWasteland.Tanks.TankBrain).IsAssignableFrom(ft)   // field kiểu TankBrain (hoặc lớp con)
-                                  || ft == typeof(UnityEngine.Object) || ft == typeof(Component) || ft == typeof(MonoBehaviour);
-                    if (holdsTank) result.Add(f);
-                }
-            }
-
-            var arr = result.ToArray();
-            s_TankFieldCache[type] = arr;
-            return arr;
-        }
-
-        private static IronWasteland.Tanks.TankBrain FindTankReference(GameObject go, out string how)
-        {
-            how = null;
-            MonoBehaviour[] comps = go.GetComponentsInParent<MonoBehaviour>(true);
-            for (int i = 0; i < comps.Length; i++)
-            {
-                MonoBehaviour c = comps[i];
-                if (c == null || c is EnemyBrain || c is IronWasteland.Tanks.TankBrain) continue;
-
-                foreach (var f in GetTankFields(c.GetType()))
-                {
-                    var tank = f.GetValue(c) as IronWasteland.Tanks.TankBrain;
-                    if (tank != null)
-                    {
-                        how = $"field '{f.Name}' của {c.GetType().Name}";
-                        return tank;
-                    }
-                }
-            }
-            return null;
-        }
-
-        #endregion
 
         public virtual void NotifyDealtDamage(DamageInfo info)
         {
@@ -485,7 +250,7 @@ namespace IronWasteland.Enemies
         {
             if (type == CrowdControlType.None) return;
 
-            if (IsCrowdControlImmune)
+            if (IsImmuneToCrowdControl(type))
             {
                 OnCrowdControlResisted(type, strength);
                 return;
@@ -521,6 +286,13 @@ namespace IronWasteland.Enemies
             }
             m_ActiveCC.Clear();
         }
+
+        /// <summary>
+        /// True neu dang mien nhiem loai khong che nay.
+        /// Mac dinh phu thuoc hoan toan vao <see cref="IsCrowdControlImmune"/>; lop con co the
+        /// thu hep lai (vi du Tinh anh chi mien nhiem khong che cung Root/Stun, van bi lam cham).
+        /// </summary>
+        public virtual bool IsImmuneToCrowdControl(CrowdControlType type) => IsCrowdControlImmune;
 
         /// <summary>
         /// Hook khi ke dich khang/mien nhiem khong che (vi du: Boss Tinh anh nhan them sat thuong thay vi bi troi).
@@ -741,7 +513,7 @@ namespace IronWasteland.Enemies
 
         #region Lifecycle
 
-        private void Awake()
+        protected virtual void Awake()
         {
             if (model == null) model = GetComponentInChildren<EnemyModel>();
             model?.RegisterOwner(this);
@@ -789,6 +561,5 @@ namespace IronWasteland.Enemies
             if (stats == null) stats = new EnemyStats();
             if (string.IsNullOrEmpty(displayName)) displayName = name;
         }
-
     }
 }

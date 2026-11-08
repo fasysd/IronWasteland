@@ -853,6 +853,7 @@ namespace IronWasteland.Tanks
             OnDealDamageEvent?.Invoke(info);
             m_EquippedAccessory?.OnOwnerDealtDamage(info);
         }
+        //Hồi máu liên kết
         public virtual void Heal(float amount, bool isByShare = false)
         {
             if (amount <= 0f) return;

@@ -14,9 +14,12 @@ namespace IronWasteland.Tanks.GreenFox
     /// - Tốc độ kẻ địch: GreenFox_EnemyMoveModifier (hệ số nhân, tự hoàn trả đúng).
     /// - Mỗi xe/kẻ địch được đếm theo số collider để không gỡ buff nhầm khi chỉ rời 1 collider.
     ///
-    /// Hồi năng lượng: MỌI nơi xe tăng (Green Fox hoặc đồng minh) gây sát thương lên kẻ địch phải gọi
-    /// <see cref="ReportDamage"/> (khuyến nghị gọi 1 chỗ duy nhất trong EnemyBrain.TakeDamage).
+    /// Hồi năng lượng: KHÔNG cần ai gọi hàm báo. Territory tự đăng ký vào EnemyBrain.OnTakeDamageEvent
+    /// của mọi kẻ địch đang có trên màn (quét định kỳ để bắt cả kẻ địch mới sinh ra), nên mọi nguồn
+    /// sát thương (đạn, chiêu thức, DoT, DamageEnemy...) đều được tính mà không phải sửa EnemyBrain.
     /// Hợp lệ khi người gây sát thương (Green Fox hoặc đồng minh) đang đứng trong vùng, bất kể kẻ địch bị đánh ở đâu.
+    /// Lưu ý: OnTakeDamageEvent chỉ phát khi đòn thật sự gây sát thương (đòn bị né/chặn sạch thì không tính),
+    /// và phát TRƯỚC khi kẻ địch chết nên đòn hạ gục vẫn được tính.
     /// </summary>
     [RequireComponent(typeof(CircleCollider2D))]
     public class GreenFox_FoxTerritory : MonoBehaviour
@@ -25,9 +28,7 @@ namespace IronWasteland.Tanks.GreenFox
         private const bool RequireAttackerInside = true;  // Người gây sát thương phải đang được buff / đứng trong vòng.
         private const bool AllowUnknownAttacker = true;   // Đòn không khai báo Attacker: tính nếu có ít nhất 1 xe trong vòng.
         private const bool DebugLog = true;               // Bật log lý do hồi / không hồi. Đặt false khi xong.
-
-        // Danh sách Territory đang hoạt động, để báo sát thương từ bất kỳ nguồn nào.
-        private static readonly List<GreenFox_FoxTerritory> s_Active = new List<GreenFox_FoxTerritory>();
+        private const float EnemyScanInterval = 0.25f;    // Chu kỳ quét kẻ địch mới để đăng ký lắng nghe sát thương (giây).
 
         private TankBrain m_Owner;
         private float m_SlowAmount;
@@ -37,19 +38,13 @@ namespace IronWasteland.Tanks.GreenFox
         private float m_TotalEnergyGained;
         private string m_Key;
         private CircleCollider2D m_Zone;
+        private float m_NextScanTime;
 
         private readonly Dictionary<EnemyBrain, int> m_EnemiesInside = new Dictionary<EnemyBrain, int>();
         private readonly Dictionary<TankBrain, int> m_TanksInside = new Dictionary<TankBrain, int>();
 
-        private void OnEnable()
-        {
-            if (!s_Active.Contains(this)) s_Active.Add(this);
-        }
-
-        private void OnDisable()
-        {
-            s_Active.Remove(this);
-        }
+        // Kẻ địch đã đăng ký lắng nghe OnTakeDamageEvent (để không đăng ký trùng và gỡ hết khi kết thúc).
+        private readonly HashSet<EnemyBrain> m_HookedEnemies = new HashSet<EnemyBrain>();
 
         public void Initialize(TankBrain owner, float duration, float slowAmount, float speedBoostPercent, float energyPerHit, float maxEnergyGain)
         {
@@ -61,34 +56,38 @@ namespace IronWasteland.Tanks.GreenFox
             m_TotalEnergyGained = 0f;
             m_Key = $"GreenFox_Territory_{System.Guid.NewGuid():N}";
 
+            // Đăng ký ngay cho kẻ địch đang có trên màn, kẻ địch sinh sau sẽ được Update bắt.
+            HookNewEnemies();
+            m_NextScanTime = Time.time + EnemyScanInterval;
+
             Destroy(gameObject, duration);
         }
 
-        /// <summary>
-        /// Báo có xe tăng gây sát thương lên kẻ địch. Gọi từ MỌI nguồn sát thương của xe tăng
-        /// (đạn, skill, DoT, đòn đánh thường, DamageEnemy của Green Fox...).
-        /// Nên gọi NGAY khi gây sát thương (trước khi kẻ địch bị tắt collider) để đòn hạ gục vẫn được tính.
-        /// </summary>
-        public static void ReportDamage(TankBrain attacker, EnemyBrain enemy)
+        private void Update()
         {
-            ReportDamage(enemy, attacker);
+            if (Time.time < m_NextScanTime) return;
+            m_NextScanTime = Time.time + EnemyScanInterval;
+            HookNewEnemies();
         }
 
-        /// <summary>Báo kẻ địch nhận sát thương, kèm người gây sát thương (info.Attacker) để kiểm tra có đứng trong vùng không.</summary>
-        public static void ReportDamage(EnemyBrain enemy, UnityEngine.Object attacker)
+        /// <summary>Đăng ký lắng nghe sát thương cho mọi kẻ địch chưa được đăng ký.</summary>
+        private void HookNewEnemies()
         {
-            for (int i = s_Active.Count - 1; i >= 0; i--)
+            EnemyBrain[] enemies = Object.FindObjectsByType<EnemyBrain>();
+            for (int i = 0; i < enemies.Length; i++)
             {
-                GreenFox_FoxTerritory territory = s_Active[i];
-                if (territory == null) { s_Active.RemoveAt(i); continue; }
-                territory.NotifyDamageDealtInTerritory(enemy, attacker);
+                EnemyBrain enemy = enemies[i];
+                if (enemy == null) continue;
+                if (!m_HookedEnemies.Add(enemy)) continue; // đã đăng ký rồi
+
+                enemy.OnTakeDamageEvent += HandleEnemyTookDamage;
             }
         }
 
-        /// <summary>Không biết người đánh (xem AllowUnknownAttacker).</summary>
-        public static void ReportDamage(EnemyBrain enemy)
+        /// <summary>Có kẻ địch vừa nhận sát thương thật sự: kiểm tra người gây sát thương rồi hồi năng lượng.</summary>
+        private void HandleEnemyTookDamage(DamageInfo info)
         {
-            ReportDamage(enemy, (UnityEngine.Object)null);
+            OnDamageDealtInTerritory(info.Attacker);
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
@@ -170,9 +169,8 @@ namespace IronWasteland.Tanks.GreenFox
         /// <summary>
         /// Hồi năng lượng cho Green Fox khi có xe tăng gây sát thương. Chỉ hồi khi:
         /// - người gây sát thương đang đứng trong vùng (vị trí kẻ địch không liên quan).
-        /// Dùng <see cref="ReportDamage"/> thay vì gọi trực tiếp hàm này.
         /// </summary>
-        public void NotifyDamageDealtInTerritory(EnemyBrain enemy = null, UnityEngine.Object attacker = null)
+        private void OnDamageDealtInTerritory(UnityEngine.Object attacker)
         {
             if (m_Owner == null)
             {
@@ -224,7 +222,11 @@ namespace IronWasteland.Tanks.GreenFox
             }
 
             float energyToGain = Mathf.Min(m_EnergyPerHit, m_MaxEnergyGain - m_TotalEnergyGained);
-            if (energyToGain <= 0f) return;
+            if (energyToGain <= 0f)
+            {
+                if (DebugLog) Debug.Log($"[Territory] Bỏ qua: energyToGain = {energyToGain} (EnergyPerHit = {m_EnergyPerHit}, MaxEnergyGain = {m_MaxEnergyGain}) — kiểm tra thông số skill2SubDesign.", this);
+                return;
+            }
 
             m_Owner.GainEnergy(energyToGain);
             m_TotalEnergyGained += energyToGain;
@@ -305,7 +307,12 @@ namespace IronWasteland.Tanks.GreenFox
 
         private void OnDestroy()
         {
-            s_Active.Remove(this);
+            // Hết thời gian: gỡ đăng ký lắng nghe sát thương khỏi mọi kẻ địch
+            foreach (EnemyBrain enemy in m_HookedEnemies)
+            {
+                if (enemy != null) enemy.OnTakeDamageEvent -= HandleEnemyTookDamage;
+            }
+            m_HookedEnemies.Clear();
 
             // Hết thời gian: gỡ toàn bộ buff/debuff còn lại
             foreach (var kv in m_TanksInside) ReleaseTank(kv.Key);
