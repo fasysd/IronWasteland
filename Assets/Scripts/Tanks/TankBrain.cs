@@ -133,13 +133,6 @@ namespace IronWasteland.Tanks
 
         public EquipmentBrain Accessory => m_EquippedAccessory;
         public bool IsAlive => currentHealth > 0f;
-
-        /// <summary>
-        /// True sau khi <see cref="Initialize"/> chạy. Các tank đặt sẵn trong scene
-        /// nhưng chưa được khởi tạo (hp = 1, max = 1) không được coi là đồng minh.
-        /// </summary>
-        public bool IsInitialized => _initialized;
-
         public bool IsCrowdControlImmune { get; set; }
 
         public bool CanMove => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Root);

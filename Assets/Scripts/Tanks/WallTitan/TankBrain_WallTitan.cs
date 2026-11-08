@@ -288,29 +288,24 @@ namespace IronWasteland.Tanks.WallTitan
         }
 
         /// <summary>Tìm đồng minh gần nhất (khác bản thân) tại vị trí chỉ định; không có thì trả về chính mình.</summary>
-        private TankBrain FindAllyNear(Vector2 point, float maxDistance = float.PositiveInfinity)
+        private TankBrain FindAllyNear(Vector2 point, float maxDistance)
         {
-            TankBrain[] tanks = FindObjectsOfType<TankBrain>();
+            // Dùng collider + ColliderOwnerRef để lấy đúng TankBrain quanh điểm ngắm
+            // thay vì quét toàn bộ scene: tank đặt sẵn nhưng chưa Initialize chưa
+            // RegisterOwner nên GetOwner<TankBrain>() trả null và tự động bị loại.
+            Collider2D[] hits = Physics2D.OverlapCircleAll(point, maxDistance);
+
             TankBrain best = null;
             float bestSqr = float.MaxValue;
-            float maxSqr = maxDistance * maxDistance;
 
-            for (int i = 0; i < tanks.Length; i++)
+            for (int i = 0; i < hits.Length; i++)
             {
-                TankBrain candidate = tanks[i];
+                ColliderOwnerRef ownerRef = ColliderOwnerRef.FromCollider(hits[i]);
+                TankBrain candidate = ownerRef != null ? ownerRef.GetOwner<TankBrain>() : null;
                 if (candidate == null || candidate == this || !candidate.IsAlive)
                     continue;
 
-                // Bỏ qua tank đặt sẵn trong scene nhưng chưa Initialize (hp 1/max 1):
-                // nếu không, Guardian Wall/Earth Guardian sẽ "dính" vào chúng thay vì
-                // đồng minh thật hoặc chính mình.
-                if (!candidate.IsInitialized)
-                    continue;
-
                 float sqr = ((Vector2)candidate.transform.position - point).sqrMagnitude;
-                if (sqr > maxSqr)
-                    continue;
-
                 if (sqr < bestSqr)
                 {
                     bestSqr = sqr;
