@@ -74,6 +74,9 @@ namespace IronWasteland.Tanks.WallTitan
             SetActive(m_GuardianMist, active);
         }
 
+        /// <summary>Earth Guardian: lớp sương bảo vệ (không chiếm màn chắn của Guardian Wall).</summary>
+        public void SetEarthGuardianActive(bool active) => SetActive(m_GuardianMist, active);
+
         // ---------- Hiệu ứng một lần ----------
 
         /// <summary>Earthquake: vết nứt lan trên đất + sóng xung kích tại tâm.</summary>

@@ -389,9 +389,13 @@ namespace IronWasteland.Tanks.WallTitan
                 return;
 
             skill.transform.SetParent(null);
-            skill.gameObject.SetActive(true);
+
+            // Đặt đúng vị trí/hướng TRƯỚC khi bật object: nếu SetActive trước,
+            // collider sẽ được kích hoạt tại vị trí cũ trong pool và có thể ăn
+            // nhầm mục tiêu hoặc trượt mục tiêu thật.
             skill.Initialize(spawnPos, direction, ReturnEarthBreakToPool);
             skill.TargetFound += OnEarthBreakTargetFound;
+            skill.gameObject.SetActive(true);
         }
 
         private void OnEarthBreakTargetFound(Skill_EarthBreak skill, EnemyBrain enemy, float travelDistance)
@@ -557,8 +561,10 @@ namespace IronWasteland.Tanks.WallTitan
         private void ActivateGuardianWall()
         {
             TankBrain ally = FindAllyNear(LookTarget);
+            // Không có đồng minh quanh điểm ngắm: tự bọc khiên cho mình thay vì
+            // im lặng đốt EN/cooldown mà không có hiệu ứng gì.
             if (ally == null)
-                return;
+                ally = this;
 
             float shieldValue = ally == this
                 ? Stats.MaxHealth * guardianWallShieldHpRatio
@@ -595,11 +601,10 @@ namespace IronWasteland.Tanks.WallTitan
                 return;
 
             prison.transform.SetParent(null);
-            prison.transform.position = LookTarget;
-            prison.gameObject.SetActive(true);
             prison.Initialize(LookTarget, ReturnEarthPrisonToPool);
             prison.Duration = earthPrisonDuration;
             prison.TargetFound += OnEarthPrisonTargetFound;
+            prison.gameObject.SetActive(true);
             prison.StartSkill();
         }
 
@@ -739,8 +744,9 @@ namespace IronWasteland.Tanks.WallTitan
         private void ActivateEarthGuardian()
         {
             TankBrain ally = FindAllyNear(LookTarget);
+            // Không có đồng minh quanh điểm ngắm: tự nhận +DEF thay vì im lặng.
             if (ally == null)
-                return;
+                ally = this;
 
             if (ally == this)
             {
@@ -762,6 +768,20 @@ namespace IronWasteland.Tanks.WallTitan
 
             if (earthGuardianVisual != null)
                 StartCoroutine(PlayVisualRoutine(earthGuardianVisual, earthGuardianDuration));
+
+            if (vfx != null)
+            {
+                vfx.SetEarthGuardianActive(true);
+                StartCoroutine(DisableEarthGuardianVfxAfter(earthGuardianDuration));
+            }
+        }
+
+        private IEnumerator DisableEarthGuardianVfxAfter(float duration)
+        {
+            yield return new WaitForSeconds(duration);
+
+            if (vfx != null)
+                vfx.SetEarthGuardianActive(false);
         }
 
         private IEnumerator DisableGuardianAfter(float duration)
@@ -834,11 +854,10 @@ namespace IronWasteland.Tanks.WallTitan
                 return;
 
             quake.transform.SetParent(null);
-            quake.transform.position = LookTarget;
-            quake.gameObject.SetActive(true);
             quake.Initialize(LookTarget, ReturnEarthquakeToPool);
             quake.Duration = earthquakeDuration;
             quake.TargetFound += OnEarthquakeTargetFound;
+            quake.gameObject.SetActive(true);
             quake.StartSkill();
 
             if (vfx != null)

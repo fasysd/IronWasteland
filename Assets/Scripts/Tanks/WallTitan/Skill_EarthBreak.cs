@@ -101,6 +101,7 @@ namespace IronWasteland.Tanks.WallTitan
             }
 
             m_ElapsedTime = 0f;
+            transform.position = spawnPosition;
             transform.right = m_Direction;
 
             if (m_Body != null)
