@@ -725,7 +725,10 @@ namespace IronWasteland.Tanks.RedNova
                 return;
 
             // GDD: mỗi phát laser tốn 5 EN, không hồi EN khi trúng (khác Nova Shot).
-            ApplySkillDamage(enemy, CalculateRawDamage(laserCannonDamageMultiplier), enemy.transform.position);
+            // Laser là "kỹ năng thường cường hóa" nên cũng phải nhận buff Nova Rush
+            // (đòn kế tiếp +200% ATK) và tiêu buff đó sau khi gây sát thương.
+            float rushBonus = m_HasNovaRushEmpoweredShot ? novaRushBonusAttackPercent : 0f;
+            ApplySkillDamage(enemy, CalculateRawDamage(laserCannonDamageMultiplier, rushBonus), enemy.transform.position);
         }
 
         private void ActivateExecutionCore()
