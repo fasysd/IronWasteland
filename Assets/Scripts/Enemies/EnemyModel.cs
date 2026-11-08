@@ -26,9 +26,17 @@ namespace IronWasteland.Enemies
         [Tooltip("ColliderOwnerRef cung GameObject - cho phep ben ngoai tra chu va dang ky event va cham.")]
         [SerializeField] private ColliderOwnerRef ownerRef;
 
+        [Tooltip("Animator dieu khien animation cua ke dich (Idle, Move, TakeDamage, TakedDamege).")]
+        [SerializeField] private Animator animator;
+
         [Header("Owner")]
         [Tooltip("EnemyBrain dang dieu khien Model nay. Do EnemyBrain gan luc khoi tao.")]
         [SerializeField, HideInInspector] private EnemyBrain owner;
+
+        private static readonly int HashMoveSpeed = Animator.StringToHash("MoveSpeed");
+        private static readonly int HashTakeDamage = Animator.StringToHash("TakeDamage");
+        private static readonly int HashTakedDamage = Animator.StringToHash("TakedDamege");
+        private static readonly int HashTakedDamageAlt = Animator.StringToHash("TakedDamage");
 
         /// <summary>Su kien cham giua collider nay va collider khac - forward tu ColliderOwnerRef.</summary>
         public event Action<ColliderOwnerRef> Contact;
@@ -41,6 +49,14 @@ namespace IronWasteland.Enemies
         public SpriteRenderer SpriteRenderer => spriteRenderer;
         public BoxCollider2D BodyCollider => bodyCollider;
         public ColliderOwnerRef OwnerRef => ownerRef;
+        public Animator Animator
+        {
+            get
+            {
+                if (animator == null) animator = GetComponent<Animator>() ?? GetComponentInChildren<Animator>();
+                return animator;
+            }
+        }
 
         /// <summary>
         /// EnemyBrain goi luc khoi tao - gan owner (dua vao ColliderOwnerRef
@@ -56,23 +72,52 @@ namespace IronWasteland.Enemies
             }
         }
 
-        // --- Visual scaffold: chua co sprite / animation nen chi la khung TODO ---
+        // --- Visual & Animation control ---
 
         /// <summary>Hieu ung xuat hien khi ke dich spawn. TODO.</summary>
         public void PlaySpawn() { }
 
-        /// <summary>Hieu ung khi nhan sat thuong. TODO.</summary>
-        public void PlayHit() { }
+        /// <summary>Dieu chinh thong so MoveSpeed cho Animator (chuyen giua Idle va Move).</summary>
+        public void SetMoveSpeed(float speed)
+        {
+            if (Animator != null)
+            {
+                Animator.SetFloat(HashMoveSpeed, speed);
+            }
+        }
 
-        /// <summary>Hieu ung khi chet. TODO.</summary>
-        public void PlayDeath() { }
+        /// <summary>Kich hoat animation nhan sat thuong (TakeDamage).</summary>
+        public void PlayTakeDamage()
+        {
+            if (Animator != null)
+            {
+                Animator.SetTrigger(HashTakeDamage);
+            }
+        }
+
+        /// <summary>Kich hoat animation chet / bi ha guc (TakedDamage).</summary>
+        public void PlayTakedDamage()
+        {
+            if (Animator != null)
+            {
+                Animator.SetTrigger(HashTakedDamage);
+                Animator.SetTrigger(HashTakedDamageAlt);
+            }
+        }
+
+        /// <summary>Hieu ung khi nhan sat thuong.</summary>
+        public void PlayHit() => PlayTakeDamage();
+
+        /// <summary>Hieu ung khi chet.</summary>
+        public void PlayDeath() => PlayTakedDamage();
 
         private void Awake()
         {
             // Tu noi neu designer khong keo tay (giong OnValidate cua TankView).
-            if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             if (bodyCollider == null) bodyCollider = GetComponent<BoxCollider2D>();
             if (ownerRef == null) ownerRef = GetComponent<ColliderOwnerRef>();
+            if (animator == null) animator = GetComponent<Animator>() ?? GetComponentInChildren<Animator>();
 
             // Forward su kien va cham len EnemyBrain (qua event cua Model).
             if (ownerRef != null)
@@ -100,9 +145,10 @@ namespace IronWasteland.Enemies
 
         private void OnValidate()
         {
-            if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             if (bodyCollider == null) bodyCollider = GetComponent<BoxCollider2D>();
             if (ownerRef == null) ownerRef = GetComponent<ColliderOwnerRef>();
+            if (animator == null) animator = GetComponent<Animator>() ?? GetComponentInChildren<Animator>();
         }
     }
 }

@@ -513,7 +513,7 @@ namespace IronWasteland.Enemies
 
         #region Lifecycle
 
-        private void Awake()
+        protected virtual void Awake()
         {
             if (model == null) model = GetComponentInChildren<EnemyModel>();
             model?.RegisterOwner(this);
