@@ -1,0 +1,254 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3291204043161688967
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6365495641525517930}
+  - component: {fileID: 6588680580327770301}
+  - component: {fileID: 2172853077939190991}
+  - component: {fileID: 1545869077489566671}
+  - component: {fileID: 8041300159905595125}
+  - component: {fileID: 7043086930771358371}
+  - component: {fileID: 1010508786444527523}
+  m_Layer: 6
+  m_Name: 'GreenFox '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6365495641525517930
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3291204043161688967}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -7.69295, y: 6.09714, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6588680580327770301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3291204043161688967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bde09b59f388415db2952520da6bea4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  view: {fileID: 0}
+  level: 1
+  baseStats:
+    Attack: 10
+    Defense: 0
+    DamageRate: 0
+    ArmorPenetration: 0
+    MaxHealth: 100
+    MaxEnergy: 50
+    MoveSpeed: 3
+    CooldownReduction: 0
+  flatBonusStats:
+    Attack: 0
+    Defense: 0
+    DamageRate: 0
+    ArmorPenetration: 0
+    MaxHealth: 0
+    MaxEnergy: 0
+    MoveSpeed: 0
+    CooldownReduction: 0
+  percentBonusStats:
+    Attack: 0
+    Defense: 0
+    DamageRate: 0
+    ArmorPenetration: 0
+    MaxHealth: 0
+    MaxEnergy: 0
+    MoveSpeed: 0
+    CooldownReduction: 0
+  currentHealth: 0
+  currentEnergy: 0
+  skillCooldowns:
+  - 0
+  - 0
+  - 0
+  - 0
+  m_context:
+    Level: 0
+    IdView: 0
+    EquipmentId: 0
+    OptionSkill1: 0
+    OptionSkill2: 0
+  m_EquippedAccessory: {fileID: 0}
+  skill0Design: {fileID: -3058272851687458959, guid: 827c8ff36e22fec4e998ddad8721beb0, type: 3}
+  skill0InitialPoolSize: 6
+  skill0Cooldown: 0.5
+  skill0EnergyGain: 10
+  skill0DamagePercent: 100
+  skill1Design: {fileID: 8617847460914158506, guid: db0035b9775a8ae42ae2cfec902eab40, type: 3}
+  initialPoolSize: 4
+  skill1Cooldown: 6
+  skill1EnergyCost: 30
+  markLifetime: 8
+  markStacksPerAttack: 1
+  markExplosionDamagePercent: 200
+  skill1SubDesign: {fileID: 2172853077939190991}
+  signPrefab: {fileID: 3365031985543636043, guid: 4d22e82004df3bf41b960d912ec94e22, type: 3}
+  killStreamPrefab: {fileID: 0}
+  killStreamCount: 3
+  burnPrefab: {fileID: 1450721894277973151, guid: 6965cdc62f9a14941803df40016d7304, type: 3}
+  skill1BEffectPrefab: {fileID: 8587577962964863958, guid: eae4644b1c77f3643af3012bb54c5fcb, type: 3}
+  trapPrefab: {fileID: 4117014703716380878, guid: cb05ca41faa58814598bf23649faf0e1, type: 3}
+  skill2SubDesign: {fileID: 1545869077489566671}
+  skill2ExplosionDesign: {fileID: 4395090277895122667, guid: a7e6ff8a3c7717e4c9a048fd705005c6, type: 3}
+  territoryPrefab: {fileID: 6065056101348963444, guid: 32a8a15fa4b24804dbc29009ec2cb403, type: 3}
+  nineTailedPrefab: {fileID: 816658801485478733, guid: ed60c16860b07de4daff90923e1d9a38, type: 3}
+  nineTailsVisualPrefab: {fileID: 4339832695109824919, guid: da159c9320b2f5c45b7e19f90363763a, type: 3}
+--- !u!114 &2172853077939190991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3291204043161688967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2acbb35e5c7957419859bef51960ba1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.GreenFox.GreenFox_Skill1Sub
+  buff1AEnergyCost: 45
+  buff1ACooldown: 10
+  buff1ADuration: 5
+  buff1AStackAmount: 2
+  buff1AExplosionDamagePercent: 300
+  buff1ACooldownReductionOnKill: 3
+  buff1BEnergyCost: 40
+  buff1BCooldown: 11
+  burnDuration: 6
+  burnInterval: 0.5
+  burnDamagePercent: 0.25
+  energyOnHitBurnTarget: 3
+  buff1CEnergyCost: 50
+  buff1CCooldown: 10
+  trapDuration: 15
+  rootDuration: 2
+  trapDamagePercent: 150
+  eliteTrapDamagePercent: 230
+--- !u!114 &1545869077489566671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3291204043161688967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d282b8c85e1c51d46ad742a6d56099b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.GreenFox.GreenFox_Skill2Sub
+  buff2AEnergyCost: 55
+  buff2ACooldown: 12
+  damagePerStackPercent: 20
+  attackBuffDuration: 6
+  attackBuffPercent: 0.3
+  markExplosionRange: 20
+  buff2BEnergyCost: 60
+  buff2BCooldown: 15
+  territoryDuration: 6
+  slowAmount: 0.3
+  speedBoostPercent: 0.3
+  energyPerHit: 3
+  maxEnergyGain: 30
+  buff2CEnergyCost: 75
+  buff2CCooldown: 16
+  assaultDuration: 6
+  tailCount: 9
+  attackInterval: 1
+  tailDamagePercent: 15
+--- !u!114 &8041300159905595125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3291204043161688967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e120cf86ab445dc419a7733782b2cd6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+--- !u!58 &7043086930771358371
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3291204043161688967}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Radius: 0.5
+--- !u!50 &1010508786444527523
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3291204043161688967}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4

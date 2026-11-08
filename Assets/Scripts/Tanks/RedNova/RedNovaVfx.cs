@@ -17,6 +17,7 @@ namespace IronWasteland.Tanks.RedNova
         [SerializeField] private Sprite overdriveAura;
         [SerializeField] private Sprite executionCore;
         [SerializeField] private Sprite pierceOverlay;
+        [SerializeField] private Sprite pierceBeam;
         [SerializeField] private Sprite laserBeam;
         [SerializeField] private Sprite laserImpact;
         [SerializeField] private Sprite executionShockwave;
@@ -39,10 +40,12 @@ namespace IronWasteland.Tanks.RedNova
         private SpriteRenderer m_OverdriveAura;
         private SpriteRenderer m_ExecutionCore;
         private SpriteRenderer m_PierceOverlay;
+        private SpriteRenderer m_PierceBeam;
         private SpriteRenderer m_LaserBeam;
         private SpriteRenderer m_LaserImpact;
 
         private float m_LaserHideTime;
+        private float m_PierceHideTime;
 
         private void Awake()
         {
@@ -52,6 +55,7 @@ namespace IronWasteland.Tanks.RedNova
 
             m_LaserBeam = CreateChild("VFX_LaserBeam", laserBeam, beamSortingOrder, 1f);
             m_LaserImpact = CreateChild("VFX_LaserImpact", laserImpact, beamSortingOrder + 1, 0.7f);
+            m_PierceBeam = CreateChild("VFX_PierceBeam", pierceBeam, beamSortingOrder, 1f);
         }
 
         private void LateUpdate()
@@ -61,6 +65,12 @@ namespace IronWasteland.Tanks.RedNova
                 m_LaserHideTime = 0f;
                 SetActive(m_LaserBeam, false);
                 SetActive(m_LaserImpact, false);
+            }
+
+            if (m_PierceHideTime > 0f && Time.time >= m_PierceHideTime)
+            {
+                m_PierceHideTime = 0f;
+                SetActive(m_PierceBeam, false);
             }
         }
 
@@ -77,28 +87,53 @@ namespace IronWasteland.Tanks.RedNova
         /// <summary>Vẽ chùm laser từ nòng tới điểm chạm trong một khoảnh khắc.</summary>
         public void ShowLaserBeam(Vector2 from, Vector2 to)
         {
-            if (m_LaserBeam == null)
+            if (!ShowBeam(m_LaserBeam, from, to, beamThickness))
                 return;
 
             Vector2 delta = to - from;
-            float distance = delta.magnitude;
-            if (distance <= 0.01f)
-                return;
-
             float angle = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg;
-
-            Transform beam = m_LaserBeam.transform;
-            beam.position = (from + to) * 0.5f;
-            beam.rotation = Quaternion.Euler(0f, 0f, angle);
-            beam.localScale = new Vector3(distance / SpriteWorldWidth(m_LaserBeam.sprite, 1f), beamThickness, 1f);
 
             m_LaserImpact.transform.position = to;
             m_LaserImpact.transform.rotation = Quaternion.Euler(0f, 0f, angle);
             m_LaserImpact.transform.localScale = Vector3.one * impactScale;
 
-            SetActive(m_LaserBeam, true);
             SetActive(m_LaserImpact, true);
             m_LaserHideTime = Time.time + laserDuration;
+        }
+
+        /// <summary>
+        /// Vẽ chùm xuyên của Nova Pierce dọc theo hướng bắn (sprite pierce_beam),
+        /// thay cho việc đặt một vệt ngang lên giữa thân tank.
+        /// </summary>
+        public void ShowPierceBeam(Vector2 from, Vector2 to)
+        {
+            if (!ShowBeam(m_PierceBeam, from, to, beamThickness * 0.75f))
+                return;
+
+            m_PierceHideTime = Time.time + laserDuration * 1.5f;
+        }
+
+        /// <summary>Đặt chùm beam từ <paramref name="from"/> tới <paramref name="to"/> và bật nó.</summary>
+        private bool ShowBeam(SpriteRenderer beam, Vector2 from, Vector2 to, float thickness)
+        {
+            if (beam == null || beam.sprite == null)
+                return false;
+
+            Vector2 delta = to - from;
+            float distance = delta.magnitude;
+            if (distance <= 0.01f)
+                return false;
+
+            float angle = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg;
+
+            Transform beamTransform = beam.transform;
+            beamTransform.position = (from + to) * 0.5f;
+            beamTransform.rotation = Quaternion.Euler(0f, 0f, angle);
+            beamTransform.localScale = new Vector3(
+                distance / SpriteWorldWidth(beam.sprite, 1f), thickness, 1f);
+
+            SetActive(beam, true);
+            return true;
         }
 
         // ---------- Hiệu ứng một lần ----------

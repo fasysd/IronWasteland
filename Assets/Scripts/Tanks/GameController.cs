@@ -23,6 +23,13 @@ namespace IronWasteland.Tanks
         [Tooltip("ID phu kien trong EquipmentDatabase (-1 = khong trang bi).")]
         [SerializeField] private int equipmentId = -1;
 
+        [Header("Optional Skills Selection")]
+        [Tooltip("Lựa chọn biến thể kỹ năng OptionSkill1 (0 = Cường hóa, 1 = Shadow Link, 2 = Shadow Guard).")]
+        [SerializeField] private int optionSkill1 = 0;
+
+        [Tooltip("Lựa chọn biến thể kỹ năng OptionSkill2.")]
+        [SerializeField] private int optionSkill2 = 0;
+
         [Header("Look")]
         [Tooltip("Camera de tinh huong nhin. Neu rong se dung Camera.main.")]
         [SerializeField] private Camera targetCamera;
@@ -41,8 +48,8 @@ namespace IronWasteland.Tanks
                 Level = playerLevel,
                 IdView = viewId,
                 EquipmentId = equipmentId,
-                OptionSkill1 = 1,
-                OptionSkill2 = 1
+                OptionSkill1 = optionSkill1,
+                OptionSkill2 = optionSkill2
             };
 
             // Khoi tao 1 lan duy nhat (guard).

@@ -42,7 +42,8 @@ namespace IronWasteland.Tanks.RedNova
         [Tooltip("GameObject mẫu inactive của đạn Triple Nova (nếu để trống sẽ dùng chung novaShotDesign).")]
         [SerializeField] private Skill_NovaShot tripleNovaDesign;
         [SerializeField, Min(1)] private int tripleNovaBulletCount = 3;
-        [SerializeField, Range(0f, 45f)] private float tripleNovaSpreadAngle = 10f;
+        [Tooltip("Khoảng cách tách 3 tia ở họng súng; cả 3 vẫn hội tụ về đúng điểm ngắm.")]
+        [SerializeField, Min(0f)] private float tripleNovaSpawnSpacing = 0.35f;
         [SerializeField, Min(0f)] private float tripleNovaDamageMultiplier = 0.90f;
         [SerializeField, Min(0f)] private float tripleNovaEnergyCost = 40f;
         [SerializeField, Min(0.01f)] private float tripleNovaCooldown = 5f;
@@ -140,6 +141,10 @@ namespace IronWasteland.Tanks.RedNova
         private Coroutine m_ExecutionCoroutine;
         private Coroutine m_NovaPierceCoroutine;
 
+        /// <summary>Đã đổi nhánh bằng Test API/Skill Arena hay chưa (override context).</summary>
+        private bool m_Option1BranchOverridden;
+        private bool m_Option2BranchOverridden;
+
         #region Cooldown
         protected override float GetBaseCooldown(int index)
         {
@@ -172,16 +177,25 @@ namespace IronWasteland.Tanks.RedNova
             }
         }
 
+        /// <summary>
+        /// Nhánh kỹ năng tùy chọn 1. Context lấy từ TankDefinition là nguồn chuẩn và
+        /// 0..2 đều là ID hợp lệ (0 = Overdrive), không dùng 0 làm sentinel nữa.
+        /// Khi test/arena đổi nhánh lúc chạy thì override được ưu tiên.
+        /// </summary>
         private int ResolveOption1Branch()
         {
-            int fromContext = Context.OptionSkill1;
-            return fromContext != 0 ? fromContext : optionSkill1Branch;
+            if (m_Option1BranchOverridden)
+                return Mathf.Clamp(optionSkill1Branch, 0, 2);
+
+            return Mathf.Clamp(Context.OptionSkill1, 0, 2);
         }
 
         private int ResolveOption2Branch()
         {
-            int fromContext = Context.OptionSkill2;
-            return fromContext != 0 ? fromContext : optionSkill2Branch;
+            if (m_Option2BranchOverridden)
+                return Mathf.Clamp(optionSkill2Branch, 0, 2);
+
+            return Mathf.Clamp(Context.OptionSkill2, 0, 2);
         }
 
         /// <summary>
@@ -216,6 +230,14 @@ namespace IronWasteland.Tanks.RedNova
                     return 0f;
             }
         }
+
+        /// <summary>
+        /// GDD: kỹ năng thường chỉ hồi EN khi TRÚNG mục tiêu (Nova Shot +10 trong
+        /// OnNovaShotTargetFound), không hồi lúc bấm. Lớp cha cộng 10 EN ngay khi dùng
+        /// slot 0 nên phải chặn tại đây; nếu không Nova Shot cộng đôi và Laser Cannon
+        /// (tốn 5/phát) lại thành hồi mana.
+        /// </summary>
+        protected override float GetSkillEnergyGain(int index) => 0f;
         #endregion
 
         private void Start()
@@ -234,7 +256,17 @@ namespace IronWasteland.Tanks.RedNova
             {
                 case SkillNovaShotIndex:
                     if (m_IsLaserCannonActive && laserCannonDesign != null)
+                    {
+                        // Hết năng lượng thì tự thoát trạng thái Laser Cannon, tránh
+                        // kẹt "bật laser vô hạn" khi không còn EN để bắn.
+                        if (CurrentEnergy < laserShotEnergyCost)
+                        {
+                            m_IsLaserCannonActive = false;
+                            return;
+                        }
+
                         FireLaserBeam();
+                    }
                     else
                         FireNovaShot();
                     return;
@@ -458,22 +490,33 @@ namespace IronWasteland.Tanks.RedNova
                 return;
 
             baseDirection.Normalize();
-            float baseAngle = Mathf.Atan2(baseDirection.y, baseDirection.x) * Mathf.Rad2Deg;
 
             int count = Mathf.Max(1, tripleNovaBulletCount);
 
+            // GDD: "Các viên đạn hội tụ vào một mục tiêu duy nhất để dồn sát thương."
+            // Cả 3 tia hội tụ đúng vào vị trí con trỏ (LookTarget) — người chơi tự
+            // ngắm, skill không tự tìm mục tiêu — nên 3 × 90% = 270% ATK dồn vào đó.
+            Vector2 focusPoint = LookTarget;
+            Vector2 toFocus = focusPoint - (Vector2)muzzle.position;
+            if (toFocus.sqrMagnitude <= 0.0001f)
+                toFocus = baseDirection;
+
+            Vector2 forward = toFocus.normalized;
+            Vector2 side = new Vector2(-forward.y, forward.x);
+
             for (int i = 0; i < count; i++)
             {
-                float offsetAngle = 0f;
-                if (count > 1)
-                {
-                    float t = (float)i / (count - 1) - 0.5f; // -0.5 .. +0.5
-                    offsetAngle = t * 2f * tripleNovaSpreadAngle;
-                }
+                // Tách 3 tia ở họng súng một chút rồi cho chúng hội tụ về focusPoint,
+                // để nhìn thấy rõ 3 tia riêng biệt thay vì chồng thành một.
+                float lateralOffset = (i - (count - 1) * 0.5f) * tripleNovaSpawnSpacing;
+                Vector2 spawnPosition = (Vector2)muzzle.position + side * lateralOffset;
 
-                float angle = baseAngle + offsetAngle;
-                float rad = angle * Mathf.Deg2Rad;
-                Vector2 dir = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad));
+                Vector2 dir = focusPoint - spawnPosition;
+                if (dir.sqrMagnitude <= 0.0001f)
+                    dir = forward;
+                dir.Normalize();
+
+                float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
                 Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
 
                 Skill_NovaShot bullet = GetNovaShotFromPool();
@@ -481,7 +524,7 @@ namespace IronWasteland.Tanks.RedNova
                     continue;
 
                 bullet.transform.SetParent(null);
-                bullet.transform.SetPositionAndRotation(muzzle.position, rotation);
+                bullet.transform.SetPositionAndRotation(spawnPosition, rotation);
 
                 bullet.Initialize(dir, ReturnNovaShotToPool);
                 bullet.TargetFound += OnTripleNovaTargetFound;
@@ -630,6 +673,9 @@ namespace IronWasteland.Tanks.RedNova
                 return;
             }
 
+            if (CurrentEnergy < laserShotEnergyCost)
+                return;
+
             m_IsLaserCannonActive = true;
             FireLaserBeam();
         }
@@ -645,8 +691,6 @@ namespace IronWasteland.Tanks.RedNova
             if (View == null || View.Muzzle == null || !HasLookTarget)
                 return;
 
-            SpendEnergy(laserShotEnergyCost);
-
             Transform muzzle = View.Muzzle;
             Vector2 direction = LookTarget - (Vector2)muzzle.position;
             if (direction.sqrMagnitude <= 0.0001f)
@@ -656,13 +700,22 @@ namespace IronWasteland.Tanks.RedNova
             if (beam == null)
                 return;
 
+            SpendEnergy(laserShotEnergyCost);
+
+            // Bắn xong mà không còn đủ EN cho phát kế tiếp thì thoát trạng thái luôn,
+            // tránh kẹt laser bật vô hạn khi đã cạn mana.
+            if (CurrentEnergy < laserShotEnergyCost)
+                m_IsLaserCannonActive = false;
+
             if (vfx != null)
                 vfx.ShowLaserBeam(muzzle.position, LookTarget);
 
+            // Đặt đúng vị trí/hướng TRƯỚC khi bật object, nếu không collider sẽ
+            // được kích hoạt tại vị trí cũ trong pool.
             beam.transform.SetParent(null);
-            beam.gameObject.SetActive(true);
             beam.Initialize(muzzle.position, direction, ReturnLaserToPool);
             beam.TargetFound += OnLaserTargetFound;
+            beam.gameObject.SetActive(true);
             beam.StartSkill();
         }
 
@@ -671,8 +724,11 @@ namespace IronWasteland.Tanks.RedNova
             if (enemy == null)
                 return;
 
-            ApplySkillDamage(enemy, CalculateRawDamage(laserCannonDamageMultiplier), enemy.transform.position);
-            GainEnergy(novaShotEnergyGain);
+            // GDD: mỗi phát laser tốn 5 EN, không hồi EN khi trúng (khác Nova Shot).
+            // Laser là "kỹ năng thường cường hóa" nên cũng phải nhận buff Nova Rush
+            // (đòn kế tiếp +200% ATK) và tiêu buff đó sau khi gây sát thương.
+            float rushBonus = m_HasNovaRushEmpoweredShot ? novaRushBonusAttackPercent : 0f;
+            ApplySkillDamage(enemy, CalculateRawDamage(laserCannonDamageMultiplier, rushBonus), enemy.transform.position);
         }
 
         private void ActivateExecutionCore()
@@ -799,13 +855,11 @@ namespace IronWasteland.Tanks.RedNova
 
             Vector2 spawnPos = LookTarget;
             skill.transform.SetParent(null);
-            skill.transform.position = spawnPos;
-            skill.gameObject.SetActive(true);
-
             skill.Initialize(spawnPos, ReturnBarrageToPool);
             skill.Duration = novaBarrageDuration;
             skill.Interval = novaBarrageInterval;
             skill.TargetFound += OnBarrageTargetFound;
+            skill.gameObject.SetActive(true);
             skill.StartSkill();
         }
 
@@ -850,16 +904,15 @@ namespace IronWasteland.Tanks.RedNova
             if (novaPierceVisual != null)
                 novaPierceVisual.SetActive(true);
 
-            if (vfx != null)
-                vfx.SetPierceActive(true);
+            // Hiệu ứng: một chùm xuyên bắn dọc theo hướng ngắm, thay vì dán
+            // vệt ngang lên giữa thân tank (sprite pierce_overlay bị sai hình).
+            if (vfx != null && View != null && View.Muzzle != null && HasLookTarget)
+                vfx.ShowPierceBeam(View.Muzzle.position, LookTarget);
 
             yield return new WaitForSeconds(novaPierceDuration);
 
             if (novaPierceVisual != null)
                 novaPierceVisual.SetActive(false);
-
-            if (vfx != null)
-                vfx.SetPierceActive(false);
 
             RemoveBonusStats(BonusKeyNovaPierce);
             m_NovaPierceCoroutine = null;
@@ -954,10 +1007,11 @@ namespace IronWasteland.Tanks.RedNova
         /// <summary>Nhánh kỹ năng tùy chọn 1 đang dùng (đổi lúc chạy để test).</summary>
         public int Option1Branch
         {
-            get => optionSkill1Branch;
+            get => ResolveOption1Branch();
             set
             {
                 optionSkill1Branch = Mathf.Clamp(value, 0, 2);
+                m_Option1BranchOverridden = true;
                 ResetSkillCooldown(SkillOption1Index);
             }
         }
@@ -965,10 +1019,11 @@ namespace IronWasteland.Tanks.RedNova
         /// <summary>Nhánh kỹ năng tùy chọn 2 đang dùng (đổi lúc chạy để test).</summary>
         public int Option2Branch
         {
-            get => optionSkill2Branch;
+            get => ResolveOption2Branch();
             set
             {
                 optionSkill2Branch = Mathf.Clamp(value, 0, 2);
+                m_Option2BranchOverridden = true;
                 ResetSkillCooldown(SkillOption2Index);
             }
         }
@@ -984,7 +1039,7 @@ namespace IronWasteland.Tanks.RedNova
                     return "Triple Nova";
 
                 case SkillOption1Index:
-                    switch (optionSkill1Branch)
+                    switch (ResolveOption1Branch())
                     {
                         case 0: return "Overdrive";
                         case 1: return "Laser Cannon";
@@ -992,7 +1047,7 @@ namespace IronWasteland.Tanks.RedNova
                     }
 
                 case SkillOption2Index:
-                    switch (optionSkill2Branch)
+                    switch (ResolveOption2Branch())
                     {
                         case 0: return "Nova Barrage";
                         case 1: return "Nova Pierce";

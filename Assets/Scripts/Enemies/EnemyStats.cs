@@ -22,7 +22,7 @@ namespace IronWasteland.Enemies
 
         [Header("Survivability")]
         [Tooltip("Luong mau toi da.")]
-        public float MaxHealth = 50f;
+        public float MaxHealth = 100f;
 
         [Header("Mobility")]
         [Tooltip("Toc do di chuyen (don vi / giay).")]

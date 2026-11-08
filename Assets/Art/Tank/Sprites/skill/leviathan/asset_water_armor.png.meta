@@ -1,0 +1,949 @@
+fileFormatVersion: 2
+guid: 5de36161ab7e86e4d8cbe56d0939b844
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2776424652634432655
+    second: asset_water_armor_0
+  - first:
+      213: -7419051962217288284
+    second: asset_water_armor_1
+  - first:
+      213: 3121370452675989642
+    second: asset_water_armor_2
+  - first:
+      213: -214449337325241023
+    second: asset_water_armor_3
+  - first:
+      213: 7835788213664513287
+    second: asset_water_armor_4
+  - first:
+      213: -355652269180954815
+    second: asset_water_armor_5
+  - first:
+      213: 6595056442114519052
+    second: asset_water_armor_6
+  - first:
+      213: 4472848040347983625
+    second: asset_water_armor_7
+  - first:
+      213: 7049894182619166510
+    second: asset_water_armor_8
+  - first:
+      213: 7557949227212499086
+    second: asset_water_armor_9
+  - first:
+      213: -1445624624472299271
+    second: asset_water_armor_10
+  - first:
+      213: -983097066863823878
+    second: asset_water_armor_11
+  - first:
+      213: 1843760464387628637
+    second: asset_water_armor_12
+  - first:
+      213: -1273821914824878477
+    second: asset_water_armor_13
+  - first:
+      213: 4514334207517867422
+    second: asset_water_armor_14
+  - first:
+      213: -6985862442012321283
+    second: asset_water_armor_15
+  - first:
+      213: -2880864595011166994
+    second: asset_water_armor_16
+  - first:
+      213: 8384343588937007979
+    second: asset_water_armor_17
+  - first:
+      213: -4933286523458358450
+    second: asset_water_armor_18
+  - first:
+      213: -6711426493079955123
+    second: asset_water_armor_19
+  - first:
+      213: 1905353838366482136
+    second: asset_water_armor_20
+  - first:
+      213: 1566764392344948475
+    second: asset_water_armor_21
+  - first:
+      213: 5815127661121627061
+    second: asset_water_armor_22
+  - first:
+      213: -8060892570471097136
+    second: asset_water_armor_23
+  - first:
+      213: 4752956808383720569
+    second: asset_water_armor_24
+  - first:
+      213: -2580707105901192783
+    second: asset_water_armor_25
+  - first:
+      213: 5336309906193871502
+    second: asset_water_armor_26
+  - first:
+      213: -6596961388488507101
+    second: asset_water_armor_27
+  - first:
+      213: 1060096559339795942
+    second: asset_water_armor_28
+  - first:
+      213: 7493779717215160480
+    second: asset_water_armor_29
+  - first:
+      213: -2605797450959234799
+    second: asset_water_armor_30
+  - first:
+      213: 5344608706038465977
+    second: asset_water_armor_31
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: asset_water_armor_0
+      rect:
+        serializedVersion: 2
+        x: 123
+        y: 129
+        width: 769
+        height: 777
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17b56121d782879d0800000000000000
+      internalID: -2776424652634432655
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_1
+      rect:
+        serializedVersion: 2
+        x: 373
+        y: 880
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4adafd55c8b3a0990800000000000000
+      internalID: -7419051962217288284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_2
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 888
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a80172493e5515b20800000000000000
+      internalID: 3121370452675989642
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_3
+      rect:
+        serializedVersion: 2
+        x: 428
+        y: 893
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14d3962c67f160df0800000000000000
+      internalID: -214449337325241023
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_4
+      rect:
+        serializedVersion: 2
+        x: 456
+        y: 893
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 70d7aa25ddf4ebc60800000000000000
+      internalID: 7835788213664513287
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_5
+      rect:
+        serializedVersion: 2
+        x: 484
+        y: 886
+        width: 56
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14758ef3528701bf0800000000000000
+      internalID: -355652269180954815
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_6
+      rect:
+        serializedVersion: 2
+        x: 872
+        y: 716
+        width: 21
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0033e954e8568b50800000000000000
+      internalID: 6595056442114519052
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_7
+      rect:
+        serializedVersion: 2
+        x: 122
+        y: 636
+        width: 27
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90f5e33389fb21e30800000000000000
+      internalID: 4472848040347983625
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_8
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 610
+        width: 27
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e27bb1b386146d160800000000000000
+      internalID: 7049894182619166510
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_9
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 582
+        width: 27
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e88607647ca33e860800000000000000
+      internalID: 7557949227212499086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_10
+      rect:
+        serializedVersion: 2
+        x: 869
+        y: 552
+        width: 34
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9f865c3301c10fbe0800000000000000
+      internalID: -1445624624472299271
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_11
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 554
+        width: 27
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af37ad52d665b52f0800000000000000
+      internalID: -983097066863823878
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_12
+      rect:
+        serializedVersion: 2
+        x: 105
+        y: 526
+        width: 27
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5edbbaaf5a569910800000000000000
+      internalID: 1843760464387628637
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_13
+      rect:
+        serializedVersion: 2
+        x: 883
+        y: 525
+        width: 27
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 37651cba7b9725ee0800000000000000
+      internalID: -1273821914824878477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_14
+      rect:
+        serializedVersion: 2
+        x: 109
+        y: 498
+        width: 27
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e9d3f743b0326ae30800000000000000
+      internalID: 4514334207517867422
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_15
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 472
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df9dc162f1b3d0f90800000000000000
+      internalID: -6985862442012321283
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_16
+      rect:
+        serializedVersion: 2
+        x: 889
+        y: 498
+        width: 27
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eec1c501aec1508d0800000000000000
+      internalID: -2880864595011166994
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_17
+      rect:
+        serializedVersion: 2
+        x: 891
+        y: 471
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b630a6d621c2b5470800000000000000
+      internalID: 8384343588937007979
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_18
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 420
+        width: 36
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e43fa0a6b02798bb0800000000000000
+      internalID: -4933286523458358450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_19
+      rect:
+        serializedVersion: 2
+        x: 893
+        y: 443
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d49d2d7c9293cd2a0800000000000000
+      internalID: -6711426493079955123
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_20
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 395
+        width: 19
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ded243983d217a10800000000000000
+      internalID: 1905353838366482136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_21
+      rect:
+        serializedVersion: 2
+        x: 884
+        y: 388
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bfe837ce9e34eb510800000000000000
+      internalID: 1566764392344948475
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_22
+      rect:
+        serializedVersion: 2
+        x: 890
+        y: 415
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b3e3b44ccb73b050800000000000000
+      internalID: 5815127661121627061
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_23
+      rect:
+        serializedVersion: 2
+        x: 874
+        y: 362
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dc1c746ae4f12090800000000000000
+      internalID: -8060892570471097136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_24
+      rect:
+        serializedVersion: 2
+        x: 433
+        y: 126
+        width: 27
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97c6c74f805e5f140800000000000000
+      internalID: 4752956808383720569
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_25
+      rect:
+        serializedVersion: 2
+        x: 458
+        y: 119
+        width: 27
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b9de637f8c7f2cd0800000000000000
+      internalID: -2580707105901192783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_26
+      rect:
+        serializedVersion: 2
+        x: 485
+        y: 112
+        width: 27
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e82751236916e0a40800000000000000
+      internalID: 5336309906193871502
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_27
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 107
+        width: 27
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 321cc22c192e274a0800000000000000
+      internalID: -6596961388488507101
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_28
+      rect:
+        serializedVersion: 2
+        x: 540
+        y: 105
+        width: 27
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e5ff0f343836be00800000000000000
+      internalID: 1060096559339795942
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_29
+      rect:
+        serializedVersion: 2
+        x: 568
+        y: 105
+        width: 27
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a803a5f2f04ff760800000000000000
+      internalID: 7493779717215160480
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_30
+      rect:
+        serializedVersion: 2
+        x: 596
+        y: 110
+        width: 27
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 119d4f2460956dbd0800000000000000
+      internalID: -2605797450959234799
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: asset_water_armor_31
+      rect:
+        serializedVersion: 2
+        x: 623
+        y: 117
+        width: 27
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b502ea1d4ddb2a40800000000000000
+      internalID: 5344608706038465977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      asset_water_armor_0: -2776424652634432655
+      asset_water_armor_1: -7419051962217288284
+      asset_water_armor_10: -1445624624472299271
+      asset_water_armor_11: -983097066863823878
+      asset_water_armor_12: 1843760464387628637
+      asset_water_armor_13: -1273821914824878477
+      asset_water_armor_14: 4514334207517867422
+      asset_water_armor_15: -6985862442012321283
+      asset_water_armor_16: -2880864595011166994
+      asset_water_armor_17: 8384343588937007979
+      asset_water_armor_18: -4933286523458358450
+      asset_water_armor_19: -6711426493079955123
+      asset_water_armor_2: 3121370452675989642
+      asset_water_armor_20: 1905353838366482136
+      asset_water_armor_21: 1566764392344948475
+      asset_water_armor_22: 5815127661121627061
+      asset_water_armor_23: -8060892570471097136
+      asset_water_armor_24: 4752956808383720569
+      asset_water_armor_25: -2580707105901192783
+      asset_water_armor_26: 5336309906193871502
+      asset_water_armor_27: -6596961388488507101
+      asset_water_armor_28: 1060096559339795942
+      asset_water_armor_29: 7493779717215160480
+      asset_water_armor_3: -214449337325241023
+      asset_water_armor_30: -2605797450959234799
+      asset_water_armor_31: 5344608706038465977
+      asset_water_armor_4: 7835788213664513287
+      asset_water_armor_5: -355652269180954815
+      asset_water_armor_6: 6595056442114519052
+      asset_water_armor_7: 4472848040347983625
+      asset_water_armor_8: 7049894182619166510
+      asset_water_armor_9: 7557949227212499086
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
