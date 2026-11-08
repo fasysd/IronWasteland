@@ -42,10 +42,8 @@ namespace IronWasteland.Tanks.RedNova
         [Tooltip("GameObject mẫu inactive của đạn Triple Nova (nếu để trống sẽ dùng chung novaShotDesign).")]
         [SerializeField] private Skill_NovaShot tripleNovaDesign;
         [SerializeField, Min(1)] private int tripleNovaBulletCount = 3;
-        [Tooltip("Khoảng cách tách 3 tia ở họng súng; cả 3 vẫn hội tụ về đúng vị trí mục tiêu.")]
+        [Tooltip("Khoảng cách tách 3 tia ở họng súng; cả 3 vẫn hội tụ về đúng điểm ngắm.")]
         [SerializeField, Min(0f)] private float tripleNovaSpawnSpacing = 0.35f;
-        [Tooltip("Bán kính tìm địch quanh điểm ngắm để chia 3 tia (0 = luôn bắn theo quạt).")]
-        [SerializeField, Min(0f)] private float tripleNovaTargetRadius = 6f;
         [SerializeField, Min(0f)] private float tripleNovaDamageMultiplier = 0.90f;
         [SerializeField, Min(0f)] private float tripleNovaEnergyCost = 40f;
         [SerializeField, Min(0.01f)] private float tripleNovaCooldown = 5f;
@@ -258,7 +256,17 @@ namespace IronWasteland.Tanks.RedNova
             {
                 case SkillNovaShotIndex:
                     if (m_IsLaserCannonActive && laserCannonDesign != null)
+                    {
+                        // Hết năng lượng thì tự thoát trạng thái Laser Cannon, tránh
+                        // kẹt "bật laser vô hạn" khi không còn EN để bắn.
+                        if (CurrentEnergy < laserShotEnergyCost)
+                        {
+                            m_IsLaserCannonActive = false;
+                            return;
+                        }
+
                         FireLaserBeam();
+                    }
                     else
                         FireNovaShot();
                     return;
@@ -486,9 +494,9 @@ namespace IronWasteland.Tanks.RedNova
             int count = Mathf.Max(1, tripleNovaBulletCount);
 
             // GDD: "Các viên đạn hội tụ vào một mục tiêu duy nhất để dồn sát thương."
-            // Cả 3 tia đều bay về đúng một điểm — vị trí kẻ địch đang bị ngắm (nếu
-            // không có địch thì lấy điểm ngắm) — nên 3 × 90% = 270% ATK dồn vào nó.
-            Vector2 focusPoint = FindTripleNovaFocusPoint();
+            // Cả 3 tia hội tụ đúng vào vị trí con trỏ (LookTarget) — người chơi tự
+            // ngắm, skill không tự tìm mục tiêu — nên 3 × 90% = 270% ATK dồn vào đó.
+            Vector2 focusPoint = LookTarget;
             Vector2 toFocus = focusPoint - (Vector2)muzzle.position;
             if (toFocus.sqrMagnitude <= 0.0001f)
                 toFocus = baseDirection;
@@ -523,37 +531,6 @@ namespace IronWasteland.Tanks.RedNova
 
                 bullet.gameObject.SetActive(true);
             }
-        }
-
-        /// <summary>
-        /// Điểm hội tụ của 3 tia: vị trí kẻ địch gần điểm ngắm nhất trong bán kính
-        /// <see cref="tripleNovaTargetRadius"/>; nếu không có địch thì là điểm ngắm.
-        /// </summary>
-        private Vector2 FindTripleNovaFocusPoint()
-        {
-            if (tripleNovaTargetRadius <= 0f)
-                return LookTarget;
-
-            Collider2D[] hits = Physics2D.OverlapCircleAll(LookTarget, tripleNovaTargetRadius);
-            EnemyBrain nearest = null;
-            float bestSqrDistance = float.MaxValue;
-
-            for (int i = 0; i < hits.Length; i++)
-            {
-                ColliderOwnerRef ownerRef = ColliderOwnerRef.FromCollider(hits[i]);
-                EnemyBrain enemy = ownerRef != null ? ownerRef.GetOwner<EnemyBrain>() : null;
-                if (enemy == null)
-                    continue;
-
-                float sqrDistance = ((Vector2)enemy.transform.position - LookTarget).sqrMagnitude;
-                if (sqrDistance < bestSqrDistance)
-                {
-                    bestSqrDistance = sqrDistance;
-                    nearest = enemy;
-                }
-            }
-
-            return nearest != null ? (Vector2)nearest.transform.position : LookTarget;
         }
 
         private void OnTripleNovaTargetFound(Skill_NovaShot skill, EnemyBrain enemy)
@@ -696,6 +673,9 @@ namespace IronWasteland.Tanks.RedNova
                 return;
             }
 
+            if (CurrentEnergy < laserShotEnergyCost)
+                return;
+
             m_IsLaserCannonActive = true;
             FireLaserBeam();
         }
@@ -711,8 +691,6 @@ namespace IronWasteland.Tanks.RedNova
             if (View == null || View.Muzzle == null || !HasLookTarget)
                 return;
 
-            SpendEnergy(laserShotEnergyCost);
-
             Transform muzzle = View.Muzzle;
             Vector2 direction = LookTarget - (Vector2)muzzle.position;
             if (direction.sqrMagnitude <= 0.0001f)
@@ -722,13 +700,22 @@ namespace IronWasteland.Tanks.RedNova
             if (beam == null)
                 return;
 
+            SpendEnergy(laserShotEnergyCost);
+
+            // Bắn xong mà không còn đủ EN cho phát kế tiếp thì thoát trạng thái luôn,
+            // tránh kẹt laser bật vô hạn khi đã cạn mana.
+            if (CurrentEnergy < laserShotEnergyCost)
+                m_IsLaserCannonActive = false;
+
             if (vfx != null)
                 vfx.ShowLaserBeam(muzzle.position, LookTarget);
 
+            // Đặt đúng vị trí/hướng TRƯỚC khi bật object, nếu không collider sẽ
+            // được kích hoạt tại vị trí cũ trong pool.
             beam.transform.SetParent(null);
-            beam.gameObject.SetActive(true);
             beam.Initialize(muzzle.position, direction, ReturnLaserToPool);
             beam.TargetFound += OnLaserTargetFound;
+            beam.gameObject.SetActive(true);
             beam.StartSkill();
         }
 
@@ -865,13 +852,11 @@ namespace IronWasteland.Tanks.RedNova
 
             Vector2 spawnPos = LookTarget;
             skill.transform.SetParent(null);
-            skill.transform.position = spawnPos;
-            skill.gameObject.SetActive(true);
-
             skill.Initialize(spawnPos, ReturnBarrageToPool);
             skill.Duration = novaBarrageDuration;
             skill.Interval = novaBarrageInterval;
             skill.TargetFound += OnBarrageTargetFound;
+            skill.gameObject.SetActive(true);
             skill.StartSkill();
         }
 
@@ -916,16 +901,15 @@ namespace IronWasteland.Tanks.RedNova
             if (novaPierceVisual != null)
                 novaPierceVisual.SetActive(true);
 
-            if (vfx != null)
-                vfx.SetPierceActive(true);
+            // Hiệu ứng: một chùm xuyên bắn dọc theo hướng ngắm, thay vì dán
+            // vệt ngang lên giữa thân tank (sprite pierce_overlay bị sai hình).
+            if (vfx != null && View != null && View.Muzzle != null && HasLookTarget)
+                vfx.ShowPierceBeam(View.Muzzle.position, LookTarget);
 
             yield return new WaitForSeconds(novaPierceDuration);
 
             if (novaPierceVisual != null)
                 novaPierceVisual.SetActive(false);
-
-            if (vfx != null)
-                vfx.SetPierceActive(false);
 
             RemoveBonusStats(BonusKeyNovaPierce);
             m_NovaPierceCoroutine = null;

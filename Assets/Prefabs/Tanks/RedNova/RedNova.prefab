@@ -448,6 +448,7 @@ MonoBehaviour:
   overdriveAura: {fileID: 21300000, guid: 1e688883d1994a4db0f4d0bc2142af25, type: 3}
   executionCore: {fileID: 21300000, guid: b03be099068c48acac4abc657f20ffd4, type: 3}
   pierceOverlay: {fileID: 21300000, guid: aee68e9ea8214554b3d73b53ee79ea4a, type: 3}
+  pierceBeam: {fileID: 21300000, guid: b5f59148cf0b4425a3289ed793fa9bd1, type: 3}
   laserBeam: {fileID: 21300000, guid: 2a3a0c963be440f68328323332231ca2, type: 3}
   laserImpact: {fileID: 21300000, guid: 03a10d03df4247de910dccf29f20aff4, type: 3}
   executionShockwave: {fileID: 21300000, guid: 05c7be6413dc4f46ab84c5df16bdd0df, type: 3}
