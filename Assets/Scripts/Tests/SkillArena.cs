@@ -10,8 +10,9 @@ namespace IronWasteland.Tests
     /// <summary>
     /// Sân test kỹ năng (dùng cho giai đoạn dev):
     /// - Tự spawn một vòng quái giả quanh xe để có mục tiêu bắn.
-    /// - Đổi nhánh kỹ năng tùy chọn ngay lúc chạy: 1/2 đổi chiêu phụ 1 (slot L), 3/4 đổi chiêu phụ 2 (slot I).
-    /// - HUD hiện máu / năng lượng / hồi chiêu 4 slot + tên chiêu theo nhánh đang chọn.
+    /// - Điều khiển kỹ năng: Phím 1, 2, 3, 4 chọn kỹ năng -> Chuột trái thi triển (Chuột phải / 1 hủy về skill thường).
+    /// - Đổi nhánh kỹ năng tùy chọn: F1/F2 đổi chiêu phụ 1, F3/F4 đổi chiêu phụ 2.
+    /// - HUD hiện máu / năng lượng / hồi chiêu 4 slot + trạng thái kỹ năng đang chọn.
     ///
     /// Cách dùng: tạo GameObject trống trong Scene, gắn component này,
     /// gán Dummy Prefab = Assets/Prefabs/Enemies/Enemy_Normal.prefab, rồi bấm Play.
@@ -40,7 +41,7 @@ namespace IronWasteland.Tests
 
         private IEnumerator Start()
         {
-            // Chờ GameController spawn xe tàng của người chơi.
+            // Chờ GameController spawn xe tăng của người chơi.
             while (m_Tank == null)
             {
                 m_Tank = FindAnyObjectByType<TankBrain>();
@@ -72,17 +73,17 @@ namespace IronWasteland.Tests
             ISkillBranchConfigurable configurable = m_Tank as ISkillBranchConfigurable;
             if (configurable != null)
             {
-                // 1/2: đổi chiêu phụ 1 (slot L). 3/4: đổi chiêu phụ 2 (slot I).
-                if (keyboard.digit1Key.wasPressedThisFrame)
+                // F1/F2: đổi chiêu phụ 1. F3/F4: đổi chiêu phụ 2.
+                if (keyboard.f1Key.wasPressedThisFrame)
                     configurable.Option1Branch = (configurable.Option1Branch + 1) % 3;
 
-                if (keyboard.digit2Key.wasPressedThisFrame)
+                if (keyboard.f2Key.wasPressedThisFrame)
                     configurable.Option1Branch = (configurable.Option1Branch + 2) % 3;
 
-                if (keyboard.digit3Key.wasPressedThisFrame)
+                if (keyboard.f3Key.wasPressedThisFrame)
                     configurable.Option2Branch = (configurable.Option2Branch + 1) % 3;
 
-                if (keyboard.digit4Key.wasPressedThisFrame)
+                if (keyboard.f4Key.wasPressedThisFrame)
                     configurable.Option2Branch = (configurable.Option2Branch + 2) % 3;
             }
 
@@ -166,7 +167,10 @@ namespace IronWasteland.Tests
 
             EnsureStyles();
 
-            GUILayout.BeginArea(new Rect(10f, 10f, 380f, 260f), m_Panel);
+            GameController gc = FindAnyObjectByType<GameController>();
+            int selectedIndex = gc != null ? gc.SelectedSkillIndex : -1;
+
+            GUILayout.BeginArea(new Rect(10f, 10f, 420f, 290f), m_Panel);
 
             GUILayout.Label($"{m_Tank.name}  —  Skill Arena", m_Title);
             GUILayout.Label(
@@ -176,19 +180,21 @@ namespace IronWasteland.Tests
                 m_Line);
 
             GUILayout.Space(4f);
-            DrawSkillLine(0, "J");
-            DrawSkillLine(1, "K");
-            DrawSkillLine(2, "L");
-            DrawSkillLine(3, "I");
+            DrawSkillLine(0, "1", selectedIndex == 0);
+            DrawSkillLine(1, "2", selectedIndex == 1);
+            DrawSkillLine(2, "3", selectedIndex == 2);
+            DrawSkillLine(3, "4", selectedIndex == 3);
 
             GUILayout.Space(4f);
-            GUILayout.Label("[1]/[2] đổi chiêu phụ 1   [3]/[4] đổi chiêu phụ 2", m_Line);
+            GUILayout.Label("[Chuột trái] Thi triển kỹ năng đã chọn", m_Line);
+            GUILayout.Label("[Phím 1] / [Chuột phải] Hủy & về kỹ năng thường", m_Line);
+            GUILayout.Label("[F1]/[F2] đổi chiêu phụ 1   [F3]/[F4] đổi chiêu phụ 2", m_Line);
             GUILayout.Label("[R] hồi bia   [C] xoá hồi chiêu   [H] hồi đầy HP/EN", m_Line);
 
             GUILayout.EndArea();
         }
 
-        private void DrawSkillLine(int slotIndex, string key)
+        private void DrawSkillLine(int slotIndex, string key, bool isSelected)
         {
             string skillName = m_Tank is ISkillBranchConfigurable configurable
                 ? configurable.GetSkillName(slotIndex)
@@ -196,8 +202,9 @@ namespace IronWasteland.Tests
 
             float cooldown = m_Tank.GetSkillCooldown(slotIndex);
             string cooldownText = cooldown > 0.01f ? $"CD {cooldown:0.0}s" : "sẵn sàng";
+            string prefix = isSelected ? "▶ [CHỌN] " : "  ";
 
-            GUILayout.Label($"[{key}] {skillName,-18} {cooldownText}", m_Line);
+            GUILayout.Label($"{prefix}[{key}] {skillName,-20} {cooldownText}", m_Line);
         }
     }
 }
