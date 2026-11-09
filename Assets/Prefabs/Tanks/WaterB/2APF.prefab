@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4135625259157077279}
   - component: {fileID: 1855666005905681594}
   - component: {fileID: 1384006585347044756}
+  - component: {fileID: 6870312322468633375}
   m_Layer: 0
   m_Name: 2APF
   m_TagString: Untagged
@@ -174,3 +175,16 @@ MonoBehaviour:
   healInterval: 1
   healPerTick: 10
   defenseBoostMultiplier: 3
+--- !u!114 &6870312322468633375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2469262136112024508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
+  owner: {fileID: 0}

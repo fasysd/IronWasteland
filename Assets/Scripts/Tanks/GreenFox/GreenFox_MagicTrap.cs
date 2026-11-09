@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using IronWasteland.Enemies;
 using UnityEngine;
 
@@ -8,9 +8,11 @@ namespace IronWasteland.Tanks.GreenFox
     /// Fox Trap (GDD): tồn tại 15s. Kẻ địch dẫm phải bị trói chân 2s, HẾT TRÓI mới nổ (150% ATK).
     /// Tinh anh không bị trói chân mà nhận sát thương lớn hơn (230% ATK), bẫy nổ sau 1 nhịp ngắn (hàm nanh khép lại).
     /// Vùng kích hoạt = Collider2D (Is Trigger) trên prefab.
+    /// Nhận diện kẻ địch DUY NHẤT qua ColliderOwnerRef.
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Collider2D))]
+    [RequireComponent(typeof(ColliderOwnerRef))]
     public class GreenFox_MagicTrap : MonoBehaviour
     {
         private const string RootKey = "GreenFox_TrapRoot";
@@ -20,14 +22,17 @@ namespace IronWasteland.Tanks.GreenFox
         [SerializeField, Min(0.1f)] private float explosionEffectLifetime = 1.5f;  // Tự hủy prefab nổ sau khoảng này
         [SerializeField, Min(0f)] private float eliteTriggerDelay = 0.2f;          // Tinh anh không bị trói: nổ sau nhịp ngắn này
 
+        private ColliderOwnerRef m_OwnerRef;
         private TankBrain_GreenFox m_Owner;
         private float m_NormalDamage;
         private float m_EliteDamage;
         private float m_RootDuration;
         private bool m_Triggered;
         private Collider2D m_HitCollider;
+
         private void Awake()
         {
+            m_OwnerRef = GetComponent<ColliderOwnerRef>();
             Collider2D col = GetComponent<Collider2D>();
             if (col != null) col.isTrigger = true;
         }
@@ -42,6 +47,13 @@ namespace IronWasteland.Tanks.GreenFox
             m_RootDuration = rootDuration;
             m_Triggered = false;
 
+            if (m_OwnerRef == null) m_OwnerRef = GetComponent<ColliderOwnerRef>();
+            if (m_OwnerRef != null)
+            {
+                m_OwnerRef.SetOwner(owner);
+                m_OwnerRef.TriggerEnter += OnOwnerRefTriggerEnter;
+            }
+
             // Tự hủy nếu không ai dẫm phải. Đã kích hoạt thì bẫy tự quản lý vòng đời (nổ xong mới hủy).
             StartCoroutine(ExpireRoutine(trapDuration));
         }
@@ -52,9 +64,9 @@ namespace IronWasteland.Tanks.GreenFox
             if (!m_Triggered) Destroy(gameObject);
         }
 
-        private void OnTriggerEnter2D(Collider2D other)
+        private void OnOwnerRefTriggerEnter(Collider2D other)
         {
-            if (m_Triggered) return;
+            if (m_Triggered || other == null) return;
 
             ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(other);
             if (targetRef == null) return;
@@ -63,9 +75,13 @@ namespace IronWasteland.Tanks.GreenFox
             if (enemy == null) return;
 
             m_Triggered = true;
-            m_HitCollider = other;   // <- thêm
+            m_HitCollider = other;
+
+            if (m_OwnerRef != null) m_OwnerRef.TriggerEnter -= OnOwnerRefTriggerEnter;
+
             StartCoroutine(TrapTriggerRoutine(enemy));
         }
+
         /// <summary>Tâm của kẻ địch (tâm collider thân), chỉ dùng cho hiệu ứng nổ.</summary>
         private Vector3 GetEffectPosition(Vector3 fallback)
         {
@@ -74,17 +90,18 @@ namespace IronWasteland.Tanks.GreenFox
             Vector3 c = m_HitCollider.bounds.center;
             return new Vector3(c.x, c.y, fallback.z);
         }
+
         private IEnumerator TrapTriggerRoutine(EnemyBrain enemy)
         {
             bool isElite = enemy is EliteEnemyBrain;
-            Vector3 explosionPos = enemy.transform.position;
+            Vector3 explosionPos = enemy != null ? enemy.transform.position : transform.position;
 
             if (isElite)
             {
                 // Tinh anh: không trói chân, nổ sau nhịp ngắn
                 yield return new WaitForSeconds(eliteTriggerDelay);
             }
-            else
+            else if (enemy != null)
             {
                 // Thường: trói chân cố định đủ thời gian rồi mới nổ
                 GreenFox_EnemyMoveModifier.Apply(enemy, RootKey, 0f, m_RootDuration);
@@ -118,6 +135,11 @@ namespace IronWasteland.Tanks.GreenFox
 
             GameObject fx = Instantiate(explosionEffectPrefab, position, Quaternion.identity);
             Destroy(fx, explosionEffectLifetime);
+        }
+
+        private void OnDestroy()
+        {
+            if (m_OwnerRef != null) m_OwnerRef.TriggerEnter -= OnOwnerRefTriggerEnter;
         }
     }
 }

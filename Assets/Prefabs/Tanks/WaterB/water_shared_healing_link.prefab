@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: -8822230918487422434}
   - component: {fileID: 4698636234631344690}
   - component: {fileID: -9213944568594606525}
+  - component: {fileID: 1454077734600959545}
   m_Layer: 0
   m_Name: water_shared_healing_link
   m_TagString: Untagged
@@ -182,3 +183,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.WaterB.WaterB_HealingProjectile
   speed: 100
   maxLifeTime: 0.5
+--- !u!114 &1454077734600959545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8582708688132871422}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
+  owner: {fileID: 0}

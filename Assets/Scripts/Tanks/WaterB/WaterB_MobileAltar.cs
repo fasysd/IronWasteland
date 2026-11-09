@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,11 +12,13 @@ namespace IronWasteland.Tanks.WaterB
     /// Đồng minh đang có khiên của đài tế thì khiên được đặt lại giá trị và thời gian duy trì.
     ///
     /// Vùng ảnh hưởng = CircleCollider2D (Is Trigger) đã cài trên prefab.
+    /// Mục tiêu được xác định DUY NHẤT qua ColliderOwnerRef và GetTriggerColliders().
     /// Khiên đi qua TankBrain.AddShield (ShieldEffect). Hồi máu đi qua TankBrain_WaterB.HealAlly
     /// (Heal(amount,false) nên Shared Healing vẫn kích hoạt).
     /// </summary>
     [RequireComponent(typeof(CircleCollider2D))]
     [RequireComponent(typeof(Rigidbody2D))]
+    [RequireComponent(typeof(ColliderOwnerRef))]
     [DisallowMultipleComponent]
     public class WaterB_MobileAltar : MonoBehaviour
     {
@@ -24,6 +26,7 @@ namespace IronWasteland.Tanks.WaterB
         [Tooltip("Prefab hào quang xanh nhạt quanh xe đang có khiên đài tế (gắn WaterB_ShieldAura). Để trống = tự tạo hào quang mặc định.")]
         [SerializeField] private GameObject shieldAuraPrefab;
 
+        private ColliderOwnerRef m_OwnerRef;
         private TankBrain_WaterB m_Owner;
         private float m_Duration;
         private float m_Interval;
@@ -34,9 +37,13 @@ namespace IronWasteland.Tanks.WaterB
         private string m_ShieldId;
         private bool m_Finished;
 
-        private readonly Dictionary<TankBrain, int> m_Inside = new Dictionary<TankBrain, int>();
         private readonly List<TankBrain> m_Snapshot = new List<TankBrain>();
         private readonly Dictionary<TankBrain, WaterB_ShieldAura> m_Auras = new Dictionary<TankBrain, WaterB_ShieldAura>();
+
+        private void Awake()
+        {
+            m_OwnerRef = GetComponent<ColliderOwnerRef>();
+        }
 
         public void Initialize(TankBrain_WaterB owner, float duration, float interval,
                                float healPerTick, float shieldAmount, float shieldDuration,
@@ -49,6 +56,9 @@ namespace IronWasteland.Tanks.WaterB
             m_ShieldAmount = shieldAmount;
             m_ShieldDuration = shieldDuration;
             m_OnFinished = onFinished;
+
+            if (m_OwnerRef == null) m_OwnerRef = GetComponent<ColliderOwnerRef>();
+            if (m_OwnerRef != null) m_OwnerRef.SetOwner(owner);
 
             // Cùng 1 Id cho mọi khiên của đài tế (theo Water B) -> luôn là 1 lớp khiên duy nhất trên mỗi đồng minh
             m_ShieldId = $"WaterB_MobileAltar_Shield_{owner.InstanceKey}";
@@ -72,57 +82,43 @@ namespace IronWasteland.Tanks.WaterB
         {
             float endTime = Time.time + m_Duration;
             var wait = new WaitForSeconds(m_Interval);
-            bool firstPulse = true;
 
             while (Time.time < endTime)
             {
                 if (m_Owner == null || !m_Owner.IsAlive) break;
 
-                PulseHealAndShield(firstPulse);
-                firstPulse = false;
+                PulseHealAndShield();
                 yield return wait;
             }
 
             Finish();
         }
 
-        private void OnTriggerEnter2D(Collider2D collision)
+        private void PulseHealAndShield()
         {
-            if (m_Finished) return;
-
-            TankBrain tank = collision.GetComponentInParent<TankBrain>();
-            if (tank == null) return;
-
-            m_Inside.TryGetValue(tank, out int count);
-            m_Inside[tank] = count + 1;
-        }
-
-        private void OnTriggerExit2D(Collider2D collision)
-        {
-            TankBrain tank = collision.GetComponentInParent<TankBrain>();
-            if (tank == null || !m_Inside.TryGetValue(tank, out int count)) return;
-
-            count--;
-            if (count <= 0) m_Inside.Remove(tank);
-            else m_Inside[tank] = count;
-        }
-
-        private void PulseHealAndShield(bool scanDirectly)
-        {
-            // Duyệt trên bản sao: hồi máu/khiên có thể kích hoạt sự kiện làm thay đổi tập hợp
             m_Snapshot.Clear();
 
-            if (scanDirectly)
+            if (m_OwnerRef != null)
             {
-                // Lần đầu (ngay khi bật): trigger chưa kịp báo ai đang trong vùng -> quét trực tiếp theo vùng collider
-                ScanZone(m_Snapshot);
-            }
-            else
-            {
-                foreach (var kv in m_Inside)
+                foreach (Collider2D col in m_OwnerRef.GetTriggerColliders())
                 {
-                    if (kv.Key != null && kv.Key.IsAlive) m_Snapshot.Add(kv.Key);
+                    if (col == null) continue;
+
+                    ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(col);
+                    if (targetRef == null) continue;
+
+                    TankBrain tank = targetRef.GetOwner<TankBrain>();
+                    if (tank != null && tank.IsAlive && !m_Snapshot.Contains(tank))
+                    {
+                        m_Snapshot.Add(tank);
+                    }
                 }
+            }
+
+            // Đảm bảo caster (Water B) còn sống luôn nằm trong vùng tác dụng
+            if (m_Owner != null && m_Owner.IsAlive && !m_Snapshot.Contains(m_Owner))
+            {
+                m_Snapshot.Add(m_Owner);
             }
 
             for (int i = 0; i < m_Snapshot.Count; i++)
@@ -137,22 +133,6 @@ namespace IronWasteland.Tanks.WaterB
                 ShieldEffect shield = tank.AddShield(m_ShieldAmount, m_ShieldDuration, m_ShieldId, m_Owner, "Mobile Altar");
 
                 if (shield != null) EnsureShieldAura(tank);
-            }
-        }
-
-        /// <summary>Quét mọi xe còn sống đang nằm trong vùng của đài tế (không phụ thuộc sự kiện trigger).</summary>
-        private void ScanZone(List<TankBrain> results)
-        {
-            CircleCollider2D zone = GetComponent<CircleCollider2D>();
-            Vector2 center = transform.TransformPoint(zone.offset);
-            float scale = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.y));
-            float radius = zone.radius * scale;
-
-            Collider2D[] hits = Physics2D.OverlapCircleAll(center, radius);
-            for (int i = 0; i < hits.Length; i++)
-            {
-                TankBrain tank = hits[i].GetComponentInParent<TankBrain>();
-                if (tank != null && tank.IsAlive && !results.Contains(tank)) results.Add(tank);
             }
         }
 
@@ -183,7 +163,7 @@ namespace IronWasteland.Tanks.WaterB
 
             m_OnFinished?.Invoke(); // báo Water B được phép tấn công lại
             m_OnFinished = null;
-            m_Inside.Clear();
+            m_Snapshot.Clear();
 
             Destroy(gameObject);
         }

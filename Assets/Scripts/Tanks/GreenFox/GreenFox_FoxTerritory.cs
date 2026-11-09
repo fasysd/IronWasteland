@@ -10,18 +10,16 @@ namespace IronWasteland.Tanks.GreenFox
     /// Đồng minh gây sát thương trong vùng giúp Green Fox hồi 3 năng lượng, tối đa 30.
     ///
     /// Vùng ảnh hưởng = CircleCollider2D (Is Trigger) trên prefab.
+    /// Nhận diện đối tượng trong vùng DUY NHẤT qua ColliderOwnerRef.
     /// - Tốc độ đồng minh: AddBonusStats (percent MoveSpeed).
     /// - Tốc độ kẻ địch: GreenFox_EnemyMoveModifier (hệ số nhân, tự hoàn trả đúng).
     /// - Mỗi xe/kẻ địch được đếm theo số collider để không gỡ buff nhầm khi chỉ rời 1 collider.
     ///
-    /// Hồi năng lượng: KHÔNG cần ai gọi hàm báo. Territory tự đăng ký vào EnemyBrain.OnTakeDamageEvent
-    /// của mọi kẻ địch đang có trên màn (quét định kỳ để bắt cả kẻ địch mới sinh ra), nên mọi nguồn
-    /// sát thương (đạn, chiêu thức, DoT, DamageEnemy...) đều được tính mà không phải sửa EnemyBrain.
-    /// Hợp lệ khi người gây sát thương (Green Fox hoặc đồng minh) đang đứng trong vùng, bất kể kẻ địch bị đánh ở đâu.
-    /// Lưu ý: OnTakeDamageEvent chỉ phát khi đòn thật sự gây sát thương (đòn bị né/chặn sạch thì không tính),
-    /// và phát TRƯỚC khi kẻ địch chết nên đòn hạ gục vẫn được tính.
+    /// Hồi năng lượng: Đăng ký vào EnemyBrain.OnTakeDamageEvent của mọi kẻ địch trên màn.
+    /// Hợp lệ khi người gây sát thương (Green Fox hoặc đồng minh) đang đứng trong vùng.
     /// </summary>
     [RequireComponent(typeof(CircleCollider2D))]
+    [RequireComponent(typeof(ColliderOwnerRef))]
     public class GreenFox_FoxTerritory : MonoBehaviour
     {
         // Quy tắc hồi năng lượng (hằng số trong code để không bị giá trị cũ lưu trong prefab che mất).
@@ -30,6 +28,7 @@ namespace IronWasteland.Tanks.GreenFox
         private const bool DebugLog = true;               // Bật log lý do hồi / không hồi. Đặt false khi xong.
         private const float EnemyScanInterval = 0.25f;    // Chu kỳ quét kẻ địch mới để đăng ký lắng nghe sát thương (giây).
 
+        private ColliderOwnerRef m_OwnerRef;
         private TankBrain m_Owner;
         private float m_SlowAmount;
         private float m_SpeedBoostPercent;
@@ -46,6 +45,12 @@ namespace IronWasteland.Tanks.GreenFox
         // Kẻ địch đã đăng ký lắng nghe OnTakeDamageEvent (để không đăng ký trùng và gỡ hết khi kết thúc).
         private readonly HashSet<EnemyBrain> m_HookedEnemies = new HashSet<EnemyBrain>();
 
+        private void Awake()
+        {
+            m_OwnerRef = GetComponent<ColliderOwnerRef>();
+            m_Zone = GetComponent<CircleCollider2D>();
+        }
+
         public void Initialize(TankBrain owner, float duration, float slowAmount, float speedBoostPercent, float energyPerHit, float maxEnergyGain)
         {
             m_Owner = owner;
@@ -55,6 +60,14 @@ namespace IronWasteland.Tanks.GreenFox
             m_MaxEnergyGain = maxEnergyGain;
             m_TotalEnergyGained = 0f;
             m_Key = $"GreenFox_Territory_{System.Guid.NewGuid():N}";
+
+            if (m_OwnerRef == null) m_OwnerRef = GetComponent<ColliderOwnerRef>();
+            if (m_OwnerRef != null)
+            {
+                m_OwnerRef.SetOwner(owner);
+                m_OwnerRef.TriggerEnter += OnOwnerRefTriggerEnter;
+                m_OwnerRef.TriggerExit += OnOwnerRefTriggerExit;
+            }
 
             // Đăng ký ngay cho kẻ địch đang có trên màn, kẻ địch sinh sau sẽ được Update bắt.
             HookNewEnemies();
@@ -90,14 +103,15 @@ namespace IronWasteland.Tanks.GreenFox
             OnDamageDealtInTerritory(info.Attacker);
         }
 
-        private void OnTriggerEnter2D(Collider2D collision)
+        private void OnOwnerRefTriggerEnter(Collider2D collision)
         {
+            if (collision == null) return;
+
             ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collision);
             if (targetRef == null) return;
 
-            // Kẻ địch: giảm 30% tốc độ
-            // Chỉ tính collider thuộc THÂN kẻ địch/xe (nằm trong hierarchy của chúng), không tính đạn/vật thể
-            // do chúng bắn ra (cũng mang ColliderOwnerRef có Owner là chúng nhưng bay độc lập).
+            // Kẻ địch: giảm tốc độ
+            // Chỉ tính collider thuộc THÂN kẻ địch (nằm trong hierarchy của chúng)
             EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
             if (enemy != null && IsPartOf(collision, enemy))
             {
@@ -107,7 +121,7 @@ namespace IronWasteland.Tanks.GreenFox
                 if (count == 0) GreenFox_EnemyMoveModifier.Apply(enemy, m_Key, 1f - m_SlowAmount);
             }
 
-            // Xe tăng (đồng minh hoặc Green Fox): tăng 30% tốc độ
+            // Xe tăng (đồng minh hoặc Green Fox): tăng tốc độ
             TankBrain tank = targetRef.GetOwner<TankBrain>();
             if (tank != null && IsPartOf(collision, tank))
             {
@@ -123,8 +137,10 @@ namespace IronWasteland.Tanks.GreenFox
             }
         }
 
-        private void OnTriggerExit2D(Collider2D collision)
+        private void OnOwnerRefTriggerExit(Collider2D collision)
         {
+            if (collision == null) return;
+
             ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collision);
             if (targetRef == null) return;
 
@@ -307,6 +323,12 @@ namespace IronWasteland.Tanks.GreenFox
 
         private void OnDestroy()
         {
+            if (m_OwnerRef != null)
+            {
+                m_OwnerRef.TriggerEnter -= OnOwnerRefTriggerEnter;
+                m_OwnerRef.TriggerExit -= OnOwnerRefTriggerExit;
+            }
+
             // Hết thời gian: gỡ đăng ký lắng nghe sát thương khỏi mọi kẻ địch
             foreach (EnemyBrain enemy in m_HookedEnemies)
             {

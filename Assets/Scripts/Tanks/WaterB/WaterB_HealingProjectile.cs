@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using IronWasteland.Enemies;
 
 namespace IronWasteland.Tanks.WaterB
@@ -6,12 +6,14 @@ namespace IronWasteland.Tanks.WaterB
     /// <summary>
     /// Đạn của Healing Water (kỹ năng thường): dòng nước tấn công KẺ ĐỊCH.
     /// Giá trị (80% ATK + 1% Giới hạn máu) do TankBrain_WaterB tính sẵn và truyền vào.
+    /// - Sử dụng duy nhất ColliderOwnerRef để phát hiện và tương tác mục tiêu.
     /// - Chạm kẻ địch -> TankBrain_WaterB.HandleProjectileDamage xử lý sát thương (kèm Life Drain nếu đang bật),
     ///   sau đó gọi onSuccess để Water B tích lũy năng lượng.
     /// - Không còn tương tác với đồng minh.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(Collider2D))]
+    [RequireComponent(typeof(ColliderOwnerRef))]
     public class WaterB_HealingProjectile : MonoBehaviour
     {
         [Header("Settings")]
@@ -23,6 +25,7 @@ namespace IronWasteland.Tanks.WaterB
         [SerializeField] private GameObject hitEffectPrefab;
         [SerializeField, Min(0.1f)] private float hitEffectLifetime = 2f;
 
+        private ColliderOwnerRef m_OwnerRef;
         private TankBrain m_OwnerTank;
         private Vector3 m_MoveDirection;
         private float m_PowerAmount;
@@ -30,6 +33,22 @@ namespace IronWasteland.Tanks.WaterB
         private float m_SpawnTime;
         private float m_Speed;
         private bool m_Consumed;
+
+        private void Awake()
+        {
+            m_OwnerRef = GetComponent<ColliderOwnerRef>();
+        }
+
+        private void OnEnable()
+        {
+            if (m_OwnerRef == null) m_OwnerRef = GetComponent<ColliderOwnerRef>();
+            if (m_OwnerRef != null) m_OwnerRef.TriggerEnter += OnOwnerRefTriggerEnter;
+        }
+
+        private void OnDisable()
+        {
+            if (m_OwnerRef != null) m_OwnerRef.TriggerEnter -= OnOwnerRefTriggerEnter;
+        }
 
         public void Initialize(TankBrain owner, Vector3 direction, float powerAmount,
                                System.Action<float> onSuccess, float speedMultiplier = 1f, float sizeMultiplier = 1f)
@@ -40,6 +59,10 @@ namespace IronWasteland.Tanks.WaterB
             m_OnSuccess = onSuccess;
             m_SpawnTime = Time.time;
             m_Speed = speed * Mathf.Max(0.1f, speedMultiplier);
+            m_Consumed = false;
+
+            if (m_OwnerRef == null) m_OwnerRef = GetComponent<ColliderOwnerRef>();
+            if (m_OwnerRef != null) m_OwnerRef.SetOwner(owner);
 
             // Aqua Assault: phát bắn lớn hơn
             if (!Mathf.Approximately(sizeMultiplier, 1f)) transform.localScale *= sizeMultiplier;
@@ -68,9 +91,9 @@ namespace IronWasteland.Tanks.WaterB
             }
         }
 
-        private void OnTriggerEnter2D(Collider2D collision)
+        private void OnOwnerRefTriggerEnter(Collider2D collision)
         {
-            if (m_Consumed) return;
+            if (m_Consumed || collision == null) return;
             if (Time.time - m_SpawnTime < 0.05f) return;
 
             ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collision);

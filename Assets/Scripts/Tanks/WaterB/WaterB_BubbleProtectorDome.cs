@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,16 +9,19 @@ namespace IronWasteland.Tanks.WaterB
     /// Khi hết 6s, mọi đồng minh còn bên trong được hồi máu (100% ATK + 6% Giới hạn máu của Water B).
     ///
     /// Vùng ảnh hưởng = CircleCollider2D (Is Trigger) đã cài trên prefab.
+    /// Nhận diện đồng minh duy nhất qua ColliderOwnerRef.
     /// Buff cộng qua TankBrain.AddBonusStats (flat Defense + percent Attack).
     /// </summary>
     [RequireComponent(typeof(CircleCollider2D))]
     [RequireComponent(typeof(Rigidbody2D))]
+    [RequireComponent(typeof(ColliderOwnerRef))]
     [DisallowMultipleComponent]
     public class WaterB_BubbleProtectorDome : MonoBehaviour
     {
         [Header("Visual References")]
         [SerializeField] private SpriteRenderer domeSpriteRenderer;
 
+        private ColliderOwnerRef m_OwnerRef;
         private TankBrain_WaterB m_Caster;
         private float m_Duration;
         private float m_DefenseBonus;
@@ -30,6 +33,11 @@ namespace IronWasteland.Tanks.WaterB
         // Số collider của từng xe đang nằm trong vòm (xe có nhiều collider vẫn tính là "còn trong vòm")
         private readonly Dictionary<TankBrain, int> m_Inside = new Dictionary<TankBrain, int>();
 
+        private void Awake()
+        {
+            m_OwnerRef = GetComponent<ColliderOwnerRef>();
+        }
+
         public void Initialize(TankBrain_WaterB caster, float duration, float defenseBonus,
                                float attackBonusPercent, float healOnEnd)
         {
@@ -40,6 +48,14 @@ namespace IronWasteland.Tanks.WaterB
             m_HealOnEnd = healOnEnd;
             m_BonusKey = $"WaterB_BubbleProtector_{System.Guid.NewGuid():N}";
             m_IsActive = true;
+
+            if (m_OwnerRef == null) m_OwnerRef = GetComponent<ColliderOwnerRef>();
+            if (m_OwnerRef != null)
+            {
+                m_OwnerRef.SetOwner(caster);
+                m_OwnerRef.TriggerEnter += OnOwnerRefTriggerEnter;
+                m_OwnerRef.TriggerExit += OnOwnerRefTriggerExit;
+            }
 
             Rigidbody2D rb = GetComponent<Rigidbody2D>();
             if (rb != null) rb.bodyType = RigidbodyType2D.Kinematic;
@@ -55,11 +71,14 @@ namespace IronWasteland.Tanks.WaterB
             EndDome();
         }
 
-        private void OnTriggerEnter2D(Collider2D collision)
+        private void OnOwnerRefTriggerEnter(Collider2D collision)
         {
-            if (!m_IsActive) return;
+            if (!m_IsActive || collision == null) return;
 
-            TankBrain tank = collision.GetComponentInParent<TankBrain>();
+            ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collision);
+            if (targetRef == null) return;
+
+            TankBrain tank = targetRef.GetOwner<TankBrain>();
             if (tank == null) return;
 
             m_Inside.TryGetValue(tank, out int count);
@@ -68,11 +87,14 @@ namespace IronWasteland.Tanks.WaterB
             if (count == 0) ApplyBuff(tank); // collider đầu tiên của xe này chạm vào vòm
         }
 
-        private void OnTriggerExit2D(Collider2D collision)
+        private void OnOwnerRefTriggerExit(Collider2D collision)
         {
-            if (!m_IsActive) return;
+            if (!m_IsActive || collision == null) return;
 
-            TankBrain tank = collision.GetComponentInParent<TankBrain>();
+            ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collision);
+            if (targetRef == null) return;
+
+            TankBrain tank = targetRef.GetOwner<TankBrain>();
             if (tank == null || !m_Inside.TryGetValue(tank, out int count)) return;
 
             count--;
@@ -108,6 +130,12 @@ namespace IronWasteland.Tanks.WaterB
             if (!m_IsActive) return;
             m_IsActive = false;
 
+            if (m_OwnerRef != null)
+            {
+                m_OwnerRef.TriggerEnter -= OnOwnerRefTriggerEnter;
+                m_OwnerRef.TriggerExit -= OnOwnerRefTriggerExit;
+            }
+
             foreach (var kv in m_Inside)
             {
                 TankBrain tank = kv.Key;
@@ -125,6 +153,12 @@ namespace IronWasteland.Tanks.WaterB
 
         private void OnDestroy()
         {
+            if (m_OwnerRef != null)
+            {
+                m_OwnerRef.TriggerEnter -= OnOwnerRefTriggerEnter;
+                m_OwnerRef.TriggerExit -= OnOwnerRefTriggerExit;
+            }
+
             // Dự phòng: vòm bị xóa đột ngột thì vẫn gỡ buff (không hồi máu)
             if (!m_IsActive) return;
             m_IsActive = false;

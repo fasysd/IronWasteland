@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3225144874565048719}
   - component: {fileID: 6764129826043898220}
   - component: {fileID: 4117014703716380878}
+  - component: {fileID: 5694584071408671450}
   m_Layer: 0
   m_Name: Trap1
   m_TagString: Untagged
@@ -145,3 +146,16 @@ MonoBehaviour:
   explosionEffectPrefab: {fileID: 6710333050493302492, guid: 15063a101718ef14a85f2053fe6ec8da, type: 3}
   explosionEffectLifetime: 1.5
   eliteTriggerDelay: 2
+--- !u!114 &5694584071408671450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 349745016250485958}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
+  owner: {fileID: 0}

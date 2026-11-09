@@ -7,25 +7,28 @@ namespace IronWasteland.Tanks.GreenFox
 {
     /// <summary>
     /// Nine-Tailed Assault (GDD): 6s, 9 đuôi, mỗi đuôi đánh 1 lần mỗi 1s với 15% ATK lên kẻ địch trong vùng.
-    /// Chỉ làm phần GÂY SÁT THƯƠNG: vùng = CircleCollider2D (Is Trigger) trên prefab này, bám theo xe.
+    /// Vùng = CircleCollider2D (Is Trigger) trên prefab này, bám theo xe.
+    /// Kẻ địch trong vùng được xác định DUY NHẤT qua ColliderOwnerRef.GetTriggerColliders().
     /// Hình ảnh 9 đuôi là prefab riêng (GreenFox_NineTailsVisual), không nằm ở đây.
     /// Mỗi nhịp, mỗi đuôi đánh 1 kẻ địch ngẫu nhiên trong vùng và đính kèm thiêu đốt nếu đang bật Burning Fox.
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(CircleCollider2D))]
+    [RequireComponent(typeof(ColliderOwnerRef))]
     public class GreenFox_NineTailedAssault : MonoBehaviour
     {
+        private ColliderOwnerRef m_OwnerRef;
         private TankBrain_GreenFox m_OwnerTank;
         private float m_Duration;
         private float m_Interval;
         private int m_TailCount;
         private float m_TailDamage;
 
-        private readonly Dictionary<EnemyBrain, int> m_EnemiesInRange = new Dictionary<EnemyBrain, int>();
         private readonly List<EnemyBrain> m_Targets = new List<EnemyBrain>();
 
         private void Awake()
         {
+            m_OwnerRef = GetComponent<ColliderOwnerRef>();
             CircleCollider2D circle = GetComponent<CircleCollider2D>();
             if (circle != null) circle.isTrigger = true;
         }
@@ -38,6 +41,9 @@ namespace IronWasteland.Tanks.GreenFox
             m_Interval = Mathf.Max(0.05f, interval);
             m_TailCount = Mathf.Max(1, tailCount);
             m_TailDamage = tailDamage;
+
+            if (m_OwnerRef == null) m_OwnerRef = GetComponent<ColliderOwnerRef>();
+            if (m_OwnerRef != null) m_OwnerRef.SetOwner(owner);
 
             if (tankTransform != null)
             {
@@ -64,13 +70,25 @@ namespace IronWasteland.Tanks.GreenFox
 
         private void StrikeWithAllTails()
         {
-            if (m_OwnerTank == null) return;
+            if (m_OwnerTank == null || m_OwnerRef == null) return;
 
             m_Targets.Clear();
-            foreach (var kv in m_EnemiesInRange)
+            var seen = new HashSet<EnemyBrain>();
+
+            foreach (Collider2D col in m_OwnerRef.GetTriggerColliders())
             {
-                if (kv.Key != null && kv.Key.IsAlive) m_Targets.Add(kv.Key);
+                if (col == null) continue;
+
+                ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(col);
+                if (targetRef == null) continue;
+
+                EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
+                if (enemy != null && enemy.IsAlive && seen.Add(enemy))
+                {
+                    m_Targets.Add(enemy);
+                }
             }
+
             if (m_Targets.Count == 0) return;
 
             for (int i = 0; i < m_TailCount; i++)
@@ -81,33 +99,6 @@ namespace IronWasteland.Tanks.GreenFox
                 m_OwnerTank.DamageEnemy(enemy, m_TailDamage, enemy.transform.position);
                 m_OwnerTank.TryApplyBurn(enemy);
             }
-        }
-
-        private void OnTriggerEnter2D(Collider2D other)
-        {
-            if (other == null) return;
-            ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(other);
-            if (targetRef == null) return;
-
-            EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
-            if (enemy == null) return;
-
-            m_EnemiesInRange.TryGetValue(enemy, out int count);
-            m_EnemiesInRange[enemy] = count + 1;
-        }
-
-        private void OnTriggerExit2D(Collider2D other)
-        {
-            if (other == null) return;
-            ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(other);
-            if (targetRef == null) return;
-
-            EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
-            if (enemy == null || !m_EnemiesInRange.TryGetValue(enemy, out int count)) return;
-
-            count--;
-            if (count <= 0) m_EnemiesInRange.Remove(enemy);
-            else m_EnemiesInRange[enemy] = count;
         }
     }
 }

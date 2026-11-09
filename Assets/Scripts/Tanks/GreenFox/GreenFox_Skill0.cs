@@ -1,4 +1,4 @@
-﻿using IronWasteland.Enemies;
+using IronWasteland.Enemies;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -9,9 +9,10 @@ namespace IronWasteland.Tanks.GreenFox
     /// <summary>
     /// Fox Fang (GDD): đạn ma thuật, sát thương 100% ATK. 25% trói chân 1s;
     /// Tinh anh không bị trói chân mà nhận thêm 120% ATK. Hồi năng lượng/dấu ấn/thiêu đốt do TankBrain_GreenFox xử lý.
-    /// Va chạm qua trigger.
+    /// Nhận diện va chạm mục tiêu DUY NHẤT qua ColliderOwnerRef.
     /// </summary>
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(ColliderOwnerRef))]
     public class GreenFox_Skill0 : MonoBehaviour
     {
         [Header("Projectile Settings")]
@@ -25,10 +26,27 @@ namespace IronWasteland.Tanks.GreenFox
         [SerializeField, Min(0f)] private float eliteBonusDamagePercent = 120f; // Tinh anh: +120% ATK thay cho trói chân
         [SerializeField] private GameObject rootEffectPrefab;
 
+        private ColliderOwnerRef m_OwnerRef;
         private Action<GreenFox_Skill0> m_ReturnToPool;
         private float m_Damage;
         private TankBrain_GreenFox m_OwnerTank;
         private bool m_Consumed;
+
+        private void Awake()
+        {
+            m_OwnerRef = GetComponent<ColliderOwnerRef>();
+        }
+
+        private void OnEnable()
+        {
+            if (m_OwnerRef == null) m_OwnerRef = GetComponent<ColliderOwnerRef>();
+            if (m_OwnerRef != null) m_OwnerRef.TriggerEnter += OnOwnerRefTriggerEnter;
+        }
+
+        private void OnDisable()
+        {
+            if (m_OwnerRef != null) m_OwnerRef.TriggerEnter -= OnOwnerRefTriggerEnter;
+        }
 
         /// <param name="damage">Sát thương cuối đã tính (100% ATK * (1 + tỉ lệ sát thương)).</param>
         public void Initialize(TankBrain_GreenFox owner, Vector2 spawnPos, Vector2 direction, float damage, Action<GreenFox_Skill0> returnToPool)
@@ -38,6 +56,9 @@ namespace IronWasteland.Tanks.GreenFox
             m_Damage = damage;
             m_ReturnToPool = returnToPool;
             m_Consumed = false;
+
+            if (m_OwnerRef == null) m_OwnerRef = GetComponent<ColliderOwnerRef>();
+            if (m_OwnerRef != null) m_OwnerRef.SetOwner(owner);
 
             transform.position = spawnPos;
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
@@ -63,7 +84,7 @@ namespace IronWasteland.Tanks.GreenFox
             ReturnSelf();
         }
 
-        private void OnTriggerEnter2D(Collider2D other)
+        private void OnOwnerRefTriggerEnter(Collider2D other)
         {
             if (m_Consumed || other == null || m_OwnerTank == null) return;
 

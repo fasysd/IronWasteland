@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using IronWasteland.Enemies;
 
 namespace IronWasteland.Tanks.WaterB
@@ -6,6 +6,7 @@ namespace IronWasteland.Tanks.WaterB
     /// <summary>
     /// Trụ nước (Water Turrets, GDD): tồn tại 8s, mỗi 1s bắn kẻ địch gần nhất, sát thương = 50% ATK của Water B
     /// (tính sẵn khi tung chiêu). Mỗi phát trúng hồi 3 năng lượng cho Water B.
+    /// Tìm mục tiêu xác thực qua ColliderOwnerRef.
     /// </summary>
     public class WaterB_WaterTurret : MonoBehaviour
     {
@@ -67,11 +68,18 @@ namespace IronWasteland.Tanks.WaterB
 
             foreach (var col in hitEnemies)
             {
-                float dist = Vector2.Distance(transform.position, col.transform.position);
+                if (col == null) continue;
+                ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(col);
+                if (targetRef == null) continue;
+
+                EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
+                if (enemy == null || !enemy.IsAlive) continue;
+
+                float dist = Vector2.Distance(transform.position, enemy.transform.position);
                 if (dist < minDistance)
                 {
                     minDistance = dist;
-                    closest = col.transform;
+                    closest = enemy.transform;
                 }
             }
 

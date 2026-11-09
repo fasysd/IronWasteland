@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 513630844630574792}
   - component: {fileID: 5244468397954143316}
   - component: {fileID: -3058272851687458959}
+  - component: {fileID: 7648251144939988240}
   m_Layer: 0
   m_Name: Skill0
   m_TagString: Untagged
@@ -155,3 +156,16 @@ MonoBehaviour:
   speed: 15
   maxLifetime: 5
   rootEffectPrefab: {fileID: 7097947749654271453, guid: f5bcbed4f6ea44946a730c4e7a28cb36, type: 3}
+--- !u!114 &7648251144939988240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1604146215368185273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
+  owner: {fileID: 0}
