@@ -17,47 +17,24 @@ MonoBehaviour:
     sau khi t\xECm ra ng\u01B0\u1EDDi l\xE1i \u0111\u01B0\u1EE3c xe tank ma ph\xE1p,
     c\xE1c th\u1EBF h\u1EC7 ti\u1EBFp theo \u0111\xE3 \u0111\u01B0\u1EE3c t\u1EA1o
     ra trong \u0111\xF3 c\xF3 Green Fox."
-  statsTable:
-  - baseLevel: 1
-    baseStats:
-      Attack: 10
-      Defense: 10
-      DamageMultiplier: 1
-      ArmorPenetration: 0
-      MaxHealth: 100
-      MaxEnergy: 50
-      MoveSpeed: 3
-      CooldownReduction: 0
-  - baseLevel: 30
-    baseStats:
-      Attack: 59
-      Defense: 11.6
-      DamageMultiplier: 1.29
-      ArmorPenetration: 0.087
-      MaxHealth: 492
-      MaxEnergy: 242
-      MoveSpeed: 4.45
-      CooldownReduction: 0.116
-  - baseLevel: 60
-    baseStats:
-      Attack: 120
-      Defense: 23.6
-      DamageMultiplier: 1.59
-      ArmorPenetration: 0.177
-      MaxHealth: 940
-      MaxEnergy: 460
-      MoveSpeed: 5.95
-      CooldownReduction: 0.236
-  - baseLevel: 90
-    baseStats:
-      Attack: 180
-      Defense: 35.6
-      DamageMultiplier: 1.89
-      ArmorPenetration: 0.267
-      MaxHealth: 1400
-      MaxEnergy: 680
-      MoveSpeed: 7.45
-      CooldownReduction: 0.356
+  baseStatsLevel1:
+    Attack: 25
+    Defense: 12
+    DamageRate: 0
+    ArmorPenetration: 0
+    MaxHealth: 700
+    MaxEnergy: 100
+    MoveSpeed: 100
+    CooldownReduction: 0
+  baseStatsLevel90:
+    Attack: 85
+    Defense: 20
+    DamageRate: 0.1
+    ArmorPenetration: 0.05
+    MaxHealth: 3600
+    MaxEnergy: 300
+    MoveSpeed: 100
+    CooldownReduction: 0
   tankPrefab: {fileID: 6588680580327770301, guid: cd61d42d3ce833c438f6c22fc83ae54c, type: 3}
   viewPrefabs:
   - {fileID: 4035724410283292367, guid: ddc4e644e8cff1a44869ec53a4c9a698, type: 3}

@@ -501,7 +501,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ea1a4ea10d5a6145ab6570e5eaa67b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.Normal.PoisonZone_NamDocGaiThach
-  poisonDuration: 3.5
+  poisonDuration: 5
   damageTickInterval: 0.5
   hitCheckDelay: 0.05
   tankLayer:

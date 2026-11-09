@@ -22,7 +22,7 @@ namespace IronWasteland.Enemies.Normal
     {
         [Header("Poison Zone Settings")]
         [Tooltip("Thời gian tồn tại của vùng độc trước khi biến mất (giây).")]
-        [SerializeField, Min(0.5f)] private float poisonDuration = 3.5f;
+        [SerializeField, Min(0.5f)] private float poisonDuration = 5.0f;
 
         [Tooltip("Chu kỳ quét và phát sự kiện mục tiêu trúng độc (giây).")]
         [SerializeField, Min(0.1f)] private float damageTickInterval = 0.5f;

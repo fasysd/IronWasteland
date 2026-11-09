@@ -288,7 +288,7 @@ namespace IronWasteland.Tanks.WallTitan
         }
 
         /// <summary>Tìm đồng minh gần nhất có ColliderOwnerRef sở hữu bởi TankBrain quanh điểm chỉ định; không có thì trả về null.</summary>
-        private TankBrain FindAllyNear(Vector2 point, float maxDistance)
+        private TankBrain FindTargetTankNear(Vector2 point, float maxDistance, bool includeSelf = false)
         {
             Collider2D[] hits = Physics2D.OverlapCircleAll(point, maxDistance);
 
@@ -309,7 +309,10 @@ namespace IronWasteland.Tanks.WallTitan
                     continue;
 
                 TankBrain candidate = ownerRef.GetOwner<TankBrain>();
-                if (candidate == null || candidate == this || !candidate.IsAlive)
+                if (candidate == null || !candidate.IsAlive)
+                    continue;
+
+                if (!includeSelf && candidate == this)
                     continue;
 
                 float sqr = ((Vector2)candidate.transform.position - point).sqrMagnitude;
@@ -322,6 +325,8 @@ namespace IronWasteland.Tanks.WallTitan
 
             return best;
         }
+
+        private TankBrain FindAllyNear(Vector2 point, float maxDistance) => FindTargetTankNear(point, maxDistance, false);
         #endregion
 
         #region Skill 0 - Earth Break
@@ -574,26 +579,40 @@ namespace IronWasteland.Tanks.WallTitan
 
         private void ActivateGuardianWall()
         {
-            TankBrain ally = FindAllyNear(LookTarget, allyCastRange);
-            if (ally == null)
+            // Tìm mục tiêu Tank mà chuột/LookTarget trỏ vào (bao gồm cả bản thân)
+            TankBrain target = FindTargetTankNear(LookTarget, allyCastRange, true);
+            if (target == null)
             {
-                // Không có ColliderOwnerRef nào có Owner là TankBrain thì thôi.
+                // Nếu không trỏ vào ai (kể cả bản thân) thì coi như không thi triển
                 return;
             }
 
-            // Áp dụng khiên lên bản thân
-            float selfShieldValue = Stats.MaxHealth * guardianWallShieldHpRatio;
-            AddShield(selfShieldValue, guardianWallDuration, "WallTitan_GuardianWall_Self", this, "Khiên Hộ Vệ");
-
-            // Áp dụng khiên và chia sẻ sát thương lên đồng minh được chọn
-            float allyShieldValue = ally.Stats.MaxHealth * guardianWallShieldHpRatio;
-            ally.AddShield(allyShieldValue, guardianWallDuration, "WallTitan_GuardianWall", this, "Khiên Hộ Vệ");
-            RegisterSharedDamageLink(ally, guardianWallRedirectRatio, guardianWallDuration);
-
-            if (vfx != null)
+            if (target == this)
             {
-                vfx.ShowGuardianOnTarget(transform, guardianWallDuration);
-                vfx.ShowGuardianOnTarget(ally.transform, guardianWallDuration);
+                // Trỏ vào bản thân: tự thi triển lên bản thân
+                float selfShieldValue = Stats.MaxHealth * guardianWallShieldHpRatio;
+                AddShield(selfShieldValue, guardianWallDuration, "WallTitan_GuardianWall_Self", this, "Khiên Hộ Vệ");
+
+                if (vfx != null)
+                {
+                    vfx.ShowGuardianOnTarget(transform, guardianWallDuration);
+                }
+            }
+            else
+            {
+                // Trỏ vào đồng minh: tạo khiên cho bản thân và đồng minh, chia sẻ sát thương
+                float selfShieldValue = Stats.MaxHealth * guardianWallShieldHpRatio;
+                AddShield(selfShieldValue, guardianWallDuration, "WallTitan_GuardianWall_Self", this, "Khiên Hộ Vệ");
+
+                float allyShieldValue = target.Stats.MaxHealth * guardianWallShieldHpRatio;
+                target.AddShield(allyShieldValue, guardianWallDuration, "WallTitan_GuardianWall", this, "Khiên Hộ Vệ");
+                RegisterSharedDamageLink(target, guardianWallRedirectRatio, guardianWallDuration);
+
+                if (vfx != null)
+                {
+                    vfx.ShowGuardianOnTarget(transform, guardianWallDuration);
+                    vfx.ShowGuardianOnTarget(target.transform, guardianWallDuration);
+                }
             }
         }
 

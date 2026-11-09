@@ -903,7 +903,8 @@ namespace IronWasteland.Tanks
 
         private void FixedUpdate()
         {
-            float speed = m_FinalStats.MoveSpeed;
+            // Theo GDD: Tank di chuyen voi toc do Tuan theo cong thuc: Toc do di chuyen / 100 (units/s)
+            float speed = m_FinalStats.MoveSpeed / 100f;
 
             // Giam toc do neu bi Slow
             if (m_ActiveCC.TryGetValue(CrowdControlType.Slow, out var slowCC))

@@ -6,10 +6,14 @@ using UnityEngine;
 namespace IronWasteland.Enemies.Normal
 {
     /// <summary>
-    /// Mặt Trăng Đen - Kẻ địch thường có di chuyển tìm đường tiếp cận mục tiêu trong phạm vi A.
-    /// Khi mục tiêu ở trong phạm vi A và kỹ năng sẵn sàng, thi triển kỹ năng 2 giai đoạn:
-    /// - Giai đoạn 1: Dịch chuyển đến vị trí mục tiêu.
-    /// - Giai đoạn 2: Gây sát thương diện rộng xung quanh bản thân (100% tấn công).
+    /// Mặt Trăng Đen - Kẻ địch thường lao vào tấn công tầm gần.
+    /// Theo GDD:
+    /// - HP: 260 (Co-op: 520)
+    /// - ATK: 15
+    /// - Giáp: 50
+    /// - SPD: 95
+    /// - CD: 2.0s
+    /// - Cơ chế: Lao vào tấn công tầm gần, phát xung tỏa ra trường bức xạ năng lượng xung quanh 2.5m và gây sát thương diện rộng mỗi 0.5s bằng 100% Tấn công.
     /// </summary>
     [DisallowMultipleComponent]
     public class NormalEnemy_MatTrangDen : NormalEnemy_BaseChaser
@@ -18,8 +22,11 @@ namespace IronWasteland.Enemies.Normal
         [Tooltip("Component Skill của Mặt Trăng Đen (nếu để trống sẽ tự tìm trong Children).")]
         [SerializeField] private Skill_MatTrangDen skill;
 
-        [Tooltip("Thời gian hồi kỹ năng (giây).")]
+        [Tooltip("Thời gian hồi kỹ năng giữa các lần phát xung bức xạ (giây).")]
         [SerializeField, Min(0.5f)] private float skillCooldown = 2.0f;
+
+        [Tooltip("Phạm vi tiếp cận để bắt đầu phát xung bức xạ (m). Mặc định 2.5m theo GDD.")]
+        [SerializeField, Min(0.5f)] private float radiationTriggerRange = 2.5f;
 
         [SerializeField, ReadOnly] private float currentCooldownTimer;
         [SerializeField, ReadOnly] private bool isCastingSkill;
@@ -59,13 +66,6 @@ namespace IronWasteland.Enemies.Normal
                 currentCooldownTimer = Mathf.Max(0f, currentCooldownTimer - deltaTime);
             }
 
-            // Nếu đang trong quá trình cast chiêu: dừng di chuyển và chờ hoàn tất
-            if (isCastingSkill)
-            {
-                movementAgent?.Stop();
-                return;
-            }
-
             repathTimer -= deltaTime;
             if (movementAgent != null && Stats != null)
             {
@@ -82,30 +82,26 @@ namespace IronWasteland.Enemies.Normal
             {
                 float distToTarget = Vector2.Distance(currentPos, currentTarget.position);
 
-                // Khi mục tiêu nằm trong tầm A:
-                if (distToTarget <= radiusA)
+                // Nếu mục tiêu nằm trong tầm kích hoạt bức xạ (radiationTriggerRange)
+                if (distToTarget <= radiationTriggerRange)
                 {
-                    movementAgent?.Stop();
-
-                    // Nếu đã hết hồi chiêu -> Kích hoạt kỹ năng ngay
-                    if (currentCooldownTimer <= 0f)
+                    // Nếu đã hết hồi chiêu và chưa kích hoạt bức xạ -> Bật trường bức xạ
+                    if (!isCastingSkill && currentCooldownTimer <= 0f)
                     {
-                        CastSkill(currentTarget.position);
-                        return;
+                        StartRadiationAura();
                     }
 
-                    // Nếu đang trong thời gian hồi chiêu: đứng yên quan sát
+                    // Tiếp tục áp sát hoặc bám theo mục tiêu trong tầm gần
+                    HandleTargetTracking(currentPos, currentTarget.position);
                     return;
                 }
 
-                // Khi mục tiêu nằm ngoài tầm A: tiếp tục tìm đường tiếp cận
+                // Khi mục tiêu ở xa: tiếp tục tìm đường lao vào mục tiêu
                 HandleTargetTracking(currentPos, currentTarget.position);
 
-                // Nếu sau khi di chuyển đã vào tầm A và hết hồi chiêu -> thi triển ngay
-                if (distToTarget <= radiusA && currentCooldownTimer <= 0f)
+                if (distToTarget <= radiationTriggerRange && !isCastingSkill && currentCooldownTimer <= 0f)
                 {
-                    movementAgent?.Stop();
-                    CastSkill(currentTarget.position);
+                    StartRadiationAura();
                 }
             }
             else
@@ -114,14 +110,12 @@ namespace IronWasteland.Enemies.Normal
             }
         }
 
-        public void CastSkill(Vector2 targetPosition)
+        public void StartRadiationAura()
         {
             if (isCastingSkill || skill == null) return;
 
             isCastingSkill = true;
-            movementAgent?.Stop();
-
-            skill.CastSkill(movementAgent, transform, targetPosition, OnSkillFinished);
+            skill.CastSkill(OnSkillFinished);
         }
 
         private void OnSkillFinished()
@@ -134,7 +128,8 @@ namespace IronWasteland.Enemies.Normal
         {
             if (targets == null || targets.Count == 0) return;
 
-            float damage = Stats != null ? Stats.Attack : 10f;
+            // GDD: Sát thương mỗi nhịp 0.5s bằng 100% Tấn công
+            float damage = Stats != null ? Stats.Attack : 15f;
             foreach (TankBrain tank in targets)
             {
                 if (tank == null || !tank.IsAlive) continue;

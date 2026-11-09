@@ -809,8 +809,8 @@ MonoBehaviour:
   m_EquippedAccessory: {fileID: 0}
   normalSkill: {fileID: 5685933052413300437}
   initialPoolSize: 6
-  normalSkillScale: 0.5
-  normalSkillMaxHealthRatio: 0.005
+  normalSkillScale: 0.6
+  normalSkillMaxHealthRatio: 0.01
   normalSkillCooldown: 0.6
   normalSkillEnergyGain: 12
   energyGainPerHit: 0
@@ -821,10 +821,10 @@ MonoBehaviour:
   optionalSkill1: {fileID: 6107337570929849419}
   optionalSkill1_2: {fileID: 767530581153991747}
   optionalSkill1_3: {fileID: 2782761981218326223}
-  optionalSkill1ExplosionAttackScale: 1
-  optionalSkill1ExplosionMaxHealthRatio: 0.02
+  optionalSkill1ExplosionAttackScale: 0.6
+  optionalSkill1ExplosionMaxHealthRatio: 0.01
   optionalSkill1BonusDefense: 0.5
-  optionalSkill1DamagePenalty: 0.1
+  optionalSkill1WaterPulseBonus: 0.15
   optionalSkill1Duration: 6
   optionalSkill1Cooldown: 12
   optionalSkill1EnergyCost: 55
@@ -1008,7 +1008,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Leviathan.OptionalSkill1_Leviathan
   bonusDefense: 0.5
-  damageReductionPenalty: 0.1
+  waterPulseDamageBonus: 0.15
   duration: 6
   explosionDamage: 55
   explosionRadius: 3.2

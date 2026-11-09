@@ -23,11 +23,11 @@ namespace IronWasteland.Tanks.Leviathan
         [SerializeField, Min(0)] private int initialPoolSize = 6;
 
         [Header("Normal Skill - Combat")]
-        [Tooltip("Hệ số sát thương của Water Pulse theo Tấn công (0.5 = 50% Tấn công).")]
-        [SerializeField, Min(0f)] private float normalSkillScale = 0.5f;
+        [Tooltip("Hệ số sát thương của Water Pulse theo Tấn công (0.6 = 60% Tấn công theo GDD).")]
+        [SerializeField, Min(0f)] private float normalSkillScale = 0.6f;
 
-        [Tooltip("Tỉ lệ sát thương cộng thêm theo Giới hạn máu của chính Leviathan (0.005 = 0.5% máu tối đa của Leviathan).")]
-        [SerializeField, Min(0f)] private float normalSkillMaxHealthRatio = 0.005f;
+        [Tooltip("Tỉ lệ sát thương cộng thêm theo Giới hạn máu của chính Leviathan (0.01 = 1% máu tối đa theo GDD).")]
+        [SerializeField, Min(0f)] private float normalSkillMaxHealthRatio = 0.01f;
 
         [Tooltip("Thời gian hồi chiêu của Normal Skill (giây).")]
         [SerializeField, Min(0.01f)] private float normalSkillCooldown = 0.6f;
@@ -64,17 +64,17 @@ namespace IronWasteland.Tanks.Leviathan
         [SerializeField] private OptionalSkill1_3_Leviathan optionalSkill1_3;
 
         [Header("Optional Skill 1 (Water Armor) - Combat & Scaling")]
-        [Tooltip("Hệ số sát thương diện rộng khi màng nước phát nổ (1.0 = 100% Tấn công).")]
-        [SerializeField, Min(0f)] private float optionalSkill1ExplosionAttackScale = 1f;
+        [Tooltip("Hệ số sát thương diện rộng khi màng nước phát nổ (0.6 = 60% Tấn công theo GDD).")]
+        [SerializeField, Min(0f)] private float optionalSkill1ExplosionAttackScale = 0.6f;
 
-        [Tooltip("Tỉ lệ sát thương diện rộng theo Giới hạn máu của chính Leviathan (0.02 = 2% máu tối đa).")]
-        [SerializeField, Min(0f)] private float optionalSkill1ExplosionMaxHealthRatio = 0.02f;
+        [Tooltip("Tỉ lệ sát thương diện rộng theo Giới hạn máu của chính Leviathan (0.01 = 1% máu tối đa theo GDD).")]
+        [SerializeField, Min(0f)] private float optionalSkill1ExplosionMaxHealthRatio = 0.01f;
 
         [Tooltip("Giá trị Phòng thủ tăng thêm khi màng nước bao phủ (0.5 = +50% Phòng thủ).")]
         [SerializeField, Range(0f, 1f)] private float optionalSkill1BonusDefense = 0.5f;
 
-        [Tooltip("Phần trăm sát thương gây ra bị giảm trong khi giáp duy trì (0.1 = giảm 10% sát thương gây ra).")]
-        [SerializeField, Range(0f, 1f)] private float optionalSkill1DamagePenalty = 0.1f;
+        [Tooltip("Tỉ lệ tăng nhẹ sát thương cho Water Pulse khi giáp nước duy trì (0.15 = +15%).")]
+        [SerializeField, Range(0f, 1f)] private float optionalSkill1WaterPulseBonus = 0.15f;
 
         [Tooltip("Thời gian duy trì của giáp nước trước khi tự phát nổ (giây).")]
         [SerializeField, Min(0.5f)] private float optionalSkill1Duration = 6f;
@@ -424,7 +424,7 @@ namespace IronWasteland.Tanks.Leviathan
                 this,
                 finalExplosionDmg,
                 optionalSkill1BonusDefense,
-                optionalSkill1DamagePenalty,
+                optionalSkill1WaterPulseBonus,
                 optionalSkill1Duration);
         }
         #endregion
@@ -617,8 +617,18 @@ namespace IronWasteland.Tanks.Leviathan
             if (enemy == null)
                 return;
 
-            // Sát thương gốc = 50% Tấn công + 0.5% Giới hạn máu của chính Leviathan (đã gồm hình phạt Form)
-            float finalDmg = CalculateSkillDamage(normalSkillScale, normalSkillMaxHealthRatio);
+            // Sát thương Water Pulse = 60% Tấn công + 1% Giới hạn máu
+            float scale = normalSkillScale;
+            float hpRatio = normalSkillMaxHealthRatio;
+
+            // Trong thời gian giáp duy trì, sát thương Water Pulse gây ra của Leviathan tăng nhẹ
+            if (optionalSkill1 != null && optionalSkill1.IsActive)
+            {
+                scale *= (1f + optionalSkill1.WaterPulseDamageBonus);
+                hpRatio *= (1f + optionalSkill1.WaterPulseDamageBonus);
+            }
+
+            float finalDmg = CalculateSkillDamage(scale, hpRatio);
 
             // Gây sát thương lên kẻ địch
             enemy.TakeDamage(finalDmg);

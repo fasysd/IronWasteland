@@ -24,8 +24,8 @@ namespace IronWasteland.Tanks.Leviathan
         [Tooltip("Phần trăm phòng thủ tăng thêm khi màng nước bao phủ (0.4 = giảm 40% sát thương nhận vào).")]
         [SerializeField, Range(0f, 1f)] private float bonusDefense = 0.5f;
 
-        [Tooltip("Phần trăm sát thương gây ra bị giảm trong khi giáp duy trì (0.1 = giảm 10% sát thương gây ra).")]
-        [SerializeField, Range(0f, 1f)] private float damageReductionPenalty = 0.1f;
+        [Tooltip("Tỉ lệ tăng sát thương của Water Pulse trong khi giáp duy trì (0.15 = +15%).")]
+        [SerializeField, Range(0f, 1f)] private float waterPulseDamageBonus = 0.15f;
 
         [Tooltip("Thời gian duy trì giáp nước trước khi tự phát nổ (giây).")]
         [SerializeField, Min(0.5f)] private float duration = 6.0f;
@@ -63,6 +63,7 @@ namespace IronWasteland.Tanks.Leviathan
 
         public TankBrain OwnerTank => ownerTank;
         public bool IsActive => isArmorActive && remainingTime > 0f;
+        public float WaterPulseDamageBonus => waterPulseDamageBonus;
         public float RemainingTime => remainingTime;
         public float Duration => duration;
 
@@ -94,7 +95,7 @@ namespace IronWasteland.Tanks.Leviathan
         /// <summary>
         /// Kích hoạt kỹ năng Giáp Nước cho xe tăng Leviathan.
         /// </summary>
-        public void Initialize(TankBrain owner, float explosionDmg = -1f, float defBonus = -1f, float dmgPenalty = -1f, float dur = -1f)
+        public void Initialize(TankBrain owner, float explosionDmg = -1f, float defBonus = -1f, float pulseBonus = -1f, float dur = -1f)
         {
             if (owner == null) return;
 
@@ -105,7 +106,7 @@ namespace IronWasteland.Tanks.Leviathan
 
             if (explosionDmg >= 0f) this.explosionDamage = explosionDmg;
             if (defBonus >= 0f) this.bonusDefense = defBonus;
-            if (dmgPenalty >= 0f) this.damageReductionPenalty = dmgPenalty;
+            if (pulseBonus >= 0f) this.waterPulseDamageBonus = pulseBonus;
             if (dur >= 0f) this.duration = dur;
 
             remainingTime = duration;
@@ -138,12 +139,9 @@ namespace IronWasteland.Tanks.Leviathan
             if (ownerTank == null) return;
 
             // Phòng thủ tăng theo phần trăm của chỉ số gốc (0.5 = +50% Phòng thủ).
-            // Sát thương gây ra giảm theo phần trăm Tấn công vì mọi đòn đánh đều đi qua
-            // CalculateTankRawDamage(Stats.Attack, ...), trừ thẳng vào Attack là cách duy nhất
-            // ăn đúng công thức hiện hành (DamageRate bị kẹp max(0, ...) nên không dùng được).
+            // Sát thương Water Pulse tăng nhẹ được xử lý trực tiếp khi Water Pulse gây sát thương.
             TankStats percentBonus = TankStats.Zeroed();
             percentBonus.Defense = bonusDefense;
-            percentBonus.Attack = -damageReductionPenalty;
 
             ownerTank.AddBonusStats(WaterArmorBonusKey, null, percentBonus);
         }

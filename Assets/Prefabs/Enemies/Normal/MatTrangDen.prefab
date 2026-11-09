@@ -286,7 +286,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Radius: 2.5
 --- !u!114 &6164576974939704003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -312,13 +312,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bc33a505b40e954282b597c689a23be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.Normal.Skill_MatTrangDen
-  teleportDelay: 0.2
-  damageDelay: 0.3
-  damageRadius: 0.5
+  auraDuration: 2
+  tickInterval: 0.5
+  auraRadius: 2.5
   tankLayer:
     serializedVersion: 2
     m_Bits: 64
   hitCheckDelay: 0.02
+  spriteRenderer: {fileID: 6634374404317863597}
 --- !u!212 &6634374404317863597
 SpriteRenderer:
   serializedVersion: 3

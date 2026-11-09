@@ -1,52 +1,63 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using IronWasteland.Enemies.Navigation;
 using IronWasteland.Tanks;
 using UnityEngine;
 
 namespace IronWasteland.Enemies.Normal
 {
     /// <summary>
-    /// Kỹ năng của Mặt Trăng Đen gồm 2 giai đoạn:
-    /// - Giai đoạn 1: Chờ teleportDelay rồi dịch chuyển tức thời đến vị trí mục tiêu.
-    /// - Giai đoạn 2: Chờ damageDelay rồi quét sát thương diện rộng xung quanh vị trí mới.
+    /// Kỹ năng bức xạ của Mặt Trăng Đen:
+    /// - Khi phát xung, mở trường bức xạ năng lượng xung quanh bản thân trong bán kính 2.5m.
+    /// - Duy trì trong duration giây, mỗi tickInterval (0.5s) quét và kích hoạt sự kiện gây sát thương 100% Tấn công lên các Tank trong vùng.
+    /// - Quản lý va chạm và quét mục tiêu thông qua ColliderOwnerRef.
     /// </summary>
     [DisallowMultipleComponent]
     public class Skill_MatTrangDen : MonoBehaviour
     {
         public event Action<Skill_MatTrangDen, List<TankBrain>> OnDamageDealt;
-        public event Action OnTeleported;
 
-        [Header("Skill Timings")]
-        [Tooltip("Thời gian chuẩn bị trước khi dịch chuyển (giây).")]
-        [SerializeField, Min(0f)] private float teleportDelay = 0.2f;
+        [Header("Aura Timings")]
+        [Tooltip("Thời gian tồn tại của trường bức xạ mỗi lần kích hoạt (giây).")]
+        [SerializeField, Min(0.5f)] private float auraDuration = 2.0f;
 
-        [Tooltip("Thời gian tụ năng lượng sau khi dịch chuyển trước khi gây sát thương (giây).")]
-        [SerializeField, Min(0f)] private float damageDelay = 0.3f;
+        [Tooltip("Chu kỳ gây sát thương mỗi nhịp (0.5s theo GDD).")]
+        [SerializeField, Min(0.1f)] private float tickInterval = 0.5f;
+
+        [Tooltip("Bán kính trường bức xạ năng lượng (2.5m theo GDD).")]
+        [SerializeField, Min(0.5f)] private float auraRadius = 2.5f;
 
         [Header("Layers")]
         [SerializeField] private LayerMask tankLayer;
 
-        [Tooltip("Độ trễ chờ physics trigger cập nhật nếu dùng collider nội tại (giây).")]
+        [Tooltip("Độ trễ chờ physics trigger cập nhật ban đầu (giây).")]
         [SerializeField, Min(0f)] private float hitCheckDelay = 0.02f;
+
+        [Header("Visual")]
+        [SerializeField] private SpriteRenderer spriteRenderer;
 
         private ColliderOwnerRef m_OwnerRef;
         private CircleCollider2D m_Collider;
-        private Coroutine m_SkillCoroutine;
+        private Coroutine m_AuraCoroutine;
 
-        public float TeleportDelay { get => teleportDelay; set => teleportDelay = value; }
-        public float DamageDelay { get => damageDelay; set => damageDelay = value; }
-        public bool IsExecuting => m_SkillCoroutine != null;
+        public float AuraDuration { get => auraDuration; set => auraDuration = value; }
+        public float TickInterval { get => tickInterval; set => tickInterval = value; }
+        public float AuraRadius { get => auraRadius; set => auraRadius = value; }
+        public bool IsExecuting => m_AuraCoroutine != null;
 
         private void Awake()
         {
             m_OwnerRef = GetComponent<ColliderOwnerRef>();
             m_Collider = GetComponent<CircleCollider2D>();
+            if (spriteRenderer == null)
+            {
+                spriteRenderer = GetComponent<SpriteRenderer>();
+            }
 
             if (m_Collider != null)
             {
                 m_Collider.isTrigger = true;
+                m_Collider.radius = auraRadius;
             }
 
             if (tankLayer.value == 0)
@@ -55,51 +66,33 @@ namespace IronWasteland.Enemies.Normal
             }
         }
 
-        public void CastSkill(EnemyMovementAgent agent, Transform enemyTransform, Vector2 targetPosition, Action onCompleted = null)
+        public void CastSkill(Action onCompleted = null)
         {
-            if (m_SkillCoroutine != null)
+            if (m_AuraCoroutine != null)
             {
-                StopCoroutine(m_SkillCoroutine);
+                StopCoroutine(m_AuraCoroutine);
             }
 
             gameObject.SetActive(true);
-            m_SkillCoroutine = StartCoroutine(SkillRoutine(agent, enemyTransform, targetPosition, onCompleted));
+            m_AuraCoroutine = StartCoroutine(AuraRoutine(onCompleted));
         }
 
         public void CancelSkill()
         {
-            if (m_SkillCoroutine != null)
+            if (m_AuraCoroutine != null)
             {
-                StopCoroutine(m_SkillCoroutine);
-                m_SkillCoroutine = null;
+                StopCoroutine(m_AuraCoroutine);
+                m_AuraCoroutine = null;
             }
 
             gameObject.SetActive(false);
         }
 
-        private IEnumerator SkillRoutine(EnemyMovementAgent agent, Transform enemyTransform, Vector2 targetPosition, Action onCompleted)
+        private IEnumerator AuraRoutine(Action onCompleted)
         {
-            // Giai đoạn 1: Chờ teleportDelay rồi dịch chuyển đến vị trí mục tiêu
-            if (teleportDelay > 0f)
+            if (m_Collider != null)
             {
-                yield return new WaitForSeconds(teleportDelay);
-            }
-
-            if (agent != null)
-            {
-                agent.Teleport(targetPosition);
-            }
-            else if (enemyTransform != null)
-            {
-                enemyTransform.position = new Vector3(targetPosition.x, targetPosition.y, enemyTransform.position.z);
-            }
-
-            OnTeleported?.Invoke();
-
-            // Giai đoạn 2: Chờ damageDelay rồi phát nổ gây sát thương xung quanh
-            if (damageDelay > 0f)
-            {
-                yield return new WaitForSeconds(damageDelay);
+                m_Collider.radius = auraRadius;
             }
 
             if (hitCheckDelay > 0f)
@@ -107,6 +100,34 @@ namespace IronWasteland.Enemies.Normal
                 yield return new WaitForSeconds(hitCheckDelay);
             }
 
+            float elapsed = 0f;
+            float tickTimer = 0f;
+
+            // Tick đầu tiên ngay khi bật hào quang
+            TriggerDamageTick();
+
+            while (elapsed < auraDuration)
+            {
+                float dt = Time.deltaTime;
+                elapsed += dt;
+                tickTimer += dt;
+
+                if (tickTimer >= tickInterval)
+                {
+                    tickTimer -= tickInterval;
+                    TriggerDamageTick();
+                }
+
+                yield return null;
+            }
+
+            m_AuraCoroutine = null;
+            gameObject.SetActive(false);
+            onCompleted?.Invoke();
+        }
+
+        private void TriggerDamageTick()
+        {
             var targets = new HashSet<TankBrain>();
 
             if (m_OwnerRef != null)
@@ -122,12 +143,25 @@ namespace IronWasteland.Enemies.Normal
                 }
             }
 
-            var result = new List<TankBrain>(targets);
-            OnDamageDealt?.Invoke(this, result);
+            // Fallback quét bằng Physics2D OverlapCircle xung quanh tâm kỹ năng
+            if (targets.Count == 0)
+            {
+                Collider2D[] cols = Physics2D.OverlapCircleAll(transform.position, auraRadius, tankLayer);
+                for (int i = 0; i < cols.Length; i++)
+                {
+                    TankBrain tank = ResolveTankBrain(cols[i]);
+                    if (tank != null && tank.IsAlive)
+                    {
+                        targets.Add(tank);
+                    }
+                }
+            }
 
-            m_SkillCoroutine = null;
-            gameObject.SetActive(false);
-            onCompleted?.Invoke();
+            if (targets.Count > 0)
+            {
+                var result = new List<TankBrain>(targets);
+                OnDamageDealt?.Invoke(this, result);
+            }
         }
 
         private TankBrain ResolveTankBrain(Collider2D col)
@@ -159,9 +193,14 @@ namespace IronWasteland.Enemies.Normal
 
         private void OnValidate()
         {
-            teleportDelay = Mathf.Max(0f, teleportDelay);
-            damageDelay = Mathf.Max(0f, damageDelay);
+            auraDuration = Mathf.Max(0.5f, auraDuration);
+            tickInterval = Mathf.Max(0.1f, tickInterval);
+            auraRadius = Mathf.Max(0.5f, auraRadius);
             hitCheckDelay = Mathf.Max(0f, hitCheckDelay);
+            if (m_Collider != null)
+            {
+                m_Collider.radius = auraRadius;
+            }
         }
     }
 }
