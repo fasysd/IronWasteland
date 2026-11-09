@@ -220,7 +220,7 @@ GameObject:
   - component: {fileID: 7665003885098891605}
   - component: {fileID: 4692119365693708535}
   - component: {fileID: 1526073860967064502}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: Skill_Earth Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}

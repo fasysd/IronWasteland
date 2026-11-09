@@ -1,3 +1,4 @@
+using IronWasteland.Enemies.Navigation;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -8,7 +9,8 @@ namespace IronWasteland.Tanks.WallTitan
     /// Kỹ năng chuyên biệt của Wall Titan — Earth Wall:
     /// Tạo một bức tường đất tại vị trí chỉ định trong thời gian giới hạn.
     /// Bức tường chặn đường di chuyển và các đòn tấn công/đạn bay đi qua vị trí của nó.
-    /// Khi hết thời gian, bức tường biến mất.
+    /// Thông báo cho PathfindingGrid2D để Enemy tìm đường né khi tường xuất hiện,
+    /// và thông báo hủy chặn khi bức tường biến mất.
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(BoxCollider2D))]
@@ -22,10 +24,13 @@ namespace IronWasteland.Tanks.WallTitan
         private ColliderOwnerRef m_OwnerRef;
 
         private bool m_Initialized;
+        private bool m_IsRegisteredObstacle;
         private Coroutine m_LifetimeCoroutine;
         private Action<Skill_EarthWall> m_ReturnToPool;
 
         public ColliderOwnerRef ColliderRef => m_OwnerRef;
+        public BoxCollider2D WallCollider => m_WallCollider;
+
         /// <summary>Thời gian tồn tại, cho phép Brain ghi đè theo GDD thay vì dùng giá trị trong prefab.</summary>
         public float Duration
         {
@@ -38,6 +43,12 @@ namespace IronWasteland.Tanks.WallTitan
             m_WallCollider = GetComponent<BoxCollider2D>();
             m_OwnerRef = GetComponent<ColliderOwnerRef>();
 
+            int terrainLayerIndex = LayerMask.NameToLayer("Terrain");
+            if (terrainLayerIndex != -1)
+            {
+                gameObject.layer = terrainLayerIndex;
+            }
+
             // Tường đất chặn di chuyển vật lý (không phải trigger).
             if (m_WallCollider != null)
                 m_WallCollider.isTrigger = false;
@@ -45,6 +56,8 @@ namespace IronWasteland.Tanks.WallTitan
 
         public void Clear()
         {
+            UnregisterFromGrid();
+
             if (m_LifetimeCoroutine != null)
             {
                 StopCoroutine(m_LifetimeCoroutine);
@@ -72,10 +85,35 @@ namespace IronWasteland.Tanks.WallTitan
             if (!m_Initialized || !isActiveAndEnabled)
                 return;
 
+            // Đăng ký bức tường làm chướng ngại vật với PathfindingGrid2D để Enemy tìm đường né
+            RegisterWithGrid();
+
             if (m_LifetimeCoroutine != null)
                 StopCoroutine(m_LifetimeCoroutine);
 
             m_LifetimeCoroutine = StartCoroutine(WallLifetimeRoutine());
+        }
+
+        private void RegisterWithGrid()
+        {
+            if (m_IsRegisteredObstacle) return;
+
+            if (m_WallCollider != null && PathfindingGrid2D.Instance != null)
+            {
+                PathfindingGrid2D.Instance.AddObstacle(m_WallCollider);
+                m_IsRegisteredObstacle = true;
+            }
+        }
+
+        private void UnregisterFromGrid()
+        {
+            if (!m_IsRegisteredObstacle) return;
+
+            if (m_WallCollider != null && PathfindingGrid2D.HasInstance)
+            {
+                PathfindingGrid2D.Instance.RemoveObstacle(m_WallCollider);
+            }
+            m_IsRegisteredObstacle = false;
         }
 
         private IEnumerator WallLifetimeRoutine()
@@ -102,6 +140,11 @@ namespace IronWasteland.Tanks.WallTitan
         private void OnDisable()
         {
             Clear();
+        }
+
+        private void OnDestroy()
+        {
+            UnregisterFromGrid();
         }
 
         private void OnValidate()

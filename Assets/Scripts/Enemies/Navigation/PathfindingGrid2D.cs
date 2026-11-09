@@ -13,6 +13,8 @@ namespace IronWasteland.Enemies.Navigation
         public int y;
         public Vector2 worldPos;
         public bool isWalkable;
+        public bool isStaticWalkable;
+        public int dynamicObstacleCount;
 
         // Dữ liệu dùng cho A* (sử dụng versioning để Zero GC Allocation)
         public float gCost;
@@ -30,6 +32,8 @@ namespace IronWasteland.Enemies.Navigation
             this.y = y;
             this.worldPos = worldPos;
             this.isWalkable = isWalkable;
+            this.isStaticWalkable = isWalkable;
+            this.dynamicObstacleCount = 0;
             searchVersion = 0;
             closedVersion = 0;
         }
@@ -37,7 +41,8 @@ namespace IronWasteland.Enemies.Navigation
 
     /// <summary>
     /// Grid Map Singleton 2D quản lý toàn bộ hệ thống tìm đường trong Scene.
-    /// - Terrain (địa hình tĩnh): chỉ quét 1 lần duy nhất lúc khởi tạo.
+    /// - Terrain (địa hình tĩnh): quét 1 lần duy nhất lúc khởi tạo.
+    /// - Dynamic Obstacles (địa hình động, tường đất): đăng ký và hủy real-time, cập nhật ô cản và thông báo cho Enemy.
     /// - Enemy Presence: mảng 2D đếm số lượng quái vật trên từng ô lưới, được cập nhật real-time khi Enemy di chuyển.
     /// - A* Zero-Allocation: tái sử dụng mảng Node và versioning để tránh hoàn toàn GC Alloc khi tìm đường.
     /// </summary>
@@ -46,13 +51,15 @@ namespace IronWasteland.Enemies.Navigation
     {
         private static PathfindingGrid2D s_Instance;
 
+        public static bool HasInstance => s_Instance != null;
+
         public static PathfindingGrid2D Instance
         {
             get
             {
                 if (s_Instance == null)
                 {
-                    s_Instance = FindFirstObjectByType<PathfindingGrid2D>();
+                    s_Instance = FindAnyObjectByType<PathfindingGrid2D>();
                     if (s_Instance == null)
                     {
                         GameObject go = new GameObject("[PathfindingGrid2D]");
@@ -95,12 +102,18 @@ namespace IronWasteland.Enemies.Navigation
         private int m_CurrentSearchVersion = 0;
         private readonly List<PathfindingNode> m_OpenSet = new List<PathfindingNode>(1024);
 
+        private readonly Dictionary<Collider2D, List<Vector2Int>> m_DynamicObstacles = new Dictionary<Collider2D, List<Vector2Int>>();
+        private LayerMask m_ActiveObstacleMask;
+
+        public event Action OnGridObstaclesChanged;
+
         private static readonly int[] s_Dx = { 0, 1, 0, -1, 1, 1, -1, -1 };
         private static readonly int[] s_Dy = { 1, 0, -1, 0, 1, -1, 1, -1 };
         private static readonly float[] s_MoveCost = { 1f, 1f, 1f, 1f, 1.41421356f, 1.41421356f, 1.41421356f, 1.41421356f };
 
         public float NodeSize => nodeSize;
         public LayerMask TerrainLayer => terrainLayer;
+        public LayerMask ActiveObstacleMask => m_ActiveObstacleMask;
         public float EnemyAvoidancePenalty { get => enemyAvoidancePenalty; set => enemyAvoidancePenalty = value; }
         public bool IsInitialized => m_IsInitialized;
 
@@ -135,13 +148,15 @@ namespace IronWasteland.Enemies.Navigation
                 terrainLayer = LayerMask.GetMask("Terrain");
             }
 
+            m_DynamicObstacles.Clear();
+            m_ActiveObstacleMask = terrainLayer;
             nodeSize = Mathf.Max(0.2f, nodeSize);
 
             // Xác định Bounds của bản đồ
             m_CurrentBounds = manualBounds;
             if (autoCalculateBounds)
             {
-                Collider2D[] colliders = FindObjectsByType<Collider2D>(FindObjectsSortMode.None);
+                Collider2D[] colliders = FindObjectsByType<Collider2D>(FindObjectsInactive.Exclude);
                 bool foundTerrain = false;
                 Bounds combinedBounds = new Bounds();
 
@@ -192,6 +207,121 @@ namespace IronWasteland.Enemies.Navigation
 
             m_IsInitialized = true;
         }
+
+        #region Dynamic Obstacles Management
+
+        /// <summary>
+        /// Đăng ký chướng ngại vật / vật thể địa hình động (ví dụ: Tường Đất của Wall Titan).
+        /// Các ô lưới bị chướng ngại vật chiếm giữ sẽ chuyển thành isWalkable = false để Enemy tìm đường né.
+        /// </summary>
+        public void AddObstacle(Collider2D obstacleCollider)
+        {
+            if (obstacleCollider == null) return;
+            if (!m_IsInitialized) InitializeGrid();
+
+            // Đảm bảo transform collider đã đồng bộ trong physics engine
+            Physics2D.SyncTransforms();
+
+            // Nếu collider này đã từng đăng ký, hủy trước để tính toán lại
+            if (m_DynamicObstacles.ContainsKey(obstacleCollider))
+            {
+                RemoveObstacle(obstacleCollider);
+            }
+
+            Bounds bounds = obstacleCollider.bounds;
+            Vector2Int minCoord = GetGridCoordinates(bounds.min);
+            Vector2Int maxCoord = GetGridCoordinates(bounds.max);
+
+            int startX = Mathf.Clamp(minCoord.x - 1, 0, m_Width - 1);
+            int endX = Mathf.Clamp(maxCoord.x + 1, 0, m_Width - 1);
+            int startY = Mathf.Clamp(minCoord.y - 1, 0, m_Height - 1);
+            int endY = Mathf.Clamp(maxCoord.y + 1, 0, m_Height - 1);
+
+            List<Vector2Int> affectedCoords = new List<Vector2Int>();
+            float half = nodeSize * 0.45f;
+
+            for (int x = startX; x <= endX; x++)
+            {
+                for (int y = startY; y <= endY; y++)
+                {
+                    PathfindingNode node = m_Grid[x, y];
+                    Vector2 pos = node.worldPos;
+
+                    // Kiểm tra nhiều điểm mẫu trong phạm vi ô lưới để đảm bảo nhận diện chính xác
+                    // cả các collider xoay nghiêng hoặc lệch tâm
+                    bool overlaps = obstacleCollider.OverlapPoint(pos)
+                        || obstacleCollider.OverlapPoint(new Vector2(pos.x - half, pos.y))
+                        || obstacleCollider.OverlapPoint(new Vector2(pos.x + half, pos.y))
+                        || obstacleCollider.OverlapPoint(new Vector2(pos.x, pos.y - half))
+                        || obstacleCollider.OverlapPoint(new Vector2(pos.x, pos.y + half))
+                        || obstacleCollider.OverlapPoint(new Vector2(pos.x - half, pos.y - half))
+                        || obstacleCollider.OverlapPoint(new Vector2(pos.x + half, pos.y - half))
+                        || obstacleCollider.OverlapPoint(new Vector2(pos.x - half, pos.y + half))
+                        || obstacleCollider.OverlapPoint(new Vector2(pos.x + half, pos.y + half));
+
+                    if (overlaps)
+                    {
+                        node.dynamicObstacleCount++;
+                        node.isWalkable = false;
+                        affectedCoords.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+
+            m_DynamicObstacles[obstacleCollider] = affectedCoords;
+            UpdateActiveObstacleMask();
+
+            OnGridObstaclesChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Hủy đăng ký chướng ngại vật / địa hình động khi biến mất.
+        /// Phục hồi các ô lưới về trạng thái ban đầu để Enemy biết đường đã thông.
+        /// </summary>
+        public void RemoveObstacle(Collider2D obstacleCollider)
+        {
+            if (obstacleCollider == null || !m_IsInitialized) return;
+
+            if (m_DynamicObstacles.TryGetValue(obstacleCollider, out List<Vector2Int> affectedCoords))
+            {
+                for (int i = 0; i < affectedCoords.Count; i++)
+                {
+                    Vector2Int coord = affectedCoords[i];
+                    if (IsValidCoord(coord.x, coord.y))
+                    {
+                        PathfindingNode node = m_Grid[coord.x, coord.y];
+                        if (node.dynamicObstacleCount > 0)
+                        {
+                            node.dynamicObstacleCount--;
+                        }
+
+                        if (node.dynamicObstacleCount == 0)
+                        {
+                            node.isWalkable = node.isStaticWalkable;
+                        }
+                    }
+                }
+
+                m_DynamicObstacles.Remove(obstacleCollider);
+                UpdateActiveObstacleMask();
+
+                OnGridObstaclesChanged?.Invoke();
+            }
+        }
+
+        private void UpdateActiveObstacleMask()
+        {
+            m_ActiveObstacleMask = terrainLayer;
+            foreach (var col in m_DynamicObstacles.Keys)
+            {
+                if (col != null)
+                {
+                    m_ActiveObstacleMask |= (1 << col.gameObject.layer);
+                }
+            }
+        }
+
+        #endregion
 
         #region Enemy Presence Management
 
@@ -290,6 +420,7 @@ namespace IronWasteland.Enemies.Navigation
             // Bổ sung điểm đích nội suy sâu vào trong bán kính A
             if (path != null && path.Count > 0)
             {
+                LayerMask castMask = m_ActiveObstacleMask.value != 0 ? m_ActiveObstacleMask : terrainLayer;
                 Vector2 lastNode = path[path.Count - 1];
                 Vector2 dir = targetPos - lastNode;
                 float distToTarget = dir.magnitude;
@@ -300,7 +431,7 @@ namespace IronWasteland.Enemies.Navigation
                     float actualStep = Mathf.Min(step, distToTarget);
                     Vector2 dirNorm = dir / distToTarget;
 
-                    RaycastHit2D hit = Physics2D.CircleCast(lastNode, agentRadius * 0.8f, dirNorm, actualStep, terrainLayer);
+                    RaycastHit2D hit = Physics2D.CircleCast(lastNode, agentRadius * 0.8f, dirNorm, actualStep, castMask);
                     if (hit.collider != null)
                     {
                         actualStep = Mathf.Max(0f, hit.distance - 0.05f);
@@ -317,7 +448,7 @@ namespace IronWasteland.Enemies.Navigation
                             float distPrev = dirPrev.magnitude;
                             if (distPrev > 0.001f)
                             {
-                                RaycastHit2D hitPrev = Physics2D.CircleCast(prevNode, agentRadius * 0.8f, dirPrev / distPrev, distPrev, terrainLayer);
+                                RaycastHit2D hitPrev = Physics2D.CircleCast(prevNode, agentRadius * 0.8f, dirPrev / distPrev, distPrev, castMask);
                                 if (hitPrev.collider == null)
                                 {
                                     path[path.Count - 1] = goalPoint;
@@ -455,7 +586,7 @@ namespace IronWasteland.Enemies.Navigation
 
                     PathfindingNode neighbor = m_Grid[nx, ny];
 
-                    // Điều kiện 1: Phải đi được (không bị cản bởi địa hình tĩnh)
+                    // Điều kiện 1: Phải đi được (không bị cản bởi địa hình tĩnh hoặc chướng ngại vật động)
                     if (!neighbor.isWalkable) continue;
 
                     // Điều kiện 2: Phải nằm trong bán kính lãnh thổ C quanh tâm D của quái
@@ -547,6 +678,7 @@ namespace IronWasteland.Enemies.Navigation
                 return rawPath;
             }
 
+            LayerMask castMask = m_ActiveObstacleMask.value != 0 ? m_ActiveObstacleMask : terrainLayer;
             List<Vector2> smoothed = new List<Vector2> { rawPath[0] };
             int currentIndex = 0;
 
@@ -563,7 +695,7 @@ namespace IronWasteland.Enemies.Navigation
 
                     if (dist > 0.001f)
                     {
-                        RaycastHit2D hit = Physics2D.CircleCast(from, agentRadius * 0.8f, dir.normalized, dist, terrainLayer);
+                        RaycastHit2D hit = Physics2D.CircleCast(from, agentRadius * 0.8f, dir.normalized, dist, castMask);
                         if (hit.collider == null)
                         {
                             furthestVisible = next;
@@ -618,7 +750,7 @@ namespace IronWasteland.Enemies.Navigation
                     }
                     else if (!node.isWalkable)
                     {
-                        Gizmos.color = Color.red;
+                        Gizmos.color = node.dynamicObstacleCount > 0 ? new Color(1f, 0.5f, 0f) : Color.red;
                         Gizmos.DrawWireCube(node.worldPos, Vector3.one * (nodeSize * 0.9f));
                     }
                     else if (!drawEnemyPresenceOnly)
@@ -633,4 +765,3 @@ namespace IronWasteland.Enemies.Navigation
         #endregion
     }
 }
-

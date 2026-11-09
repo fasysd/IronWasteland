@@ -143,6 +143,27 @@ namespace IronWasteland.Enemies.Normal
             }
         }
 
+        private void OnEnable()
+        {
+            if (PathfindingGrid2D.Instance != null)
+            {
+                PathfindingGrid2D.Instance.OnGridObstaclesChanged += HandleObstaclesChanged;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (PathfindingGrid2D.HasInstance)
+            {
+                PathfindingGrid2D.Instance.OnGridObstaclesChanged -= HandleObstaclesChanged;
+            }
+        }
+
+        private void HandleObstaclesChanged()
+        {
+            repathTimer = 0f;
+        }
+
         protected override void OnBrainTick(float deltaTime)
         {
             if (movementAgent != null && Stats != null)
