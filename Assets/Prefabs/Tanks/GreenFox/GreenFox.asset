@@ -36,12 +36,9 @@ MonoBehaviour:
     MoveSpeed: 100
     CooldownReduction: 0
   tankPrefab: {fileID: 6588680580327770301, guid: cd61d42d3ce833c438f6c22fc83ae54c, type: 3}
-  viewPrefabs:
-  - {fileID: 4035724410283292367, guid: ddc4e644e8cff1a44869ec53a4c9a698, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
   context:
     Level: 0
-    IdView: 0
     FirepowerEquipmentId: 0
     DefenseEquipmentId: 0
     MobilityEquipmentId: 0

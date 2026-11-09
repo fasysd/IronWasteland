@@ -80,7 +80,6 @@ namespace IronWasteland.Tanks
         private readonly List<IDamageInterceptor> m_InterceptorBuffer = new List<IDamageInterceptor>();
 
         protected bool _initialized = false;
-        private TankView viewPrefab;
 
         #region Events
         public event Action<DamageInfo> OnTakeDamageEvent;
@@ -150,6 +149,15 @@ namespace IronWasteland.Tanks
         {
             if (_initialized) return;
             _initialized = true;
+
+            if (view == null)
+            {
+                view = GetComponentInChildren<TankView>(true);
+            }
+            if (view != null)
+            {
+                view.RegisterOwner(this);
+            }
 
             this.m_context = context;
             this.level = Mathf.Clamp(context.Level, TankDefinition.MinLevel, TankDefinition.MaxLevel);
@@ -222,20 +230,13 @@ namespace IronWasteland.Tanks
             RecalculateBonusStats();
         }
 
-        public virtual void SetViewPrefab(TankView prefab)
+        public virtual void SetView(TankView tankView)
         {
-            viewPrefab = prefab;
-            SpawnView();
-        }
-
-        private void SpawnView()
-        {
-            if (viewPrefab == null) return;
-            if (view != null) Destroy(view.gameObject);
-
-            view = Instantiate(viewPrefab, transform);
-            view.name = viewPrefab.name;
-            view.RegisterOwner(this);
+            view = tankView;
+            if (view != null)
+            {
+                view.RegisterOwner(this);
+            }
         }
 
         #endregion
@@ -882,6 +883,16 @@ namespace IronWasteland.Tanks
         {
             m_Body = GetComponent<Rigidbody2D>();
             if (m_Body == null) m_Body = GetComponentInChildren<Rigidbody2D>();
+
+            // Tu tim va khoi tao TankView da nam san trong Tank Prefab
+            if (view == null)
+            {
+                view = GetComponentInChildren<TankView>(true);
+            }
+            if (view != null)
+            {
+                view.RegisterOwner(this);
+            }
 
             if (baseStats == null) baseStats = new TankStats();
 

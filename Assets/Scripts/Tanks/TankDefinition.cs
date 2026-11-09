@@ -5,8 +5,9 @@ using UnityEngine;
 namespace IronWasteland.Tanks
 {
     /// <summary>
-    /// Mo ta 1 loai Tank: ten, mo ta, 2 moc chi so co ban (Cap 1 va Cap 90), va cac prefab.
+    /// Mo ta 1 loai Tank: ten, mo ta, 2 moc chi so co ban (Cap 1 va Cap 90), va tankPrefab chua san TankView.
     /// Theo GDD: moi xe co 2 moc chi so co ban o cap 1 va cap 90, cac cap con lai noi suy tuyen tinh.
+    /// Tank Prefab asset chua luon TankView trong hierarchy con, khong can ViewPrefabs hay IdView rieng.
     /// </summary>
     [CreateAssetMenu(menuName = "IronWasteland/Tank/Tank Definition", fileName = "TankDefinition")]
     public class TankDefinition : ScriptableObject
@@ -27,11 +28,8 @@ namespace IronWasteland.Tanks
         [SerializeField] private TankStats baseStatsLevel90 = new TankStats();
 
         [Header("Prefabs")]
-        [Tooltip("Prefab chua TankBrain (khong co TankView).")]
+        [Tooltip("Prefab chua TankBrain va TankView con ben trong.")]
         [SerializeField] private TankBrain tankPrefab;
-
-        [Tooltip("Danh sach TankView prefab. Index trong mang la TankView ID.")]
-        [SerializeField] private TankView[] viewPrefabs;
 
         [Header("Equipment")]
         [Tooltip("Kho du lieu dung de tra cuu prefab trang bi / phu kien.")]
@@ -46,16 +44,7 @@ namespace IronWasteland.Tanks
         public TankStats BaseStatsLevel1 => baseStatsLevel1;
         public TankStats BaseStatsLevel90 => baseStatsLevel90;
         public TankBrain TankPrefab => tankPrefab;
-        public TankView[] ViewPrefabs => viewPrefabs;
-        public int ViewCount => viewPrefabs != null ? viewPrefabs.Length : 0;
         public EquipmentDatabase EquipmentDatabase => equipmentDatabase;
-
-        /// <summary>Lay TankView prefab theo ID (index trong mang).</summary>
-        public TankView GetViewPrefab(int viewId)
-        {
-            if (viewPrefabs == null || viewId < 0 || viewId >= viewPrefabs.Length) return null;
-            return viewPrefabs[viewId];
-        }
 
         /// <summary>
         /// Tao Tank moi voi context chi dinh.
@@ -68,16 +57,8 @@ namespace IronWasteland.Tanks
                 return null;
             }
 
-            TankView viewPrefab = GetViewPrefab(context.IdView);
-            if (viewPrefab == null)
-            {
-                Debug.LogError($"[{nameof(TankDefinition)}] TankView ID {context.IdView} khong hop le.", this);
-                return null;
-            }
-
             TankBrain brain = Instantiate(tankPrefab, Vector3.zero, Quaternion.identity, null);
             brain.Initialize(context, GetStatsForLevel(context.Level));
-            brain.SetViewPrefab(viewPrefab);
 
             // Trang bi 1 phu kien duy nhat theo context.EquipmentId
             if (context.EquipmentId >= 0 && equipmentDatabase != null)

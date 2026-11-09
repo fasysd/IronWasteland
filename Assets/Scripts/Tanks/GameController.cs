@@ -15,9 +15,6 @@ namespace IronWasteland.Tanks
         [Tooltip("Level cua Tank, thay doi duoc theo y thich Player. Chi doc trong luc khoi tao.")]
         [SerializeField, Range(TankDefinition.MinLevel, TankDefinition.MaxLevel)] private int playerLevel = 1;
 
-        [Tooltip("Index trong danh sach TankView cua TankDefinition.")]
-        [SerializeField] private int viewId;
-
         [SerializeField] private Vector2 spawnPosition = Vector2.zero;
 
         [Tooltip("ID phu kien trong EquipmentDatabase (-1 = khong trang bi).")]
@@ -42,11 +39,10 @@ namespace IronWasteland.Tanks
         {
             if (targetCamera == null) targetCamera = Camera.main;
 
-            // Xay TankBrainContext tu fields hien co (level, viewId, equipmentId).
+            // Xay TankBrainContext tu fields hien co (level, equipmentId, optionSkills).
             var context = new TankBrainContext
             {
                 Level = playerLevel,
-                IdView = viewId,
                 EquipmentId = equipmentId,
                 OptionSkill1 = optionSkill1,
                 OptionSkill2 = optionSkill2
