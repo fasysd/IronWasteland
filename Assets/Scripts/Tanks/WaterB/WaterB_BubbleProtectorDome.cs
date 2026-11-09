@@ -116,7 +116,7 @@ namespace IronWasteland.Tanks.WaterB
                 RemoveBuff(tank);
 
                 if (m_Caster != null) m_Caster.HealAlly(tank, m_HealOnEnd);
-                else tank.Heal(m_HealOnEnd, false);
+                else tank.Heal(m_HealOnEnd);
             }
 
             m_Inside.Clear();

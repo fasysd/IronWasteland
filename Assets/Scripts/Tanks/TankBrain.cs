@@ -988,6 +988,8 @@ namespace IronWasteland.Tanks
 
             for (int i = 0; i < skillCooldowns.Length; i++)
                 skillCooldowns[i] = 0f;
+        }
+
         protected void ReduceSkillCooldown(int index,float amount)
         {
             if (index < 0 || index >= SkillCount) return;

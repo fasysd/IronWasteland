@@ -67,7 +67,7 @@ namespace IronWasteland.Tanks.WaterB
             if (m_Target != null && m_HealOnBreak > 0f)
             {
                 if (m_Caster != null) m_Caster.HealAlly(m_Target, m_HealOnBreak);
-                else m_Target.Heal(m_HealOnBreak, false);
+                else m_Target.Heal(m_HealOnBreak);
             }
 
             Cleanup();

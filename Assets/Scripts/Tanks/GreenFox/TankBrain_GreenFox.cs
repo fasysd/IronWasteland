@@ -1,3 +1,4 @@
+using IronWasteland.Core;
 using IronWasteland.Enemies;
 using System.Collections;
 using System.Collections.Generic;
@@ -77,8 +78,6 @@ namespace IronWasteland.Tanks.GreenFox
 
         private Coroutine m_2ABuffCoroutine;
         private GreenFox_FoxTerritory m_ActiveTerritory;
-
-        private static FieldInfo s_CooldownField;
 
         public bool IsMarkHunterActive => m_Is1ABuffActive;
         public bool IsBurningFoxActive => m_Is1BBuffActive;
@@ -186,7 +185,7 @@ namespace IronWasteland.Tanks.GreenFox
             if (!success)
             {
                 GainEnergy(GetSkillEnergyCost(index));
-                SetSkillCooldownRemaining(index, 0f);
+                SetSkillCooldown(index, 0f);
             }
         }
 
@@ -209,7 +208,8 @@ namespace IronWasteland.Tanks.GreenFox
             bool wasAlive = enemy.IsAlive;
             Vector3 deathPosition = enemy.transform.position;
 
-            DealDamage(enemy, damage); // Attacker = Green Fox, EnemyBrain tự báo Fox Territory
+            DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, textPosition);
+            enemy.TakeDamage(info); // Attacker = Green Fox, EnemyBrain tự báo Fox Territory
             TextDamageManager.Instance?.Show(damage, textPosition);
 
 
@@ -230,32 +230,7 @@ namespace IronWasteland.Tanks.GreenFox
             return true;
         }
 
-        private void SetSkillCooldownRemaining(int index, float value)
-        {
-            float[] cooldowns = GetCooldownArray();
-            if (cooldowns != null && index >= 0 && index < cooldowns.Length)
-            {
-                cooldowns[index] = Mathf.Max(0f, value);
-            }
-        }
 
-        private void ReduceSkillCooldown(int index, float amount)
-        {
-            float[] cooldowns = GetCooldownArray();
-            if (cooldowns != null && index >= 0 && index < cooldowns.Length)
-            {
-                cooldowns[index] = Mathf.Max(0f, cooldowns[index] - amount);
-            }
-        }
-
-        private float[] GetCooldownArray()
-        {
-            if (s_CooldownField == null)
-            {
-                s_CooldownField = typeof(TankBrain).GetField("skillCooldowns", BindingFlags.NonPublic | BindingFlags.Instance);
-            }
-            return s_CooldownField != null ? s_CooldownField.GetValue(this) as float[] : null;
-        }
 
         // ------------------------------------------------------------------
         // Kỹ năng thường - Fox Fang

@@ -90,9 +90,9 @@ namespace IronWasteland.Tanks.WaterB
             float life = duration > 0f ? duration : 10f;
             m_EndTime = Time.time + life;
 
-            // LOGIC: lắng nghe hồi máu của CẢ HAI tank
-            m_OwnerTank.OnHealed += HandleTankHealed;
-            m_TargetAllyTank.OnHealed += HandleTankHealed;
+            // LOGIC: lắng nghe hồi máu của CẢ HAI tank qua OnHealEvent chuẩn của TankBrain
+            m_OwnerTank.OnHealEvent += HandleOwnerHealed;
+            m_TargetAllyTank.OnHealEvent += HandleTargetAllyHealed;
 
             // HÌNH ẢNH: sợi dây nối 2 xe
             SetupLine();
@@ -106,8 +106,8 @@ namespace IronWasteland.Tanks.WaterB
         {
             m_IsActive = false;
 
-            if (m_OwnerTank != null) m_OwnerTank.OnHealed -= HandleTankHealed;
-            if (m_TargetAllyTank != null) m_TargetAllyTank.OnHealed -= HandleTankHealed;
+            if (m_OwnerTank != null) m_OwnerTank.OnHealEvent -= HandleOwnerHealed;
+            if (m_TargetAllyTank != null) m_TargetAllyTank.OnHealEvent -= HandleTargetAllyHealed;
 
             for (int i = 0; i < m_Pulses.Count; i++)
             {
@@ -137,23 +137,41 @@ namespace IronWasteland.Tanks.WaterB
         // LOGIC: chia sẻ hồi máu
         // ------------------------------------------------------------------
 
-        /// <summary>
-        /// Được gọi khi BẤT KÌ tank nào trong liên kết nhận máu.
-        /// Chia sẻ hồi NGAY LẬP TỨC; phần hình ảnh chỉ là xung sáng chạy dọc dây.
-        /// </summary>
-        private void HandleTankHealed(TankBrain receiver, float amount, bool isByShare)
-        {
-            // Máu do chia sẻ thì KHÔNG chia sẻ lại -> không bị vòng lặp vô tận
-            if (!m_IsActive || isByShare || amount <= 0f) return;
+        private bool m_IsSharing;
 
-            TankBrain other = (receiver == m_OwnerTank) ? m_TargetAllyTank : m_OwnerTank;
-            if (other == null) return;
+        private void HandleOwnerHealed(float amount)
+        {
+            if (m_IsSharing || !m_IsActive || amount <= 0f) return;
+            ShareHeal(m_OwnerTank, m_TargetAllyTank, amount);
+        }
+
+        private void HandleTargetAllyHealed(float amount)
+        {
+            if (m_IsSharing || !m_IsActive || amount <= 0f) return;
+            ShareHeal(m_TargetAllyTank, m_OwnerTank, amount);
+        }
+
+        /// <summary>
+        /// Chia sẻ hồi máu giữa 2 xe tăng qua OnHealEvent chuẩn của TankBrain.
+        /// Dùng cờ m_IsSharing chống đệ quy lặp vô hạn mà không cần can thiệp lớp cha.
+        /// </summary>
+        private void ShareHeal(TankBrain receiver, TankBrain other, float amount)
+        {
+            if (other == null || !other.IsAlive) return;
 
             float sharedAmount = amount * m_SharedPercent;
             if (sharedAmount <= 0f) return;
 
-            other.Heal(sharedAmount, true);
-            TextDamageManager.Instance?.Show(sharedAmount, other.transform.position);
+            try
+            {
+                m_IsSharing = true;
+                other.Heal(sharedAmount);
+                TextDamageManager.Instance?.Show(sharedAmount, other.transform.position);
+            }
+            finally
+            {
+                m_IsSharing = false;
+            }
 
             Debug.Log($"[SharedHealing] {receiver.name} nhận {amount} HP -> chia sẻ {sharedAmount} HP cho {other.name}.");
 

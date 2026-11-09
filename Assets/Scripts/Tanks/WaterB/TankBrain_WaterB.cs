@@ -175,7 +175,7 @@ namespace IronWasteland.Tanks.WaterB
         {
             if (target == null || amount <= 0f) return;
 
-            target.Heal(amount, false);
+            target.Heal(amount);
             TextDamageManager.Instance?.Show(amount, target.transform.position);
         }
 
