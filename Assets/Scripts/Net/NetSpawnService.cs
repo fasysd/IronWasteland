@@ -43,6 +43,25 @@ namespace IronWasteland.Net
             return false;
         }
 
+        /// <summary>Server huỷ xe của người chơi đã rời phòng để không còn xe "ma" đứng giữa sân.</summary>
+        public void DespawnPlayerTank(ulong clientId)
+        {
+            if (!m_Spawned.TryGetValue(clientId, out TankBrain brain)) return;
+            m_Spawned.Remove(clientId);
+            if (brain == null) return;
+
+            NetworkObject networkObject = brain.GetComponent<NetworkObject>();
+            NetworkManager manager = NetworkManager.Singleton;
+            if (networkObject != null && networkObject.IsSpawned && manager != null && manager.IsServer)
+            {
+                networkObject.Despawn(true);
+            }
+            else
+            {
+                Destroy(brain.gameObject);
+            }
+        }
+
         /// <summary>Server dựng xe cho một client. Gọi trên host sau khi client được duyệt.</summary>
         public TankBrain SpawnPlayerTank(ulong clientId, NetLoadout loadout)
         {

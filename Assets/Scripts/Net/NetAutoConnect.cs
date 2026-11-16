@@ -69,7 +69,19 @@ namespace IronWasteland.Net
             else
             {
                 string relayJoin = ReadValue(args, "-iw-relay-join");
-                if (!string.IsNullOrEmpty(relayJoin))
+                string lobbyJoin = ReadValue(args, "-iw-lobby-join");
+                string lobbyQuery = ReadValue(args, "-iw-lobby-query");
+                if (!string.IsNullOrEmpty(lobbyQuery))
+                {
+                    StartCoroutine(QueryLobbyRoutine(lobbyQuery, boot));
+                    Debug.Log($"[NetAutoConnect] query lobby {lobbyQuery}");
+                }
+                else if (!string.IsNullOrEmpty(lobbyJoin))
+                {
+                    StartCoroutine(JoinLobbyRoutine(lobbyJoin, boot));
+                    Debug.Log($"[NetAutoConnect] join lobby {lobbyJoin}");
+                }
+                else if (!string.IsNullOrEmpty(relayJoin))
                 {
                     boot.StartClientWithRelay(relayJoin);
                     Debug.Log($"[NetAutoConnect] join relay {relayJoin}");
@@ -260,6 +272,47 @@ namespace IronWasteland.Net
             }
 
             Debug.Log($"[NetSelfTest] giet {killed} quai -> Kills={stage.Kills}/{stage.KillTarget} state={stage.State}");
+        }
+
+        /// <summary>
+        /// Tìm phòng công khai theo mã rồi lấy mã Relay (không join phòng) — dùng để test trên cùng một máy
+        /// vì hai tiến trình dùng chung danh tính Unity Services nên không thể join phòng của chính mình.
+        /// Chỉ dùng cho test tự động: -iw-lobby-query &lt;mã phòng&gt;.
+        /// </summary>
+        private IEnumerator QueryLobbyRoutine(string lobbyCode, NetBootstrap boot)
+        {
+            var task = NetRelayService.FindLobbyRelayCodeAsync(lobbyCode);
+            while (!task.IsCompleted) yield return null;
+
+            string relayCode = task.Status == System.Threading.Tasks.TaskStatus.RanToCompletion ? task.Result : null;
+            if (string.IsNullOrEmpty(relayCode))
+            {
+                Debug.LogWarning($"[NetAutoConnect] lobby {lobbyCode} -> khong tim thay ma relay ({NetRelayService.LastError})");
+                yield break;
+            }
+
+            boot.StartClientWithRelay(relayCode);
+            Debug.Log($"[NetAutoConnect] lobby {lobbyCode} -> relay {relayCode} (qua query)");
+        }
+
+        /// <summary>
+        /// Vào phòng bằng mã Lobby: tra mã Relay trong dữ liệu phòng rồi mới kết nối.
+        /// Chỉ dùng cho test tự động: -iw-lobby-join &lt;mã phòng&gt;.
+        /// </summary>
+        private IEnumerator JoinLobbyRoutine(string lobbyCode, NetBootstrap boot)
+        {
+            var task = NetRelayService.JoinLobbyAndGetRelayCodeAsync(lobbyCode);
+            while (!task.IsCompleted) yield return null;
+
+            string relayCode = task.Status == System.Threading.Tasks.TaskStatus.RanToCompletion ? task.Result : null;
+            if (string.IsNullOrEmpty(relayCode))
+            {
+                Debug.LogWarning($"[NetAutoConnect] lobby {lobbyCode} -> khong lay duoc ma relay ({NetRelayService.LastError})");
+                yield break;
+            }
+
+            boot.StartClientWithRelay(relayCode);
+            Debug.Log($"[NetAutoConnect] lobby {lobbyCode} -> relay {relayCode}");
         }
 
         private IEnumerator LogStateRoutine()

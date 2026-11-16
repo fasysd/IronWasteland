@@ -295,6 +295,7 @@ namespace IronWasteland.Net
         private void HandleClientDisconnected(ulong clientId)
         {
             m_Loadouts.Remove(clientId);
+            spawnService?.DespawnPlayerTank(clientId);
         }
 
         private NetLoadout BuildLocalLoadout()

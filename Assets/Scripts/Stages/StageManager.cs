@@ -169,6 +169,9 @@ namespace IronWasteland.Stages
             }
 
             KillsChanged?.Invoke(Kills);
+
+            // Host gửi trạng thái ải xuống client (named message, không cần NetworkObject).
+            NetStageEvents.Instance?.Broadcast(this, NetStageEvents.StateStarted);
         }
 
         #endregion
@@ -340,6 +343,7 @@ namespace IronWasteland.Stages
             }
 
             StageCleared?.Invoke(this);
+            NetStageEvents.Instance?.Broadcast(this, NetStageEvents.StateCleared);
         }
 
         private void FailStage()
@@ -355,6 +359,7 @@ namespace IronWasteland.Stages
             }
 
             StageFailed?.Invoke(this);
+            NetStageEvents.Instance?.Broadcast(this, NetStageEvents.StateFailed);
         }
 
         #endregion

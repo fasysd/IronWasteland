@@ -128,9 +128,11 @@ namespace IronWasteland.Net
                 CreateLobbyOptions options = new CreateLobbyOptions
                 {
                     IsPrivate = false,
+                    // MVP chưa có đăng nhập người chơi: để Public để phòng hiện trong danh sách công khai
+                    // và người khác đọc được mã Relay. Khi làm tài khoản thì đổi lại Member + join bằng mã phòng.
                     Data = new Dictionary<string, DataObject>
                     {
-                        { RelayDataKey, new DataObject(DataObject.VisibilityOptions.Member, RelayJoinCode) }
+                        { RelayDataKey, new DataObject(DataObject.VisibilityOptions.Public, RelayJoinCode) }
                     }
                 };
 
@@ -148,6 +150,58 @@ namespace IronWasteland.Net
         }
 
         /// <summary>Join lobby bằng mã phòng và trả về mã Relay để kết nối transport.</summary>
+        /// <summary>
+        /// Tìm mã Relay của một phòng công khai mà KHÔNG join.
+        /// Dùng cho test trên cùng một máy: hai tiến trình dùng chung danh tính Unity Services nên
+        /// JoinLobbyByCodeAsync sẽ báo "player is already a member of the lobby".
+        /// </summary>
+        public static async Task<string> FindLobbyRelayCodeAsync(string lobbyCode)
+        {
+            if (!await EnsureServicesAsync()) return null;
+
+            if (string.IsNullOrWhiteSpace(lobbyCode))
+            {
+                LastError = "Mã phòng trống.";
+                return null;
+            }
+
+            try
+            {
+                QueryResponse response = await LobbyService.Instance.QueryLobbiesAsync(new QueryLobbiesOptions { Count = 20 });
+                if (response == null || response.Results == null)
+                {
+                    LastError = "Không truy vấn được danh sách phòng.";
+                    return null;
+                }
+
+                string wanted = lobbyCode.Trim();
+                for (int i = 0; i < response.Results.Count; i++)
+                {
+                    Lobby lobby = response.Results[i];
+                    if (lobby == null) continue;
+                    if (!string.Equals(lobby.LobbyCode, wanted, StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(lobby.Id, wanted, StringComparison.OrdinalIgnoreCase)) continue;
+
+                    if (lobby.Data != null && lobby.Data.TryGetValue(RelayDataKey, out DataObject data) && data != null)
+                    {
+                        return data.Value;
+                    }
+
+                    LastError = "Phòng không chứa mã Relay.";
+                    return null;
+                }
+
+                LastError = $"Không thấy phòng {wanted} trong danh sách công khai.";
+                return null;
+            }
+            catch (Exception exception)
+            {
+                LastError = exception.Message;
+                return null;
+            }
+        }
+
+        /// <summary>Join phòng bằng mã và trả mã Relay (dùng cho người chơi thật, khác danh tính host).</summary>
         public static async Task<string> JoinLobbyAndGetRelayCodeAsync(string lobbyCode)
         {
             if (!await EnsureServicesAsync()) return null;
