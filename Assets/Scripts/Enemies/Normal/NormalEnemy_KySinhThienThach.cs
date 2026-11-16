@@ -233,7 +233,7 @@ namespace IronWasteland.Enemies.Normal
                     // 1. Gây sát thương 100% tấn công chuẩn DamageInfo
                     DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position);
                     tank.TakeDamage(damageInfo);
-                    TextDamageManager.Instance?.Show(damageInfo.FinalDamage, tank.transform.position);
+                    CombatFeedback.Show(damageInfo.FinalDamage, tank.transform.position);
 
                     // 2. Làm chậm tốc độ di chuyển của Tank qua CrowdControl
                     tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Slow, slowDuration, slowPercent);
@@ -256,7 +256,7 @@ namespace IronWasteland.Enemies.Normal
             yield return new WaitForSeconds(duration);
 
             ClearSlowDebuffs();
-            Destroy(gameObject);
+            IronWasteland.Net.NetEntity.Despawn(gameObject);
         }
 
         private void ClearSlowDebuffs()

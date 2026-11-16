@@ -118,7 +118,7 @@ namespace IronWasteland.Tanks.WaterB
                 else
                 {
                     enemy.TakeDamage(m_PowerAmount);
-                    TextDamageManager.Instance?.Show(m_PowerAmount, hitPos);
+                    CombatFeedback.Show(m_PowerAmount, hitPos);
                 }
 
                 // GDD: mỗi lần đánh trúng thành công sẽ tích lũy năng lượng cho Water B

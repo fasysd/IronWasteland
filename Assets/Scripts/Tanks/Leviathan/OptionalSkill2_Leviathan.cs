@@ -203,7 +203,7 @@ namespace IronWasteland.Tanks.Leviathan
             foreach (EnemyBrain enemy in affectedEnemies)
             {
                 enemy.TakeDamage(damage);
-                TextDamageManager.Instance?.Show(damage, enemy.transform.position);
+                CombatFeedback.Show(damage, enemy.transform.position);
 
                 StartCoroutine(PullEnemyToCenter(enemy, centerPosition));
             }

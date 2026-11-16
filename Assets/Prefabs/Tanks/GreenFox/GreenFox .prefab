@@ -221,6 +221,7 @@ GameObject:
   - component: {fileID: 9118720016221874432}
   - component: {fileID: 35935210747609611}
   - component: {fileID: 7816667685359004795}
+  - component: {fileID: 1101782968644142678}
   m_Layer: 6
   m_Name: 'GreenFox '
   m_TagString: Untagged
@@ -524,6 +525,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetPlayerController
   ShowTopMostFoldoutHeaderGroup: 1
+  speedTolerance: 1.6
+  positionSlack: 0.15
 --- !u!114 &7816667685359004795
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -570,6 +573,20 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &1101782968644142678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3291204043161688967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2f8ff0c1f6eb3241a29d40125313900, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetProxyVisual
+  moveThreshold: 0.05
+  aimRadius: 10
 --- !u!1 &4416177109912046103
 GameObject:
   m_ObjectHideFlags: 0

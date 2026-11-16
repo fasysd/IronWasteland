@@ -63,7 +63,7 @@ namespace IronWasteland.Enemies
 
             if (m_Age >= m_Lifetime || m_Target == null || !m_Target.IsAlive)
             {
-                Destroy(gameObject);
+                IronWasteland.Net.NetEntity.Despawn(gameObject);
                 return;
             }
 
@@ -101,10 +101,10 @@ namespace IronWasteland.Enemies
             if (damage > 0f && m_Target != null)
             {
                 m_Target.TakeDamage(damage);
-                TextDamageManager.Instance?.Show(damage, m_Target.transform.position);
+                CombatFeedback.Show(damage, m_Target.transform.position);
             }
 
-            Destroy(gameObject);
+            IronWasteland.Net.NetEntity.Despawn(gameObject);
         }
 
         private static Collider2D FindSolidCollider(TankBrain tank)

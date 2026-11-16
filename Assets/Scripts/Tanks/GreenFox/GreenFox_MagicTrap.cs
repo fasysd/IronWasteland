@@ -122,7 +122,7 @@ namespace IronWasteland.Tanks.GreenFox
                 else
                 {
                     enemy.TakeDamage(damage);
-                    TextDamageManager.Instance?.Show(damage, explosionPos);
+                    CombatFeedback.Show(damage, explosionPos);
                 }
             }
 

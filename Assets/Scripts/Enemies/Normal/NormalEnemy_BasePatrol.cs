@@ -84,6 +84,9 @@ namespace IronWasteland.Enemies.Normal
 
         protected virtual void Start()
         {
+            // Client không chạy pathfinding; NetworkTransform của host quyết định vị trí.
+            if (!IsServerSimulated) return;
+
             if (movementAgent != null && Stats != null)
             {
                 if (Stats.MoveSpeed > 0f)
@@ -227,7 +230,7 @@ namespace IronWasteland.Enemies.Normal
             {
                 movementAgent.Stop();
             }
-            Destroy(gameObject);
+            IronWasteland.Net.NetEntity.Despawn(gameObject);
         }
 
         #region Context Menu Utilities

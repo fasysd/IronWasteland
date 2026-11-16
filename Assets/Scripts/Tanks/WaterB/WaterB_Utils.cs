@@ -22,6 +22,23 @@ namespace IronWasteland.Tanks.WaterB
             return world;
         }
 
+        /// <summary>
+        /// Hướng ngắm ưu tiên Look Target của xe (đã được GameController hoặc bản phát lại mạng gán),
+        /// chỉ rơi về vị trí chuột khi xe chưa có mục tiêu ngắm.
+        /// Nhờ vậy client phát lại kỹ năng của host sẽ bắn đúng hướng thay vì bắn theo chuột của máy mình.
+        /// </summary>
+        public static Vector3 GetAimWorldPosition(TankBrain brain)
+        {
+            if (brain != null && brain.HasLookTarget)
+            {
+                Vector3 aim = brain.LookTarget;
+                aim.z = 0f;
+                return aim;
+            }
+
+            return GetMouseWorldPosition();
+        }
+
         /// <summary>Lấy mọi TankBrain còn sống trong bán kính (mỗi xe chỉ xuất hiện 1 lần).</summary>
         public static void GetTanksInRadius(Vector3 center, float radius, List<TankBrain> results)
         {

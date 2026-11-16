@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: 376908741211353279}
   - component: {fileID: 7648771413807846788}
   - component: {fileID: 7236878255461375779}
+  - component: {fileID: 9206021209768897702}
   m_Layer: 6
   m_Name: WallTitan
   m_TagString: Untagged
@@ -297,6 +298,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetPlayerController
   ShowTopMostFoldoutHeaderGroup: 1
+  speedTolerance: 1.6
+  positionSlack: 0.15
 --- !u!114 &7236878255461375779
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -343,6 +346,20 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &9206021209768897702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2007533005529995649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2f8ff0c1f6eb3241a29d40125313900, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetProxyVisual
+  moveThreshold: 0.05
+  aimRadius: 10
 --- !u!1 &2109673423802838541
 GameObject:
   m_ObjectHideFlags: 0

@@ -28,6 +28,12 @@ namespace IronWasteland.Tanks.WallTitan
         private Coroutine m_LifetimeCoroutine;
         private Action<Skill_EarthWall> m_ReturnToPool;
 
+        /// <summary>
+        /// True khi bức tường chỉ để hiển thị (client phát lại hình ảnh do host dựng).
+        /// Tường như vậy không được đăng ký làm chướng ngại vật cho PathfindingGrid2D cục bộ.
+        /// </summary>
+        public bool VisualOnly { get; set; }
+
         public ColliderOwnerRef ColliderRef => m_OwnerRef;
         public BoxCollider2D WallCollider => m_WallCollider;
 
@@ -97,6 +103,7 @@ namespace IronWasteland.Tanks.WallTitan
         private void RegisterWithGrid()
         {
             if (m_IsRegisteredObstacle) return;
+            if (VisualOnly) return; // client chỉ thấy hình ảnh, không tự chặn đường của mình
 
             if (m_WallCollider != null && PathfindingGrid2D.Instance != null)
             {

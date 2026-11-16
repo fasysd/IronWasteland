@@ -335,6 +335,9 @@ namespace IronWasteland.Tanks.Leviathan
             return base.GetSkillEnergyGain(index);
         }
 
+        /// <summary>Đòn thường (Water Pulse) và kỹ năng chuyên biệt (Water Bubble) là visual thuần, an toàn để client phát lại.</summary>
+        protected override bool CanReplayRemoteFx(int index) => index <= 1;
+
         protected override void OnUseSkill(int index)
         {
             if (index == normalSkillIndex)
@@ -632,7 +635,7 @@ namespace IronWasteland.Tanks.Leviathan
 
             // Gây sát thương lên kẻ địch
             enemy.TakeDamage(finalDmg);
-            TextDamageManager.Instance?.Show(finalDmg, enemy.transform.position);
+            CombatFeedback.Show(finalDmg, enemy.transform.position);
 
             // Tích lũy năng lượng cho xe tăng khi đánh trúng
             if (energyGainPerHit > 0f)
@@ -708,7 +711,7 @@ namespace IronWasteland.Tanks.Leviathan
 
             float damage = CalculateSkillDamage(attackScale, maxHealthRatio);
             enemy.TakeDamage(damage);
-            TextDamageManager.Instance?.Show(damage, enemy.transform.position);
+            CombatFeedback.Show(damage, enemy.transform.position);
         }
 
         private SpecializedSkill_Leviathan GetSpecializedSkillFromPool()

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IronWasteland.Enemies;
 using IronWasteland.Tanks;
 using Unity.Netcode;
 using UnityEngine;
@@ -81,6 +82,33 @@ namespace IronWasteland.Net
 
             m_Spawned[clientId] = brain;
             return brain;
+        }
+
+        /// <summary>
+        /// Server spawn một quái qua NGO rồi mới <c>Initialize</c> — nhờ vậy giá trị máu đầu tiên
+        /// mà client nhận được đã đúng với hệ số của đợt spawn (tốc độ, máu cường hoá...).
+        /// </summary>
+        public EnemyBrain SpawnEnemy(EnemyBrain prefab, Vector3 position, EnemyStats stats)
+        {
+            if (prefab == null) return null;
+
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsServer) return null;
+
+            EnemyBrain enemy = Instantiate(prefab, position, Quaternion.identity);
+            enemy.gameObject.SetActive(true);
+
+            NetworkObject networkObject = enemy.GetComponent<NetworkObject>();
+            if (networkObject == null)
+            {
+                Debug.LogError($"[NetSpawnService] Prefab quái '{prefab.name}' chưa có NetworkObject.", this);
+                Destroy(enemy.gameObject);
+                return null;
+            }
+
+            enemy.Initialize(stats);
+            networkObject.Spawn(true);
+            return enemy;
         }
     }
 }

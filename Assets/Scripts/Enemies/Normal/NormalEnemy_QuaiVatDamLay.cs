@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -286,6 +287,8 @@ namespace IronWasteland.Enemies.Normal
             }
 
             zone.SpawnAt(position, ReturnZoneToPool);
+            // Online: client chỉ dựng bản sao visual của vùng, tự thu hồi khi host trả vùng về pool.
+            NetVisualSpawn.Follow(zoneTemplate != null ? zoneTemplate.gameObject : null, zone.gameObject);
             m_ActiveZones.Add(zone);
         }
 
@@ -299,7 +302,7 @@ namespace IronWasteland.Enemies.Normal
                 if (tank != null && tank.IsAlive)
                 {
                     tank.TakeDamage(damage);
-                    TextDamageManager.Instance?.Show(damage, tank.transform.position);
+                    CombatFeedback.Show(damage, tank.transform.position);
                 }
             }
         }
@@ -308,6 +311,7 @@ namespace IronWasteland.Enemies.Normal
         {
             if (zone == null) return;
 
+            NetVisualSpawn.End(zone.gameObject);
             m_ActiveZones.Remove(zone);
             m_ZonePool.Enqueue(zone);
         }

@@ -1,7 +1,9 @@
 using IronWasteland;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using System;
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace IronWasteland.Tanks.BlackShadow
@@ -163,6 +165,13 @@ namespace IronWasteland.Tanks.BlackShadow
             cloneInstance.Initialize(ownerTank, ally, spawnPos, bodyRot, maxHits, duration, cloneMaxHealth);
             cloneInstance.OnCloneDestroyed -= OnCloneExpiredOrDestroyed;
             cloneInstance.OnCloneDestroyed += OnCloneExpiredOrDestroyed;
+
+            // Online: bản sao do host mô phỏng, client chỉ dựng một bản sao visual tĩnh để nhìn thấy.
+            if (TankBrain.NetworkSessionActive && NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+            {
+                NetworkObject ownerNetworkObject = ownerTank != null ? ownerTank.GetComponent<NetworkObject>() : null;
+                NetVisualSpawn.Instance?.BroadcastByName(ownerNetworkObject, cloneInstance.name, spawnPos, bodyRot, duration, false);
+            }
 
             PlayBurst(spawnPos);
             skillState = 1;

@@ -515,7 +515,7 @@ namespace IronWasteland.Enemies.Normal
 
             tank.TakeDamage(damageInfo);
 
-            TextDamageManager.Instance?.Show(damageInfo.FinalDamage, hitPos);
+            CombatFeedback.Show(damageInfo.FinalDamage, hitPos);
 
         }
 

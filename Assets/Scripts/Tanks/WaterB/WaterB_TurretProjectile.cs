@@ -109,7 +109,7 @@ namespace IronWasteland.Tanks.WaterB
             {
                 Vector3 pos = victim.transform.position;
                 victim.TakeDamage(m_Damage);
-                TextDamageManager.Instance?.Show(m_Damage, pos);
+                CombatFeedback.Show(m_Damage, pos);
             }
             Debug.Log($"[WaterTurret] Trụ nước bắn trúng {victim.name} gây {m_Damage} sát thương!");
 

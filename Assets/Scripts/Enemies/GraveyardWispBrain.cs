@@ -101,7 +101,7 @@ namespace IronWasteland.Enemies
 
         protected override void OnDeath()
         {
-            Destroy(gameObject);
+            IronWasteland.Net.NetEntity.Despawn(gameObject);
         }
 
         protected override void OnValidate()

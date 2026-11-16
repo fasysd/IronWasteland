@@ -220,7 +220,7 @@ namespace IronWasteland.Tanks.Leviathan
             foreach (EnemyBrain enemy in affectedEnemies)
             {
                 enemy.TakeDamage(explosionDamage);
-                TextDamageManager.Instance?.Show(explosionDamage, enemy.transform.position);
+                CombatFeedback.Show(explosionDamage, enemy.transform.position);
             }
 
             OnArmorStateChange?.Invoke(false);

@@ -406,7 +406,7 @@ namespace IronWasteland.Enemies.Normal
             {
                 movementAgent.Stop();
             }
-            Destroy(gameObject);
+            IronWasteland.Net.NetEntity.Despawn(gameObject);
         }
 
         protected override void OnValidate()

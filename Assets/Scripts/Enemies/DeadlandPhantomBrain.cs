@@ -148,7 +148,7 @@ namespace IronWasteland.Enemies
         protected override void OnDeath()
         {
             DestroyRift();
-            Destroy(gameObject);
+            IronWasteland.Net.NetEntity.Despawn(gameObject);
         }
 
         private void OnDestroy() => DestroyRift();

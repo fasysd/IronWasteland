@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using IronWasteland.Core;
 using IronWasteland.Core.Effects;
+using IronWasteland.Net;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -148,6 +149,12 @@ namespace IronWasteland.Tanks
         public bool IsServerSimulated { get; set; } = true;
 
         /// <summary>
+        /// True trong lúc client phát lại hình ảnh kỹ năng do host vừa thi triển.
+        /// Chế độ này chỉ chạy <see cref="OnUseSkill"/> để sinh visual, bỏ qua năng lượng, hồi chiêu và event gameplay.
+        /// </summary>
+        public bool IsRemoteFxReplay { get; private set; }
+
+        /// <summary>
         /// True khi đang có phiên mạng đã kết nối (host hoặc client). Offline trả false.
         /// </summary>
         public static bool NetworkSessionActive =>
@@ -207,6 +214,9 @@ namespace IronWasteland.Tanks
         {
             if (string.IsNullOrEmpty(key)) return;
 
+            // Phát lại hình ảnh kỹ năng không được đụng vào chỉ số: buff là việc của host.
+            if (IsRemoteFxReplay) return;
+
             if (flatDelta != null) m_FlatBonusByKey[key] = flatDelta;
             if (percentDelta != null) m_PercentBonusByKey[key] = percentDelta;
 
@@ -221,6 +231,7 @@ namespace IronWasteland.Tanks
         public virtual void RemoveBonusStats(string key)
         {
             if (string.IsNullOrEmpty(key)) return;
+            if (IsRemoteFxReplay) return; // phát lại hình ảnh không gỡ buff của host
 
             bool removed = m_FlatBonusByKey.Remove(key);
             removed |= m_PercentBonusByKey.Remove(key);
@@ -383,6 +394,7 @@ namespace IronWasteland.Tanks
         public virtual void ApplyEffect(StatusEffect effect)
         {
             if (effect == null) return;
+            if (IsRemoteFxReplay) return; // hiệu ứng/khiên là quyết định của host, client chỉ phát hình ảnh
 
             for (int i = 0; i < m_ActiveEffects.Count; i++)
             {
@@ -497,6 +509,8 @@ namespace IronWasteland.Tanks
         public virtual ShieldEffect AddShield(float amount, float duration, string effectId = null, UnityEngine.Object source = null, string displayName = "Khiên", int maxAbsorbHits = int.MaxValue)
         {
             if (amount <= 0f) return null;
+            if (IsRemoteFxReplay) return null; // client phát lại hình ảnh không được tạo khiên cục bộ
+
             string id = string.IsNullOrEmpty(effectId) ? $"Shield_{Guid.NewGuid():N}" : effectId;
             ShieldEffect shield = new ShieldEffect(id, displayName, duration, amount, source, maxAbsorbHits);
             ApplyEffect(shield);
@@ -634,41 +648,89 @@ namespace IronWasteland.Tanks
         {
             if (index < 0 || index >= SkillCount) return;
 
-            // Chỉ máy mô phỏng combat mới được thi triển kỹ năng.
-            // Client proxy gửi yêu cầu lên host thay vì tự chạy tại đây.
-            if (!IsServerSimulated) return;
+            // Chỉ máy mô phỏng combat (host) hoặc chế độ phát lại hình ảnh trên client mới được chạy tiếp.
+            // Client proxy gửi yêu cầu lên host thay vì tự quyết định chi phí/hồi chiêu tại đây.
+            if (!IsServerSimulated && !IsRemoteFxReplay) return;
 
-            if (!CanUseSkill) return;
-            if (skillCooldowns[index] > 0f) return;
+            if (!IsRemoteFxReplay)
+            {
+                if (!CanUseSkill) return;
+                if (skillCooldowns[index] > 0f) return;
 
-            if (index == 0)
-            {
-                // Ky nang thuong: hoi nang luong
-                GainEnergy(GetSkillEnergyGain(index));
-            }
-            else
-            {
-                // Ky nang tieu hao nang luong: kiem tra du nang luong moi thi trien
-                float energyCost = GetSkillEnergyCost(index);
-                if (currentEnergy < energyCost)
+                if (index == 0)
                 {
-                    return;
+                    // Ky nang thuong: hoi nang luong
+                    GainEnergy(GetSkillEnergyGain(index));
                 }
-                SpendEnergy(energyCost);
+                else
+                {
+                    // Ky nang tieu hao nang luong: kiem tra du nang luong moi thi trien
+                    float energyCost = GetSkillEnergyCost(index);
+                    if (currentEnergy < energyCost)
+                    {
+                        return;
+                    }
+                    SpendEnergy(energyCost);
+                }
+
+                skillCooldowns[index] = GetCooldown(index);
+
+                OnSkillUsedEvent?.Invoke(index);
+                m_EquippedAccessory?.OnOwnerUsedSkill(index);
             }
 
-            skillCooldowns[index] = GetCooldown(index);
-
-            OnSkillUsedEvent?.Invoke(index);
-            m_EquippedAccessory?.OnOwnerUsedSkill(index);
+            // Chụp điểm ngắm trước khi skill kịp đổi look target, để relay dùng đúng hướng đã bắn.
+            Vector2 aim = HasLookTarget ? m_LookTarget : (Vector2)transform.position + Vector2.right;
 
             OnUseSkill(index);
+
+            // Host vừa thi triển xong: báo client phát lại hình ảnh bằng pool cục bộ.
+            if (!IsRemoteFxReplay && NetworkSessionActive && HasGameplayAuthority)
+            {
+                NetSkillFx.Instance?.Broadcast(this, index, aim);
+            }
         }
+
+        /// <summary>
+        /// Client phát lại hình ảnh một kỹ năng do host vừa thi triển.
+        /// Không tiêu năng lượng, không đụng hồi chiêu, không phát event gameplay.
+        /// Chỉ những slot có visual thuần mới được phát lại (xem <see cref="CanReplayRemoteFx"/>).
+        /// </summary>
+        public void PlayRemoteSkillFx(int index, Vector2 aimWorld)
+        {
+            if (IsServerSimulated) return;
+            if (index < 0 || index >= SkillCount) return;
+            if (!CanReplayRemoteFx(index)) return;
+
+            bool hadLookTarget = HasLookTarget;
+            Vector2 previousAim = m_LookTarget;
+
+            IsRemoteFxReplay = true;
+            try
+            {
+                SetLookTarget(aimWorld);
+                UseSkill(index);
+            }
+            finally
+            {
+                IsRemoteFxReplay = false;
+
+                // Trả lại hướng ngắm cũ để replay không kéo lệch nòng thật của người chơi.
+                if (hadLookTarget) SetLookTarget(previousAim);
+                else ClearLookTarget();
+            }
+        }
+
+        /// <summary>
+        /// Slot nào được phép phát lại hình ảnh trên client. Mặc định chỉ đòn thường (slot 0).
+        /// Lớp con mở thêm slot chuyên biệt nếu visual của nó không phụ thuộc trạng thái nội bộ.
+        /// </summary>
+        protected virtual bool CanReplayRemoteFx(int index) => index == 0;
 
         protected virtual void OnUseSkill(int index)
         {
             Debug.Log($"[TankBrain] Level {level} su dung ky nang {index + 1}/{SkillCount}.");
-            TextDamageManager.Instance?.Show(36, this.view.Muzzle.position);
+            CombatFeedback.Show(36, this.view.Muzzle.position);
         }
 
         protected virtual float GetSkillEnergyCost(int index)
@@ -693,6 +755,7 @@ namespace IronWasteland.Tanks
         public virtual void AddDamageRedirector(IDamageRedirector redirector)
         {
             if (redirector == null) return;
+            if (IsRemoteFxReplay) return; // gánh hộ là cơ chế của host
             if (m_DamageRedirectors.Contains(redirector)) return;
             m_DamageRedirectors.Add(redirector);
         }
@@ -1047,6 +1110,8 @@ namespace IronWasteland.Tanks
         /// </summary>
         protected void ResetSkillCooldown(int index)
         {
+            if (IsRemoteFxReplay) return; // hồi chiêu là số liệu của host, client không được tự xoá
+
             if (skillCooldowns == null || skillCooldowns.Length == 0)
                 return;
 
@@ -1065,6 +1130,7 @@ namespace IronWasteland.Tanks
 
         protected void ReduceSkillCooldown(int index,float amount)
         {
+            if (IsRemoteFxReplay) return;
             if (index < 0 || index >= SkillCount) return;
             skillCooldowns[index] = Mathf.Max(0f, skillCooldowns[index] - amount);
         }
@@ -1072,6 +1138,7 @@ namespace IronWasteland.Tanks
         /// <summary>Gán trực tiếp thời gian hồi chiêu cho kỹ năng tại slot index.</summary>
         public void SetSkillCooldown(int index, float amount)
         {
+            if (IsRemoteFxReplay) return;
             if (index < 0 || index >= SkillCount) return;
             skillCooldowns[index] = Mathf.Max(0f, amount);
         }

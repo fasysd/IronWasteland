@@ -244,6 +244,9 @@ namespace IronWasteland.Tanks.WallTitan
             PrewarmEarthquakePool();
         }
 
+        /// <summary>Earth Break và Earth Wall là visual thuần (tường phát lại dạng chỉ-hình-ảnh), an toàn để client phát lại.</summary>
+        protected override bool CanReplayRemoteFx(int index) => index <= 1;
+
         protected override void OnUseSkill(int index)
         {
             switch (index)
@@ -284,7 +287,7 @@ namespace IronWasteland.Tanks.WallTitan
 
             DamageInfo info = new DamageInfo(this, enemy, rawDamage, Stats.ArmorPenetration, hitPosition);
             enemy.TakeDamage(info);
-            TextDamageManager.Instance?.Show(info.FinalDamage, hitPosition);
+            CombatFeedback.Show(info.FinalDamage, hitPosition);
         }
 
         /// <summary>Tìm đồng minh gần nhất có ColliderOwnerRef sở hữu bởi TankBrain quanh điểm chỉ định; không có thì trả về null.</summary>
@@ -514,6 +517,7 @@ namespace IronWasteland.Tanks.WallTitan
 
             wall.transform.SetParent(null);
             wall.gameObject.SetActive(true);
+            wall.VisualOnly = IsRemoteFxReplay;
             wall.Initialize(LookTarget, rotation, ReturnEarthWallToPool);
             wall.Duration = earthWallDuration;
             wall.StartSkill();

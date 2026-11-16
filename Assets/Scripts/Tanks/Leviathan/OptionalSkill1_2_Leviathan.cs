@@ -340,7 +340,7 @@ namespace IronWasteland.Tanks.Leviathan
             sharedAmount = candidateShare;
 
             // Hiển thị phản hồi trực quan ngay tại vị trí Leviathan (số gánh hộ tính trên sát thương gốc).
-            TextDamageManager.Instance?.Show(sharedAmount, ownerTank.transform.position);
+            CombatFeedback.Show(sharedAmount, ownerTank.transform.position);
             OnDamageShared?.Invoke(sharedAmount);
 
             return true;

@@ -111,6 +111,9 @@ namespace IronWasteland.Enemies
         public bool CanUseSkill => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Silence);
 
         public IReadOnlyList<StatusEffect> ActiveEffects => m_ActiveEffects;
+
+        /// <summary>Đã chạy <see cref="Initialize"/> chưa (dùng cho client phản chiếu máu).</summary>
+        public bool IsInitialized => m_Initialized;
         #endregion
 
         #region Setup
@@ -271,6 +274,11 @@ namespace IronWasteland.Enemies
             m_Dead = true;
 
             model?.PlayDeath();
+
+            // Client chỉ phản chiếu trạng thái chết (ẩn model, hiệu ứng chết).
+            // Các hook gameplay (nổ lan, triệu hồi, đếm mạng) chỉ được chạy trên host.
+            if (!IsServerSimulated) return;
+
             OnDeath();
             OnDeathEvent?.Invoke();
         }

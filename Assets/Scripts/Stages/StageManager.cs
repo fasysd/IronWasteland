@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using IronWasteland.Enemies;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace IronWasteland.Stages
@@ -77,6 +79,7 @@ namespace IronWasteland.Stages
 
         private readonly List<StageDefinition.Wave> m_PendingWaves = new List<StageDefinition.Wave>();
         private readonly List<EnemyBrain> m_Spawned = new List<EnemyBrain>();
+        private NetSpawnService m_NetSpawnService;
 
         private Transform m_Container;
         private TankBrain m_Player;
@@ -95,6 +98,10 @@ namespace IronWasteland.Stages
         private void Update()
         {
             if (State != StageState.Running) return;
+
+            // Client không mô phỏng ải: host giữ đồng hồ, spawn và xét thắng/thua,
+            // client chỉ nhận quái/sự kiện qua mạng. Chế độ offline không bị ảnh hưởng.
+            if (TankBrain.NetworkSessionActive && NetworkManager.Singleton != null && !NetworkManager.Singleton.IsServer) return;
 
             Elapsed += Time.deltaTime;
 
@@ -170,6 +177,7 @@ namespace IronWasteland.Stages
             m_Initialized = true;
 
             if (gameController == null) gameController = FindAnyObjectByType<GameController>();
+            if (m_NetSpawnService == null) m_NetSpawnService = FindAnyObjectByType<NetSpawnService>();
 
             if (m_Container == null)
             {
@@ -224,13 +232,27 @@ namespace IronWasteland.Stages
         private void SpawnEnemy(StageDefinition.EnemySpawn spawn)
         {
             Vector2 position = RandomSpawnPoint();
-            EnemyBrain enemy = Instantiate(spawn.Enemy, position, Quaternion.identity, m_Container);
 
             // Chi so: lay tu prefab roi nhan he so cai dat cua dot (quai cuong hoa toc do...).
             EnemyStats stats = spawn.Enemy.Stats != null ? spawn.Enemy.Stats.Clone() : new EnemyStats();
             stats.MoveSpeed *= Mathf.Max(0.01f, spawn.SpeedMultiplier);
 
-            enemy.Initialize(stats);
+            EnemyBrain enemy;
+            bool networked = TankBrain.NetworkSessionActive;
+
+            if (networked && m_NetSpawnService != null)
+            {
+                // Host spawn qua NGO để mọi máy thấy cùng một con quái; SpawnEnemy tự Initialize.
+                enemy = m_NetSpawnService.SpawnEnemy(spawn.Enemy, position, stats);
+            }
+            else
+            {
+                enemy = Instantiate(spawn.Enemy, position, Quaternion.identity, m_Container);
+                enemy.Initialize(stats);
+            }
+
+            if (enemy == null) return;
+
             enemy.OnDeathEvent += OnEnemyDied;
 
             m_Spawned.Add(enemy);

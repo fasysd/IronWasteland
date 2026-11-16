@@ -176,12 +176,12 @@ namespace IronWasteland.Tanks.WaterB
             if (target == null || amount <= 0f) return;
 
             target.Heal(amount);
-            TextDamageManager.Instance?.Show(amount, target.transform.position);
+            CombatFeedback.Show(amount, target.transform.position);
         }
 
         private Vector3 GetValidPlacementPosition()
         {
-            Vector3 mouse = WaterB_Utils.GetMouseWorldPosition();
+            Vector3 mouse = WaterB_Utils.GetAimWorldPosition(this);
             float distance = Vector2.Distance(transform.position, mouse);
             if (distance > maxPlacementRange)
             {
@@ -207,7 +207,7 @@ namespace IronWasteland.Tanks.WaterB
 
             float power = Scaled(healingAtkRatio, healingMaxHpRatio);
 
-            Vector3 mouse = WaterB_Utils.GetMouseWorldPosition();
+            Vector3 mouse = WaterB_Utils.GetAimWorldPosition(this);
             Vector3 dir = mouse - transform.position;
             dir.z = 0f;
             if (dir.sqrMagnitude < 0.001f) dir = transform.up;
@@ -250,7 +250,7 @@ namespace IronWasteland.Tanks.WaterB
             Vector3 enemyPos = enemy.transform.position;
 
             enemy.TakeDamage(finalDamage);
-            TextDamageManager.Instance?.Show(finalDamage, enemyPos);
+            CombatFeedback.Show(finalDamage, enemyPos);
 
             ApplyLifeDrain(finalDamage, enemyPos);
         }
@@ -263,7 +263,7 @@ namespace IronWasteland.Tanks.WaterB
             if (bubbleShieldPrefab == null) return false;
 
             TankBrain target = this;
-            Vector3 mouse = WaterB_Utils.GetMouseWorldPosition();
+            Vector3 mouse = WaterB_Utils.GetAimWorldPosition(this);
             TankBrain picked = WaterB_Utils.FindTankNearPoint(mouse, 1.5f, null);
             if (picked != null && Vector2.Distance(transform.position, picked.transform.position) <= shieldMaxCastRange)
             {
@@ -296,7 +296,7 @@ namespace IronWasteland.Tanks.WaterB
 
         private bool CastSharedHealing()
         {
-            Vector3 mouse = WaterB_Utils.GetMouseWorldPosition();
+            Vector3 mouse = WaterB_Utils.GetAimWorldPosition(this);
             TankBrain ally = WaterB_Utils.FindTankNearPoint(mouse, 1.5f, this);
             if (ally == null) return false;
             if (Vector2.Distance(transform.position, ally.transform.position) > skill1SubDesign.MaxSelectRange) return false;

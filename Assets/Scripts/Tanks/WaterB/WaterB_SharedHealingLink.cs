@@ -166,7 +166,7 @@ namespace IronWasteland.Tanks.WaterB
             {
                 m_IsSharing = true;
                 other.Heal(sharedAmount);
-                TextDamageManager.Instance?.Show(sharedAmount, other.transform.position);
+                CombatFeedback.Show(sharedAmount, other.transform.position);
             }
             finally
             {

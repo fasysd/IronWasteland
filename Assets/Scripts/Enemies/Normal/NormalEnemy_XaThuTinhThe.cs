@@ -1,4 +1,5 @@
 using IronWasteland.Core;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -104,12 +105,14 @@ namespace IronWasteland.Enemies.Normal
                 dir.Normalize();
             }
 
-            Projectile_XaThuTinhThe projectile = Instantiate(
+            // Online: host bắn thật, client chỉ dựng bản sao visual để nhìn thấy đạn bay.
+            Projectile_XaThuTinhThe projectile = NetVisual.Spawn(
                 projectilePrefab,
                 spawnPos,
-                Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg)
+                Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg),
+                5f
             );
-            projectile.gameObject.SetActive(true);
+            if (projectile != null) projectile.gameObject.SetActive(true);
 
             if (projectile != null)
             {
@@ -138,7 +141,7 @@ namespace IronWasteland.Enemies.Normal
             float damage = Stats != null ? Stats.Attack : 10f;
             DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position);
             tank.TakeDamage(damageInfo);
-            TextDamageManager.Instance?.Show(damageInfo.FinalDamage, tank.transform.position);
+            CombatFeedback.Show(damageInfo.FinalDamage, tank.transform.position);
         }
     }
 }

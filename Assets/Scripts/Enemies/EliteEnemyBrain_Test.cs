@@ -9,7 +9,7 @@ namespace IronWasteland.Enemies
     {
         protected override void OnDeath()
         {
-            Destroy(this.gameObject);
+            IronWasteland.Net.NetEntity.Despawn(this.gameObject);
         }
     }
 }

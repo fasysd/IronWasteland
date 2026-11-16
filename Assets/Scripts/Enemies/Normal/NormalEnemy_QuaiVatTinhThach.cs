@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using IronWasteland.Core;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -124,12 +125,14 @@ namespace IronWasteland.Enemies.Normal
                 float angleOffset = startAngle + i * angleSpacing;
                 Vector2 shootDir = (Quaternion.Euler(0f, 0f, angleOffset) * forward).normalized;
 
-                Projectile_QuaiVatTinhThach projectile = Instantiate(
+                // Online: host bắn thật, client chỉ dựng bản sao visual để nhìn thấy đạn bay.
+                Projectile_QuaiVatTinhThach projectile = NetVisual.Spawn(
                     projectilePrefab,
                     spawnPos,
-                    Quaternion.Euler(0f, 0f, Mathf.Atan2(shootDir.y, shootDir.x) * Mathf.Rad2Deg)
+                    Quaternion.Euler(0f, 0f, Mathf.Atan2(shootDir.y, shootDir.x) * Mathf.Rad2Deg),
+                    5f
                 );
-                projectile.gameObject.SetActive(true);
+                if (projectile != null) projectile.gameObject.SetActive(true);
 
                 if (projectile != null)
                 {
@@ -186,7 +189,7 @@ namespace IronWasteland.Enemies.Normal
 
                 DamageInfo damageInfo = new DamageInfo(this, tank, finalDamage, 0f, tank.transform.position);
                 tank.TakeDamage(damageInfo);
-                TextDamageManager.Instance?.Show(damageInfo.FinalDamage, tank.transform.position);
+                CombatFeedback.Show(damageInfo.FinalDamage, tank.transform.position);
             }
         }
     }

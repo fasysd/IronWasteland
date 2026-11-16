@@ -131,7 +131,7 @@ namespace IronWasteland.Enemies.Normal
 
         protected override void OnDeath()
         {
-            Destroy(gameObject);
+            IronWasteland.Net.NetEntity.Despawn(gameObject);
         }
 
         protected virtual void OnDrawGizmosSelected()

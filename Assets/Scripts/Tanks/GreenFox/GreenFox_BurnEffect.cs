@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using IronWasteland.Enemies;
 using UnityEngine;
@@ -111,7 +111,7 @@ namespace IronWasteland.Tanks.GreenFox
                 else
                 {
                     m_OwnerEnemy.TakeDamage(m_TickDamage);
-                    TextDamageManager.Instance?.Show(m_TickDamage, transform.position);
+                    CombatFeedback.Show(m_TickDamage, transform.position);
                 }
             }
 

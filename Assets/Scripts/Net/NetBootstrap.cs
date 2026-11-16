@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using IronWasteland.Enemies;
 using IronWasteland.Tanks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
+using Unity.Networking.Transport.Relay;
 using UnityEngine;
 
 namespace IronWasteland.Net
@@ -27,7 +29,7 @@ namespace IronWasteland.Net
         [SerializeField] private NetSpawnService spawnService;
 
         [Header("Prefab mạng")]
-        [Tooltip("Các TankDefinition có prefab sẽ được đăng ký làm NetworkPrefab (chỉ tank, không đăng ký skill/VFX).")]
+        [Tooltip("Các TankDefinition có prefab sẽ được dùng làm roster khi spawn người chơi.")]
         [SerializeField] private TankDefinition[] networkTankDefinitions;
 
         [Header("Lựa chọn của người chơi máy này")]
@@ -62,7 +64,6 @@ namespace IronWasteland.Net
 
             networkManager.NetworkConfig.TickRate = TickRate;
             EnsureTransport();
-            RegisterNetworkPrefabs();
 
             networkManager.ConnectionApprovalCallback -= HandleConnectionApproval;
             networkManager.ConnectionApprovalCallback += HandleConnectionApproval;
@@ -86,6 +87,8 @@ namespace IronWasteland.Net
         {
             if (networkManager == null) return false;
 
+            ClearSceneEnemies();
+            DestroyLocalOfflineTank();
             EnsureTransport();
             NetLoadout loadout = BuildLocalLoadout();
             m_Loadouts[ServerClientId] = loadout;
@@ -100,6 +103,8 @@ namespace IronWasteland.Net
         {
             if (networkManager == null) return false;
 
+            ClearSceneEnemies();
+            DestroyLocalOfflineTank();
             EnsureTransport();
             UnityTransport transport = networkManager.NetworkConfig.NetworkTransport as UnityTransport;
             if (transport != null) transport.SetConnectionData(joinAddress, joinPort);
@@ -108,10 +113,76 @@ namespace IronWasteland.Net
             return networkManager.StartClient();
         }
 
+        /// <summary>Đổi địa chỉ/cổng sẽ kết nối (dùng cho test nhiều client với tham số dòng lệnh).</summary>
+        public void SetJoinTarget(string address, ushort port)
+        {
+            if (!string.IsNullOrEmpty(address)) joinAddress = address;
+            if (port > 0) joinPort = port;
+        }
+
+        /// <summary>Mở phòng qua Relay của Unity Services: tạo allocation, gắn transport rồi StartHost.</summary>
+        public async void StartHostWithRelay(string region = null)
+        {
+            if (networkManager == null || networkManager.IsListening) return;
+
+            RelayServerData? relayData = await NetRelayService.CreateHostAllocationAsync(region);
+            if (relayData == null)
+            {
+                Debug.LogError("[NetBootstrap] Không tạo được Relay: " + NetRelayService.LastError, this);
+                return;
+            }
+
+            EnsureTransport();
+            UnityTransport transport = networkManager.NetworkConfig.NetworkTransport as UnityTransport;
+            if (transport == null)
+            {
+                Debug.LogError("[NetBootstrap] Thiếu UnityTransport để gắn Relay.", this);
+                return;
+            }
+
+            transport.SetRelayServerData(relayData.Value);
+            if (!StartHost())
+            {
+                Debug.LogError("[NetBootstrap] StartHost qua Relay thất bại.", this);
+                return;
+            }
+
+            bool lobbyCreated = await NetRelayService.CreateLobbyAsync("IronWasteland");
+            Debug.Log($"[NetBootstrap] Relay code={NetRelayService.RelayJoinCode} lobby={lobbyCreated} lobbyCode={NetRelayService.LobbyCode} err={NetRelayService.LastError}");
+        }
+
+        /// <summary>Vào phòng Relay bằng mã join code (không dùng địa chỉ IP).</summary>
+        public async void StartClientWithRelay(string relayJoinCode)
+        {
+            if (networkManager == null || networkManager.IsListening) return;
+
+            RelayServerData? relayData = await NetRelayService.JoinAllocationAsync(relayJoinCode);
+            if (relayData == null)
+            {
+                Debug.LogError("[NetBootstrap] Không join được Relay: " + NetRelayService.LastError, this);
+                return;
+            }
+
+            ClearSceneEnemies();
+            DestroyLocalOfflineTank();
+            EnsureTransport();
+            UnityTransport transport = networkManager.NetworkConfig.NetworkTransport as UnityTransport;
+            if (transport == null)
+            {
+                Debug.LogError("[NetBootstrap] Thiếu UnityTransport để gắn Relay.", this);
+                return;
+            }
+
+            transport.SetRelayServerData(relayData.Value);
+            networkManager.NetworkConfig.ConnectionData = BuildLocalLoadout().ToPayload();
+            networkManager.StartClient();
+        }
+
         /// <summary>Đóng phòng ở cả hai phía.</summary>
         public void Shutdown()
         {
             if (networkManager != null && networkManager.IsListening) networkManager.Shutdown();
+            NetRelayService.ResetSession();
         }
 
         private void EnsureTransport()
@@ -124,24 +195,35 @@ namespace IronWasteland.Net
             networkManager.NetworkConfig.NetworkTransport = transport;
         }
 
-        private void RegisterNetworkPrefabs()
+        /// <summary>
+        /// Huỷ quái đặt sẵn trong scene trước khi vào phòng: chúng không phải NetworkObject nên mỗi máy
+        /// sẽ mô phỏng một bản riêng, gây lệch trạng thái. Quái online do host spawn qua NGO.
+        /// </summary>
+        private static void ClearSceneEnemies()
         {
-            if (networkTankDefinitions == null) return;
-
-            for (int i = 0; i < networkTankDefinitions.Length; i++)
+            EnemyBrain[] enemies = Object.FindObjectsByType<EnemyBrain>(FindObjectsInactive.Exclude);
+            for (int i = 0; i < enemies.Length; i++)
             {
-                TankDefinition definition = networkTankDefinitions[i];
-                if (definition == null || definition.TankPrefab == null) continue;
+                EnemyBrain enemy = enemies[i];
+                if (enemy == null) continue;
 
-                GameObject prefab = definition.TankPrefab.gameObject;
-                if (prefab.GetComponent<NetworkObject>() == null)
-                {
-                    Debug.LogWarning($"[NetBootstrap] Prefab '{prefab.name}' chưa có NetworkObject nên bị bỏ qua.", this);
-                    continue;
-                }
+                // Quái đặt sẵn trong scene có thể đã thừa hưởng NetworkObject từ prefab,
+                // nhưng chúng không do NGO spawn — vẫn phải dọn để không mô phỏng trùng.
+                NetworkObject networkObject = enemy.GetComponent<NetworkObject>();
+                if (networkObject != null && networkObject.IsSpawned) continue;
 
-                networkManager.NetworkConfig.Prefabs.Add(new NetworkPrefab { Prefab = prefab });
+                Destroy(enemy.gameObject);
             }
+        }
+
+        /// <summary>
+        /// Huỷ xe offline do GameController tạo trong Awake trước khi vào phòng: nếu giữ lại, mỗi máy
+        /// sẽ có thêm một xe không thuộc mạng và người chơi điều khiển nhầm hai xe.
+        /// </summary>
+        private static void DestroyLocalOfflineTank()
+        {
+            GameController controller = Object.FindAnyObjectByType<GameController>();
+            if (controller != null) controller.DestroyLocalTank();
         }
 
         private void HandleConnectionApproval(

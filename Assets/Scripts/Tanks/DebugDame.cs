@@ -80,12 +80,12 @@ namespace IronWasteland.Tanks.WaterB
 
             if (healthLoss > 0.01f)
             {
-                TextDamageManager.Instance.Show(healthLoss, pos);
+                CombatFeedback.Show(healthLoss, pos);
             }
 
             if (absorbed > 0.01f)
             {
-                TextDamageManager.Instance.Show(absorbed, pos + Vector3.up * 0.6f);
+                CombatFeedback.Show(absorbed, pos + Vector3.up * 0.6f);
             }
         }
     }

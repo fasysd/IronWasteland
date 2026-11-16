@@ -156,7 +156,7 @@ namespace IronWasteland.Enemies
                 if (!damaged.Add(tank)) continue;
 
                 tank.TakeDamage(damage);
-                TextDamageManager.Instance?.Show(damage, tank.transform.position);
+                CombatFeedback.Show(damage, tank.transform.position);
             }
 
             return damaged.Count;

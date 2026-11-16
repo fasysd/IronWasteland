@@ -250,6 +250,9 @@ namespace IronWasteland.Tanks.RedNova
             PrewarmBarragePool();
         }
 
+        /// <summary>Nova Shot và loạt 3 phát chuyên biệt là visual thuần, an toàn để client phát lại.</summary>
+        protected override bool CanReplayRemoteFx(int index) => index <= 1;
+
         protected override void OnUseSkill(int index)
         {
             switch (index)
@@ -311,7 +314,7 @@ namespace IronWasteland.Tanks.RedNova
             DamageInfo info = new DamageInfo(this, enemy, rawDamage, Stats.ArmorPenetration, hitPosition);
             enemy.TakeDamage(info);
 
-            TextDamageManager.Instance?.Show(info.FinalDamage, hitPosition);
+            CombatFeedback.Show(info.FinalDamage, hitPosition);
 
             // Overdrive / Execution Core: hiệu ứng mất ngay khi gây sát thương.
             if (m_HasNovaRushEmpoweredShot)

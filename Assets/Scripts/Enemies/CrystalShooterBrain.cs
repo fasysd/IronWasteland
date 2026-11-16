@@ -155,7 +155,7 @@ namespace IronWasteland.Enemies
                 if (gap > halfWidth + tankRadius) continue;
 
                 tank.TakeDamage(damage);
-                TextDamageManager.Instance?.Show(damage, tank.transform.position);
+                CombatFeedback.Show(damage, tank.transform.position);
             }
 
             return damaged.Count;
@@ -174,7 +174,7 @@ namespace IronWasteland.Enemies
 
         protected override void OnDeath()
         {
-            Destroy(gameObject);
+            IronWasteland.Net.NetEntity.Despawn(gameObject);
         }
 
         protected override void OnValidate()

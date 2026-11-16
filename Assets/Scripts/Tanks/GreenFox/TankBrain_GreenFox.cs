@@ -210,7 +210,7 @@ namespace IronWasteland.Tanks.GreenFox
 
             DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, textPosition);
             enemy.TakeDamage(info); // Attacker = Green Fox, EnemyBrain tự báo Fox Territory
-            TextDamageManager.Instance?.Show(damage, textPosition);
+            CombatFeedback.Show(damage, textPosition);
 
 
             // Đòn này hạ gục kẻ địch => Mark Hunter (1A)

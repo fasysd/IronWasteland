@@ -78,7 +78,7 @@ namespace IronWasteland.Enemies
                 ApplyTick();
             }
 
-            if (m_Age >= m_Lifetime) Destroy(gameObject);
+            if (m_Age >= m_Lifetime) IronWasteland.Net.NetEntity.Despawn(gameObject);
         }
 
         private void ApplyTick()
@@ -98,7 +98,7 @@ namespace IronWasteland.Enemies
                 if (m_DamagePerTick > 0f)
                 {
                     tank.TakeDamage(m_DamagePerTick);
-                    TextDamageManager.Instance?.Show(m_DamagePerTick, tank.transform.position);
+                    CombatFeedback.Show(m_DamagePerTick, tank.transform.position);
                 }
 
                 if (m_SlowPercent > 0f && m_SlowDuration > 0f)

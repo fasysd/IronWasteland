@@ -40,7 +40,7 @@ namespace IronWasteland.Enemies
             // Tu no xong thi bien mat, tranh xac quai con song tiep tuc lao theo tank.
             if (m_Exploded)
             {
-                Destroy(gameObject);
+                IronWasteland.Net.NetEntity.Despawn(gameObject);
                 return;
             }
 
@@ -92,7 +92,7 @@ namespace IronWasteland.Enemies
 
         protected override void OnContact(ColliderOwnerRef other)
         {
-            if (m_Exploded || other == null) return;
+            if (!IsServerSimulated || m_Exploded || other == null) return;
 
             // Cham tank -> kich no ngay.
             if (other.GetOwner<TankBrain>() != null) Detonate();
@@ -102,13 +102,13 @@ namespace IronWasteland.Enemies
         {
             // "Khi bi tieu diet cung no lan tuong tu tai vi tri chet."
             Detonate();
-            if (this != null) Destroy(gameObject);
+            if (this != null) IronWasteland.Net.NetEntity.Despawn(gameObject);
         }
 
         /// <summary>Phat no: gay sat thuong dien + lam cham cac tank trong ban kinh.</summary>
         private void Detonate()
         {
-            if (m_Exploded) return;
+            if (!IsServerSimulated || m_Exploded) return;
             m_Exploded = true;
 
             float damage = Stats != null ? Stats.Attack * explosionAttackRatio : 0f;

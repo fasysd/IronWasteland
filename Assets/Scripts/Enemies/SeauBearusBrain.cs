@@ -96,7 +96,7 @@ namespace IronWasteland.Enemies
 
             target.TakeDamage(damage);
             Heal(damage);
-            TextDamageManager.Instance?.Show(damage, target.transform.position);
+            CombatFeedback.Show(damage, target.transform.position);
             Debug.Log("[SeauBearus] hut mau " + damage.ToString("0.0") + " -> HP " + CurrentHealth.ToString("0.0"));
         }
 
@@ -125,7 +125,7 @@ namespace IronWasteland.Enemies
                 if (!damaged.Add(tank)) continue;
 
                 tank.TakeDamage(damage);
-                TextDamageManager.Instance?.Show(damage, tank.transform.position);
+                CombatFeedback.Show(damage, tank.transform.position);
             }
 
             for (int i = 0; i < trailPatchCount; i++)
@@ -160,7 +160,7 @@ namespace IronWasteland.Enemies
 
         protected override void OnDeath()
         {
-            Destroy(gameObject);
+            IronWasteland.Net.NetEntity.Despawn(gameObject);
         }
     }
 }

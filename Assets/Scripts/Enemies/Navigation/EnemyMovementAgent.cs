@@ -105,6 +105,31 @@ namespace IronWasteland.Enemies.Navigation
             moveSpeed = Mathf.Max(0f, speed);
         }
 
+        /// <summary>
+        /// Cờ phân quyền: host mới được điều khiển di chuyển; client nhận vị trí qua NetworkTransform.
+        /// </summary>
+        public bool IsServerSimulated { get; set; } = true;
+
+        /// <summary>
+        /// Đặt quyền mô phỏng; khi tắt thì dừng di chuyển và gỡ khỏi lưới pathfinding
+        /// để client không giữ chỗ trong lưới của host.
+        /// </summary>
+        public void SetServerSimulated(bool value)
+        {
+            IsServerSimulated = value;
+
+            if (value)
+            {
+                Vector2 currentPos = body != null ? body.position : (Vector2)transform.position;
+                m_CurrentGridCoord = PathfindingGrid2D.Instance?.RegisterEnemy(currentPos) ?? new Vector2Int(-1, -1);
+                return;
+            }
+
+            Stop();
+            PathfindingGrid2D.Instance?.UnregisterEnemy(m_CurrentGridCoord);
+            m_CurrentGridCoord = new Vector2Int(-1, -1);
+        }
+
         public void SetPath(List<Vector2> newPath)
         {
             m_Path.Clear();
@@ -157,6 +182,8 @@ namespace IronWasteland.Enemies.Navigation
 
         private void OnEnable()
         {
+            if (!IsServerSimulated) return;
+
             Vector2 currentPos = body != null ? body.position : (Vector2)transform.position;
             m_CurrentGridCoord = PathfindingGrid2D.Instance?.RegisterEnemy(currentPos) ?? new Vector2Int(-1, -1);
         }
@@ -169,6 +196,9 @@ namespace IronWasteland.Enemies.Navigation
 
         private void FixedUpdate()
         {
+            // Client không mô phỏng di chuyển; vị trí do NetworkTransform của host đẩy xuống.
+            if (!IsServerSimulated) return;
+
             Vector2 currentPos = body != null ? body.position : (Vector2)transform.position;
 
             // Di chuyển theo đường đi nếu đang có waypoint

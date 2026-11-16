@@ -522,7 +522,7 @@ namespace IronWasteland.Tanks.BlackShadow
                 ReduceSkillCooldown(specializedSkillIndex, cooldownReductionKillingInEnhanced);
                 SpawnOptionalSkill1Orb(enemy.transform.position);
             }
-            TextDamageManager.Instance?.Show(damage, skillInstance.transform.position);
+            CombatFeedback.Show(damage, skillInstance.transform.position);
         }
         #endregion
 
@@ -652,7 +652,7 @@ namespace IronWasteland.Tanks.BlackShadow
             float damage = CombatUtility.CalculateTankRawDamage(Stats.Attack, specializedSkillScale, Stats.DamageRate);
 
             enemy.TakeDamage(damage);
-            TextDamageManager.Instance?.Show(damage, enemy.transform.position);
+            CombatFeedback.Show(damage, enemy.transform.position);
 
             if (!enemy.IsAlive && isEnhanced)
             {

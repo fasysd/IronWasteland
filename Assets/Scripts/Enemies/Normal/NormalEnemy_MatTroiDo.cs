@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using IronWasteland.Core;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -178,6 +179,8 @@ namespace IronWasteland.Enemies.Normal
             }
 
             zone.SpawnAt(position, ReturnZoneToPool);
+            // Online: client chỉ dựng bản sao visual của vùng, tự thu hồi khi host trả vùng về pool.
+            NetVisualSpawn.Follow(zoneTemplate != null ? zoneTemplate.gameObject : null, zone.gameObject);
             m_ActiveZones.Add(zone);
             return zone;
         }
@@ -186,6 +189,7 @@ namespace IronWasteland.Enemies.Normal
         {
             if (zone == null) return;
 
+            NetVisualSpawn.End(zone.gameObject);
             m_ActiveZones.Remove(zone);
             m_ZonePool.Enqueue(zone);
         }
@@ -209,7 +213,7 @@ namespace IronWasteland.Enemies.Normal
 
                     DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position);
                     tank.TakeDamage(damageInfo);
-                    TextDamageManager.Instance?.Show(damageInfo.FinalDamage, tank.transform.position);
+                    CombatFeedback.Show(damageInfo.FinalDamage, tank.transform.position);
                 }
             }
 
@@ -233,11 +237,29 @@ namespace IronWasteland.Enemies.Normal
                 Vector2 randomOffset = Random.insideUnitCircle * maxOffset;
                 Vector2 spawnPos = explosionPos + randomOffset;
 
-                // Instantiate từ template con trong MatTroiDo.prefab (KHÔNG dùng Prefab Asset)
-                NormalEnemy_KySinhThienThach ksttInstance = Instantiate(kySinhThienThachTemplate, spawnPos, Quaternion.identity, null);
+                NormalEnemy_KySinhThienThach ksttInstance;
+
+                if (TankBrain.NetworkSessionActive)
+                {
+                    // Chơi mạng: quái con phải do host spawn qua NGO, nếu Instantiate thường thì
+                    // client không thấy và số mạng bị lệch.
+                    IronWasteland.Net.NetSpawnService spawnService = FindAnyObjectByType<IronWasteland.Net.NetSpawnService>();
+                    EnemyStats childStats = kySinhThienThachTemplate.Stats != null
+                        ? kySinhThienThachTemplate.Stats.Clone()
+                        : new EnemyStats();
+                    ksttInstance = spawnService != null
+                        ? spawnService.SpawnEnemy(kySinhThienThachTemplate, spawnPos, childStats) as NormalEnemy_KySinhThienThach
+                        : null;
+                }
+                else
+                {
+                    // Instantiate từ template con trong MatTroiDo.prefab (KHÔNG dùng Prefab Asset)
+                    ksttInstance = Instantiate(kySinhThienThachTemplate, spawnPos, Quaternion.identity, null);
+                    if (ksttInstance != null) ksttInstance.gameObject.SetActive(true);
+                }
+
                 if (ksttInstance != null)
                 {
-                    ksttInstance.gameObject.SetActive(true);
                     ksttInstance.AnchorPointD = spawnPos;
                     ksttInstance.SetLifespan(kySinhThienThachLifespan);
                 }

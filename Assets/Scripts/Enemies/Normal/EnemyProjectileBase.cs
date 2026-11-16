@@ -276,7 +276,7 @@ namespace IronWasteland.Enemies.Normal
             }
             else
             {
-                Destroy(gameObject);
+                IronWasteland.Net.NetEntity.Despawn(gameObject);
             }
         }
 
