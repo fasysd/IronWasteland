@@ -79,10 +79,14 @@ namespace IronWasteland.Stages
 
         private readonly List<StageDefinition.Wave> m_PendingWaves = new List<StageDefinition.Wave>();
         private readonly List<EnemyBrain> m_Spawned = new List<EnemyBrain>();
+
+        // Danh sách tank người chơi (4 người khi chơi mạng). Với chơi mạng, host nhìn thấy
+        // cả xe của chính nó lẫn xe proxy của các client nên chỉ cần quét scene.
+        private readonly List<TankBrain> m_Players = new List<TankBrain>();
         private NetSpawnService m_NetSpawnService;
 
         private Transform m_Container;
-        private TankBrain m_Player;
+        private float m_RosterTimer;
         private int m_SpawnedCount;
         private int m_TotalWaves;
         private bool m_Initialized;
@@ -106,7 +110,7 @@ namespace IronWasteland.Stages
             Elapsed += Time.deltaTime;
 
             SpawnDueWaves();
-            TrackPlayer();
+            RefreshRoster();
             EvaluateOutcome();
         }
 
@@ -283,16 +287,38 @@ namespace IronWasteland.Stages
             }
         }
 
-        private void TrackPlayer()
+        /// <summary>
+        /// Làm mới danh sách tank người chơi. Dùng <see cref="FindObjectsInactive.Include"/>
+        /// để xe đã chết (bị tắt) vẫn nằm trong danh sách — nhờ đó phát hiện được "cả đội chết".
+        /// </summary>
+        private void RefreshRoster()
         {
-            if (m_Player != null && m_Player.IsAlive) return;
+            m_RosterTimer -= Time.deltaTime;
+            if (m_RosterTimer > 0f && m_Players.Count > 0) return;
+            m_RosterTimer = 0.5f;
 
-            m_Player = gameController != null ? gameController.PlayerTank : FindAnyObjectByType<TankBrain>();
+            m_Players.Clear();
+            TankBrain[] tanks = FindObjectsByType<TankBrain>(FindObjectsInactive.Include);
+            for (int i = 0; i < tanks.Length; i++)
+            {
+                if (tanks[i] != null) m_Players.Add(tanks[i]);
+            }
+        }
+
+        private bool AnyPlayerAlive()
+        {
+            for (int i = 0; i < m_Players.Count; i++)
+            {
+                TankBrain tank = m_Players[i];
+                if (tank != null && tank.IsAlive) return true;
+            }
+            return false;
         }
 
         private void EvaluateOutcome()
         {
-            if (m_Player != null && !m_Player.IsAlive)
+            // Chỉ thua khi cả đội đã chết; lúc mới vào chưa kịp spawn thì bỏ qua.
+            if (m_Players.Count > 0 && !AnyPlayerAlive())
             {
                 FailStage();
                 return;

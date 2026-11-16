@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using IronWasteland.Enemies;
+using IronWasteland.Stages;
 using IronWasteland.Tanks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -27,6 +28,9 @@ namespace IronWasteland.Net
 
         [Tooltip("Service dựng xe khi người chơi vào phòng.")]
         [SerializeField] private NetSpawnService spawnService;
+
+        [Tooltip("Quản lý màn chơi; host tự bắt đầu ải khi mở phòng (để trống nếu chưa dùng màn chơi).")]
+        [SerializeField] private StageManager stageManager;
 
         [Header("Prefab mạng")]
         [Tooltip("Các TankDefinition có prefab sẽ được dùng làm roster khi spawn người chơi.")]
@@ -99,6 +103,10 @@ namespace IronWasteland.Net
 
             bool started = networkManager.StartHost();
             if (!started) m_Loadouts.Remove(ServerClientId);
+
+            // Host là máy duy nhất mô phỏng ải, nên chỉ host bắt đầu màn chơi.
+            if (started) stageManager?.StartStage();
+
             return started;
         }
 
