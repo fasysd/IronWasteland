@@ -57,6 +57,7 @@ namespace IronWasteland.Net
 
             NetworkManager manager = NetworkManager.Singleton;
             if (manager == null || !manager.IsListening || !manager.IsServer) return;
+            if (manager.CustomMessagingManager == null) return;
 
             NetworkObject networkObject = brain.GetComponent<NetworkObject>();
             if (networkObject == null || !networkObject.IsSpawned) return;

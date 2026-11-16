@@ -73,16 +73,25 @@ namespace IronWasteland.Net
             NetworkManager manager = NetworkManager.Singleton;
             if (manager == null) return;
 
-            if (manager.IsListening && !m_Registered)
+            // CustomMessagingManager có thể còn null trong lúc NGO đang khởi tạo hoặc vừa shutdown;
+            // truy cập thẳng sẽ ném NullReferenceException mỗi frame (từng làm ngập log player build).
+            CustomMessagingManager messaging = manager.CustomMessagingManager;
+            bool listening = manager.IsListening;
+
+            if (listening && !m_Registered && messaging != null)
             {
-                manager.CustomMessagingManager.RegisterNamedMessageHandler(MessageName, HandleMessage);
-                manager.CustomMessagingManager.RegisterNamedMessageHandler(EndMessageName, HandleEndMessage);
+                messaging.RegisterNamedMessageHandler(MessageName, HandleMessage);
+                messaging.RegisterNamedMessageHandler(EndMessageName, HandleEndMessage);
                 m_Registered = true;
             }
-            else if (!manager.IsListening && m_Registered)
+            else if (!listening && m_Registered)
             {
-                manager.CustomMessagingManager.UnregisterNamedMessageHandler(MessageName);
-                manager.CustomMessagingManager.UnregisterNamedMessageHandler(EndMessageName);
+                if (messaging != null)
+                {
+                    messaging.UnregisterNamedMessageHandler(MessageName);
+                    messaging.UnregisterNamedMessageHandler(EndMessageName);
+                }
+
                 m_Registered = false;
             }
 

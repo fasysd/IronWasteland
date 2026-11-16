@@ -63,6 +63,10 @@ namespace IronWasteland.Net
             }
 
             networkManager.NetworkConfig.TickRate = TickRate;
+            // Bắt buộc bật cờ này thì NGO mới gọi ConnectionApprovalCallback.
+            // Thiếu nó, loadout client gửi qua ConnectionData bị bỏ qua và mọi người vào phòng
+            // đều nhận xe mặc định (TankIndex 0, Level 1), đồng thời không chặn được payload sai.
+            networkManager.NetworkConfig.ConnectionApproval = true;
             EnsureTransport();
 
             networkManager.ConnectionApprovalCallback -= HandleConnectionApproval;
@@ -230,6 +234,16 @@ namespace IronWasteland.Net
             NetworkManager.ConnectionApprovalRequest request,
             NetworkManager.ConnectionApprovalResponse response)
         {
+            // Host không gửi payload loadout (NGO tự duyệt chính nó khi StartHost), nên phải
+            // chấp nhận riêng trước khi kiểm tra payload — nếu không sẽ log "từ chối" vô nghĩa.
+            if (request.ClientNetworkId == ServerClientId)
+            {
+                response.Approved = true;
+                response.CreatePlayerObject = false;
+                response.Pending = false;
+                return;
+            }
+
             bool valid = NetLoadout.TryFromPayload(request.Payload, out NetLoadout loadout);
             response.Approved = valid;
             response.CreatePlayerObject = false;
@@ -238,10 +252,12 @@ namespace IronWasteland.Net
             if (!valid)
             {
                 response.Reason = "Payload NetLoadout thiếu hoặc sai định dạng.";
+                Debug.LogWarning($"[NetBootstrap] Từ chối client {request.ClientNetworkId}: payload {request.Payload?.Length ?? 0} byte không hợp lệ.");
                 return;
             }
 
             m_Loadouts[request.ClientNetworkId] = loadout;
+            Debug.Log($"[NetBootstrap] Duyệt client {request.ClientNetworkId}: tank={loadout.TankIndex} level={loadout.Level} equipment={loadout.EquipmentId} opt1={loadout.OptionSkill1} opt2={loadout.OptionSkill2}.");
         }
 
         private void HandleClientConnected(ulong clientId)
