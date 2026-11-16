@@ -279,6 +279,17 @@ namespace IronWasteland.Net
 
             NetLoadout loadout = m_Loadouts.TryGetValue(clientId, out NetLoadout saved) ? saved : default;
             spawnService.SpawnPlayerTank(clientId, loadout);
+
+            // Người vào giữa trận cần biết ải đang ở trạng thái nào.
+            if (stageManager != null && stageManager.State != StageState.Idle)
+            {
+                byte state = stageManager.State == StageState.Cleared
+                    ? NetStageEvents.StateCleared
+                    : stageManager.State == StageState.Failed
+                        ? NetStageEvents.StateFailed
+                        : NetStageEvents.StateStarted;
+                NetStageEvents.Instance?.Broadcast(stageManager, state);
+            }
         }
 
         private void HandleClientDisconnected(ulong clientId)

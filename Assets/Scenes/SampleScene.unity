@@ -2345,6 +2345,7 @@ GameObject:
   - component: {fileID: 1596902872}
   - component: {fileID: 1596902873}
   - component: {fileID: 1596902874}
+  - component: {fileID: 1596902875}
   m_Layer: 0
   m_Name: Network
   m_TagString: Untagged
@@ -2562,6 +2563,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualSpawn
   maxNameLength: 64
   maxGhosts: 120
+--- !u!114 &1596902875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1596902864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40d2504c3d5cfc340bb961ac64d4f61f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetStageEvents
 --- !u!1 &1708749389
 GameObject:
   m_ObjectHideFlags: 0

@@ -59,6 +59,7 @@ namespace IronWasteland.Net
 
                 if (HasFlag(args, "-iw-selftest-enemy")) StartCoroutine(EnemySelfTestRoutine());
                 if (HasFlag(args, "-iw-selftest-visual")) StartCoroutine(VisualSelfTestRoutine());
+                if (HasFlag(args, "-iw-selftest-stage")) StartCoroutine(StageSelfTestRoutine());
             }
             else if (HasFlag(args, "-iw-relay-host"))
             {
@@ -233,6 +234,34 @@ namespace IronWasteland.Net
             Debug.Log($"[NetSelfTest] gửi visual '{selfTestVisualName}' tại {position} sống {selfTestVisualLifetime:F0}s");
         }
 
+        /// <summary>
+        /// Giết vài quái của ải trên host để kiểm chứng bộ đếm mạng chạy đúng trên build thật.
+        /// Chỉ dùng cho test tự động: -iw-selftest-stage.
+        /// </summary>
+        private IEnumerator StageSelfTestRoutine()
+        {
+            yield return new WaitForSeconds(selfTestDelay);
+
+            IronWasteland.Stages.StageManager stage = FindAnyObjectByType<IronWasteland.Stages.StageManager>();
+            if (stage == null)
+            {
+                Debug.Log("[NetSelfTest] khong tim thay StageManager");
+                yield break;
+            }
+
+            int killed = 0;
+            EnemyBrain[] enemies = FindObjectsByType<EnemyBrain>(FindObjectsInactive.Include);
+            for (int i = 0; i < enemies.Length && killed < 2; i++)
+            {
+                EnemyBrain enemy = enemies[i];
+                if (enemy == null || !enemy.IsAlive) continue;
+                enemy.TakeDamage(99999f);
+                killed++;
+            }
+
+            Debug.Log($"[NetSelfTest] giet {killed} quai -> Kills={stage.Kills}/{stage.KillTarget} state={stage.State}");
+        }
+
         private IEnumerator LogStateRoutine()
         {
             while (true)
@@ -262,10 +291,16 @@ namespace IronWasteland.Net
                     enemyDetails += $" [id={id} hp={enemies[i].CurrentHealth:F0}]";
                 }
 
+                var stage = FindAnyObjectByType<IronWasteland.Stages.StageManager>();
+                string stageText = stage != null
+                    ? $" stage={stage.State} kills={stage.Kills}/{stage.KillTarget} wave={stage.WaveIndex + 1}"
+                    : " stage=none";
+
                 Debug.Log($"[NetState] listening={manager.IsListening} server={manager.IsServer}" +
                           $" clients={manager.ConnectedClientsIds.Count} tick={manager.NetworkConfig.TickRate}" +
                           $" tanks={tanks.Length}{details} enemies={enemies.Length}{enemyDetails}" +
-                          $" ghosts={(NetVisualSpawn.Instance != null ? NetVisualSpawn.Instance.GhostCount : 0)}");
+                          $" ghosts={(NetVisualSpawn.Instance != null ? NetVisualSpawn.Instance.GhostCount : 0)}" +
+                          stageText);
             }
         }
 
