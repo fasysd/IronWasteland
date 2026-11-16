@@ -78,6 +78,12 @@ crashlytics-build.properties
 # AI tooling cache (understanding graph, fingerprints, tmp) — regenerated locally
 /.ua/
 
+# Công cụ cục bộ / tệp tạm của phiên làm việc — không commit
+/AGENTS.md
+/.buildtemp/
+*.csproj.bak
+/Assets/Plugins/NuGet/Rql.*
+
 # Tài liệu thiết kế game (.docx) — bản làm việc ~44 MB, giữ ngoài git
 /Tài liệu thiết kế Game.docx
 /[Bb]in/

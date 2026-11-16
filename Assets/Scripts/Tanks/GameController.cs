@@ -1,3 +1,5 @@
+using IronWasteland.Net;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -14,6 +16,9 @@ namespace IronWasteland.Tanks
     {
         [Header("Tank Setup")]
         [SerializeField] private TankDefinition tankDefinition;
+
+        [Tooltip("Tự tạo tank khi Awake. Tắt khi chơi online: host spawn xe qua mạng rồi gọi BindTank.")]
+        [SerializeField] private bool createLocalTankOnAwake = true;
 
         [Tooltip("Level của Tank, thay đổi được theo ý thích Player. Chỉ đọc trong lúc khởi tạo.")]
         [SerializeField, Range(TankDefinition.MinLevel, TankDefinition.MaxLevel)] private int playerLevel = 1;
@@ -39,13 +44,47 @@ namespace IronWasteland.Tanks
         [SerializeField] private int selectedSkillIndex = 0;
 
         private TankBrain m_PlayerTank;
+        private NetPlayerController m_NetController;
 
         public TankBrain PlayerTank => m_PlayerTank;
         public int SelectedSkillIndex => selectedSkillIndex;
 
+        /// <summary>Gán xe do mạng spawn cho controller này (dùng khi online).</summary>
+        public void BindTank(TankBrain tank)
+        {
+            m_PlayerTank = tank;
+            m_NetController = tank != null ? tank.GetComponent<NetPlayerController>() : null;
+        }
+
+        /// <summary>Bỏ liên kết với xe hiện tại mà không huỷ đối tượng.</summary>
+        public void UnbindTank()
+        {
+            m_PlayerTank = null;
+            m_NetController = null;
+        }
+
+        /// <summary>
+        /// Huỷ xe offline đã tạo trong Awake trước khi vào phòng mạng.
+        /// Ưu tiên Despawn nếu đối tượng đã được spawn bởi NGO.
+        /// </summary>
+        public void DestroyLocalTank()
+        {
+            if (m_PlayerTank == null) return;
+
+            NetworkObject networkObject = m_PlayerTank.GetComponent<NetworkObject>();
+            if (networkObject != null && networkObject.IsSpawned) networkObject.Despawn(true);
+            else Destroy(m_PlayerTank.gameObject);
+
+            m_PlayerTank = null;
+            m_NetController = null;
+        }
+
         private void Awake()
         {
             if (targetCamera == null) targetCamera = Camera.main;
+
+            // Chế độ online: host spawn xe qua mạng, GameController chỉ nhận bind sau đó.
+            if (!createLocalTankOnAwake) return;
 
             // Xây TankBrainContext từ fields hiện có (level, equipmentId, optionSkills).
             var context = new TankBrainContext
@@ -132,14 +171,24 @@ namespace IronWasteland.Tanks
             if (mouse != null && mouse.leftButton.wasPressedThisFrame)
             {
                 // Gửi lại vị trí trỏ chuột tại thời điểm click để đảm bảo chính xác
+                Vector2 aim = m_PlayerTank != null ? m_PlayerTank.transform.position : Vector2.zero;
                 if (targetCamera != null)
                 {
                     Vector3 world = targetCamera.ScreenToWorldPoint(mouse.position.ReadValue());
-                    m_PlayerTank.SetLookTarget(new Vector2(world.x, world.y));
+                    aim = new Vector2(world.x, world.y);
+                    m_PlayerTank.SetLookTarget(aim);
                 }
 
-                // Thi triển kỹ năng đã chọn
-                m_PlayerTank.UseSkill(selectedSkillIndex);
+                // Thi triển kỹ năng đã chọn: trong phòng mạng, client phải xin host;
+                // host và chế độ offline gọi thẳng.
+                if (m_NetController != null && m_NetController.IsSpawned && !m_NetController.IsServer)
+                {
+                    m_NetController.RequestCast(selectedSkillIndex, aim);
+                }
+                else
+                {
+                    m_PlayerTank.UseSkill(selectedSkillIndex);
+                }
 
                 // Sau khi click (dù thành công hay thất bại), chuyển kỹ năng được chọn thành kỹ năng thường
                 selectedSkillIndex = 0;

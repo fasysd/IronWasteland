@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+// Sân test kỹ năng chỉ dùng trong Editor: không đóng gói vào bản build.
+#if UNITY_EDITOR
+
 namespace IronWasteland.Tests
 {
     /// <summary>
@@ -208,3 +211,4 @@ namespace IronWasteland.Tests
         }
     }
 }
+#endif

@@ -1,6 +1,9 @@
-﻿using System.Collections;
+using System.Collections;
 using IronWasteland.Core;
 using UnityEngine;
+
+// Script chỉ dùng để test trong Editor: không đóng gói vào bản build.
+#if UNITY_EDITOR
 
 namespace IronWasteland.Tanks.WaterB
 {
@@ -87,3 +90,4 @@ namespace IronWasteland.Tanks.WaterB
         }
     }
 }
+#endif

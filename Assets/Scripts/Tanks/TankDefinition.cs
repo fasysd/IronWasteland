@@ -58,6 +58,18 @@ namespace IronWasteland.Tanks
             }
 
             TankBrain brain = Instantiate(tankPrefab, Vector3.zero, Quaternion.identity, null);
+            InitializeTank(brain, context);
+            return brain;
+        }
+
+        /// <summary>
+        /// Khởi tạo đầy đủ chỉ số và phụ kiện cho một brain đã được tạo sẵn.
+        /// Dùng cho spawn qua NGO: prefab do mạng sinh ra trước, sau đó mới Initialize.
+        /// </summary>
+        public void InitializeTank(TankBrain brain, TankBrainContext context)
+        {
+            if (brain == null) return;
+
             brain.Initialize(context, GetStatsForLevel(context.Level));
 
             // Trang bi 1 phu kien duy nhat theo context.EquipmentId
@@ -69,8 +81,6 @@ namespace IronWasteland.Tanks
                     brain.EquipAccessory(accessoryPrefab);
                 }
             }
-
-            return brain;
         }
 
         /// <summary>

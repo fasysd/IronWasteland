@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using IronWasteland.Core;
 using IronWasteland.Core.Effects;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace IronWasteland.Enemies
@@ -80,6 +81,24 @@ namespace IronWasteland.Enemies
         public bool IsAlive => !m_Dead && currentHealth > 0f;
 
         public bool IsCrowdControlImmune { get; set; }
+
+        /// <summary>
+        /// True khi máy này mô phỏng AI và combat cho kẻ địch (offline luôn true).
+        /// Trên client, proxy kẻ địch = false: AI, hiệu ứng và va chạm gây sát thương do host quyết định.
+        /// </summary>
+        public bool IsServerSimulated { get; set; } = true;
+
+        /// <summary>
+        /// True khi đang có phiên mạng đã kết nối (host hoặc client). Offline trả false.
+        /// </summary>
+        private static bool NetworkSessionActive =>
+            NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+
+        /// <summary>
+        /// Chỉ host được đổi máu / khống chế kẻ địch khi chơi mạng; offline luôn cho phép.
+        /// </summary>
+        private bool HasGameplayAuthority =>
+            !NetworkSessionActive || NetworkManager.Singleton.IsServer;
 
         /// <summary>
         /// True nếu là kẻ địch Tinh anh (Elite/Boss).
@@ -179,6 +198,9 @@ namespace IronWasteland.Enemies
         {
             if (!IsAlive) return;
 
+            // Chỉ host quyết định sát thương khi chơi mạng; offline vẫn chạy bình thường.
+            if (!HasGameplayAuthority) return;
+
             // [1] Chặng chặn đòn (né/đỡ đòn/bất tử tạm thời) — chặn sạch trước khi tính giáp.
             if (ProcessDamageInterception(info)) return;
 
@@ -223,9 +245,22 @@ namespace IronWasteland.Enemies
             OnDealDamageEvent?.Invoke(info);
         }
 
+        /// <summary>
+        /// Áp máu do host đồng bộ xuống proxy. Không phát sự kiện hồi máu và bỏ qua cổng quyền
+        /// vì client không được tự tính sát thương, chỉ phản chiếu kết quả của host.
+        /// </summary>
+        public void SetHealth(float value)
+        {
+            if (!m_Initialized) return;
+
+            currentHealth = Mathf.Clamp(value, 0f, Mathf.Max(0f, MaxHealth));
+            if (currentHealth <= 0f && !m_Dead) Die();
+        }
+
         public virtual void Heal(float amount)
         {
             if (!IsAlive) return;
+            if (!HasGameplayAuthority) return;
             currentHealth = Mathf.Min(currentHealth + amount, MaxHealth);
             OnHealEvent?.Invoke(amount);
         }
@@ -249,6 +284,7 @@ namespace IronWasteland.Enemies
         public virtual void ApplyCrowdControl(CrowdControlType type, float duration, float strength = 0f)
         {
             if (type == CrowdControlType.None) return;
+            if (!HasGameplayAuthority) return;
 
             if (IsImmuneToCrowdControl(type))
             {
@@ -533,6 +569,8 @@ namespace IronWasteland.Enemies
 
         private void Update()
         {
+            // Proxy trên client: host đã tick CC/hiệu ứng, không tick trùng ở đây.
+            if (!IsServerSimulated) return;
             if (!IsAlive) return;
 
             float dt = Time.deltaTime;

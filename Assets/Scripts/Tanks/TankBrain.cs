@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using IronWasteland.Core;
 using IronWasteland.Core.Effects;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace IronWasteland.Tanks
@@ -133,6 +134,30 @@ namespace IronWasteland.Tanks
         public EquipmentBrain Accessory => m_EquippedAccessory;
         public bool IsAlive => currentHealth > 0f;
         public bool IsCrowdControlImmune { get; set; }
+
+        /// <summary>
+        /// True khi máy này điều khiển xe bằng input người chơi (offline luôn true).
+        /// Trên client, proxy tank của người khác = false: vị trí do NetworkTransform lái.
+        /// </summary>
+        public bool IsLocallyControlled { get; set; } = true;
+
+        /// <summary>
+        /// True khi máy này mô phỏng combat cho xe (offline luôn true).
+        /// Trên client, proxy tank = false: kỹ năng, hồi chiêu và năng lượng do host quyết định.
+        /// </summary>
+        public bool IsServerSimulated { get; set; } = true;
+
+        /// <summary>
+        /// True khi đang có phiên mạng đã kết nối (host hoặc client). Offline trả false.
+        /// </summary>
+        public static bool NetworkSessionActive =>
+            NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+
+        /// <summary>
+        /// Chỉ host được đổi máu / năng lượng / khống chế khi đang chơi mạng.
+        /// Offline (không có phiên mạng) luôn cho phép để chế độ một người không đổi hành vi.
+        /// </summary>
+        public bool HasGameplayAuthority => !NetworkSessionActive || NetworkManager.Singleton.IsServer;
 
         public bool CanMove => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Root);
         public bool CanUseSkill => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Silence);
@@ -286,6 +311,7 @@ namespace IronWasteland.Tanks
         public virtual void ApplyCrowdControl(CrowdControlType type, float duration, float strength = 0f)
         {
             if (type == CrowdControlType.None) return;
+            if (!HasGameplayAuthority) return;
 
             if (IsCrowdControlImmune)
             {
@@ -607,6 +633,11 @@ namespace IronWasteland.Tanks
         public void UseSkill(int index)
         {
             if (index < 0 || index >= SkillCount) return;
+
+            // Chỉ máy mô phỏng combat mới được thi triển kỹ năng.
+            // Client proxy gửi yêu cầu lên host thay vì tự chạy tại đây.
+            if (!IsServerSimulated) return;
+
             if (!CanUseSkill) return;
             if (skillCooldowns[index] > 0f) return;
 
@@ -798,6 +829,9 @@ namespace IronWasteland.Tanks
         {
             if (!IsAlive) return;
 
+            // Chỉ host quyết định sát thương khi chơi mạng; offline vẫn chạy bình thường.
+            if (!HasGameplayAuthority) return;
+
             // [1] Chặng chặn đòn (né/đỡ đòn/bất tử tạm thời) — phải đứng TRƯỚC chặng chuyển hướng:
             // đòn bị chặn sạch là đòn không tồn tại, nên không có sát thương nào để chia cho người gánh hộ.
             if (ProcessDamageInterception(info)) return;
@@ -856,18 +890,39 @@ namespace IronWasteland.Tanks
         public virtual void Heal(float amount)
         {
             if (!IsAlive) return;
+            if (!HasGameplayAuthority) return;
             currentHealth = Mathf.Min(currentHealth + amount, m_FinalStats.MaxHealth);
             OnHealEvent?.Invoke(amount);
         }
 
         public virtual void GainEnergy(float amount)
         {
+            if (!HasGameplayAuthority) return;
             currentEnergy = Mathf.Min(currentEnergy + amount, m_FinalStats.MaxEnergy);
         }
 
         public virtual void SpendEnergy(float amount)
         {
+            if (!HasGameplayAuthority) return;
             currentEnergy = Mathf.Max(currentEnergy - amount, 0f);
+        }
+
+        /// <summary>
+        /// Gán trực tiếp máu hiện tại (dùng khi áp snapshot trạng thái từ host).
+        /// Chỉ kẹp trong khoảng 0..MaxHealth, không phát sự kiện hồi máu.
+        /// </summary>
+        public virtual void SetHealth(float value)
+        {
+            currentHealth = Mathf.Clamp(value, 0f, m_FinalStats.MaxHealth);
+        }
+
+        /// <summary>
+        /// Gán trực tiếp năng lượng hiện tại (dùng khi áp snapshot trạng thái từ host).
+        /// Chỉ kẹp trong khoảng 0..MaxEnergy.
+        /// </summary>
+        public virtual void SetEnergy(float value)
+        {
+            currentEnergy = Mathf.Clamp(value, 0f, m_FinalStats.MaxEnergy);
         }
 
         protected virtual void Die()
@@ -904,6 +959,9 @@ namespace IronWasteland.Tanks
 
         private void Update()
         {
+            // Proxy trên client: host đã tick hồi chiêu/hiệu ứng, không tick trùng ở đây.
+            if (!IsServerSimulated) return;
+
             float dt = Time.deltaTime;
             TickCooldowns(dt);
             TickCrowdControl(dt);
@@ -914,6 +972,9 @@ namespace IronWasteland.Tanks
 
         private void FixedUpdate()
         {
+            // Proxy trên client: vị trí do NetworkTransform đồng bộ, không tự chạy vật lý/visual.
+            if (!IsLocallyControlled) return;
+
             // Theo GDD: Tank di chuyen voi toc do Tuan theo cong thuc: Toc do di chuyen / 100 (units/s)
             float speed = m_FinalStats.MoveSpeed / 100f;
 

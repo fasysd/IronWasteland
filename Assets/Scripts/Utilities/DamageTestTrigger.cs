@@ -3,6 +3,9 @@ using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
+// Vật thể test chỉ dùng trong Editor: không đóng gói vào bản build.
+#if UNITY_EDITOR
+
 namespace IronWasteland
 {
     /// <summary>
@@ -128,3 +131,4 @@ namespace IronWasteland
         }
     }
 }
+#endif

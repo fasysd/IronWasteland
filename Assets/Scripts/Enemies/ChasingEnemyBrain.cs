@@ -117,6 +117,9 @@ namespace IronWasteland.Enemies
 
         private void FixedUpdate()
         {
+            // Proxy trên client: host đã mô phỏng AI và vị trí, không tự dịch chuyển ở đây.
+            if (!IsServerSimulated) return;
+
             Rigidbody2D body = Body;
             if (body == null) return;
 
@@ -159,12 +162,31 @@ namespace IronWasteland.Enemies
             return damaged.Count;
         }
 
-        private static TankBrain FindPlayerTank()
+        /// <summary>
+        /// Chọn tank còn sống gần quái nhất. Trước đây chỉ lấy player #1 (GameController.PlayerTank)
+        /// nên các đồng đội còn lại không bao giờ bị đuổi trong chế độ nhiều người.
+        /// </summary>
+        private TankBrain FindPlayerTank()
         {
-            GameController controller = FindAnyObjectByType<GameController>();
-            if (controller != null && controller.PlayerTank != null) return controller.PlayerTank;
+            TankBrain[] tanks = FindObjectsByType<TankBrain>(FindObjectsInactive.Exclude);
+            Vector2 selfPosition = transform.position;
+            TankBrain nearest = null;
+            float nearestSqrDistance = float.MaxValue;
 
-            return FindAnyObjectByType<TankBrain>();
+            for (int i = 0; i < tanks.Length; i++)
+            {
+                TankBrain candidate = tanks[i];
+                if (candidate == null || !candidate.IsAlive) continue;
+
+                Vector2 candidatePosition = candidate.transform.position;
+                float sqrDistance = (candidatePosition - selfPosition).sqrMagnitude;
+                if (sqrDistance >= nearestSqrDistance) continue;
+
+                nearestSqrDistance = sqrDistance;
+                nearest = candidate;
+            }
+
+            return nearest;
         }
 
         protected override void OnValidate()
