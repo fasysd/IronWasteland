@@ -184,7 +184,7 @@ StageManager.Update()                            [StageManager.cs:95]  (chưa đ
 | `TextDamageManager` (40 chỗ) | Đồng bộ text bay | Sinh local từ `CombatEventRpc` |
 | `GameController.cs:60-62` | Mỗi client tự `Instantiate` tank | Host `SpawnAsPlayerObject` |
 | `EnemyBrain.cs:534` | Client chạy AI | `IsProxy` |
-| `OptionalSkill1_2_Leviathan.cs:343` | In damage gánh hộ trên host rồi client in lại | Text chỉ từ `CombatEventRpc` |
+| `TankBrain.ProcessDamageRedirection` | In số gánh hộ (raw share) trên host rồi client in lại | Đo `CurrentHealth` trước/sau khi gánh → in đúng lượng máu đã mất; chỉ host phát qua `CombatFeedback` |
 | `TankBrain.cs:640` | Debug `Show(36)` làm text sai | Xoá |
 
 ### 1.4 Rào cản single-player trong code

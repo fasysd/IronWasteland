@@ -339,8 +339,7 @@ namespace IronWasteland.Tanks.Leviathan
             protector = ownerTank;
             sharedAmount = candidateShare;
 
-            // Hiển thị phản hồi trực quan ngay tại vị trí Leviathan (số gánh hộ tính trên sát thương gốc).
-            CombatFeedback.Show(sharedAmount, ownerTank.transform.position);
+            // Không tự hiện số ở đây: TankBrain đo máu trước/sau khi gánh và phát feedback đúng lượng máu mất.
             OnDamageShared?.Invoke(sharedAmount);
 
             return true;

@@ -817,7 +817,14 @@ namespace IronWasteland.Tanks
                     isDirectToHealth: true,
                     isRedirected: true);
 
+                // Đo máu trước/sau để in đúng lượng máu người gánh mất (đã trừ giáp của họ).
+                float healthBefore = protector.CurrentHealth;
                 protector.TakeDamage(redirected);
+                float healthLost = Mathf.Max(0f, healthBefore - protector.CurrentHealth);
+                if (healthLost > 0f)
+                {
+                    CombatFeedback.Show(healthLost, protector.transform.position + Vector3.up);
+                }
 
                 if (info.RawDamage <= 0f) break;
             }
