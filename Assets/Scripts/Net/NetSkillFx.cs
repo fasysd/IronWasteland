@@ -96,6 +96,7 @@ namespace IronWasteland.Net
 
         private void HandleMessage(ulong senderClientId, FastBufferReader reader)
         {
+            if (senderClientId != NetworkManager.ServerClientId) return; // chỉ host được phát lại VFX
             reader.ReadValueSafe(out ulong ownerClientId);
             reader.ReadValueSafe(out byte skillIndex);
             reader.ReadValueSafe(out Vector2 aim);

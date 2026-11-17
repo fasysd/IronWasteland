@@ -13,7 +13,7 @@ namespace IronWasteland.Net
     {
         private const float SyncInterval = 0.1f;
         private const float ValueEpsilon = 0.1f;
-        private const float CooldownEpsilon = 0.05f;
+        private const float CooldownDriftEpsilon = 0.2f;
         private const float AimEpsilon = 1f;
 
         private readonly NetworkVariable<float> m_Health = new(
@@ -28,9 +28,17 @@ namespace IronWasteland.Net
         private readonly NetworkVariable<NetLoadout> m_Loadout = new(
             default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        /// <summary>Góc nòng (độ) host ghi xuống để proxy xoay nòng theo đúng hướng ngắm.</summary>
+        /// <summary>Góc nòng (độ). Chủ xe đọc trực tiếp look target để không trễ; máy khác đọc bản đã nhận.</summary>
         private readonly NetworkVariable<float> m_AimAngle = new(
-            0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+            0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
+        /// <summary>Hệ số tốc độ do Slow (0..1). Client áp vào TankBrain vì client không tick CC.</summary>
+        private readonly NetworkVariable<float> m_SlowSpeedFactor = new(
+            1f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+        /// <summary>Host báo Stun/Root đang chặn di chuyển để client dừng ngay.</summary>
+        private readonly NetworkVariable<bool> m_MovementBlocked = new(
+            false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private readonly float[] m_ClientCooldownRemaining = new float[TankBrain.SkillCount];
         private readonly float[] m_ClientCooldownReceivedAt = new float[TankBrain.SkillCount];
@@ -41,7 +49,11 @@ namespace IronWasteland.Net
         private float m_SentHealth;
         private float m_SentEnergy;
         private float m_SentAimAngle;
+        private float m_SentSlowFactor = 1f;
+        private bool m_SentBlocked;
+        private bool m_LoadoutMissingLogged;
         private CooldownState m_SentCooldowns;
+        private float m_SentCooldownsAt;
 
         public override void OnNetworkSpawn()
         {
@@ -54,6 +66,8 @@ namespace IronWasteland.Net
             m_Energy.OnValueChanged += HandleEnergyChanged;
             m_Cooldowns.OnValueChanged += HandleCooldownsChanged;
             m_Loadout.OnValueChanged += HandleLoadoutChanged;
+            m_SlowSpeedFactor.OnValueChanged += HandleSlowChanged;
+            m_MovementBlocked.OnValueChanged += HandleBlockedChanged;
 
             if (IsServer)
             {
@@ -63,9 +77,12 @@ namespace IronWasteland.Net
                 m_Health.Value = m_SentHealth;
                 m_Energy.Value = m_SentEnergy;
                 m_SentCooldowns = ReadBrainCooldowns();
+                m_SentCooldownsAt = Time.time;
                 m_Cooldowns.Value = m_SentCooldowns;
-                m_SentAimAngle = ReadAimAngle();
-                m_AimAngle.Value = m_SentAimAngle;
+                m_SentSlowFactor = m_Brain.CurrentSlowSpeedFactor;
+                m_SlowSpeedFactor.Value = m_SentSlowFactor;
+                m_SentBlocked = m_Brain.IsMovementBlocked;
+                m_MovementBlocked.Value = m_SentBlocked;
             }
             else
             {
@@ -73,6 +90,15 @@ namespace IronWasteland.Net
                 ApplyHealth(m_Health.Value);
                 ApplyEnergy(m_Energy.Value);
                 ApplyCooldowns(m_Cooldowns.Value);
+                ApplySlow(m_SlowSpeedFactor.Value);
+                ApplyBlocked(m_MovementBlocked.Value);
+            }
+
+            // AimAngle do chủ xe ghi (owner-write) để mọi máy thấy nòng bám chuột liên tục.
+            if (IsOwner)
+            {
+                m_SentAimAngle = ReadAimAngle();
+                m_AimAngle.Value = m_SentAimAngle;
             }
         }
 
@@ -82,6 +108,8 @@ namespace IronWasteland.Net
             m_Energy.OnValueChanged -= HandleEnergyChanged;
             m_Cooldowns.OnValueChanged -= HandleCooldownsChanged;
             m_Loadout.OnValueChanged -= HandleLoadoutChanged;
+            m_SlowSpeedFactor.OnValueChanged -= HandleSlowChanged;
+            m_MovementBlocked.OnValueChanged -= HandleBlockedChanged;
         }
 
         /// <summary>Xe mà state này gắn vào (null khi chưa spawn).</summary>
@@ -99,26 +127,35 @@ namespace IronWasteland.Net
         /// <summary>Năng lượng tối đa.</summary>
         public float MaxEnergy => m_Brain != null && m_Brain.Stats != null ? m_Brain.Stats.MaxEnergy : 0f;
 
-        /// <summary>Góc nòng hiện tại (độ) — host đọc từ look target, client đọc bản đã nhận.</summary>
-        public float AimAngle => m_AimAngle.Value;
+        /// <summary>Góc nòng hiện tại (độ) — chủ xe đọc look target, máy khác đọc bản đã nhận.</summary>
+        public float AimAngle => IsOwner ? ReadAimAngle() : m_AimAngle.Value;
 
         /// <summary>Client đã áp xong loadout chưa (host luôn true).</summary>
         public bool LoadoutApplied => m_LoadoutApplied;
 
-        /// <summary>Host ghi lựa chọn xe xuống mọi máy; client dùng để khởi tạo đúng chỉ số.</summary>
+        /// <summary>Host ghi lựa chọn xe xuống mọi máy; client dùng để khởi tạo đúng chỉ số.
+        /// Gọi được cả TRƯỚC khi spawn (giá trị đi kèm payload spawn).</summary>
         public void SetServerLoadout(NetLoadout loadout)
         {
-            if (!IsServer || !IsSpawned) return;
+            if (!IsServer) return;
             m_Loadout.Value = loadout;
         }
 
         private void Update()
         {
-            if (!IsServer || m_Brain == null) return;
+            if (!IsSpawned || m_Brain == null) return;
 
             m_SyncTimer += Time.deltaTime;
             if (m_SyncTimer < SyncInterval) return;
             m_SyncTimer = 0f;
+
+            if (!IsServer)
+            {
+                // Client: loadout có thể tới trước khi NetSpawnService kịp sẵn sàng — thử lại
+                // cho tới khi áp được, nếu không máu/năng lượng sẽ không bao giờ cập nhật.
+                if (!m_LoadoutApplied) ApplyLoadout(m_Loadout.Value);
+                return;
+            }
 
             float health = m_Brain.CurrentHealth;
             if (Mathf.Abs(health - m_SentHealth) >= ValueEpsilon)
@@ -135,18 +172,39 @@ namespace IronWasteland.Net
             }
 
             CooldownState current = ReadBrainCooldowns();
-            if (HasCooldownIncreased(current, m_SentCooldowns))
+            float cooldownElapsed = Time.time - m_SentCooldownsAt;
+            if (HasCooldownDrifted(current, m_SentCooldowns, cooldownElapsed))
             {
                 m_SentCooldowns = current;
+                m_SentCooldownsAt = Time.time;
                 m_Cooldowns.Value = current;
             }
 
-            float aim = ReadAimAngle();
-            if (Mathf.Abs(Mathf.DeltaAngle(m_SentAimAngle, aim)) >= AimEpsilon)
+            float slow = m_Brain.CurrentSlowSpeedFactor;
+            if (Mathf.Abs(slow - m_SentSlowFactor) >= 0.05f)
             {
-                m_SentAimAngle = aim;
-                m_AimAngle.Value = aim;
+                m_SentSlowFactor = slow;
+                m_SlowSpeedFactor.Value = slow;
             }
+
+            bool blocked = m_Brain.IsMovementBlocked;
+            if (blocked != m_SentBlocked)
+            {
+                m_SentBlocked = blocked;
+                m_MovementBlocked.Value = blocked;
+            }
+
+            if (IsOwner) UpdateAim();
+        }
+
+        /// <summary>Chủ xe ghi hướng nòng khi lệch đủ ngưỡng — nhờ vậy nòng xe người khác bám chuột liên tục.</summary>
+        private void UpdateAim()
+        {
+            float aim = ReadAimAngle();
+            if (Mathf.Abs(Mathf.DeltaAngle(m_SentAimAngle, aim)) < AimEpsilon) return;
+
+            m_SentAimAngle = aim;
+            m_AimAngle.Value = aim;
         }
 
         /// <summary>Hướng nòng hiện tại của xe trên host, quy về độ.</summary>
@@ -190,12 +248,22 @@ namespace IronWasteland.Net
             return state;
         }
 
-        private static bool HasCooldownIncreased(in CooldownState current, in CooldownState sent)
+        /// <summary>
+        /// Host so hồi chiêu hiện tại với giá trị client sẽ suy ra (giá trị đã gửi trừ thời gian trôi qua).
+        /// Lệch nhiều nghĩa là vừa dùng chiêu (tăng vọt) hoặc vừa được giảm/hoàn hồi chiêu (giảm vọt) — cả hai đều phải gửi.
+        /// </summary>
+        private static bool HasCooldownDrifted(in CooldownState current, in CooldownState sent, float elapsed)
         {
-            return current.Normal > sent.Normal + CooldownEpsilon
-                || current.Specialized > sent.Specialized + CooldownEpsilon
-                || current.Optional1 > sent.Optional1 + CooldownEpsilon
-                || current.Optional2 > sent.Optional2 + CooldownEpsilon;
+            return HasSlotDrifted(current.Normal, sent.Normal, elapsed)
+                || HasSlotDrifted(current.Specialized, sent.Specialized, elapsed)
+                || HasSlotDrifted(current.Optional1, sent.Optional1, elapsed)
+                || HasSlotDrifted(current.Optional2, sent.Optional2, elapsed);
+        }
+
+        private static bool HasSlotDrifted(float current, float sent, float elapsed)
+        {
+            float expected = Mathf.Max(0f, sent - Mathf.Max(0f, elapsed));
+            return Mathf.Abs(current - expected) >= CooldownDriftEpsilon;
         }
 
         private void HandleHealthChanged(float previous, float current) => ApplyHealth(current);
@@ -205,6 +273,24 @@ namespace IronWasteland.Net
         private void HandleCooldownsChanged(CooldownState previous, CooldownState current) => ApplyCooldowns(current);
 
         private void HandleLoadoutChanged(NetLoadout previous, NetLoadout current) => ApplyLoadout(current);
+
+        private void HandleSlowChanged(float previous, float current) => ApplySlow(current);
+
+        private void HandleBlockedChanged(bool previous, bool current) => ApplyBlocked(current);
+
+        /// <summary>Client áp hệ số Slow do host gửi — client không tick CC nên không tự tính được.</summary>
+        private void ApplySlow(float value)
+        {
+            if (m_Brain == null || IsServer) return;
+            m_Brain.RemoteSlowSpeedFactor = Mathf.Clamp01(value);
+        }
+
+        /// <summary>Client dừng di chuyển theo cờ Stun/Root của host.</summary>
+        private void ApplyBlocked(bool blocked)
+        {
+            if (m_Brain == null || IsServer) return;
+            m_Brain.RemoteMovementBlocked = blocked;
+        }
 
         /// <summary>
         /// Client khởi tạo lại xe theo đúng lựa chọn của chủ xe để chỉ số khớp host.
@@ -216,7 +302,18 @@ namespace IronWasteland.Net
 
             NetSpawnService spawnService = FindAnyObjectByType<NetSpawnService>();
             TankDefinition definition = spawnService != null ? spawnService.GetDefinition(loadout.TankIndex) : null;
-            if (definition == null) return;
+            if (definition == null)
+            {
+                if (!m_LoadoutMissingLogged)
+                {
+                    m_LoadoutMissingLogged = true;
+                    Debug.LogWarning(
+                        $"[PlayerNetState] Chưa tìm được TankDefinition cho tankIndex={loadout.TankIndex}; sẽ thử lại mỗi 0,1 giây.",
+                        this);
+                }
+
+                return;
+            }
 
             definition.InitializeTank(
                 m_Brain,

@@ -107,6 +107,7 @@ namespace IronWasteland.Net
         /// <summary>Client nhận trạng thái ải và ghi log (HUD thật sẽ do nhóm UI làm sau).</summary>
         private void HandleMessage(ulong senderClientId, FastBufferReader reader)
         {
+            if (senderClientId != NetworkManager.ServerClientId) return; // chỉ host được gửi trạng thái ải
             reader.ReadValueSafe(out byte state);
             reader.ReadValueSafe(out int kills);
             reader.ReadValueSafe(out int target);

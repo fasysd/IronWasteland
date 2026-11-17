@@ -39,7 +39,9 @@ namespace IronWasteland.Net
             if (m_Brain == null) return;
 
             // Chỉ xử lý proxy: xe của mình do input local điều khiển, xe host do brain tự chạy.
-            if (m_Brain.IsLocallyControlled || m_Brain.IsServerSimulated) return;
+            // Chỉ xe do máy này điều khiển mới bỏ qua; trên host, xe của client vẫn phải được
+            // animate thân/nòng theo vị trí + AimAngle nhận được.
+            if (m_Brain.IsLocallyControlled) return;
 
             Vector3 position = transform.position;
             Vector3 delta = position - m_LastPosition;

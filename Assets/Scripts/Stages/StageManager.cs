@@ -96,6 +96,14 @@ namespace IronWasteland.Stages
         private void Start()
         {
             Initialize();
+
+            // Client chỉ nhận trạng thái ải qua NetStageEvents; không tự bắt đầu ải cục bộ.
+            if (TankBrain.NetworkSessionActive && NetworkManager.Singleton != null
+                && !NetworkManager.Singleton.IsServer)
+            {
+                return;
+            }
+
             if (autoStart) StartStage();
         }
 

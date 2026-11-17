@@ -44,7 +44,8 @@ namespace IronWasteland.Net
 
         /// <summary>Đọc payload do client gửi lên; trả false nếu thiếu dữ liệu hoặc sai định dạng.</summary>
         public static bool TryFromPayload(byte[] payload, out NetLoadout loadout)
-        {            loadout = default;
+        {
+            loadout = default;
             if (payload == null || payload.Length < 17) return false;
 
             try
@@ -53,10 +54,10 @@ namespace IronWasteland.Net
                 using (BinaryReader reader = new BinaryReader(stream))
                 {
                     loadout.TankIndex = reader.ReadByte();
-                    loadout.Level = reader.ReadInt32();
-                    loadout.EquipmentId = reader.ReadInt32();
-                    loadout.OptionSkill1 = reader.ReadInt32();
-                    loadout.OptionSkill2 = reader.ReadInt32();
+                    loadout.Level = Math.Clamp(reader.ReadInt32(), 1, 90);
+                    loadout.EquipmentId = Math.Max(-1, reader.ReadInt32());
+                    loadout.OptionSkill1 = Math.Clamp(reader.ReadInt32(), 0, 2);
+                    loadout.OptionSkill2 = Math.Clamp(reader.ReadInt32(), 0, 2);
                 }
                 return true;
             }

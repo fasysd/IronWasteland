@@ -246,6 +246,7 @@ namespace IronWasteland.Net
 
         private void HandleMessage(ulong senderClientId, FastBufferReader reader)
         {
+            if (senderClientId != NetworkManager.ServerClientId) return; // chỉ host được gửi ghost
             NetworkManager manager = NetworkManager.Singleton;
             if (manager == null || manager.IsServer) return;
 
@@ -258,7 +259,8 @@ namespace IronWasteland.Net
             reader.ReadValueSafe(out float lifetime);
             reader.ReadValueSafe(out bool animate);
 
-            if (string.IsNullOrEmpty(templateName) || m_Ghosts.Count >= maxGhosts) return;
+            if (string.IsNullOrEmpty(templateName)) return;
+            if (m_Ghosts.Count >= maxGhosts) RemoveOldestGhost();
             if (manager.SpawnManager == null || !manager.SpawnManager.SpawnedObjects.TryGetValue(rootId, out NetworkObject root)) return;
 
             Transform template = FindChildByName(root.transform, templateName);
@@ -284,13 +286,26 @@ namespace IronWasteland.Net
             {
                 Instance = ghost,
                 Handle = handle,
-                DestroyAt = lifetime > 0f ? Time.time + lifetime : 0f,
+                DestroyAt = lifetime > 0f ? Time.time + lifetime : Time.time + DefaultGhostLifetime,
                 Velocity = flying ? velocity : Vector2.zero
             });
         }
 
+        /// <summary>Thời gian sống mặc định cho ghost không khai báo lifetime — tránh ghost "vĩnh viễn" khoá bộ đệm.</summary>
+        private const float DefaultGhostLifetime = 30f;
+
+        private void RemoveOldestGhost()
+        {
+            if (m_Ghosts.Count == 0) return;
+
+            Ghost oldest = m_Ghosts[0];
+            if (oldest.Instance != null) Destroy(oldest.Instance);
+            m_Ghosts.RemoveAt(0);
+        }
+
         private void HandleEndMessage(ulong senderClientId, FastBufferReader reader)
         {
+            if (senderClientId != NetworkManager.ServerClientId) return; // chỉ host được thu hồi ghost
             NetworkManager manager = NetworkManager.Singleton;
             if (manager == null || manager.IsServer) return;
 

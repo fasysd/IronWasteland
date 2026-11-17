@@ -370,6 +370,7 @@ namespace IronWasteland.Enemies
         public virtual void ApplyEffect(StatusEffect effect)
         {
             if (effect == null) return;
+            if (!IsServerSimulated) return; // client chỉ nhận máu/CC từ host, không tự gắn DoT/buff
 
             for (int i = 0; i < m_ActiveEffects.Count; i++)
             {

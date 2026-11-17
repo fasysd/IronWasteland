@@ -135,6 +135,7 @@ namespace IronWasteland.Net
 
         private static void HandleMessage(ulong senderClientId, FastBufferReader reader)
         {
+            if (senderClientId != NetworkManager.ServerClientId) return; // chỉ host được phát số sát thương
             reader.ReadValueSafe(out float amount);
             reader.ReadValueSafe(out Vector2 position);
             TextDamageManager.Instance?.Show(amount, position);

@@ -111,6 +111,14 @@ namespace IronWasteland.Net
                 return null;
             }
 
+            // Ghi loadout TRƯỚC khi spawn để payload spawn đã mang đúng xe/cấp/trang bị;
+            // nếu ghi sau, client sẽ khởi tạo bằng giá trị mặc định và không áp lại được.
+            PlayerNetState netState = brain.GetComponent<PlayerNetState>();
+            if (netState != null)
+            {
+                netState.SetServerLoadout(loadout);
+            }
+
             networkObject.SpawnAsPlayerObject(clientId);
 
             TankBrainContext context = new TankBrainContext(
@@ -119,12 +127,6 @@ namespace IronWasteland.Net
                 loadout.OptionSkill1,
                 loadout.OptionSkill2);
             definition.InitializeTank(brain, context);
-
-            PlayerNetState netState = brain.GetComponent<PlayerNetState>();
-            if (netState != null)
-            {
-                netState.SetServerLoadout(loadout);
-            }
 
             m_Spawned[clientId] = brain;
             return brain;

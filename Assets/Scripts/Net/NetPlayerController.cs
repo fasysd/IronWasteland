@@ -15,8 +15,7 @@ namespace IronWasteland.Net
         [Tooltip("Hệ số nới cho phép so với tốc độ tối đa; 1.6 đủ rộng cho sai lệch một tick mạng.")]
         [SerializeField, Min(1f)] private float speedTolerance = 1.6f;
 
-        [Tooltip("Khoảng đệm (đơn vị thế giới) cộng thêm vào quãng đường cho phép mỗi lần kiểm tra.")]
-        [SerializeField, Min(0f)] private float positionSlack = 0.15f;
+        private const float MinCastRequestInterval = 0.08f;
 
         private TankBrain m_Brain;
         private Rigidbody2D m_Body;
@@ -24,6 +23,8 @@ namespace IronWasteland.Net
 
         private Vector3 m_LastAcceptedPosition;
         private float m_LastAcceptTime;
+        private float m_MoveBudget;
+        private float m_LastCastRequestTime = -1f;
 
         public override void OnNetworkSpawn()
         {
@@ -62,24 +63,57 @@ namespace IronWasteland.Net
 
         /// <summary>
         /// Server so quãng đường thực tế với tốc độ tối đa của xe trong khoảng thời gian trôi qua.
-        /// Vượt ngưỡng thì kéo xe về vị trí hợp lệ gần nhất thay vì tin client.
+        /// Ngân sách dư tích luỹ có trần (không cộng dồn vô hạn), nhờ vậy client không thể teleport
+        /// bằng cách lợi dụng nhiều tick liên tiếp. Vượt ngưỡng thì kéo về vị trí hợp lệ gần nhất.
         /// </summary>
         private void ValidateOwnerMovement()
         {
-            float elapsed = Mathf.Max(Time.fixedDeltaTime, Time.time - m_LastAcceptTime);
+            float elapsed = Mathf.Clamp(Time.time - m_LastAcceptTime, Time.fixedDeltaTime, 0.25f);
             float maxSpeed = m_Brain != null ? Mathf.Max(0.01f, m_Brain.Stats.MoveSpeed / 100f) : 1f;
-            float allowed = maxSpeed * elapsed * speedTolerance + positionSlack;
 
+            m_MoveBudget = Mathf.Min(
+                m_MoveBudget + maxSpeed * elapsed * (speedTolerance - 1f),
+                maxSpeed * 0.6f);
+
+            float allowed = maxSpeed * elapsed + m_MoveBudget;
             Vector3 delta = transform.position - m_LastAcceptedPosition;
-            if (delta.sqrMagnitude > allowed * allowed)
+
+            // Xe đang bị Stun/Root thì mọi dịch chuyển đều không hợp lệ.
+            bool blocked = m_Brain != null && !m_Brain.CanMove;
+            if (blocked || delta.sqrMagnitude > allowed * allowed)
             {
-                transform.position = m_LastAcceptedPosition;
-                if (m_Body != null) m_Body.position = m_LastAcceptedPosition;
+                CorrectOwnerPosition(m_LastAcceptedPosition);
+                m_MoveBudget = 0f;
                 return;
             }
 
+            m_MoveBudget = Mathf.Max(0f, allowed - delta.magnitude);
             m_LastAcceptedPosition = transform.position;
             m_LastAcceptTime = Time.time;
+        }
+
+        /// <summary>
+        /// Kéo xe về vị trí host chấp nhận. NetworkTransform owner-authority sẽ ghi đè transform
+        /// ở tick sau, nên phải gửi ClientRpc riêng cho chủ xe để nó tự kéo về.
+        /// </summary>
+        private void CorrectOwnerPosition(Vector3 position)
+        {
+            transform.position = position;
+            if (m_Body != null) m_Body.position = position;
+
+            ClientRpcParams target = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = new[] { OwnerClientId } }
+            };
+            CorrectPositionClientRpc(position, target);
+        }
+
+        [ClientRpc]
+        private void CorrectPositionClientRpc(Vector3 position, ClientRpcParams rpcParams = default)
+        {
+            if (IsServer) return; // host đã áp trực tiếp
+            transform.position = position;
+            if (m_Body != null) m_Body.position = position;
         }
 
         private void BindLocalInput()
@@ -106,7 +140,9 @@ namespace IronWasteland.Net
         {
             if (!IsSpawned || !IsOwner || IsServer) return false;
             if (m_Brain == null || !m_Brain.IsAlive) return false;
+            if (Time.time - m_LastCastRequestTime < MinCastRequestInterval) return false;
 
+            m_LastCastRequestTime = Time.time;
             RequestCastServerRpc(skillIndex, aimWorld);
             return true;
         }

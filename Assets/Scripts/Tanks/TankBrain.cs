@@ -167,6 +167,15 @@ namespace IronWasteland.Tanks
         public bool HasGameplayAuthority => !NetworkSessionActive || NetworkManager.Singleton.IsServer;
 
         public bool CanMove => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Root);
+
+        /// <summary>
+        /// Hệ số tốc độ do khống chế (Slow) mà host gửi xuống client. Client không tick CC nên phải
+        /// nhận giá trị này để di chuyển chậm giống host, tránh lệch vị trí/rubber-banding.
+        /// </summary>
+        public float RemoteSlowSpeedFactor { get; set; } = 1f;
+
+        /// <summary>True khi host báo xe đang bị Stun/Root — client phải dừng di chuyển.</summary>
+        public bool RemoteMovementBlocked { get; set; }
         public bool CanUseSkill => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Silence);
         public bool CanLook => IsAlive && !HasCC(CrowdControlType.Stun);
 
@@ -319,6 +328,23 @@ namespace IronWasteland.Tanks
 
         public bool HasCC(CrowdControlType type) => m_ActiveCC.ContainsKey(type);
 
+        /// <summary>Hệ số tốc độ hiện tại do Slow (1 = không bị giảm). Host dùng để gửi xuống client.</summary>
+        public float CurrentSlowSpeedFactor
+        {
+            get
+            {
+                if (m_ActiveCC.TryGetValue(CrowdControlType.Slow, out var slow))
+                {
+                    return Mathf.Clamp01(1f - slow.Strength);
+                }
+
+                return 1f;
+            }
+        }
+
+        /// <summary>True khi Stun/Root đang chặn di chuyển — host gửi xuống client để client dừng theo.</summary>
+        public bool IsMovementBlocked => IsAlive && !CanMove;
+
         public virtual void ApplyCrowdControl(CrowdControlType type, float duration, float strength = 0f)
         {
             if (type == CrowdControlType.None) return;
@@ -394,6 +420,7 @@ namespace IronWasteland.Tanks
         public virtual void ApplyEffect(StatusEffect effect)
         {
             if (effect == null) return;
+            if (!HasGameplayAuthority) return; // client không tự gắn hiệu ứng, chỉ nhận trạng thái từ host
             if (IsRemoteFxReplay) return; // hiệu ứng/khiên là quyết định của host, client chỉ phát hình ảnh
 
             for (int i = 0; i < m_ActiveEffects.Count; i++)
@@ -509,6 +536,7 @@ namespace IronWasteland.Tanks
         public virtual ShieldEffect AddShield(float amount, float duration, string effectId = null, UnityEngine.Object source = null, string displayName = "Khiên", int maxAbsorbHits = int.MaxValue)
         {
             if (amount <= 0f) return null;
+            if (!HasGameplayAuthority) return null; // client không tạo khiên, chỉ hiển thị theo host
             if (IsRemoteFxReplay) return null; // client phát lại hình ảnh không được tạo khiên cục bộ
 
             string id = string.IsNullOrEmpty(effectId) ? $"Shield_{Guid.NewGuid():N}" : effectId;
@@ -730,7 +758,6 @@ namespace IronWasteland.Tanks
         protected virtual void OnUseSkill(int index)
         {
             Debug.Log($"[TankBrain] Level {level} su dung ky nang {index + 1}/{SkillCount}.");
-            CombatFeedback.Show(36, this.view.Muzzle.position);
         }
 
         protected virtual float GetSkillEnergyCost(int index)
@@ -755,6 +782,7 @@ namespace IronWasteland.Tanks
         public virtual void AddDamageRedirector(IDamageRedirector redirector)
         {
             if (redirector == null) return;
+            if (!HasGameplayAuthority) return; // gánh hộ là cơ chế của host
             if (IsRemoteFxReplay) return; // gánh hộ là cơ chế của host
             if (m_DamageRedirectors.Contains(redirector)) return;
             m_DamageRedirectors.Add(redirector);
@@ -1054,9 +1082,14 @@ namespace IronWasteland.Tanks
                 speed *= Mathf.Clamp01(1f - slowCC.Strength);
             }
 
+            // Client không tick CC nên áp thêm hệ số host gửi xuống.
+            speed *= Mathf.Clamp(RemoteSlowSpeedFactor, 0f, 1f);
+
+            bool blocked = RemoteMovementBlocked;
+
             if (m_Body != null)
             {
-                if (CanMove)
+                if (CanMove && !blocked)
                 {
                     m_Body.linearVelocity = m_MoveInput * speed;
                 }
@@ -1069,7 +1102,7 @@ namespace IronWasteland.Tanks
             if (view == null) return;
 
             // --- Action Move ---
-            if (CanMove && m_MoveInput.sqrMagnitude > 0.0001f)
+            if (CanMove && !blocked && m_MoveInput.sqrMagnitude > 0.0001f)
             {
                 view.Move(m_MoveInput.normalized);
             }
@@ -1117,6 +1150,7 @@ namespace IronWasteland.Tanks
         /// </summary>
         protected void ResetSkillCooldown(int index)
         {
+            if (!HasGameplayAuthority) return; // hồi chiêu do host quyết định
             if (IsRemoteFxReplay) return; // hồi chiêu là số liệu của host, client không được tự xoá
 
             if (skillCooldowns == null || skillCooldowns.Length == 0)
@@ -1137,6 +1171,7 @@ namespace IronWasteland.Tanks
 
         protected void ReduceSkillCooldown(int index,float amount)
         {
+            if (!HasGameplayAuthority) return; // hồi chiêu do host quyết định
             if (IsRemoteFxReplay) return;
             if (index < 0 || index >= SkillCount) return;
             skillCooldowns[index] = Mathf.Max(0f, skillCooldowns[index] - amount);
@@ -1145,6 +1180,7 @@ namespace IronWasteland.Tanks
         /// <summary>Gán trực tiếp thời gian hồi chiêu cho kỹ năng tại slot index.</summary>
         public void SetSkillCooldown(int index, float amount)
         {
+            if (!HasGameplayAuthority) return; // chỉ host được ghi đè hồi chiêu khi đang chơi mạng
             if (IsRemoteFxReplay) return;
             if (index < 0 || index >= SkillCount) return;
             skillCooldowns[index] = Mathf.Max(0f, amount);
