@@ -71,11 +71,16 @@ namespace IronWasteland.Net
             EnsureStyle();
 
             bool lost = m_Bootstrap != null && m_Bootstrap.ConnectionLost;
+            bool ended = m_Bootstrap != null && m_Bootstrap.SessionEnded;
             NetStageEvents stageEvents = NetStageEvents.Instance;
             string banner = null;
             if (lost)
             {
                 banner = "MẤT KẾT NỐI";
+            }
+            else if (ended)
+            {
+                banner = "PHIÊN ĐÃ KẾT THÚC";
             }
             else if (stageEvents != null && stageEvents.HasStageState &&
                      (stageEvents.StageState == NetStageEvents.StateCleared || stageEvents.StageState == NetStageEvents.StateFailed))
@@ -86,7 +91,7 @@ namespace IronWasteland.Net
             if (banner != null)
             {
                 EnsureBannerStyle();
-                m_BannerStyle.normal.textColor = lost
+                m_BannerStyle.normal.textColor = (lost || ended)
                     ? new Color(1f, 0.35f, 0.3f, 0.95f)
                     : new Color(1f, 0.92f, 0.35f, 0.95f);
                 GUI.Label(new Rect(0f, Screen.height * 0.32f, Screen.width, 90f), banner, m_BannerStyle);
@@ -127,6 +132,7 @@ namespace IronWasteland.Net
             m_Builder.Append(" | quái=").Append(CountEnemies());
             m_Builder.Append(" | FPS=").Append(Mathf.RoundToInt(1f / Mathf.Max(0.0001f, Time.unscaledDeltaTime)));
             if (m_Bootstrap != null) m_Builder.Append(" | kết nối=").Append(m_Bootstrap.ConnectionLost ? "MẤT" : "OK");
+            if (m_Bootstrap != null && m_Bootstrap.SessionEnded) m_Builder.Append(" | phiên=KẾT THÚC");
 
             NetStageEvents stageEvents = NetStageEvents.Instance;
             if (stageEvents != null && stageEvents.HasStageState)

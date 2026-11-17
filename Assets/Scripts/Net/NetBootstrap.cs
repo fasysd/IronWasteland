@@ -64,6 +64,14 @@ namespace IronWasteland.Net
         /// </summary>
         public bool ConnectionLost { get; private set; }
 
+        /// <summary>
+        /// Host đã từng có người chơi nhưng hiện chỉ còn lại mình (mọi client đã rời/ngắt).
+        /// Khi đó phiên không thể nhận thêm người mới nếu transport đã sập — cần tạo lại phòng.
+        /// </summary>
+        public bool SessionEnded { get; private set; }
+
+        private bool m_HadRemoteClient;
+
         private void Awake()
         {
             if (networkManager == null) networkManager = GetComponent<NetworkManager>();
@@ -105,6 +113,8 @@ namespace IronWasteland.Net
             if (networkManager == null) return false;
 
             ConnectionLost = false;
+            SessionEnded = false;
+            m_HadRemoteClient = false;
             ClearSceneEnemies();
             DestroyLocalOfflineTank();
             EnsureTransport();
@@ -135,6 +145,8 @@ namespace IronWasteland.Net
             if (networkManager == null) return false;
 
             ConnectionLost = false;
+            SessionEnded = false;
+            m_HadRemoteClient = false;
             ClearSceneEnemies();
             DestroyLocalOfflineTank();
             EnsureTransport();
@@ -164,6 +176,8 @@ namespace IronWasteland.Net
             if (networkManager == null || networkManager.IsListening) return;
 
             ConnectionLost = false;
+            SessionEnded = false;
+            m_HadRemoteClient = false;
             RelayServerData? relayData = await NetRelayService.CreateHostAllocationAsync(region);
             if (relayData == null)
             {
@@ -196,6 +210,8 @@ namespace IronWasteland.Net
             if (networkManager == null || networkManager.IsListening) return;
 
             ConnectionLost = false;
+            SessionEnded = false;
+            m_HadRemoteClient = false;
             RelayServerData? relayData = await NetRelayService.JoinAllocationAsync(relayJoinCode);
             if (relayData == null)
             {
@@ -222,6 +238,8 @@ namespace IronWasteland.Net
         public void Shutdown()
         {
             ConnectionLost = false;
+            SessionEnded = false;
+            m_HadRemoteClient = false;
             if (networkManager != null && networkManager.IsListening) networkManager.Shutdown();
             NetRelayService.ResetSession();
         }
@@ -317,6 +335,7 @@ namespace IronWasteland.Net
 
             NetLoadout loadout = m_Loadouts.TryGetValue(clientId, out NetLoadout saved) ? saved : default;
             spawnService.SpawnPlayerTank(clientId, loadout);
+            m_HadRemoteClient = true;
 
             // Người vào giữa trận cần biết ải đang ở trạng thái nào.
             if (stageManager != null && stageManager.State != StageState.Idle)
@@ -343,6 +362,14 @@ namespace IronWasteland.Net
 
             m_Loadouts.Remove(clientId);
             spawnService?.DespawnPlayerTank(clientId);
+
+            // Host: nếu đã từng có người chơi mà giờ chỉ còn lại mình thì phiên coi như kết thúc.
+            if (m_HadRemoteClient && networkManager != null && networkManager.IsServer &&
+                networkManager.ConnectedClientsIds.Count <= 1)
+            {
+                SessionEnded = true;
+                Debug.LogWarning("[NetBootstrap] Phiên đã kết thúc — chỉ còn host, cần tạo lại phòng.");
+            }
         }
 
         private NetLoadout BuildLocalLoadout()
