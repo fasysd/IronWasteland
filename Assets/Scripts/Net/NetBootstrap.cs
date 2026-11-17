@@ -32,6 +32,9 @@ namespace IronWasteland.Net
         [Tooltip("Quản lý màn chơi; host tự bắt đầu ải khi mở phòng (để trống nếu chưa dùng màn chơi).")]
         [SerializeField] private StageManager stageManager;
 
+        [Tooltip("Điều phối vòng đời phiên chơi (lobby → vào trận → thắng/thua).")]
+        [SerializeField] private MatchFlow matchFlow;
+
         [Header("Prefab mạng")]
         [Tooltip("Các TankDefinition có prefab sẽ được dùng làm roster khi spawn người chơi.")]
         [SerializeField] private TankDefinition[] networkTankDefinitions;
@@ -57,6 +60,21 @@ namespace IronWasteland.Net
 
         /// <summary>Phiên mạng đang chạy hay chưa (dùng để tắt đường offline).</summary>
         public bool IsRunning => networkManager != null && networkManager.IsListening;
+
+        /// <summary>NetworkManager của phòng (null nếu scene chưa cấu hình).</summary>
+        public NetworkManager Manager => networkManager;
+
+        /// <summary>Quản lý màn chơi dùng chung.</summary>
+        public StageManager Stage => stageManager;
+
+        /// <summary>Service dựng xe/quái qua mạng.</summary>
+        public NetSpawnService Spawner => spawnService;
+
+        /// <summary>Điều phối vòng đời phiên chơi.</summary>
+        public MatchFlow Flow => matchFlow;
+
+        /// <summary>Tank máy này đang chọn trước khi vào phòng.</summary>
+        public byte LocalTankIndex => tankIndex;
 
         /// <summary>
         /// Client đã từng vào phòng nhưng mất kết nối (thường do host thoát).
@@ -133,8 +151,9 @@ namespace IronWasteland.Net
             bool started = networkManager.StartHost();
             if (!started) m_Loadouts.Remove(ServerClientId);
 
-            // Host là máy duy nhất mô phỏng ải, nên chỉ host bắt đầu màn chơi.
-            if (started) stageManager?.StartStage();
+            // Vòng đời trận (lobby, chọn màn, vào trận) do MatchFlow quyết định; trước đây chỗ này
+            // tự StartStage() nên vào phòng là quái lao vào ngay, không kịp chọn tank/màn.
+            if (started) matchFlow?.OnHostStarted();
 
             return started;
         }
@@ -168,6 +187,37 @@ namespace IronWasteland.Net
         public void SetHostPort(ushort port)
         {
             if (port > 0) hostPort = port;
+        }
+
+        /// <summary>Đổi tank máy này chọn trước khi vào phòng (lobby cho phép đổi xe).</summary>
+        public void SetLocalTankIndex(byte index)
+        {
+            tankIndex = index;
+        }
+
+        /// <summary>
+        /// Dựng xe cho một người chơi theo tank đã chọn trong lobby; các trường còn lại
+        /// (level, trang bị, biến thể kỹ năng) lấy từ loadout lúc kết nối.
+        /// </summary>
+        public void SpawnTankFor(ulong clientId, byte tankIndexIndex)
+        {
+            if (spawnService == null) return;
+
+            NetLoadout loadout = m_Loadouts.TryGetValue(clientId, out NetLoadout saved) ? saved : default;
+            loadout.TankIndex = tankIndexIndex;
+            spawnService.SpawnPlayerTank(clientId, loadout);
+        }
+
+        /// <summary>Dọn toàn bộ xe do mạng spawn (dùng khi về lobby hoặc chơi lại).</summary>
+        public void DespawnAllTanks()
+        {
+            spawnService?.DespawnAll();
+        }
+
+        /// <summary>Tank mà một người chơi đã chọn lúc kết nối (dùng để dựng danh sách lobby).</summary>
+        public byte GetLoadoutTankIndex(ulong clientId)
+        {
+            return m_Loadouts.TryGetValue(clientId, out NetLoadout loadout) ? loadout.TankIndex : (byte)0;
         }
 
         /// <summary>Mở phòng qua Relay của Unity Services: tạo allocation, gắn transport rồi StartHost.</summary>
@@ -334,7 +384,17 @@ namespace IronWasteland.Net
             }
 
             NetLoadout loadout = m_Loadouts.TryGetValue(clientId, out NetLoadout saved) ? saved : default;
-            spawnService.SpawnPlayerTank(clientId, loadout);
+
+            if (matchFlow != null)
+            {
+                // MatchFlow giữ danh sách phòng: thêm người, quyết định có spawn xe ngay hay đợi vào trận.
+                matchFlow.OnClientJoined(clientId);
+            }
+            else
+            {
+                spawnService.SpawnPlayerTank(clientId, loadout);
+            }
+
             m_HadRemoteClient = true;
 
             // Người vào giữa trận cần biết ải đang ở trạng thái nào.
@@ -362,6 +422,7 @@ namespace IronWasteland.Net
 
             m_Loadouts.Remove(clientId);
             spawnService?.DespawnPlayerTank(clientId);
+            matchFlow?.OnClientLeft(clientId);
 
             // Host: nếu đã từng có người chơi mà giờ chỉ còn lại mình thì phiên coi như kết thúc.
             if (m_HadRemoteClient && networkManager != null && networkManager.IsServer &&

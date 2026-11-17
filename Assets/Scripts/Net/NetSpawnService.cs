@@ -70,6 +70,13 @@ namespace IronWasteland.Net
             return false;
         }
 
+        /// <summary>Server dọn toàn bộ xe đang spawn (khi về lobby hoặc chơi lại).</summary>
+        public void DespawnAll()
+        {
+            List<ulong> ids = new List<ulong>(m_Spawned.Keys);
+            for (int i = 0; i < ids.Count; i++) DespawnPlayerTank(ids[i]);
+        }
+
         /// <summary>Server huỷ xe của người chơi đã rời phòng để không còn xe "ma" đứng giữa sân.</summary>
         public void DespawnPlayerTank(ulong clientId)
         {

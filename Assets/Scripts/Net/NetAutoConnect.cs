@@ -73,6 +73,7 @@ namespace IronWasteland.Net
 
                 bool ok = boot.StartHost();
                 Debug.Log($"[NetAutoConnect] start host ok={ok}");
+                if (ok) ApplyHostFlow(boot, args);
 
                 if (HasFlag(args, "-iw-selftest-enemy")) StartCoroutine(EnemySelfTestRoutine());
                 if (HasFlag(args, "-iw-selftest-visual")) StartCoroutine(VisualSelfTestRoutine());
@@ -84,6 +85,7 @@ namespace IronWasteland.Net
             {
                 boot.StartHostWithRelay();
                 Debug.Log("[NetAutoConnect] start relay host");
+                StartCoroutine(RelayHostFlowRoutine(boot, args));
             }
             else
             {
@@ -127,7 +129,56 @@ namespace IronWasteland.Net
 
             StartCoroutine(LogStateRoutine());
 
+            // Client tự sẵn sàng khi vào lobby (dùng cho test tự động 2–4 máy).
+            if (HasFlag(args, "-iw-ready")) StartCoroutine(AutoReadyRoutine(boot));
+
             if (HasFlag(args, "-iw-selftest")) StartCoroutine(SelfTestRoutine());
+        }
+
+        /// <summary>
+        /// Host chọn luồng chơi sau khi mở phòng: mặc định chơi đơn (vào trận ngay, giữ hành vi cũ),
+        /// truyền <c>-iw-flow coop</c> để dừng ở lobby chờ người khác sẵn sàng.
+        /// </summary>
+        private static void ApplyHostFlow(NetBootstrap boot, string[] args)
+        {
+            MatchFlow flow = boot.Flow;
+            if (flow == null) return;
+
+            string mode = ReadValue(args, "-iw-flow");
+            if (!string.IsNullOrEmpty(mode) && mode.ToLowerInvariant() == "coop")
+            {
+                flow.SetMode(MatchMode.Coop);
+                Debug.Log("[NetAutoConnect] che do co-op: cho nguoi choi san sang");
+                return;
+            }
+
+            flow.StartSingle();
+            Debug.Log("[NetAutoConnect] che do choi don: vao tran ngay");
+        }
+
+        /// <summary>Chờ Relay host mở xong rồi áp luồng chơi (StartHostWithRelay là async).</summary>
+        private IEnumerator RelayHostFlowRoutine(NetBootstrap boot, string[] args)
+        {
+            float deadline = Time.time + 20f;
+            while (Time.time < deadline && !boot.IsRunning) yield return null;
+            if (boot.IsRunning) ApplyHostFlow(boot, args);
+        }
+
+        /// <summary>Client tự bấm sẵn sàng khi đã thấy danh sách phòng (test tự động).</summary>
+        private IEnumerator AutoReadyRoutine(NetBootstrap boot)
+        {
+            float deadline = Time.time + 25f;
+            while (Time.time < deadline)
+            {
+                MatchFlow flow = boot.Flow;
+                if (flow != null && flow.PlayerCount > 0 && flow.Phase == MatchPhase.Lobby)
+                {
+                    if (!flow.LocalReady) flow.RequestReady(true);
+                    yield break;
+                }
+
+                yield return new WaitForSeconds(0.25f);
+            }
         }
 
         /// <summary>

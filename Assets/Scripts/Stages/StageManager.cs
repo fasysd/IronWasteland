@@ -182,6 +182,40 @@ namespace IronWasteland.Stages
             NetStageEvents.Instance?.Broadcast(this, NetStageEvents.StateStarted);
         }
 
+        /// <summary>Đổi màn chơi trước khi bắt đầu (host chọn màn trong lobby).</summary>
+        public void SetDefinition(StageDefinition stage)
+        {
+            if (stage == null) return;
+            definition = stage;
+        }
+
+        /// <summary>
+        /// Đưa ải về trạng thái chờ và dọn sạch quái đã spawn — dùng khi cả phòng về lobby
+        /// để chơi lại màn khác hoặc chơi lại từ đầu.
+        /// </summary>
+        public void ResetToIdle()
+        {
+            for (int i = 0; i < m_Spawned.Count; i++)
+            {
+                EnemyBrain enemy = m_Spawned[i];
+                if (enemy == null) continue;
+
+                enemy.OnDeathEvent -= OnEnemyDied;
+                NetEntity.Despawn(enemy.gameObject);
+            }
+
+            m_Spawned.Clear();
+            m_PendingWaves.Clear();
+
+            Kills = 0;
+            Elapsed = 0f;
+            WaveIndex = -1;
+            m_SpawnedCount = 0;
+            State = StageState.Idle;
+
+            KillsChanged?.Invoke(Kills);
+        }
+
         #endregion
 
         #region Waves
