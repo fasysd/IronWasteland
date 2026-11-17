@@ -109,6 +109,7 @@ namespace IronWasteland.Net
 
                     if (HasFlag(args, "-iw-retry")) StartCoroutine(RetryConnectRoutine(boot));
                     if (HasFlag(args, "-iw-selftest-cast")) StartCoroutine(CastSelfTestRoutine());
+                    if (HasFlag(args, "-iw-selftest-move")) StartCoroutine(MoveSelfTestRoutine());
 
                     // Thoát êm sau N giây (dùng để test disconnect sạch thay vì kill tiến trình).
                     float exitAfter = ReadFloat(args, "-iw-exit-after", 0f);
@@ -225,6 +226,53 @@ namespace IronWasteland.Net
             float energyBefore = target.CurrentEnergy;
             bool requested = controller.RequestCast(selfTestSkillIndex, (Vector2)target.transform.position + Vector2.right * 10f);
             Debug.Log($"[NetSelfTest] client xin cast {selfTestSkillIndex} requested={requested} energy={energyBefore:F0}");
+        }
+
+        /// <summary>
+        /// Client tự di chuyển xe của mình một đoạn ngắn để kiểm tra đồng bộ vị trí sau sự cố.
+        /// Tốc độ thấp hơn MoveSpeed để không bị host kéo ngược trong ValidateOwnerMovement.
+        /// Chỉ chạy khi có tham số -iw-selftest-move.
+        /// </summary>
+        private IEnumerator MoveSelfTestRoutine()
+        {
+            yield return new WaitForSeconds(selfTestDelay);
+
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || manager.IsServer) yield break;
+
+            TankBrain[] tanks = FindObjectsByType<TankBrain>(FindObjectsInactive.Exclude);
+            TankBrain target = null;
+            for (int i = 0; i < tanks.Length; i++)
+            {
+                NetworkObject networkObject = tanks[i].GetComponent<NetworkObject>();
+                if (networkObject == null || networkObject.OwnerClientId != manager.LocalClientId) continue;
+
+                target = tanks[i];
+                break;
+            }
+
+            if (target == null)
+            {
+                Debug.Log("[NetSelfTest] move: client không tìm thấy xe của mình");
+                yield break;
+            }
+
+            Rigidbody2D body = target.GetComponent<Rigidbody2D>();
+            Vector2 start = target.transform.position;
+            const float duration = 6f;
+            const float speed = 0.5f;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                Vector2 next = (Vector2)target.transform.position + Vector2.right * (speed * Time.deltaTime);
+                target.transform.position = next;
+                if (body != null) body.position = next;
+                yield return null;
+            }
+
+            Debug.Log($"[NetSelfTest] move {start.x:F1},{start.y:F1} -> {target.transform.position.x:F1},{target.transform.position.y:F1} trong {duration:F0}s");
         }
 
         /// <summary>
@@ -427,6 +475,7 @@ namespace IronWasteland.Net
                     NetworkObject networkObject = tank.GetComponent<NetworkObject>();
                     string owner = networkObject != null ? networkObject.OwnerClientId.ToString() : "?";
                     details += $" [owner={owner} hp={tank.CurrentHealth:F0} en={tank.CurrentEnergy:F0}" +
+                               $" pos={tank.transform.position.x:F1},{tank.transform.position.y:F1}" +
                                $" local={tank.IsLocallyControlled} server={tank.IsServerSimulated}]";
                 }
 
