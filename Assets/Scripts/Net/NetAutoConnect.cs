@@ -117,6 +117,7 @@ namespace IronWasteland.Net
                     if (HasFlag(args, "-iw-retry")) StartCoroutine(RetryConnectRoutine(boot));
                     if (HasFlag(args, "-iw-selftest-cast")) StartCoroutine(CastSelfTestRoutine());
                     if (HasFlag(args, "-iw-selftest-move")) StartCoroutine(MoveSelfTestRoutine());
+                    if (HasFlag(args, "-iw-selftest-kills")) StartCoroutine(KillSelfTestRoutine());
 
                     // Thoát êm sau N giây (dùng để test disconnect sạch thay vì kill tiến trình).
                     float exitAfter = ReadFloat(args, "-iw-exit-after", 0f);
@@ -340,6 +341,61 @@ namespace IronWasteland.Net
             }
 
             Debug.Log($"[NetSelfTest] move {start.x:F1},{start.y:F1} -> {target.transform.position.x:F1},{target.transform.position.y:F1} trong {duration:F0}s");
+        }
+
+        /// <summary>
+        /// Client liên tục ngắm quái gần nhất rồi xin host thi triển đòn đánh thường, để kiểm chứng
+        /// vòng client → RPC → host gây sát thương → tăng số mạng hạ gục trong màn chơi.
+        /// Chỉ chạy khi có tham số -iw-selftest-kills.
+        /// </summary>
+        private IEnumerator KillSelfTestRoutine()
+        {
+            yield return new WaitForSeconds(selfTestDelay);
+
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || manager.IsServer) yield break;
+
+            NetSpawnService spawnService = FindAnyObjectByType<NetSpawnService>();
+            TankBrain ownTank = null;
+            if (spawnService != null) spawnService.TryGetTank(manager.LocalClientId, out ownTank);
+
+            NetPlayerController controller = ownTank != null ? ownTank.GetComponent<NetPlayerController>() : null;
+            if (controller == null)
+            {
+                Debug.Log("[NetSelfTest] kills: client không tìm thấy xe hoặc controller của mình");
+                yield break;
+            }
+
+            const float duration = 40f;
+            const float interval = 0.5f;
+            float elapsed = 0f;
+            int casts = 0;
+
+            while (elapsed < duration)
+            {
+                yield return new WaitForSeconds(interval);
+                elapsed += interval;
+
+                EnemyBrain target = null;
+                float bestDistance = float.MaxValue;
+                EnemyBrain[] enemies = FindObjectsByType<EnemyBrain>(FindObjectsInactive.Exclude);
+                for (int i = 0; i < enemies.Length; i++)
+                {
+                    EnemyBrain enemy = enemies[i];
+                    if (enemy == null || !enemy.IsAlive) continue;
+
+                    float distance = ((Vector2)enemy.transform.position - (Vector2)ownTank.transform.position).sqrMagnitude;
+                    if (distance >= bestDistance) continue;
+
+                    bestDistance = distance;
+                    target = enemy;
+                }
+
+                if (target == null) continue;
+                if (controller.RequestCast(0, target.transform.position)) casts++;
+            }
+
+            Debug.Log($"[NetSelfTest] kills: client xin thi trien {casts} lan trong {duration:F0}s");
         }
 
         /// <summary>
