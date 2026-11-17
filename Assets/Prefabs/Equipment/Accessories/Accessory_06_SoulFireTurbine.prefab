@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5638443857923930311
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8599010584853858717}
+  - component: {fileID: 8228232970244525835}
+  m_Layer: 0
+  m_Name: Accessory_06_SoulFireTurbine
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8599010584853858717
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5638443857923930311}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8228232970244525835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5638443857923930311}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18f01e7d9ccfbaf43b5adbde33086364, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_06_SoulFireTurbine
+  equipmentId: Acc_06
+  displayName: "\u0110\u1ED9ng C\u01A1 Tua-Bin Linh H\u1ECFa"
+  description: "+25% T\u1ED1c \u0111\u1ED9 di chuy\u1EC3n, +15% Gi\u1EDBi h\u1EA1n
+    m\xE1u.\nC\u1EE9 di chuy\u1EC3n 3m s\u1EBD \u0111\u1EC3 l\u1EA1i v\xF9ng l\u1EEDa
+    xanh c\xF3 b\xE1n k\xEDnh 1.2m t\u1ED3n t\u1EA1i 3.5s gi\xFAp xe \u0111\u1ED3ng
+    minh \u0111i qua +20% T\u1ED1c \u0111\u1ED9 di chuy\u1EC3n, k\u1EBB \u0111\u1ECBch
+    di chuy\u1EC3n v\xE0o s\u1EBD l\xE0m gi\u1EA3m 20% t\u1ED1c \u0111\u1ED9."
+  icon: {fileID: 0}
+  baseMoveSpeedMultiplier: 0.25
+  baseMaxHealthMultiplier: 0.15
+  distancePerZone: 3
+  zoneRadius: 1.2
+  zoneDuration: 3.5
+  zoneColor: {r: 0.1, g: 0.6, b: 1, a: 0.4}

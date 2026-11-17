@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2684130195390593835
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 615001184772986698}
+  - component: {fileID: 7539682577052337607}
+  m_Layer: 0
+  m_Name: Accessory_10_SwampHydraulicEngine
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &615001184772986698
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2684130195390593835}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7539682577052337607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2684130195390593835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fd1f1b794007854f816f2a7158d03ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_10_SwampHydraulicEngine
+  equipmentId: Acc_10
+  displayName: "\u0110\u1ED9ng C\u01A1 Th\u1EE7y L\u1EF1c Ma Ph\xE1p \u0110\u1EA7m
+    L\u1EA7y"
+  description: "+30% Ph\xF2ng th\u1EE7, +10% T\u1EC9 l\u1EC7 gi\u1EA3m h\u1ED3i chi\xEAu.\nNh\u1EADn
+    s\xE1t th\u01B0\u01A1ng gi\xFAp c\u1ED9ng d\u1ED3n gi\u1EA3m s\xE1t th\u01B0\u01A1ng
+    (3%/t\u1EA7ng, t\u1ED1i \u0111a 18%); \u0111\u1EE7 6 t\u1EA7ng \u0111\u01B0\u1EE3c
+    mi\u1EC5n nhi\u1EC5m l\xE0m ch\u1EADm v\xE0 15% T\u1EC9 l\u1EC7 gi\u1EA3m h\u1ED3i
+    chi\xEAu trong 5s, sau khi h\u1EBFt th\u1EDDi gian hi\u1EC7u l\u1EF1c s\u1EBD
+    x\xF3a h\u1EBFt c\u1ED9ng d\u1ED3n."
+  icon: {fileID: 0}
+  baseDefenseMultiplier: 0.3
+  baseCooldownReduction: 0.1
+  damageReductionPerStack: 0.03
+  maxStacks: 6
+  empoweredBonusCooldownReduction: 0.15
+  empoweredDuration: 5

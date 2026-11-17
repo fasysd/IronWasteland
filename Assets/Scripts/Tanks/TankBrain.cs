@@ -107,6 +107,7 @@ namespace IronWasteland.Tanks
         public TankBrainContext Context => m_context;
         public TankStats BaseStats => baseStats;
         public TankStats Stats => m_FinalStats;
+        public TankStats FinalStats => m_FinalStats;
         public Vector2 LookTarget => m_LookTarget;
         public bool HasLookTarget => m_HasLookTarget;
         public float CurrentHealth => currentHealth;
@@ -641,7 +642,7 @@ namespace IronWasteland.Tanks
             TextDamageManager.Instance?.Show(36, this.view.Muzzle.position);
         }
 
-        protected virtual float GetSkillEnergyCost(int index)
+        public virtual float GetSkillEnergyCost(int index)
         {
             if (index == 0) return 0f;
             return 30f; // Mac dinh cac skill 1, 2, 3 ton 30 energy (lop con ghi de theo GDD)

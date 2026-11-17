@@ -285,7 +285,7 @@ namespace IronWasteland.Tanks.Leviathan
         /// Năng lượng tiêu hao theo từng biến thể kỹ năng. TankBrain.UseSkill gọi hàm này để
         /// kiểm tra và trừ năng lượng trước khi thi triển, nên các hàm Use* bên dưới KHÔNG trừ thêm.
         /// </summary>
-        protected override float GetSkillEnergyCost(int index)
+        public override float GetSkillEnergyCost(int index)
         {
             if (index == specializedSkillIndex)
             {

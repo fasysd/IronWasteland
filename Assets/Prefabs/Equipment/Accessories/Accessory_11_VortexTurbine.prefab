@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1390909145378929051
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8022510631058917625}
+  - component: {fileID: 918418350235315058}
+  m_Layer: 0
+  m_Name: Accessory_11_VortexTurbine
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8022510631058917625
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1390909145378929051}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &918418350235315058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1390909145378929051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36d93a3b51552864eb5c6b1f4766d722, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_11_VortexTurbine
+  equipmentId: Acc_11
+  displayName: "\u0110\u1ED9ng C\u01A1 Tua-Bin Xo\xE1y N\u01B0\u1EDBc"
+  description: "+15% T\u1EC9 l\u1EC7 s\xE1t th\u01B0\u01A1ng, +15% T\u1ED1c \u0111\u1ED9.\nKhi
+    c\xF3 k\u1EBB \u0111\u1ECBch b\u1ECB h\u1EA1 g\u1EE5c trong ph\u1EA1m vi 10 m\xE9t
+    s\u1EBD h\u1ED3i 25 N\u0103ng l\u01B0\u1EE3ng v\xE0 +20% T\u1ED1c \u0111\u1ED9
+    di chuy\u1EC3n trong 2s. \u0110\u1ED3ng th\u1EDDi nh\u1EADn 25% T\u1EA5n c\xF4ng,
+    hi\u1EC7u \u1EE9ng t\u0103ng T\u1EA5n c\xF4ng c\xF3 th\u1EC3 c\u1ED9ng d\u1ED3n
+    t\u1ED1i \u0111a 2 t\u1EA7ng. Khi k\xEDch ho\u1EA1t hi\u1EC7u \u1EE9ng s\u1EBD
+    \u0111\u1EB7t l\u1EA1i th\u1EDDi gian duy tr\xEC."
+  icon: {fileID: 0}
+  baseDamageRate: 0.15
+  baseMoveSpeed: 0.15
+  triggerRadius: 10
+  energyRecoverAmount: 25
+  bonusMoveSpeed: 0.2
+  attackBonusPerStack: 0.25
+  maxAttackStacks: 2
+  buffDuration: 2

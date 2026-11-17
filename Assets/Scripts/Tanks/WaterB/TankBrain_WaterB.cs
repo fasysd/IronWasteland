@@ -117,7 +117,7 @@ namespace IronWasteland.Tanks.WaterB
         // ------------------------------------------------------------------
         // Năng lượng & hồi chiêu (TankBrain.UseSkill tự áp dụng)
         // ------------------------------------------------------------------
-        protected override float GetSkillEnergyCost(int index)
+        public override float GetSkillEnergyCost(int index)
         {
             switch (index)
             {

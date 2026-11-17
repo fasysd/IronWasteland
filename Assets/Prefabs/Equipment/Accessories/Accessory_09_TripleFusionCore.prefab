@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4441962049846302847
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1658787071292738438}
+  - component: {fileID: 7781404475689020932}
+  m_Layer: 0
+  m_Name: Accessory_09_TripleFusionCore
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1658787071292738438
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4441962049846302847}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7781404475689020932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4441962049846302847}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b4445d56d68dbe4d9aef4dd8b3f9ed7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_09_TripleFusionCore
+  equipmentId: Acc_09
+  displayName: "L\xF5i Nhi\u1EC7t H\u1EA1ch Ba L\xF5i"
+  description: "+20% T\u1EA5n c\xF4ng, +10% T\u1EC9 l\u1EC7 s\xE1t th\u01B0\u01A1ng.\nK\u1EF9
+    n\u0103ng th\u01B0\u1EDDng tr\xFAng \u0111\u1ECBch g\xE2y Thi\xEAu \u0111\u1ED1t
+    (t\u1ED1i \u0111a 3 c\u1ED9ng d\u1ED3n) duy tr\xEC 3s, th\xEAm c\xF4ng d\u1ED3n
+    s\u1EBD kh\xF4ng \u0111\u1EB7t l\u1EA1i th\u1EDDi gian duy tr\xEC. Hi\u1EC7u
+    \u1EE9ng thi\xEAu \u0111\u1ED1t g\xE2y 25% T\u1EA5n c\xF4ng/s cho m\u1ED7i c\u1ED9ng
+    d\u1ED3n cho m\u1EE5c ti\xEAu. Khi b\u1EA5t k\u1EF3 k\u1EF9 n\u0103ng n\xE0o
+    b\u1EAFn v\xE0o m\u1EE5c ti\xEAu \u0111\u1EE7 3 c\u1ED9ng d\u1ED3n s\u1EBD th\xEAm
+    25% t\u0103ng s\xE1t th\u01B0\u01A1ng trong 3s v\xE0 x\xF3a m\u1ECDi c\u1ED9ng
+    d\u1ED3n Thi\xEAu \u0111\u1ED1t."
+  icon: {fileID: 0}
+  baseAttackMultiplier: 0.2
+  baseDamageRateMultiplier: 0.1
+  burnAttackRatioPerSecond: 0.25
+  burnDuration: 3
+  maxBurnStacks: 3
+  bonusDamageRate: 0.25
+  damageRateBuffDuration: 3

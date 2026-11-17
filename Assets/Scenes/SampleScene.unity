@@ -180,6 +180,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
+--- !u!1 &102953332
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 102953333}
+  m_Layer: 0
+  m_Name: TestTankDummy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &102953333
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 102953332}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1336,22 +1367,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2456654195384087040, guid: 020737a4fc261344f8a8bdb523ffc66e, type: 3}
-      propertyPath: m_Size.x
-      value: 17.97549
-      objectReference: {fileID: 0}
-    - target: {fileID: 2456654195384087040, guid: 020737a4fc261344f8a8bdb523ffc66e, type: 3}
-      propertyPath: m_Size.y
-      value: 18.160007
-      objectReference: {fileID: 0}
-    - target: {fileID: 2456654195384087040, guid: 020737a4fc261344f8a8bdb523ffc66e, type: 3}
-      propertyPath: m_Offset.x
-      value: -0.061504364
-      objectReference: {fileID: 0}
-    - target: {fileID: 2456654195384087040, guid: 020737a4fc261344f8a8bdb523ffc66e, type: 3}
-      propertyPath: m_Offset.y
-      value: -0.3382783
-      objectReference: {fileID: 0}
     - target: {fileID: 4224383904839152587, guid: 020737a4fc261344f8a8bdb523ffc66e, type: 3}
       propertyPath: m_Name
       value: NormalEnemyTest
@@ -1395,18 +1410,6 @@ PrefabInstance:
     - target: {fileID: 5768560532056039721, guid: 020737a4fc261344f8a8bdb523ffc66e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7340324138786926333, guid: 020737a4fc261344f8a8bdb523ffc66e, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.12877
-      objectReference: {fileID: 0}
-    - target: {fileID: 7340324138786926333, guid: 020737a4fc261344f8a8bdb523ffc66e, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.12877
-      objectReference: {fileID: 0}
-    - target: {fileID: 7340324138786926333, guid: 020737a4fc261344f8a8bdb523ffc66e, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.25754
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1633,12 +1636,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90ca2f8cafd86134b87881b257253f06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.GameController
-  tankDefinition: {fileID: 11400000, guid: 6c45234ae1746fa47a2143507c619a1c, type: 2}
+  tankDefinition: {fileID: 11400000, guid: 50cf10bfd48885b469ef03739b0d162d, type: 2}
   playerLevel: 90
   spawnPosition: {x: 0, y: 0}
-  equipmentId: -1
-  optionSkill1: 1
-  optionSkill2: 1
+  equipmentId: 19
+  optionSkill1: 0
+  optionSkill2: 0
   targetCamera: {fileID: 519420031}
   selectedSkillIndex: 0
 --- !u!4 &1238486343
@@ -2198,18 +2201,6 @@ PrefabInstance:
       value: EliteEnemyTest
       objectReference: {fileID: 0}
     - target: {fileID: 2726037112448868137, guid: 7a58dff73578aab408746bf7bcf821e7, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.44315
-      objectReference: {fileID: 0}
-    - target: {fileID: 2726037112448868137, guid: 7a58dff73578aab408746bf7bcf821e7, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.44315
-      objectReference: {fileID: 0}
-    - target: {fileID: 2726037112448868137, guid: 7a58dff73578aab408746bf7bcf821e7, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.44315
-      objectReference: {fileID: 0}
-    - target: {fileID: 2726037112448868137, guid: 7a58dff73578aab408746bf7bcf821e7, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5
       objectReference: {fileID: 0}
@@ -2248,22 +2239,6 @@ PrefabInstance:
     - target: {fileID: 2726037112448868137, guid: 7a58dff73578aab408746bf7bcf821e7, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7526077221558945364, guid: 7a58dff73578aab408746bf7bcf821e7, type: 3}
-      propertyPath: m_Size.x
-      value: 18.13517
-      objectReference: {fileID: 0}
-    - target: {fileID: 7526077221558945364, guid: 7a58dff73578aab408746bf7bcf821e7, type: 3}
-      propertyPath: m_Size.y
-      value: 18.30486
-      objectReference: {fileID: 0}
-    - target: {fileID: 7526077221558945364, guid: 7a58dff73578aab408746bf7bcf821e7, type: 3}
-      propertyPath: m_Offset.x
-      value: 0.01696968
-      objectReference: {fileID: 0}
-    - target: {fileID: 7526077221558945364, guid: 7a58dff73578aab408746bf7bcf821e7, type: 3}
-      propertyPath: m_Offset.y
-      value: 0.033938885
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2474,6 +2449,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dd67fd1da0bc9f34eb67cc48121a0809, type: 3}
+--- !u!1 &2051930424
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2051930425}
+  m_Layer: 0
+  m_Name: TestTankDummy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2051930425
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2051930424}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2139011463
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2558,3 +2564,5 @@ SceneRoots:
   - {fileID: 936364655}
   - {fileID: 1118040371}
   - {fileID: 1668922556}
+  - {fileID: 102953333}
+  - {fileID: 2051930425}

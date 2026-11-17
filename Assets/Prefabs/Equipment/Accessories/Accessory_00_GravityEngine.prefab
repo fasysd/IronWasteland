@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6739047337242619486
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6910537537710546684}
+  - component: {fileID: 1510067953907452819}
+  m_Layer: 0
+  m_Name: Accessory_00_GravityEngine
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6910537537710546684
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6739047337242619486}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1510067953907452819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6739047337242619486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ddf936db839c8a4f863768cb2d4ad1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_00_GravityEngine
+  equipmentId: Acc_00
+  displayName: "L\xF5i \u0110\u1ED9ng C\u01A1 Tr\u1ECDng L\u1EF1c \u0110\u1ECBa M\u1EA1ch"
+  description: "+35% Ph\xF2ng th\u1EE7.\n\u0110\u1EE9ng y\xEAn sau 1.5s gi\xFAp +35%
+    Ph\xF2ng th\u1EE7, h\u1ED3i 1.5% Gi\u1EDBi h\u1EA1n m\xE1u m\u1ED7i gi\xE2y."
+  icon: {fileID: 0}
+  baseDefenseMultiplier: 0.35
+  stationaryRequiredTime: 1.5
+  stationaryBonusDefenseMultiplier: 0.35
+  stationaryHealthRegenPerSecond: 0.015

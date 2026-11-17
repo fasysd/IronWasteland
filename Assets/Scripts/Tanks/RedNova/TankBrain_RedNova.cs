@@ -203,7 +203,7 @@ namespace IronWasteland.Tanks.RedNova
         /// khác 0, nên nếu không ghi đè thì mỗi chiêu sẽ bị trừ thêm 30 EN.
         /// Laser Cannon: bật/tắt miễn phí, mỗi phát trừ riêng trong FireLaserBeam().
         /// </summary>
-        protected override float GetSkillEnergyCost(int index)
+        public override float GetSkillEnergyCost(int index)
         {
             switch (index)
             {

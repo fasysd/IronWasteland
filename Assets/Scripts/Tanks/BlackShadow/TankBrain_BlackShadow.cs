@@ -262,7 +262,7 @@ namespace IronWasteland.Tanks.BlackShadow
         /// ShadowStep 40, Shadow Predator 45, Shadow Link 50, Shadow Guard 40,
         /// Shadow Ambush 50, Shadow Possession 60, Shadow Exchange 65.
         /// </summary>
-        protected override float GetSkillEnergyCost(int index)
+        public override float GetSkillEnergyCost(int index)
         {
             if (index == specializedSkillIndex)
             {

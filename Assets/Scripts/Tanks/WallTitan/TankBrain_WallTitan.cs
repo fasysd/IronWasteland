@@ -194,7 +194,7 @@ namespace IronWasteland.Tanks.WallTitan
         /// Chi phí năng lượng theo GDD. Lớp cha mặc định 30 EN cho slot khác 0 nên phải ghi đè,
         /// nếu không mỗi chiêu bị trừ thêm 30 EN. Immovable Titan không tốn EN mà hồi 40 EN.
         /// </summary>
-        protected override float GetSkillEnergyCost(int index)
+        public override float GetSkillEnergyCost(int index)
         {
             switch (index)
             {
