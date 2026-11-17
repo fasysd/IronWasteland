@@ -64,5 +64,18 @@ namespace IronWasteland.Net
 
             return instance;
         }
+
+        /// <summary>
+        /// Nhân bản visual thủ tục (object do host tạo bằng <c>new GameObject</c>, không có template trong prefab).
+        /// Dùng cho vệt lửa và gai đá; client chỉ vẽ sprite, không có logic gameplay.
+        /// </summary>
+        public static void SpawnPrimitive(Vector3 position, Vector2 velocity, float radius, float lifetime,
+            bool fade, int sortingOrder, Color color)
+        {
+            if (!TankBrain.NetworkSessionActive || NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+                return;
+
+            NetVisualSpawn.Instance?.BroadcastPrimitive(position, velocity, radius, lifetime, fade, sortingOrder, color);
+        }
     }
 }

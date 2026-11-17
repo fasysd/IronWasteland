@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using IronWasteland.Tanks;
+using IronWasteland.Utilities;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -17,6 +18,9 @@ namespace IronWasteland.Net
     {
         private const string MessageName = "IW.Visual";
         private const string EndMessageName = "IW.VisualEnd";
+
+        /// <summary>Kênh dựng visual thủ tục (vệt lửa, gai đá) — các object này không có template trong prefab.</summary>
+        private const string PrimitiveMessageName = "IW.VisualPrimitive";
         private const int MaxNameLength = 64;
 
         /// <summary>Instance duy nhất trên root Network.</summary>
@@ -46,6 +50,18 @@ namespace IronWasteland.Net
 
             /// <summary>Vận tốc bay (unit/giây) cho đạn; bằng 0 với vùng đứng yên và bản sao tĩnh.</summary>
             public Vector2 Velocity;
+
+            /// <summary>Renderer của ghost thủ tục (null với ghost dựng từ template).</summary>
+            public SpriteRenderer Renderer;
+
+            /// <summary>Màu gốc để mờ dần theo thời gian (chỉ dùng cho ghost thủ tục có hiệu ứng mờ).</summary>
+            public Color BaseColor;
+
+            /// <summary>True: alpha giảm dần đều tới 0 trong suốt vòng đời (vệt lửa).</summary>
+            public bool Fade;
+
+            public float SpawnTime;
+            public float Lifetime;
         }
 
         /// <summary>Số bản sao visual client đang giữ (dùng cho log/kiểm chứng).</summary>
@@ -66,6 +82,7 @@ namespace IronWasteland.Net
             {
                 manager.CustomMessagingManager.UnregisterNamedMessageHandler(MessageName);
                 manager.CustomMessagingManager.UnregisterNamedMessageHandler(EndMessageName);
+                manager.CustomMessagingManager.UnregisterNamedMessageHandler(PrimitiveMessageName);
             }
 
             m_Registered = false;
@@ -85,6 +102,7 @@ namespace IronWasteland.Net
             {
                 messaging.RegisterNamedMessageHandler(MessageName, HandleMessage);
                 messaging.RegisterNamedMessageHandler(EndMessageName, HandleEndMessage);
+                messaging.RegisterNamedMessageHandler(PrimitiveMessageName, HandlePrimitiveMessage);
                 m_Registered = true;
             }
             else if (!listening && m_Registered)
@@ -93,6 +111,7 @@ namespace IronWasteland.Net
                 {
                     messaging.UnregisterNamedMessageHandler(MessageName);
                     messaging.UnregisterNamedMessageHandler(EndMessageName);
+                    messaging.UnregisterNamedMessageHandler(PrimitiveMessageName);
                 }
 
                 m_Registered = false;
@@ -115,6 +134,17 @@ namespace IronWasteland.Net
                 if (ghost.Velocity.sqrMagnitude > 0f)
                 {
                     ghost.Instance.transform.position += (Vector3)(ghost.Velocity * Time.deltaTime);
+                }
+
+                // Vệt lửa: client tự mờ dần đúng như bản gốc trên host.
+                if (ghost.Fade && ghost.Renderer != null)
+                {
+                    float lifeRatio = ghost.Lifetime > 0.0001f
+                        ? Mathf.Clamp01(1f - (now - ghost.SpawnTime) / ghost.Lifetime)
+                        : 1f;
+                    Color color = ghost.BaseColor;
+                    color.a *= lifeRatio;
+                    ghost.Renderer.color = color;
                 }
 
                 if (ghost.DestroyAt > 0f && now >= ghost.DestroyAt)
@@ -208,6 +238,34 @@ namespace IronWasteland.Net
             using FastBufferWriter writer = new FastBufferWriter(sizeof(int), Allocator.Temp);
             writer.WriteValueSafe(handle);
             manager.CustomMessagingManager.SendNamedMessageToAll(EndMessageName, writer);
+        }
+
+        /// <summary>
+        /// Host gửi visual thủ tục (không có template trong prefab): vệt lửa, gai đá...
+        /// Client tự dựng SpriteRenderer đơn giản, bay theo vận tốc và mờ dần nếu bật <paramref name="fade"/>.
+        /// </summary>
+        public int BroadcastPrimitive(Vector3 position, Vector2 velocity, float radius, float lifetime,
+            bool fade, int sortingOrder, Color color)
+        {
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsServer || manager.CustomMessagingManager == null) return 0;
+
+            int handle = m_NextHandle++;
+            if (m_NextHandle <= 0) m_NextHandle = 1;
+
+            using FastBufferWriter writer = new FastBufferWriter(64, Allocator.Temp);
+            writer.WriteValueSafe(handle);
+            writer.WriteValueSafe((Vector2)position);
+            writer.WriteValueSafe(velocity);
+            writer.WriteValueSafe(Mathf.Max(0.01f, radius));
+            writer.WriteValueSafe(lifetime);
+            writer.WriteValueSafe(fade);
+            writer.WriteValueSafe(sortingOrder);
+            Color32 packed = color;
+            writer.WriteValueSafe(packed);
+            manager.CustomMessagingManager.SendNamedMessageToAll(PrimitiveMessageName, writer);
+
+            return handle;
         }
 
         /// <summary>
@@ -318,6 +376,48 @@ namespace IronWasteland.Net
                 if (m_Ghosts[i].Instance != null) Destroy(m_Ghosts[i].Instance);
                 m_Ghosts.RemoveAt(i);
             }
+        }
+
+        /// <summary>Client dựng lại visual thủ tục do host gửi (vệt lửa, gai đá).</summary>
+        private void HandlePrimitiveMessage(ulong senderClientId, FastBufferReader reader)
+        {
+            if (senderClientId != NetworkManager.ServerClientId) return; // chỉ host được gửi ghost
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || manager.IsServer) return;
+
+            reader.ReadValueSafe(out int handle);
+            reader.ReadValueSafe(out Vector2 position);
+            reader.ReadValueSafe(out Vector2 velocity);
+            reader.ReadValueSafe(out float radius);
+            reader.ReadValueSafe(out float lifetime);
+            reader.ReadValueSafe(out bool fade);
+            reader.ReadValueSafe(out int sortingOrder);
+            reader.ReadValueSafe(out Color32 packedColor);
+
+            if (m_Ghosts.Count >= maxGhosts) RemoveOldestGhost();
+
+            GameObject ghost = new GameObject(fade ? "SoftCircle (Ghost)" : "Circle (Ghost)");
+            ghost.transform.position = position;
+            ghost.transform.localScale = Vector3.one * (Mathf.Max(0.01f, radius) * 2f);
+
+            SpriteRenderer renderer = ghost.AddComponent<SpriteRenderer>();
+            renderer.sprite = fade ? SpriteFactory.SoftCircle : SpriteFactory.Circle;
+            renderer.color = packedColor;
+            renderer.sortingOrder = sortingOrder;
+
+            float ghostLifetime = lifetime > 0f ? lifetime : DefaultGhostLifetime;
+            m_Ghosts.Add(new Ghost
+            {
+                Instance = ghost,
+                Handle = handle,
+                DestroyAt = Time.time + ghostLifetime,
+                Velocity = velocity,
+                Renderer = renderer,
+                BaseColor = packedColor,
+                Fade = fade,
+                SpawnTime = Time.time,
+                Lifetime = ghostLifetime
+            });
         }
 
         private static Transform FindChildByName(Transform root, string name)

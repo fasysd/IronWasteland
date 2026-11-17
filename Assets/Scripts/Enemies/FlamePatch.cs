@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using IronWasteland.Utilities;
 using UnityEngine;
@@ -44,6 +45,11 @@ namespace IronWasteland.Enemies
             patch.m_SlowPercent = Mathf.Clamp01(slowPercent);
             patch.m_SlowDuration = Mathf.Max(0f, slowDuration);
             patch.BuildVisual();
+
+            // Client không có template cho vệt lửa (object tạo bằng code) nên host gửi visual thủ tục riêng.
+            NetVisual.SpawnPrimitive(position, Vector2.zero, patch.m_Radius, patch.m_Lifetime,
+                fade: true, sortingOrder: -1, color: patch.m_BaseColor);
+
             return patch;
         }
 

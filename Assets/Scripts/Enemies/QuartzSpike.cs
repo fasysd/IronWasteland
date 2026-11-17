@@ -1,3 +1,4 @@
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using IronWasteland.Utilities;
 using UnityEngine;
@@ -53,6 +54,18 @@ namespace IronWasteland.Enemies
             spike.m_Speed = Mathf.Max(0.5f, speed);
             spike.m_Lifetime = Mathf.Max(0.2f, lifetime);
             spike.m_Renderer = renderer;
+
+            // Client không có template cho gai đá (object tạo bằng code): gửi hướng bay + kích thước để vẽ bản sao.
+            Vector2 ghostVelocity = Vector2.zero;
+            if (target != null)
+            {
+                Vector2 toTarget = (Vector2)target.transform.position - position;
+                if (toTarget.sqrMagnitude > 0.0001f) ghostVelocity = toTarget.normalized * spike.m_Speed;
+            }
+
+            NetVisual.SpawnPrimitive(position, ghostVelocity, 0.2f, spike.m_Lifetime,
+                fade: false, sortingOrder: 4, color: new Color(0.85f, 0.75f, 1f, 1f));
+
             return spike;
         }
 

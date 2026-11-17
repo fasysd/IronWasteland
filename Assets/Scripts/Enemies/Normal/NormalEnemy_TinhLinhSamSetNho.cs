@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using IronWasteland.Core;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 
 using UnityEngine;
@@ -375,7 +376,13 @@ namespace IronWasteland.Enemies.Normal
 
                 {
 
+                    bool scannerWasActive = m_ActiveScanner.gameObject.activeSelf;
+
                     m_ActiveScanner.PositionAt(sourcePos, chainJumpDistance);
+
+                    // Ghost: client chỉ thấy vòng quét khi host bật nó lần đầu trong đợt phóng này.
+                    if (!scannerWasActive && scannerTemplate != null)
+                        NetVisualSpawn.Follow(scannerTemplate.gameObject, m_ActiveScanner.gameObject);
 
 
 
@@ -486,6 +493,8 @@ namespace IronWasteland.Enemies.Normal
             {
 
                 m_ActiveScanner.Deactivate();
+
+                NetVisualSpawn.End(m_ActiveScanner.gameObject);
 
             }
 
@@ -651,6 +660,9 @@ namespace IronWasteland.Enemies.Normal
 
 
 
+            // Ghost: client thấy tia sét dù beam là object thủ tục do host dựng.
+            NetVisualSpawn.Follow(beamTemplate != null ? beamTemplate.gameObject : null, beam.gameObject, beamDuration);
+
             return beam;
 
         }
@@ -666,6 +678,8 @@ namespace IronWasteland.Enemies.Normal
             m_ActiveBeams.Remove(beam);
 
             m_BeamPool.Enqueue(beam);
+
+            NetVisualSpawn.End(beam.gameObject);
 
         }
 
@@ -728,6 +742,8 @@ namespace IronWasteland.Enemies.Normal
             {
 
                 m_ActiveScanner.Deactivate();
+
+                NetVisualSpawn.End(m_ActiveScanner.gameObject);
 
             }
 

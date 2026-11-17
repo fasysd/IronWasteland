@@ -40,7 +40,9 @@
 | 10 | `EnemyBrain.ApplyEffect` chạy trên client | Gate `!IsServerSimulated` |
 | 11 | `NetLoadout` không validate payload | Clamp Level 1..90, Equipment ≥ -1, Option 0..2 |
 
-**Chưa sửa (đã ghi nhận, ưu tiên sau):** shield/buff/`ActiveEffects` chưa sync; `MatchFlow`/`MatchPhase` + ready gate + snapshot ải định kỳ; `CastResult` ClientRpc; lobby lifecycle (heartbeat/DeleteLobby/RemovePlayer/Member visibility); ghost cho scanner/beam `TinhLinhSamSetNho`, `FlamePatch`, `QuartzSpike`; mở replay slot 2–3 cho GreenFox/BlackShadow/WaterB (hoặc chỉ visual-only); `EnemyStatsSnapshot`; va chạm 4 xe (`Physics2D.IgnoreCollision`); `NetAutoConnect` nên tách `Net/Dev/` + `#if DEVELOPMENT_BUILD`.
+**Chưa sửa (đã ghi nhận, ưu tiên sau):** shield/buff/`ActiveEffects` chưa sync; `MatchFlow`/`MatchPhase` + ready gate + snapshot ải định kỳ; `CastResult` ClientRpc; lobby lifecycle (heartbeat/DeleteLobby/RemovePlayer/Member visibility); mở replay slot 2–3 cho GreenFox/BlackShadow/WaterB (hoặc chỉ visual-only); `EnemyStatsSnapshot`; va chạm 4 xe (`Physics2D.IgnoreCollision`); `NetAutoConnect` nên tách `Net/Dev/` + `#if DEVELOPMENT_BUILD`.
+
+**Bổ sung visual thủ tục (2026-11-17):** thêm kênh named message `IW.VisualPrimitive` trong `NetVisualSpawn` cho các object host tạo bằng code (không có template trong prefab): vệt lửa `FlamePatch` (fade + order −1) và gai đá `QuartzSpike` (bay theo hướng mục tiêu, order 4); scanner + tia sét của `TinhLinhSamSetNho` dùng kênh template sẵn có (`Follow`/`End`). Kiểm chứng bằng player build: client nhận đủ **4 ghost** khi host phát 2 primitive + 1 FlamePatch + 1 QuartzSpike, sau đó `ghosts=0` khi hết vòng đời, không exception.
 
 **Quyết định kiến trúc (ADR):** giữ `RelayService` + `LobbyService` trực tiếp cho MVP thay vì `Unity.Services.Multiplayer` — đã kiểm chứng 4 người qua internet; đổi SDK tốn ~150–200 dòng và không sửa được hạn chế transport.
 
