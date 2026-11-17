@@ -187,6 +187,16 @@ namespace IronWasteland.Tanks
 
         public IReadOnlyList<StatusEffect> ActiveEffects => m_ActiveEffects;
         public float GetSkillCooldown(int index) => skillCooldowns[Mathf.Clamp(index, 0, SkillCount - 1)];
+
+        /// <summary>
+        /// Dùng cho lớp mạng kiểm tra trước khi gọi <see cref="UseSkill"/>: có đủ năng lượng cho kỹ năng này không.
+        /// Không tự trừ năng lượng — việc trừ vẫn nằm trong <see cref="UseSkill"/>.
+        /// </summary>
+        public bool HasEnergyForSkill(int index)
+        {
+            if (index <= 0) return true;
+            return currentEnergy >= GetSkillEnergyCost(index);
+        }
         #endregion
 
         #region Setup

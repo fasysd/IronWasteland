@@ -4,6 +4,17 @@ using UnityEngine;
 
 namespace IronWasteland.Net
 {
+    /// <summary>Lý do host từ chối một yêu cầu thi triển kỹ năng; gửi riêng cho chủ xe để HUD hiện thông báo.</summary>
+    public enum CastResult : byte
+    {
+        Ok = 0,
+        NoEnergy = 1,
+        OnCooldown = 2,
+        CrowdControlled = 3,
+        RateLimited = 4,
+        Invalid = 5
+    }
+
     /// <summary>
     /// Nối xe mạng với điều khiển cục bộ: chỉ chủ sở hữu nhận input và camera bám theo;
     /// các máy khác coi xe là proxy kinematic (vị trí do NetworkTransform đồng bộ).
@@ -28,6 +39,13 @@ namespace IronWasteland.Net
         private float m_LastAcceptTime;
         private float m_MoveBudget;
         private float m_LastCastRequestTime = -1f;
+        private float m_LastServerCastTime = -1f;
+
+        /// <summary>Thông báo lý do cast bị từ chối, chỉ hiển thị trên HUD debug của chủ xe.</summary>
+        public static string LocalCastMessage { get; private set; }
+
+        /// <summary>Mốc thời gian hết hạn thông báo cast (Time.time).</summary>
+        public static float LocalCastMessageUntil { get; private set; }
 
         /// <summary>Trong khoảng này bỏ qua kiểm tra tốc độ vì vừa có lệnh dịch chuyển hợp lệ từ kỹ năng.</summary>
         private float m_TeleportGraceUntil;
@@ -232,8 +250,17 @@ namespace IronWasteland.Net
         public bool RequestCast(int skillIndex, Vector2 aimWorld)
         {
             if (!IsSpawned || !IsOwner || IsServer) return false;
-            if (m_Brain == null || !m_Brain.IsAlive) return false;
-            if (Time.time - m_LastCastRequestTime < MinCastRequestInterval) return false;
+            if (m_Brain == null || !m_Brain.IsAlive)
+            {
+                SetLocalCastMessage(CastResult.Invalid);
+                return false;
+            }
+
+            if (Time.time - m_LastCastRequestTime < MinCastRequestInterval)
+            {
+                SetLocalCastMessage(CastResult.RateLimited);
+                return false;
+            }
 
             m_LastCastRequestTime = Time.time;
             RequestCastServerRpc(skillIndex, aimWorld);
@@ -245,10 +272,81 @@ namespace IronWasteland.Net
         {
             if (!IsServer || m_Brain == null) return;
             if (rpcParams.Receive.SenderClientId != OwnerClientId) return;
-            if (!m_Brain.IsAlive) return;
 
+            if (!m_Brain.IsAlive || skillIndex < 0 || skillIndex >= TankBrain.SkillCount)
+            {
+                RejectCast(CastResult.Invalid, skillIndex);
+                return;
+            }
+
+            if (Time.time - m_LastServerCastTime < MinCastRequestInterval)
+            {
+                RejectCast(CastResult.RateLimited, skillIndex);
+                return;
+            }
+
+            if (!m_Brain.CanUseSkill)
+            {
+                RejectCast(CastResult.CrowdControlled, skillIndex);
+                return;
+            }
+
+            if (!m_Brain.HasEnergyForSkill(skillIndex))
+            {
+                RejectCast(CastResult.NoEnergy, skillIndex);
+                return;
+            }
+
+            if (m_Brain.GetSkillCooldown(skillIndex) > 0f)
+            {
+                RejectCast(CastResult.OnCooldown, skillIndex);
+                return;
+            }
+
+            m_LastServerCastTime = Time.time;
             m_Brain.SetLookTarget(aimWorld);
             m_Brain.UseSkill(skillIndex);
+        }
+
+        /// <summary>Gửi lý do từ chối riêng cho chủ xe; chỉ chủ xe hiện thông báo trên HUD.</summary>
+        private void RejectCast(CastResult result, int skillIndex)
+        {
+            ClientRpcParams target = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = new[] { OwnerClientId } }
+            };
+            CastRejectedClientRpc((byte)result, skillIndex, target);
+        }
+
+        [ClientRpc]
+        private void CastRejectedClientRpc(byte result, int skillIndex, ClientRpcParams rpcParams = default)
+        {
+            if (IsServer) return; // host hiển thị trực tiếp khi gọi UseSkill, không cần vòng RPC
+            SetLocalCastMessage((CastResult)result);
+        }
+
+        private static void SetLocalCastMessage(CastResult result)
+        {
+            LocalCastMessage = DescribeCastResult(result);
+            LocalCastMessageUntil = Time.time + 2.5f;
+        }
+
+        /// <summary>Mô tả lý do để HUD hiện; giữ ngắn gọn, chỉ là thông báo debug.</summary>
+        private static string DescribeCastResult(CastResult result)
+        {
+            switch (result)
+            {
+                case CastResult.NoEnergy:
+                    return "không đủ năng lượng";
+                case CastResult.OnCooldown:
+                    return "kỹ năng đang hồi";
+                case CastResult.CrowdControlled:
+                    return "đang bị khống chế";
+                case CastResult.RateLimited:
+                    return "bấm quá nhanh";
+                default:
+                    return "không hợp lệ";
+            }
         }
     }
 }
