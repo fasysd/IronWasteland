@@ -60,6 +60,7 @@ namespace IronWasteland.Net
                 if (HasFlag(args, "-iw-selftest-enemy")) StartCoroutine(EnemySelfTestRoutine());
                 if (HasFlag(args, "-iw-selftest-visual")) StartCoroutine(VisualSelfTestRoutine());
                 if (HasFlag(args, "-iw-selftest-stage")) StartCoroutine(StageSelfTestRoutine());
+                if (HasFlag(args, "-iw-selftest-win")) StartCoroutine(WinSelfTestRoutine());
             }
             else if (HasFlag(args, "-iw-relay-host"))
             {
@@ -313,6 +314,47 @@ namespace IronWasteland.Net
 
             boot.StartClientWithRelay(relayCode);
             Debug.Log($"[NetAutoConnect] lobby {lobbyCode} -> relay {relayCode}");
+        }
+
+        /// <summary>
+        /// Giết sạch quái trên host cho tới khi đạt mục tiêu để kiểm chứng nhánh THẮNG của ải.
+        /// Giữ xe host còn sống trong lúc test (batchmode không điều khiển được) để ải không thua trước.
+        /// Chỉ dùng cho test tự động: -iw-selftest-win.
+        /// </summary>
+        private IEnumerator WinSelfTestRoutine()
+        {
+            yield return new WaitForSeconds(selfTestDelay);
+
+            IronWasteland.Stages.StageManager stage = FindAnyObjectByType<IronWasteland.Stages.StageManager>();
+            if (stage == null)
+            {
+                Debug.Log("[NetSelfTest] khong tim thay StageManager");
+                yield break;
+            }
+
+            float deadline = Time.time + 150f;
+            while (Time.time < deadline && stage.State == IronWasteland.Stages.StageState.Running)
+            {
+                TankBrain[] tanks = FindObjectsByType<TankBrain>(FindObjectsInactive.Exclude);
+                for (int i = 0; i < tanks.Length; i++)
+                {
+                    if (tanks[i] == null || !tanks[i].IsAlive) continue;
+                    tanks[i].SetHealth(tanks[i].Stats.MaxHealth);
+                    tanks[i].SetEnergy(tanks[i].Stats.MaxEnergy);
+                }
+
+                EnemyBrain[] enemies = FindObjectsByType<EnemyBrain>(FindObjectsInactive.Include);
+                for (int i = 0; i < enemies.Length; i++)
+                {
+                    EnemyBrain enemy = enemies[i];
+                    if (enemy == null || !enemy.IsAlive) continue;
+                    enemy.TakeDamage(99999f);
+                }
+
+                yield return new WaitForSeconds(0.5f);
+            }
+
+            Debug.Log($"[NetSelfTest] win -> state={stage.State} kills={stage.Kills}/{stage.KillTarget}");
         }
 
         private IEnumerator LogStateRoutine()
