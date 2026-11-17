@@ -27,6 +27,15 @@ namespace IronWasteland.Net
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
+        /// <summary>
+        /// Máu tối đa host dùng lúc spawn. Gửi một lần kèm snapshot spawn (NetworkVariable khởi tạo),
+        /// không gửi lại mỗi tick — client dùng để vẽ thanh máu đúng tỉ lệ.
+        /// </summary>
+        private readonly NetworkVariable<float> m_MaxHealth = new(
+            0f,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
         private EnemyBrain m_Brain;
         private Rigidbody2D m_Body;
         private EnemyMovementAgent m_Movement;
@@ -36,8 +45,8 @@ namespace IronWasteland.Net
         /// <summary>Máu hiện tại phía client (host trả máu thật từ brain).</summary>
         public float Health => m_Brain != null ? m_Brain.CurrentHealth : m_Health.Value;
 
-        /// <summary>Máu tối đa theo prefab (hiện chưa scale theo số người chơi).</summary>
-        public float MaxHealth => m_Brain != null ? m_Brain.MaxHealth : 0f;
+        /// <summary>Máu tối đa host gửi lúc spawn (client có thể chưa kịp nhận thì đọc từ NetworkVariable).</summary>
+        public float MaxHealth => m_Brain != null ? m_Brain.MaxHealth : m_MaxHealth.Value;
 
         private void Awake()
         {
@@ -52,10 +61,12 @@ namespace IronWasteland.Net
 
             m_Brain.IsServerSimulated = IsServer;
             m_Health.OnValueChanged += HandleHealthChanged;
+            m_MaxHealth.OnValueChanged += HandleMaxHealthChanged;
 
             if (IsServer)
             {
                 m_Movement?.SetServerSimulated(true);
+                m_MaxHealth.Value = m_Brain.MaxHealth;
                 m_SentHealth = m_Brain.CurrentHealth;
                 m_Health.Value = m_SentHealth;
             }
@@ -65,6 +76,7 @@ namespace IronWasteland.Net
 
                 // Client tự khởi tạo brain một lần (để SetHealth chịu tác dụng) rồi mới áp máu host gửi.
                 if (!m_Brain.IsInitialized) m_Brain.Initialize();
+                ApplyMaxHealth(m_MaxHealth.Value);
                 ApplyHealth(m_Health.Value);
             }
         }
@@ -72,6 +84,7 @@ namespace IronWasteland.Net
         public override void OnNetworkDespawn()
         {
             m_Health.OnValueChanged -= HandleHealthChanged;
+            m_MaxHealth.OnValueChanged -= HandleMaxHealthChanged;
         }
 
         private void Update()
@@ -104,6 +117,21 @@ namespace IronWasteland.Net
 
             if (!m_Brain.IsInitialized) m_Brain.Initialize();
             m_Brain.SetHealth(value);
+        }
+
+        private void HandleMaxHealthChanged(float previousValue, float newValue)
+        {
+            if (IsServer) return;
+            ApplyMaxHealth(newValue);
+        }
+
+        /// <summary>Client áp máu tối đa host gửi lúc spawn để thanh máu hiển thị đúng tỉ lệ.</summary>
+        private void ApplyMaxHealth(float value)
+        {
+            if (m_Brain == null || value <= 0f) return;
+
+            if (!m_Brain.IsInitialized) m_Brain.Initialize();
+            m_Brain.SetMaxHealth(value);
         }
 
         /// <summary>Client không mô phỏng AI/di chuyển; giữ collider để va chạm cục bộ không phá vị trí.</summary>

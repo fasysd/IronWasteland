@@ -260,6 +260,21 @@ namespace IronWasteland.Enemies
             if (currentHealth <= 0f && !m_Dead) Die();
         }
 
+        /// <summary>
+        /// Áp máu tối đa do host đồng bộ xuống proxy (một lần lúc spawn). Client chỉ dùng để vẽ thanh máu;
+        /// vì client không mô phỏng nên không phát sự kiện và không tính lại sát thương.
+        /// </summary>
+        public void SetMaxHealth(float value)
+        {
+            if (stats == null) return;
+
+            float max = Mathf.Max(1f, value);
+            if (Mathf.Approximately(stats.MaxHealth, max)) return;
+
+            stats.MaxHealth = max;
+            currentHealth = Mathf.Min(currentHealth, max);
+        }
+
         public virtual void Heal(float amount)
         {
             if (!IsAlive) return;
