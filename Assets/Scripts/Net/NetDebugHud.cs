@@ -41,12 +41,14 @@ namespace IronWasteland.Net
         private GUIStyle m_BannerStyle;
         private Texture2D m_Background;
         private NetBootstrap m_Bootstrap;
+        private MatchFlow m_Flow;
 
         private void Awake()
         {
             m_Visible = visibleOnStart;
             // HUD nằm cùng GameObject với NetworkManager/NetBootstrap nên lấy trực tiếp.
             m_Bootstrap = GetComponent<NetBootstrap>();
+            m_Flow = GetComponent<MatchFlow>();
         }
 
         private void Update()
@@ -97,12 +99,22 @@ namespace IronWasteland.Net
                 GUI.Label(new Rect(0f, Screen.height * 0.32f, Screen.width, 90f), banner, m_BannerStyle);
             }
 
-            const float width = 520f;
             const float lineHeight = 20f;
             const float padding = 10f;
             float height = m_Lines.Length * lineHeight + padding * 2f;
 
-            Rect box = new Rect(padding, padding, width, height);
+            // Bề rộng co theo dòng dài nhất để không bị cắt chữ (trước đây cố định 520 px làm
+            // dòng thông tin người chơi bị mất phần đuôi trên client).
+            float width = 520f;
+            for (int i = 0; i < m_Lines.Length; i++)
+            {
+                float needed = m_Style.CalcSize(new GUIContent(m_Lines[i])).x + padding * 2f;
+                if (needed > width) width = needed;
+            }
+            width = Mathf.Clamp(width, 320f, Mathf.Max(320f, Screen.width - 20f));
+
+            // Đặt HUD ở góc phải để không chồng lên panel Lobby (góc trái).
+            Rect box = new Rect(Mathf.Max(padding, Screen.width - width - padding), padding, width, height);
             GUI.DrawTexture(box, m_Background);
             GUI.Label(new Rect(box.x + padding, box.y + padding, width - padding * 2f, height), string.Join("\n", m_Lines), m_Style);
         }
@@ -126,7 +138,12 @@ namespace IronWasteland.Net
                 m_Builder.Append(manager.IsHost ? "HOST" : "CLIENT");
                 m_Builder.Append(" | clientId=").Append(manager.LocalClientId);
                 m_Builder.Append(" | tick=").Append(manager.NetworkConfig.TickRate);
-                m_Builder.Append(" | players=").Append(manager.ConnectedClientsIds.Count);
+
+                // Trên client, ConnectedClientsIds chỉ phản ánh những gì NGO biết ở máy đó nên
+                // thường chỉ có chính mình; lấy thêm số người từ snapshot của MatchFlow để HUD đúng.
+                int playerCount = manager.ConnectedClientsIds.Count;
+                if (m_Flow != null && m_Flow.PlayerCount > playerCount) playerCount = m_Flow.PlayerCount;
+                m_Builder.Append(" | players=").Append(playerCount);
             }
 
             m_Builder.Append(" | quái=").Append(CountEnemies());
@@ -175,7 +192,8 @@ namespace IronWasteland.Net
         private void CollectPlayers()
         {
             m_Players.Clear();
-            PlayerNetState[] found = FindObjectsByType<PlayerNetState>(FindObjectsInactive.Exclude);
+            // Khi xe chết, GameObject có thể bị tạm ẩn; vẫn liệt kê để HUD không "mất" người chơi.
+            PlayerNetState[] found = FindObjectsByType<PlayerNetState>(FindObjectsInactive.Include);
             for (int i = 0; i < found.Length; i++)
             {
                 m_Players.Add(found[i]);
