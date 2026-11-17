@@ -125,13 +125,17 @@ namespace IronWasteland.Enemies.Normal
                 float angleOffset = startAngle + i * angleSpacing;
                 Vector2 shootDir = (Quaternion.Euler(0f, 0f, angleOffset) * forward).normalized;
 
-                // Online: host bắn thật, client chỉ dựng bản sao visual để nhìn thấy đạn bay.
-                Projectile_QuaiVatTinhThach projectile = NetVisual.Spawn(
+                // Online: host bắn thật, client chỉ dựng bản sao visual và tự bẻ lái theo id mục tiêu.
+                Projectile_QuaiVatTinhThach projectile = NetVisual.SpawnHoming(
                     projectilePrefab,
                     spawnPos,
                     Quaternion.Euler(0f, 0f, Mathf.Atan2(shootDir.y, shootDir.x) * Mathf.Rad2Deg),
                     shootDir * projectilePrefab.Speed,
-                    5f
+                    5f,
+                    currentTarget != null ? currentTarget.transform : null,
+                    projectilePrefab.HomingTurnSpeed,
+                    projectilePrefab.HomingDelay,
+                    projectilePrefab.HomingDuration
                 );
                 if (projectile != null) projectile.gameObject.SetActive(true);
 

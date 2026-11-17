@@ -294,6 +294,12 @@ namespace IronWasteland.Tanks.BlackShadow
             return base.GetSkillEnergyCost(index);
         }
 
+        /// <summary>
+        /// Cho phép phát lại cả slot chuyên dụng trên client: ảo ảnh ShadowStep và cột khói khi đổi chỗ
+        /// là visual thuần, còn sát thương/dịch chuyển đã bị chặn bởi IsRemoteFxReplay + cổng quyền.
+        /// </summary>
+        protected override bool CanReplayRemoteFx(int index) => index <= 1;
+
         protected override void OnUseSkill(int index)
         {
             if (index == normalSkillIndex)

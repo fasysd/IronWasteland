@@ -66,6 +66,50 @@ namespace IronWasteland.Net
         }
 
         /// <summary>
+        /// Như <see cref="Spawn{T}(T, Vector3, Quaternion, Vector2, float, bool)"/> nhưng đạn đuổi mục tiêu:
+        /// gửi kèm id mục tiêu để client bẻ lái giống hệt bản gốc trên host (thay vì bay thẳng).
+        /// </summary>
+        public static T SpawnHoming<T>(T template, Vector3 position, Quaternion rotation, Vector2 velocity,
+            float lifetime, Transform homingTarget, float turnSpeed, float homingDelay, float homingDuration)
+            where T : Component
+        {
+            if (template == null) return null;
+
+            GameObject instance = Object.Instantiate(template.gameObject, position, rotation);
+            instance.SetActive(true);
+
+            if (TankBrain.NetworkSessionActive && NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+            {
+                ulong targetId = 0UL;
+                if (homingTarget != null)
+                {
+                    NetworkObject targetObject = homingTarget.GetComponentInParent<NetworkObject>();
+                    if (targetObject != null && targetObject.IsSpawned)
+                        targetId = targetObject.NetworkObjectId;
+                }
+
+                NetworkObject root = template.GetComponentInParent<NetworkObject>(true);
+                if (root != null)
+                {
+                    NetVisualSpawn.Instance?.BroadcastByName(
+                        root,
+                        template.gameObject.name,
+                        position,
+                        rotation,
+                        velocity,
+                        lifetime,
+                        false,
+                        targetId,
+                        turnSpeed,
+                        homingDelay,
+                        homingDuration);
+                }
+            }
+
+            return instance.GetComponent<T>();
+        }
+
+        /// <summary>
         /// Nhân bản visual thủ tục (object do host tạo bằng <c>new GameObject</c>, không có template trong prefab).
         /// Dùng cho vệt lửa và gai đá; client chỉ vẽ sprite, không có logic gameplay.
         /// </summary>

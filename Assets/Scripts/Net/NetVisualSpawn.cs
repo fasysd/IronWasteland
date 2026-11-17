@@ -62,6 +62,16 @@ namespace IronWasteland.Net
 
             public float SpawnTime;
             public float Lifetime;
+
+            /// <summary>NetworkObjectId của mục tiêu mà ghost đạn đang bám theo (0 = bay thẳng).</summary>
+            public ulong TargetId;
+
+            /// <summary>Tốc độ bẻ lái ban đầu (độ/giây) và thời gian trễ trước khi bẻ lái.</summary>
+            public float TurnSpeed;
+            public float HomingDelay;
+
+            /// <summary>Cửa sổ bẻ lái; trong cửa sổ này tốc độ xoay giảm dần về 0.</summary>
+            public float HomingDuration;
         }
 
         /// <summary>Số bản sao visual client đang giữ (dùng cho log/kiểm chứng).</summary>
@@ -133,6 +143,35 @@ namespace IronWasteland.Net
                 // (script gốc chỉ chạy khi đã Initialize trên host nên trên client sẽ đứng yên).
                 if (ghost.Velocity.sqrMagnitude > 0f)
                 {
+                    // Đạn đuổi mục tiêu: bẻ lái giống hệt bản gốc trên host rồi mới bay.
+                    if (ghost.TargetId != 0UL)
+                    {
+                        float elapsed = now - ghost.SpawnTime;
+                        if (elapsed >= ghost.HomingDelay)
+                        {
+                            Transform homingTarget = ResolveNetworkTransform(ghost.TargetId);
+                            if (homingTarget != null)
+                            {
+                                float window = ghost.HomingDuration > 0f
+                                    ? ghost.HomingDuration
+                                    : Mathf.Max(0.001f, ghost.Lifetime - ghost.HomingDelay);
+                                float progress = Mathf.Clamp01((elapsed - ghost.HomingDelay) / Mathf.Max(0.001f, window));
+                                float turnDegrees = Mathf.Lerp(ghost.TurnSpeed, 0f, progress);
+
+                                Vector2 toTarget = (Vector2)homingTarget.position - (Vector2)ghost.Instance.transform.position;
+                                if (turnDegrees > 0f && toTarget.sqrMagnitude > 0.0001f)
+                                {
+                                    float speed = ghost.Velocity.magnitude;
+                                    Vector2 direction = Vector2.MoveTowards(
+                                        ghost.Velocity.normalized,
+                                        toTarget.normalized,
+                                        turnDegrees * Mathf.Deg2Rad * Time.deltaTime);
+                                    ghost.Velocity = direction.normalized * speed;
+                                }
+                            }
+                        }
+                    }
+
                     ghost.Instance.transform.position += (Vector3)(ghost.Velocity * Time.deltaTime);
                 }
 
@@ -199,9 +238,10 @@ namespace IronWasteland.Net
             return BroadcastByName(root, templateName, position, rotation, default(Vector2), lifetime, animate);
         }
 
-        /// <summary>Bản có vận tốc bay cho đạn (client tự di chuyển bản sao).</summary>
+        /// <summary>Bản có vận tốc bay cho đạn (client tự di chuyển bản sao), kèm tuỳ chọn đuổi mục tiêu.</summary>
         public int BroadcastByName(NetworkObject root, string templateName, Vector3 position, Quaternion rotation,
-            Vector2 velocity, float lifetime = 0f, bool animate = true)
+            Vector2 velocity, float lifetime = 0f, bool animate = true, ulong homingTargetId = 0UL,
+            float turnSpeed = 0f, float homingDelay = 0f, float homingDuration = 0f)
         {
             NetworkManager manager = NetworkManager.Singleton;
             if (manager == null || !manager.IsServer || root == null) return 0;
@@ -213,7 +253,7 @@ namespace IronWasteland.Net
             int handle = m_NextHandle++;
             if (m_NextHandle <= 0) m_NextHandle = 1;
 
-            using FastBufferWriter writer = new FastBufferWriter(128, Allocator.Temp);
+            using FastBufferWriter writer = new FastBufferWriter(160, Allocator.Temp);
             writer.WriteValueSafe(handle);
             writer.WriteValueSafe(root.NetworkObjectId);
             writer.WriteValueSafe(templateName);
@@ -222,6 +262,10 @@ namespace IronWasteland.Net
             writer.WriteValueSafe(velocity);
             writer.WriteValueSafe(lifetime);
             writer.WriteValueSafe(animate);
+            writer.WriteValueSafe(homingTargetId);
+            writer.WriteValueSafe(turnSpeed);
+            writer.WriteValueSafe(homingDelay);
+            writer.WriteValueSafe(homingDuration);
             manager.CustomMessagingManager.SendNamedMessageToAll(MessageName, writer);
 
             return handle;
@@ -316,6 +360,10 @@ namespace IronWasteland.Net
             reader.ReadValueSafe(out Vector2 velocity);
             reader.ReadValueSafe(out float lifetime);
             reader.ReadValueSafe(out bool animate);
+            reader.ReadValueSafe(out ulong homingTargetId);
+            reader.ReadValueSafe(out float turnSpeed);
+            reader.ReadValueSafe(out float homingDelay);
+            reader.ReadValueSafe(out float homingDuration);
 
             if (string.IsNullOrEmpty(templateName)) return;
             if (m_Ghosts.Count >= maxGhosts) RemoveOldestGhost();
@@ -345,8 +393,24 @@ namespace IronWasteland.Net
                 Instance = ghost,
                 Handle = handle,
                 DestroyAt = lifetime > 0f ? Time.time + lifetime : Time.time + DefaultGhostLifetime,
-                Velocity = flying ? velocity : Vector2.zero
+                Velocity = flying ? velocity : Vector2.zero,
+                SpawnTime = Time.time,
+                Lifetime = lifetime,
+                TargetId = homingTargetId,
+                TurnSpeed = turnSpeed,
+                HomingDelay = homingDelay,
+                HomingDuration = homingDuration
             });
+        }
+
+        /// <summary>Tìm transform của NetworkObject theo id (dùng cho ghost đạn đuổi mục tiêu).</summary>
+        private static Transform ResolveNetworkTransform(ulong networkObjectId)
+        {
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || manager.SpawnManager == null) return null;
+            return manager.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject target)
+                ? target.transform
+                : null;
         }
 
         /// <summary>Thời gian sống mặc định cho ghost không khai báo lifetime — tránh ghost "vĩnh viễn" khoá bộ đệm.</summary>
