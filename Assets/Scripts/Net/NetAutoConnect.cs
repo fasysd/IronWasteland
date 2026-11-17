@@ -60,6 +60,12 @@ namespace IronWasteland.Net
                 Debug.Log("[NetAutoConnect] bat log chi tiet NGO (Developer).");
             }
 
+            // Giữ xe luôn sống khi test tương tác thật, áp dụng cho cả đường host IP lẫn host Relay.
+            if (HasFlag(args, "-iw-godmode")) StartCoroutine(GodModeRoutine());
+
+            // Dọn sạch quái và tắt màn chơi để có sân test yên tĩnh (dùng kèm -iw-godmode khi test input).
+            if (HasFlag(args, "-iw-clean")) StartCoroutine(CleanArenaRoutine());
+
             if (HasFlag(args, "-iw-host"))
             {
                 ushort hostPort = ReadPort(args);
@@ -177,6 +183,47 @@ namespace IronWasteland.Net
             bool ok = boot.StartHost();
             bool listening = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
             Debug.Log("[NetAutoConnect] rehost StartHost ok=" + ok + " listening=" + listening);
+        }
+
+        /// <summary>
+        /// Giữ mọi xe luôn đầy máu để test tương tác thật (bàn phím/chuột) mà không bị quái giết.
+        /// Chỉ dùng khi chạy player với tham số -iw-godmode (công cụ test, không phải cơ chế game).
+        /// </summary>
+        private IEnumerator GodModeRoutine()
+        {
+            var wait = new WaitForSeconds(0.25f);
+
+            while (true)
+            {
+                var tanks = UnityEngine.Object.FindObjectsByType<TankBrain>(FindObjectsInactive.Exclude);
+                for (int i = 0; i < tanks.Length; i++)
+                {
+                    var tank = tanks[i];
+                    if (tank != null && tank.IsAlive) tank.SetHealth(tank.Stats.MaxHealth);
+                }
+
+                yield return wait;
+            }
+        }
+
+        /// <summary>
+        /// Tắt màn chơi và dọn toàn bộ quái để test input thật trong sân yên tĩnh.
+        /// Chỉ dùng khi chạy player với tham số -iw-clean (công cụ test).
+        /// </summary>
+        private IEnumerator CleanArenaRoutine()
+        {
+            yield return new WaitForSeconds(2f);
+
+            var stage = FindAnyObjectByType<IronWasteland.Stages.StageManager>();
+            if (stage != null) stage.enabled = false;
+
+            var enemies = UnityEngine.Object.FindObjectsByType<EnemyBrain>(FindObjectsInactive.Include);
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                if (enemies[i] != null) UnityEngine.Object.Destroy(enemies[i].gameObject);
+            }
+
+            Debug.Log("[NetAutoConnect] clean: tat man choi va don " + enemies.Length + " quai.");
         }
 
         /// <summary>
