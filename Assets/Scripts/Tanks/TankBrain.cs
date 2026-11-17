@@ -155,6 +155,12 @@ namespace IronWasteland.Tanks
         public bool IsRemoteFxReplay { get; private set; }
 
         /// <summary>
+        /// Vị trí xe trên host ngay TRƯỚC khi thi triển kỹ năng vừa được phát lại.
+        /// Client dùng để vẽ hiệu ứng để lại chỗ cũ (khói ShadowStep, vệt lướt...).
+        /// </summary>
+        public Vector2 RemoteFxOrigin { get; private set; }
+
+        /// <summary>
         /// True khi đang có phiên mạng đã kết nối (host hoặc client). Offline trả false.
         /// </summary>
         public static bool NetworkSessionActive =>
@@ -710,12 +716,16 @@ namespace IronWasteland.Tanks
             // Chụp điểm ngắm trước khi skill kịp đổi look target, để relay dùng đúng hướng đã bắn.
             Vector2 aim = HasLookTarget ? m_LookTarget : (Vector2)transform.position + Vector2.right;
 
+            // Chụp vị trí xe TRƯỚC khi skill kịp dịch chuyển (ShadowStep, Nova Rush...),
+            // để client biết chỗ cũ mà vẽ khói/hiệu ứng để lại.
+            Vector2 origin = transform.position;
+
             OnUseSkill(index);
 
             // Host vừa thi triển xong: báo client phát lại hình ảnh bằng pool cục bộ.
             if (!IsRemoteFxReplay && NetworkSessionActive && HasGameplayAuthority)
             {
-                NetSkillFx.Instance?.Broadcast(this, index, aim);
+                NetSkillFx.Instance?.Broadcast(this, index, aim, origin);
             }
         }
 
@@ -724,7 +734,7 @@ namespace IronWasteland.Tanks
         /// Không tiêu năng lượng, không đụng hồi chiêu, không phát event gameplay.
         /// Chỉ những slot có visual thuần mới được phát lại (xem <see cref="CanReplayRemoteFx"/>).
         /// </summary>
-        public void PlayRemoteSkillFx(int index, Vector2 aimWorld)
+        public void PlayRemoteSkillFx(int index, Vector2 aimWorld, Vector2 originWorld)
         {
             if (IsServerSimulated) return;
             if (index < 0 || index >= SkillCount) return;
@@ -732,6 +742,7 @@ namespace IronWasteland.Tanks
 
             bool hadLookTarget = HasLookTarget;
             Vector2 previousAim = m_LookTarget;
+            RemoteFxOrigin = originWorld;
 
             IsRemoteFxReplay = true;
             try

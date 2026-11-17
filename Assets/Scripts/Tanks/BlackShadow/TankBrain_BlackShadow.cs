@@ -138,6 +138,12 @@ namespace IronWasteland.Tanks.BlackShadow
         private readonly HashSet<SpecializedSkill> allSpecializedSkills = new HashSet<SpecializedSkill>();
         private SpecializedSkill activeSpecializedSkill;
 
+        /// <summary>Ảo ảnh do client tự dựng khi phát lại ShadowStep (chỉ để nhìn, không có gameplay).</summary>
+        private SpecializedSkill m_ReplayIllusion;
+
+        /// <summary>Đã đặt ảo ảnh phát lại chưa — lần bấm kế tiếp của host được hiểu là nhịp đổi chỗ.</summary>
+        private bool m_ReplayIllusionPlaced;
+
         // Pool OptionalSkill1Orb
         private readonly Stack<OptionalSkill1Orb> orbPool = new Stack<OptionalSkill1Orb>();
         private readonly HashSet<OptionalSkill1Orb> allOrbs = new HashSet<OptionalSkill1Orb>();
@@ -575,8 +581,7 @@ namespace IronWasteland.Tanks.BlackShadow
         }
 
         private void ReturnSpecializedSkillToPool(SpecializedSkill skillInstance)
-        {
-            if (skillInstance == null)
+        {            if (skillInstance == null)
                 return;
 
             if (activeSpecializedSkill == skillInstance)
@@ -591,8 +596,70 @@ namespace IronWasteland.Tanks.BlackShadow
                 specializedSkillPool.Push(skillInstance);
         }
 
+        /// <summary>
+        /// Dựng lại hình ảnh ShadowStep trên client theo đúng 2 nhịp như host:
+        /// nhịp 1 đặt ảo ảnh tại điểm ngắm, nhịp 2 nổ ảo ảnh + bùng khói tại vị trí cũ và vị trí mới.
+        /// </summary>
+        private void ReplaySpecializedVisual()
+        {
+            Vector2 aim = HasLookTarget ? LookTarget : (Vector2)transform.position;
+
+            if (!m_ReplayIllusionPlaced)
+            {
+                SpecializedSkill illusion = GetSpecializedSkillFromPool();
+                if (illusion == null)
+                    return;
+
+                illusion.transform.SetParent(null);
+                illusion.transform.position = aim;
+                illusion.Initialize(aim, ReturnSpecializedSkillToPool);
+                illusion.gameObject.SetActive(true);
+
+                m_ReplayIllusion = illusion;
+                m_ReplayIllusionPlaced = true;
+                return;
+            }
+
+            // Nhịp 2: nổ ảo ảnh (khói ở vị trí mới) rồi bùng khói ở vị trí cũ do host gửi kèm.
+            if (m_ReplayIllusion != null && m_ReplayIllusion.gameObject.activeSelf)
+            {
+                m_ReplayIllusion.Explode();
+            }
+            else
+            {
+                SpawnReplaySmoke(aim);
+            }
+
+            m_ReplayIllusion = null;
+            m_ReplayIllusionPlaced = false;
+
+            SpawnReplaySmoke(RemoteFxOrigin);
+        }
+
+        /// <summary>Bùng một cột khói tại vị trí chỉ định (dùng pool sẵn có của ShadowStep).</summary>
+        private void SpawnReplaySmoke(Vector2 position)
+        {
+            SpecializedSkill smoke = GetSpecializedSkillFromPool();
+            if (smoke == null)
+                return;
+
+            smoke.transform.SetParent(null);
+            smoke.transform.position = position;
+            smoke.Initialize(position, ReturnSpecializedSkillToPool);
+            smoke.gameObject.SetActive(true);
+            smoke.Explode();
+        }
+
         private void UseSpecializedSkill()
         {
+            // Chơi mạng: client chỉ dựng hình ảnh cho 2 nhịp của ShadowStep (đặt ảo ảnh → đổi chỗ).
+            // Không dựa vào trạng thái ảo ảnh cục bộ vì host mới là bên quyết định; vị trí cũ lấy từ gói replay.
+            if (IsRemoteFxReplay)
+            {
+                ReplaySpecializedVisual();
+                return;
+            }
+
             if (specializedSkill == null)
             {
                 Debug.LogWarning($"[{nameof(TankBrain_BlackShadow)}] Chưa gán SpecializedSkill.", this);

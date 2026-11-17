@@ -54,7 +54,7 @@ namespace IronWasteland.Net
         /// Host gọi sau khi thi triển kỹ năng thành công để client phát lại hình ảnh.
         /// Chỉ server được gửi; client gọi hàm này sẽ bị bỏ qua.
         /// </summary>
-        public void Broadcast(TankBrain brain, int skillIndex, Vector2 aim)
+        public void Broadcast(TankBrain brain, int skillIndex, Vector2 aim, Vector2 origin)
         {
             if (brain == null) return;
 
@@ -69,6 +69,7 @@ namespace IronWasteland.Net
             writer.WriteValueSafe(networkObject.OwnerClientId);
             writer.WriteValueSafe((byte)skillIndex);
             writer.WriteValueSafe(aim);
+            writer.WriteValueSafe(origin);
             manager.CustomMessagingManager.SendNamedMessageToAll(MessageName, writer);
         }
 
@@ -100,6 +101,7 @@ namespace IronWasteland.Net
             reader.ReadValueSafe(out ulong ownerClientId);
             reader.ReadValueSafe(out byte skillIndex);
             reader.ReadValueSafe(out Vector2 aim);
+            reader.ReadValueSafe(out Vector2 origin);
 
             NetSpawnService spawnService = FindAnyObjectByType<NetSpawnService>();
             if (spawnService == null) return;
@@ -115,7 +117,7 @@ namespace IronWasteland.Net
                 Debug.Log($"[NetSkillFx] phát lại kỹ năng {skillIndex} cho xe {tank.name} (owner={ownerClientId}).");
             }
 
-            tank.PlayRemoteSkillFx(skillIndex, aim);
+            tank.PlayRemoteSkillFx(skillIndex, aim, origin);
         }
     }
 }
