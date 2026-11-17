@@ -72,6 +72,7 @@ namespace IronWasteland.Net
                 if (HasFlag(args, "-iw-selftest-visual")) StartCoroutine(VisualSelfTestRoutine());
                 if (HasFlag(args, "-iw-selftest-stage")) StartCoroutine(StageSelfTestRoutine());
                 if (HasFlag(args, "-iw-selftest-win")) StartCoroutine(WinSelfTestRoutine());
+                if (HasFlag(args, "-iw-rehost-after")) StartCoroutine(RehostRoutine(boot, ReadFloat(args, "-iw-rehost-after", 10f)));
             }
             else if (HasFlag(args, "-iw-relay-host"))
             {
@@ -157,6 +158,25 @@ namespace IronWasteland.Net
             boot.Shutdown();
             yield return new WaitForSeconds(0.8f);
             Application.Quit();
+        }
+
+        /// <summary>
+        /// Host tạo lại phòng sau N giây: tắt phiên hiện tại rồi mở phòng mới, dùng để kiểm chứng
+        /// đường khôi phục khi transport đã sập sau một client bị timeout. Tham số -iw-rehost-after &lt;giây&gt;.
+        /// </summary>
+        private IEnumerator RehostRoutine(NetBootstrap boot, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+            Debug.Log("[NetAutoConnect] rehost sau " + delay + "s (tao lai phong).");
+            boot.Shutdown();
+
+            // Chờ một nhịp để NGO nhả socket và dọn NetworkObject trước khi mở phòng mới.
+            yield return new WaitForSeconds(2f);
+
+            bool ok = boot.StartHost();
+            bool listening = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+            Debug.Log("[NetAutoConnect] rehost StartHost ok=" + ok + " listening=" + listening);
         }
 
         /// <summary>
