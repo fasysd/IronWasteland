@@ -110,6 +110,7 @@ namespace IronWasteland.Enemies.Normal
                 projectilePrefab,
                 spawnPos,
                 Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg),
+                dir * projectilePrefab.Speed,
                 5f
             );
             if (projectile != null) projectile.gameObject.SetActive(true);

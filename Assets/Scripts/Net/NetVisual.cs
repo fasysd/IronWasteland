@@ -30,13 +30,23 @@ namespace IronWasteland.Net
         public static T Spawn<T>(T template, Vector3 position, Quaternion rotation,
             float lifetime = 0f, bool animate = true) where T : Component
         {
+            return Spawn(template, position, rotation, default(Vector2), lifetime, animate);
+        }
+
+        /// <summary>
+        /// Như bản trên nhưng truyền vận tốc bay cho đạn. Client sẽ tự di chuyển bản sao theo vận tốc này
+        /// (script projectile gốc chỉ chạy sau khi Initialize trên host nên trên client sẽ đứng yên).
+        /// </summary>
+        public static T Spawn<T>(T template, Vector3 position, Quaternion rotation, Vector2 velocity,
+            float lifetime = 0f, bool animate = true) where T : Component
+        {
             if (template == null) return null;
 
             GameObject instance = Object.Instantiate(template.gameObject, position, rotation);
             instance.SetActive(true);
 
             if (TankBrain.NetworkSessionActive && NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
-                NetVisualSpawn.Instance?.Broadcast(template.gameObject, position, rotation, lifetime, animate);
+                NetVisualSpawn.Instance?.Broadcast(template.gameObject, position, rotation, velocity, lifetime, animate);
 
             return instance.GetComponent<T>();
         }

@@ -20,6 +20,9 @@ namespace IronWasteland.Net
 
         private bool m_Registered;
 
+        /// <summary>Đếm số lần phát lại để chỉ ghi vài dòng log chẩn đoán đầu tiên.</summary>
+        private static int s_ReplayLogCount;
+
         /// <summary>Instance duy nhất trong scene do NetBootstrap/Network root giữ.</summary>
         public static NetSkillFx Instance { get; private set; }
 
@@ -99,7 +102,17 @@ namespace IronWasteland.Net
 
             NetSpawnService spawnService = FindAnyObjectByType<NetSpawnService>();
             if (spawnService == null) return;
-            if (!spawnService.TryGetTank(ownerClientId, out TankBrain tank) || tank == null) return;
+            if (!spawnService.TryResolveTank(ownerClientId, out TankBrain tank) || tank == null)
+            {
+                Debug.LogWarning($"[NetSkillFx] không tìm thấy xe của owner={ownerClientId} để phát lại kỹ năng {skillIndex}.");
+                return;
+            }
+
+            if (s_ReplayLogCount < 3)
+            {
+                s_ReplayLogCount++;
+                Debug.Log($"[NetSkillFx] phát lại kỹ năng {skillIndex} cho xe {tank.name} (owner={ownerClientId}).");
+            }
 
             tank.PlayRemoteSkillFx(skillIndex, aim);
         }

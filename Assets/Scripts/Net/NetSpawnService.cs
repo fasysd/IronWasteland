@@ -43,6 +43,33 @@ namespace IronWasteland.Net
             return false;
         }
 
+        /// <summary>
+        /// Tra xe theo client sở hữu trên mọi máy. Client không giữ danh sách spawn của host
+        /// (chỉ host gọi <see cref="SpawnPlayerTank"/>), nên khi cần phát lại visual phải quét các
+        /// NetworkObject đang tồn tại thay vì chỉ đọc dictionary cục bộ.
+        /// </summary>
+        public bool TryResolveTank(ulong ownerClientId, out TankBrain brain)
+        {
+            if (TryGetTank(ownerClientId, out brain) && brain != null) return true;
+
+            TankBrain[] tanks = UnityEngine.Object.FindObjectsByType<TankBrain>(FindObjectsInactive.Exclude);
+            for (int i = 0; i < tanks.Length; i++)
+            {
+                TankBrain candidate = tanks[i];
+                if (candidate == null) continue;
+
+                NetworkObject networkObject = candidate.GetComponent<NetworkObject>();
+                if (networkObject == null || !networkObject.IsSpawned) continue;
+                if (networkObject.OwnerClientId != ownerClientId) continue;
+
+                brain = candidate;
+                return true;
+            }
+
+            brain = null;
+            return false;
+        }
+
         /// <summary>Server huỷ xe của người chơi đã rời phòng để không còn xe "ma" đứng giữa sân.</summary>
         public void DespawnPlayerTank(ulong clientId)
         {

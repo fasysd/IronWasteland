@@ -2397,6 +2397,7 @@ MonoBehaviour:
   optionSkill2: 0
   joinAddress: 127.0.0.1
   joinPort: 7777
+  hostPort: 7777
 --- !u!114 &1596902867
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2546,8 +2547,8 @@ MonoBehaviour:
   logInterval: 2
   selfTestDelay: 12
   selfTestDamageAmount: 120
-  selfTestSkillIndex: 1
-  selfTestEnemyPrefab: {fileID: 854779836358371909, guid: 68e51485bfa081c4c8cd7ac60d5639cb, type: 3}
+  selfTestSkillIndex: 0
+  selfTestEnemyPrefab: {fileID: 3897099387530954697, guid: 3d7a3d53f4ad62449ad228d3ead96c34, type: 3}
   selfTestVisualName: ShadowExchangeClone
   selfTestVisualLifetime: 6
 --- !u!114 &1596902874

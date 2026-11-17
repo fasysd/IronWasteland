@@ -43,6 +43,9 @@ namespace IronWasteland.Net
             public GameObject Instance;
             public int Handle;
             public float DestroyAt;
+
+            /// <summary>Vận tốc bay (unit/giây) cho đạn; bằng 0 với vùng đứng yên và bản sao tĩnh.</summary>
+            public Vector2 Velocity;
         }
 
         /// <summary>Số bản sao visual client đang giữ (dùng cho log/kiểm chứng).</summary>
@@ -107,6 +110,13 @@ namespace IronWasteland.Net
                     continue;
                 }
 
+                // Đạn: client tự bay theo vận tốc host gửi, không phụ thuộc script của projectile
+                // (script gốc chỉ chạy khi đã Initialize trên host nên trên client sẽ đứng yên).
+                if (ghost.Velocity.sqrMagnitude > 0f)
+                {
+                    ghost.Instance.transform.position += (Vector3)(ghost.Velocity * Time.deltaTime);
+                }
+
                 if (ghost.DestroyAt > 0f && now >= ghost.DestroyAt)
                 {
                     Destroy(ghost.Instance);
@@ -131,12 +141,22 @@ namespace IronWasteland.Net
         /// <returns>Handle của bản sao (0 nếu không gửi được) để gọi <see cref="BroadcastDespawn"/> khi cần thu hồi.</returns>
         public int Broadcast(GameObject template, Vector3 position, Quaternion rotation, float lifetime = 0f, bool animate = true)
         {
+            return Broadcast(template, position, rotation, default(Vector2), lifetime, animate);
+        }
+
+        /// <summary>
+        /// Như <see cref="Broadcast(GameObject, Vector3, Quaternion, float, bool)"/> nhưng có vận tốc bay
+        /// cho đạn: client sẽ tự di chuyển bản sao theo vận tốc này thay vì chờ script projectile tự chạy.
+        /// </summary>
+        public int Broadcast(GameObject template, Vector3 position, Quaternion rotation, Vector2 velocity,
+            float lifetime = 0f, bool animate = true)
+        {
             if (template == null) return 0;
 
             NetworkObject root = template.GetComponentInParent<NetworkObject>(true);
             if (root == null) return 0;
 
-            return BroadcastByName(root, template.name, position, rotation, lifetime, animate);
+            return BroadcastByName(root, template.name, position, rotation, velocity, lifetime, animate);
         }
 
         /// <summary>
@@ -145,6 +165,13 @@ namespace IronWasteland.Net
         /// </summary>
         public int BroadcastByName(NetworkObject root, string templateName, Vector3 position, Quaternion rotation,
             float lifetime = 0f, bool animate = true)
+        {
+            return BroadcastByName(root, templateName, position, rotation, default(Vector2), lifetime, animate);
+        }
+
+        /// <summary>Bản có vận tốc bay cho đạn (client tự di chuyển bản sao).</summary>
+        public int BroadcastByName(NetworkObject root, string templateName, Vector3 position, Quaternion rotation,
+            Vector2 velocity, float lifetime = 0f, bool animate = true)
         {
             NetworkManager manager = NetworkManager.Singleton;
             if (manager == null || !manager.IsServer || root == null) return 0;
@@ -162,6 +189,7 @@ namespace IronWasteland.Net
             writer.WriteValueSafe(templateName);
             writer.WriteValueSafe((Vector2)position);
             writer.WriteValueSafe(rotation.eulerAngles.z);
+            writer.WriteValueSafe(velocity);
             writer.WriteValueSafe(lifetime);
             writer.WriteValueSafe(animate);
             manager.CustomMessagingManager.SendNamedMessageToAll(MessageName, writer);
@@ -226,6 +254,7 @@ namespace IronWasteland.Net
             reader.ReadValueSafe(out string templateName);
             reader.ReadValueSafe(out Vector2 position);
             reader.ReadValueSafe(out float rotationZ);
+            reader.ReadValueSafe(out Vector2 velocity);
             reader.ReadValueSafe(out float lifetime);
             reader.ReadValueSafe(out bool animate);
 
@@ -242,7 +271,10 @@ namespace IronWasteland.Net
             Collider2D[] colliders = ghost.GetComponentsInChildren<Collider2D>(true);
             for (int i = 0; i < colliders.Length; i++) colliders[i].enabled = false;
 
-            if (!animate)
+            // Đạn: tắt hết script (script gốc cần Initialize của host nên trên client sẽ đứng yên)
+            // rồi để NetVisualSpawn tự bay bản sao theo vận tốc. Vật thể tĩnh (vùng, decoy) giữ nguyên.
+            bool flying = velocity.sqrMagnitude > 0f;
+            if (flying || !animate)
             {
                 MonoBehaviour[] behaviours = ghost.GetComponentsInChildren<MonoBehaviour>(true);
                 for (int i = 0; i < behaviours.Length; i++) behaviours[i].enabled = false;
@@ -252,7 +284,8 @@ namespace IronWasteland.Net
             {
                 Instance = ghost,
                 Handle = handle,
-                DestroyAt = lifetime > 0f ? Time.time + lifetime : 0f
+                DestroyAt = lifetime > 0f ? Time.time + lifetime : 0f,
+                Velocity = flying ? velocity : Vector2.zero
             });
         }
 
