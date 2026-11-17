@@ -277,12 +277,12 @@ namespace IronWasteland.Tanks.WallTitan
             return (Stats.Attack * attackRatio + Stats.Defense * defenseRatio) * (1f + Stats.DamageRate);
         }
 
-        private void ApplySkillDamage(EnemyBrain enemy, float rawDamage, Vector2 hitPosition)
+        private void ApplySkillDamage(EnemyBrain enemy, float rawDamage, Vector2 hitPosition, DamageSourceType sourceType = DamageSourceType.Default)
         {
             if (enemy == null || !enemy.IsAlive)
                 return;
 
-            DamageInfo info = new DamageInfo(this, enemy, rawDamage, Stats.ArmorPenetration, hitPosition);
+            DamageInfo info = new DamageInfo(this, enemy, rawDamage, Stats.ArmorPenetration, hitPosition, sourceType: sourceType);
             enemy.TakeDamage(info);
             TextDamageManager.Instance?.Show(info.FinalDamage, hitPosition);
         }
@@ -427,7 +427,7 @@ namespace IronWasteland.Tanks.WallTitan
             float attackRatio = Mathf.Lerp(earthBreakNearAttackRatio, earthBreakFarAttackRatio, t);
             float defenseRatio = Mathf.Lerp(earthBreakNearDefenseRatio, earthBreakFarDefenseRatio, t);
 
-            ApplySkillDamage(enemy, CalculateRawDamage(attackRatio, defenseRatio), skill.transform.position);
+            ApplySkillDamage(enemy, CalculateRawDamage(attackRatio, defenseRatio), skill.transform.position, DamageSourceType.NormalSkill);
 
             if (vfx != null)
                 vfx.PlayEarthShards(skill.transform.position);
@@ -650,11 +650,11 @@ namespace IronWasteland.Tanks.WallTitan
             if (enemyCollider != null &&
                 Collider2DUtility.TryGetRandomOverlapPoint(skill.ColliderRef.Collider, enemyCollider, out Vector2 center))
             {
-                ApplySkillDamage(enemy, raw, center);
+                ApplySkillDamage(enemy, raw, center, DamageSourceType.OptionSkill1);
             }
             else
             {
-                ApplySkillDamage(enemy, raw, skill.transform.position);
+                ApplySkillDamage(enemy, raw, skill.transform.position, DamageSourceType.OptionSkill1);
             }
         }
 
@@ -872,7 +872,7 @@ namespace IronWasteland.Tanks.WallTitan
                 return;
 
             float raw = CalculateRawDamage(earthquakeAttackRatio, earthquakeDefenseRatio);
-            ApplySkillDamage(enemy, raw, enemy.transform.position);
+            ApplySkillDamage(enemy, raw, enemy.transform.position, DamageSourceType.OptionSkill2);
 
             // GDD: kẻ địch trong vùng bị giảm 35% tốc độ.
             enemy.ApplyCrowdControl(CrowdControlType.Slow, earthquakeSlowDuration, earthquakeSlowPercent);

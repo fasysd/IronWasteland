@@ -511,8 +511,7 @@ namespace IronWasteland.Enemies.Normal
 
             Vector2 hitPos = tank.transform.position;
 
-            DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, hitPos);
-
+            DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, hitPos, sourceType: DamageSourceType.EnemyAttack);
             tank.TakeDamage(damageInfo);
 
             TextDamageManager.Instance?.Show(damageInfo.FinalDamage, hitPos);

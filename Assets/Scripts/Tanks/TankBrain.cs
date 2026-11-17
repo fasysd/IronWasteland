@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using IronWasteland.Core;
 using IronWasteland.Core.Effects;
+using IronWasteland.Enemies;
 using UnityEngine;
 
 namespace IronWasteland.Tanks
@@ -858,16 +859,35 @@ namespace IronWasteland.Tanks
             if (!IsAlive) return;
             currentHealth = Mathf.Min(currentHealth + amount, m_FinalStats.MaxHealth);
             OnHealEvent?.Invoke(amount);
+            m_EquippedAccessory?.OnOwnerHealed(amount);
         }
 
         public virtual void GainEnergy(float amount)
         {
+            GainEnergy(amount, -1);
+        }
+
+        public virtual void GainEnergy(float amount, int skillIndex)
+        {
             currentEnergy = Mathf.Min(currentEnergy + amount, m_FinalStats.MaxEnergy);
+            m_EquippedAccessory?.OnOwnerGainedEnergy(amount, skillIndex);
         }
 
         public virtual void SpendEnergy(float amount)
         {
             currentEnergy = Mathf.Max(currentEnergy - amount, 0f);
+        }
+
+        /// <summary>
+        /// Tiện ích gây sát thương từ xe Tank lên Kẻ địch, tự động gán ArmorPenetration và SourceType tương ứng.
+        /// </summary>
+        public virtual void ApplyDamageToEnemy(EnemyBrain target, float rawDamage, DamageSourceType sourceType, Vector2 hitPosition = default)
+        {
+            if (target == null || !target.IsAlive || rawDamage <= 0f) return;
+            if (hitPosition == default) hitPosition = target.transform.position;
+            DamageInfo info = new DamageInfo(this, target, rawDamage, m_FinalStats.ArmorPenetration, hitPosition, sourceType: sourceType);
+            target.TakeDamage(info);
+            TextDamageManager.Instance?.Show(info.FinalDamage, hitPosition);
         }
 
         protected virtual void Die()

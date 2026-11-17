@@ -201,14 +201,14 @@ namespace IronWasteland.Tanks.GreenFox
         /// và CỘNG DỒN ẤN (nếu kẻ địch đang có ấn).
         /// addMarkStacks = false cho sát thương của chính nổ ấn và sát thương thưởng của cùng 1 đòn (tránh cộng dồn lặp).
         /// </summary>
-        public void DamageEnemy(EnemyBrain enemy, float damage, Vector3 textPosition, bool addMarkStacks = true)
+        public void DamageEnemy(EnemyBrain enemy, float damage, Vector3 textPosition, bool addMarkStacks = true, DamageSourceType sourceType = DamageSourceType.Default)
         {
             if (enemy == null || damage <= 0f) return;
 
             bool wasAlive = enemy.IsAlive;
             Vector3 deathPosition = enemy.transform.position;
 
-            DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, textPosition);
+            DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, textPosition, sourceType: sourceType);
             enemy.TakeDamage(info); // Attacker = Green Fox, EnemyBrain tự báo Fox Territory
             TextDamageManager.Instance?.Show(damage, textPosition);
 
@@ -430,7 +430,7 @@ namespace IronWasteland.Tanks.GreenFox
             Vector3 explosionPos = sign.transform.position;
 
             // Sát thương nổ ấn KHÔNG cộng dồn ấn (addMarkStacks = false)
-            DamageEnemy(enemy, ScaledDamage(percent / 100f), explosionPos, false);
+            DamageEnemy(enemy, ScaledDamage(percent / 100f), explosionPos, false, DamageSourceType.SpecialSkill);
             SpawnExplosionEffect(explosionPos);
 
             TryApplyBurn(enemy);
@@ -639,7 +639,7 @@ namespace IronWasteland.Tanks.GreenFox
                 if (enemy != null)
                 {
                     // Sát thương nổ ấn KHÔNG cộng dồn ấn (ấn đang bị tiêu hao)
-                    DamageEnemy(enemy, damage, explosionPos, false);
+                    DamageEnemy(enemy, damage, explosionPos, false, DamageSourceType.OptionSkill2);
                     TryApplyBurn(enemy);
                 }
 

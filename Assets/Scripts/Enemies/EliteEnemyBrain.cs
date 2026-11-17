@@ -84,6 +84,12 @@ namespace IronWasteland.Enemies
         public float DefenseBreakBonus => defenseBreakBonus;
         public float DefenseBreakDuration => defenseBreakDuration;
 
+        /// <summary>
+        /// Su kien toan cuc phat ra khi mot ke dich Tinh anh bi pha thanh cong toan bo mach nang luong.
+        /// Phuc vu co che "Phan thuong Bung no nang luong" cua Phu kien 20 (D1ONK).
+        /// </summary>
+        public static event Action<EliteEnemyBrain> OnEnergyBurstSuccess;
+
         public override void Initialize(EnemyStats overrideStats = null)
         {
             base.Initialize(overrideStats);
@@ -159,6 +165,46 @@ namespace IronWasteland.Enemies
                 m_DefenseBreakTimer = defenseBreakDuration;
 
                 Debug.Log($"[{DisplayName}] Da pha huy toan bo mach! Phong thu giam {defenseBreakBonus * 100}% trong {defenseBreakDuration}s!");
+            }
+
+            OnEnergyBurstSuccess?.Invoke(this);
+        }
+
+        public void TriggerEnergyBurstManual()
+        {
+            m_BurstTriggered = true;
+            OpenCores();
+        }
+
+        public void ForceBurstSuccess()
+        {
+            EnsureCores();
+            for (int i = 0; i < m_Cores.Count; i++)
+            {
+                m_Cores[i].state = EnergyCoreState.Broken;
+            }
+            BrokenCoreCount = m_Cores.Count;
+            OnAllCoresBroken();
+        }
+
+        public void ForceBurstFailure()
+        {
+            m_BreakWindowOpen = false;
+            m_BreakWindowRemaining = 0f;
+            OnBreakWindowExpired();
+        }
+
+        public void ResetCoresManual()
+        {
+            m_Cores.Clear();
+            EnsureCores();
+            m_BreakWindowOpen = false;
+            m_BreakWindowRemaining = 0f;
+            m_BurstTriggered = false;
+            if (m_IsDefenseBroken && Stats != null)
+            {
+                Stats.Defense = m_OriginalDefense;
+                m_IsDefenseBroken = false;
             }
         }
 

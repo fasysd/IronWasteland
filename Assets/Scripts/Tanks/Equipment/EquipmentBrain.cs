@@ -108,6 +108,12 @@ namespace IronWasteland.Tanks
         /// <summary>Goi khi Tank thi trien thanh cong 1 ky nang (0..3).</summary>
         public virtual void OnOwnerUsedSkill(int skillIndex) { }
 
+        /// <summary>Gọi khi Tank được hồi máu (Heal).</summary>
+        public virtual void OnOwnerHealed(float amount) { }
+
+        /// <summary>Gọi khi Tank nhận năng lượng từ kỹ năng (skillIndex = 0 là Skill thường).</summary>
+        public virtual void OnOwnerGainedEnergy(float amount, int skillIndex) { }
+
         #endregion
     }
 }

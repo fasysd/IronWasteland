@@ -515,7 +515,8 @@ namespace IronWasteland.Tanks.BlackShadow
                 }
             }
 
-            enemy.TakeDamage(damage);
+            DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, skillInstance.transform.position, sourceType: DamageSourceType.NormalSkill);
+            enemy.TakeDamage(info);
 
             if (!enemy.IsAlive && isEnhanced)
             {
@@ -651,7 +652,8 @@ namespace IronWasteland.Tanks.BlackShadow
             // Sát thương nổ của ShadowStep: Tấn công * 1.5 * (1 + Tỉ lệ sát thương).
             float damage = CombatUtility.CalculateTankRawDamage(Stats.Attack, specializedSkillScale, Stats.DamageRate);
 
-            enemy.TakeDamage(damage);
+            DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, skillInstance.transform.position, sourceType: DamageSourceType.SpecialSkill);
+            enemy.TakeDamage(info);
             TextDamageManager.Instance?.Show(damage, enemy.transform.position);
 
             if (!enemy.IsAlive && isEnhanced)

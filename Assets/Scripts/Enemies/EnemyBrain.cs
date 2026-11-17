@@ -54,6 +54,7 @@ namespace IronWasteland.Enemies
         public event Action<StatusEffect> OnEffectAppliedEvent;
         public event Action<StatusEffect> OnEffectRemovedEvent;
         public event Action OnDeathEvent;
+        public static event Action<EnemyBrain> OnAnyEnemyDied;
         #endregion
 
         #region Properties
@@ -205,6 +206,12 @@ namespace IronWasteland.Enemies
             OnDamaged(finalDamage);
             OnTakeDamageEvent?.Invoke(info);
 
+            // Thông báo ngược lại cho Tank nếu người tấn công là TankBrain
+            if (info.Attacker is Tanks.TankBrain attackerTank)
+            {
+                attackerTank.NotifyDealtDamage(info);
+            }
+
             if (currentHealth <= 0f)
             {
                 currentHealth = 0f;
@@ -238,6 +245,7 @@ namespace IronWasteland.Enemies
             model?.PlayDeath();
             OnDeath();
             OnDeathEvent?.Invoke();
+            OnAnyEnemyDied?.Invoke(this);
         }
 
         #endregion

@@ -1,4 +1,5 @@
 using IronWasteland;
+using IronWasteland.Core;
 using IronWasteland.Enemies;
 using IronWasteland.Tanks;
 using System;
@@ -202,8 +203,9 @@ namespace IronWasteland.Tanks.Leviathan
             // 2. Gây sát thương và bắt đầu kéo từng kẻ địch về tâm xoáy
             foreach (EnemyBrain enemy in affectedEnemies)
             {
-                enemy.TakeDamage(damage);
-                TextDamageManager.Instance?.Show(damage, enemy.transform.position);
+                DamageInfo info = new DamageInfo(ownerTank, enemy, damage, ownerTank != null ? ownerTank.Stats.ArmorPenetration : 0f, enemy.transform.position, sourceType: DamageSourceType.OptionSkill2);
+                enemy.TakeDamage(info);
+                TextDamageManager.Instance?.Show(info.FinalDamage, enemy.transform.position);
 
                 StartCoroutine(PullEnemyToCenter(enemy, centerPosition));
             }

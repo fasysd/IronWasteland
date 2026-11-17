@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -94,10 +95,11 @@ namespace IronWasteland.Enemies
             float damage = target.Stats.MaxHealth * lifestealPercent;
             if (damage <= 0f) return;
 
-            target.TakeDamage(damage);
-            Heal(damage);
-            TextDamageManager.Instance?.Show(damage, target.transform.position);
-            Debug.Log("[SeauBearus] hut mau " + damage.ToString("0.0") + " -> HP " + CurrentHealth.ToString("0.0"));
+            DamageInfo info = new DamageInfo(this, target, damage, 0f, target.transform.position, sourceType: DamageSourceType.EnemyAttack);
+            target.TakeDamage(info);
+            Heal(info.FinalDamage);
+            TextDamageManager.Instance?.Show(info.FinalDamage, target.transform.position);
+            Debug.Log("[SeauBearus] hut mau " + info.FinalDamage.ToString("0.0") + " -> HP " + CurrentHealth.ToString("0.0"));
         }
 
         private void BreatheFire()
@@ -124,8 +126,9 @@ namespace IronWasteland.Enemies
                 if (!inCone) continue;
                 if (!damaged.Add(tank)) continue;
 
-                tank.TakeDamage(damage);
-                TextDamageManager.Instance?.Show(damage, tank.transform.position);
+                DamageInfo info = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
+                tank.TakeDamage(info);
+                TextDamageManager.Instance?.Show(info.FinalDamage, tank.transform.position);
             }
 
             for (int i = 0; i < trailPatchCount; i++)

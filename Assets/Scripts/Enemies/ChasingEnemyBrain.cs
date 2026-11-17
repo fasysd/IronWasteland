@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -136,7 +137,7 @@ namespace IronWasteland.Enemies
         /// Gay sat thuong cho moi tank co collider nam trong ban kinh (tinh theo hinh hoc collider,
         /// khong phai khoang cach tam-tam). Tra ve so tank trung don.
         /// </summary>
-        protected static int DamageTanksInRadius(Vector2 center, float radius, float damage)
+        protected int DamageTanksInRadius(Vector2 center, float radius, float damage)
         {
             if (damage <= 0f || radius <= 0f) return 0;
 
@@ -152,8 +153,9 @@ namespace IronWasteland.Enemies
                 if (tank == null || !tank.IsAlive) continue;
                 if (!damaged.Add(tank)) continue;
 
-                tank.TakeDamage(damage);
-                TextDamageManager.Instance?.Show(damage, tank.transform.position);
+                DamageInfo info = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
+                tank.TakeDamage(info);
+                TextDamageManager.Instance?.Show(info.FinalDamage, tank.transform.position);
             }
 
             return damaged.Count;

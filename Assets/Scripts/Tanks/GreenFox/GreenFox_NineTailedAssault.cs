@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Enemies;
 using UnityEngine;
 
@@ -96,7 +97,7 @@ namespace IronWasteland.Tanks.GreenFox
                 EnemyBrain enemy = m_Targets[Random.Range(0, m_Targets.Count)];
                 if (enemy == null) continue;
 
-                m_OwnerTank.DamageEnemy(enemy, m_TailDamage, enemy.transform.position);
+                m_OwnerTank.DamageEnemy(enemy, m_TailDamage, enemy.transform.position, sourceType: DamageSourceType.OptionSkill2);
                 m_OwnerTank.TryApplyBurn(enemy);
             }
         }

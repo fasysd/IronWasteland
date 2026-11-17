@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using IronWasteland.Utilities;
 using UnityEngine;
@@ -97,8 +98,9 @@ namespace IronWasteland.Enemies
 
                 if (m_DamagePerTick > 0f)
                 {
-                    tank.TakeDamage(m_DamagePerTick);
-                    TextDamageManager.Instance?.Show(m_DamagePerTick, tank.transform.position);
+                    DamageInfo info = new DamageInfo(this, tank, m_DamagePerTick, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
+                    tank.TakeDamage(info);
+                    TextDamageManager.Instance?.Show(info.FinalDamage, tank.transform.position);
                 }
 
                 if (m_SlowPercent > 0f && m_SlowDuration > 0f)

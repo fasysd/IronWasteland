@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using IronWasteland.Core;
 using IronWasteland.Enemies;
 
 namespace IronWasteland.Tanks.WaterB
@@ -235,22 +236,23 @@ namespace IronWasteland.Tanks.WaterB
             if (enemy == null || baseDamage <= 0f) return;
 
             float damage = baseDamage * (1f + Stats.DamageRate); // Tỉ lệ sát thương (vd. Aqua Assault +15%)
-            DealDamage(enemy, damage);
+            DealDamage(enemy, damage, DamageSourceType.NormalSkill);
         }
 
         /// <summary>
         /// Cổng chung cho MỌI sát thương Water B gây ra (bắn thường, trụ nước...): gây sát thương rồi áp dụng Life Drain.
         /// Sát thương truyền vào là sát thương cuối (đã tính hệ số nếu cần).
         /// </summary>
-        public void DealDamage(EnemyBrain enemy, float finalDamage)
+        public void DealDamage(EnemyBrain enemy, float finalDamage, DamageSourceType sourceType = DamageSourceType.Default)
         {
             if (enemy == null || finalDamage <= 0f) return;
 
             // Lấy vị trí trước khi TakeDamage vì kẻ địch có thể chết ngay
             Vector3 enemyPos = enemy.transform.position;
 
-            enemy.TakeDamage(finalDamage);
-            TextDamageManager.Instance?.Show(finalDamage, enemyPos);
+            DamageInfo info = new DamageInfo(this, enemy, finalDamage, Stats.ArmorPenetration, enemyPos, sourceType: sourceType);
+            enemy.TakeDamage(info);
+            TextDamageManager.Instance?.Show(info.FinalDamage, enemyPos);
 
             ApplyLifeDrain(finalDamage, enemyPos);
         }
@@ -466,7 +468,7 @@ namespace IronWasteland.Tanks.WaterB
 
                 WaterB_WaterTurret turret = Instantiate(waterTurretPrefab, center + offset, Quaternion.identity);
                 turret.Initialize(damage, skill2SubDesign.TurretDuration, skill2SubDesign.TurretAttackInterval,
-                    () => GainEnergy(energyPerHit), DealDamage);
+                    () => GainEnergy(energyPerHit), (victim, dmg) => DealDamage(victim, dmg, DamageSourceType.OptionSkill2));
             }
             return true;
         }
