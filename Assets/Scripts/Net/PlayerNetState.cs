@@ -149,6 +149,10 @@ namespace IronWasteland.Net
             if (m_SyncTimer < SyncInterval) return;
             m_SyncTimer = 0f;
 
+            // Chủ xe ghi hướng nòng TRƯỚC khi rẽ nhánh host/client — nếu để cuối hàm,
+            // client sẽ return sớm ở nhánh dưới và không bao giờ gửi góc ngắm lên host.
+            if (IsOwner) UpdateAim();
+
             if (!IsServer)
             {
                 // Client: loadout có thể tới trước khi NetSpawnService kịp sẵn sàng — thử lại
@@ -193,8 +197,6 @@ namespace IronWasteland.Net
                 m_SentBlocked = blocked;
                 m_MovementBlocked.Value = blocked;
             }
-
-            if (IsOwner) UpdateAim();
         }
 
         /// <summary>Chủ xe ghi hướng nòng khi lệch đủ ngưỡng — nhờ vậy nòng xe người khác bám chuột liên tục.</summary>
