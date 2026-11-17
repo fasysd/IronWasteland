@@ -50,6 +50,9 @@ namespace IronWasteland.Net
         [Tooltip("Cổng UDP của host khi bấm Join.")]
         [SerializeField] private ushort joinPort = 7777;
 
+        [Tooltip("Cổng UDP host sẽ mở phòng (mặc định 7777; đổi khi test nhiều phòng trên một máy).")]
+        [SerializeField] private ushort hostPort = 7777;
+
         private readonly Dictionary<ulong, NetLoadout> m_Loadouts = new Dictionary<ulong, NetLoadout>();
 
         /// <summary>Phiên mạng đang chạy hay chưa (dùng để tắt đường offline).</summary>
@@ -105,6 +108,15 @@ namespace IronWasteland.Net
             ClearSceneEnemies();
             DestroyLocalOfflineTank();
             EnsureTransport();
+
+            // Mở phòng trên cổng đã cấu hình (mặc định 7777). Đổi cổng giúp tránh đụng cổng khi
+            // chạy nhiều phòng trên cùng một máy hoặc khi cổng cũ còn bị giữ.
+            UnityTransport hostTransport = networkManager.NetworkConfig.NetworkTransport as UnityTransport;
+            if (hostTransport != null && hostPort > 0 && hostTransport.Protocol != UnityTransport.ProtocolType.RelayUnityTransport)
+            {
+                hostTransport.SetConnectionData(joinAddress, hostPort, "0.0.0.0");
+            }
+
             NetLoadout loadout = BuildLocalLoadout();
             m_Loadouts[ServerClientId] = loadout;
 
@@ -138,6 +150,12 @@ namespace IronWasteland.Net
         {
             if (!string.IsNullOrEmpty(address)) joinAddress = address;
             if (port > 0) joinPort = port;
+        }
+
+        /// <summary>Đổi cổng host sẽ mở phòng (dùng cho test nhiều phòng trên một máy).</summary>
+        public void SetHostPort(ushort port)
+        {
+            if (port > 0) hostPort = port;
         }
 
         /// <summary>Mở phòng qua Relay của Unity Services: tạo allocation, gắn transport rồi StartHost.</summary>

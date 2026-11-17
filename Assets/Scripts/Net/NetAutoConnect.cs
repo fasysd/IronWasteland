@@ -52,8 +52,19 @@ namespace IronWasteland.Net
             NetBootstrap boot = FindAnyObjectByType<NetBootstrap>();
             if (boot == null) return;
 
+            // Bật log chi tiết của NGO khi cần chẩn đoán (tham số -iw-netlog).
+            if (HasFlag(args, "-iw-netlog"))
+            {
+                NetworkManager manager = NetworkManager.Singleton;
+                if (manager != null) manager.LogLevel = LogLevel.Developer;
+                Debug.Log("[NetAutoConnect] bat log chi tiet NGO (Developer).");
+            }
+
             if (HasFlag(args, "-iw-host"))
             {
+                ushort hostPort = ReadPort(args);
+                if (hostPort > 0) boot.SetHostPort(hostPort);
+
                 bool ok = boot.StartHost();
                 Debug.Log($"[NetAutoConnect] start host ok={ok}");
 
@@ -96,13 +107,55 @@ namespace IronWasteland.Net
                     bool ok = boot.StartClient();
                     Debug.Log($"[NetAutoConnect] join {join} ok={ok}");
 
+                    if (HasFlag(args, "-iw-retry")) StartCoroutine(RetryConnectRoutine(boot));
                     if (HasFlag(args, "-iw-selftest-cast")) StartCoroutine(CastSelfTestRoutine());
+
+                    // Thoát êm sau N giây (dùng để test disconnect sạch thay vì kill tiến trình).
+                    float exitAfter = ReadFloat(args, "-iw-exit-after", 0f);
+                    if (exitAfter > 0f) StartCoroutine(ExitAfterRoutine(boot, exitAfter));
                 }
             }
 
             StartCoroutine(LogStateRoutine());
 
             if (HasFlag(args, "-iw-selftest")) StartCoroutine(SelfTestRoutine());
+        }
+
+        /// <summary>
+        /// Thử kết nối lại nếu sau vài giây vẫn chưa vào được phòng.
+        /// Dùng khi kiểm chứng tình huống client join lại sau khi bị ngắt (tham số -iw-retry).
+        /// </summary>
+        private IEnumerator RetryConnectRoutine(NetBootstrap boot)
+        {
+            const int maxRetries = 2;
+            const float waitBeforeRetry = 6f;
+
+            for (int attempt = 0; attempt <= maxRetries; attempt++)
+            {
+                yield return new WaitForSeconds(waitBeforeRetry);
+
+                NetworkManager manager = NetworkManager.Singleton;
+                if (manager != null && manager.IsConnectedClient) yield break;
+
+                Debug.LogWarning($"[NetAutoConnect] chua vao duoc phong sau {waitBeforeRetry}s (lan thu {attempt + 1}/{maxRetries + 1}) -> khoi dong lai client.");
+                boot.Shutdown();
+                yield return new WaitForSeconds(1f);
+                boot.StartClient();
+            }
+        }
+
+        /// <summary>
+        /// Thoát êm sau N giây: tắt mạng rồi thoát tiến trình, để test "client rời phòng bình thường"
+        /// thay vì kill tiến trình (kill gây timeout phía host). Tham số -iw-exit-after &lt;giây&gt;.
+        /// </summary>
+        private IEnumerator ExitAfterRoutine(NetBootstrap boot, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+            Debug.Log("[NetAutoConnect] thoat em sau " + delay + "s (disconnect sach).");
+            boot.Shutdown();
+            yield return new WaitForSeconds(0.8f);
+            Application.Quit();
         }
 
         /// <summary>
@@ -425,6 +478,12 @@ namespace IronWasteland.Net
         {
             string raw = ReadValue(args, "-iw-port");
             return ushort.TryParse(raw, out ushort port) && port > 0 ? port : (ushort)7777;
+        }
+
+        private static float ReadFloat(string[] args, string flag, float fallback)
+        {
+            string raw = ReadValue(args, flag);
+            return float.TryParse(raw, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float value) && value > 0f ? value : fallback;
         }
     }
 }
