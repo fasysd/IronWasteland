@@ -1,3 +1,4 @@
+using IronWasteland.Core.Effects;
 using IronWasteland.Tanks;
 using Unity.Netcode;
 using UnityEngine;
@@ -40,6 +41,10 @@ namespace IronWasteland.Net
         private readonly NetworkVariable<bool> m_MovementBlocked = new(
             false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+        /// <summary>Tổng khiên hiện tại do host ghi; client chỉ hiển thị (không tự tạo khiên trên brain).</summary>
+        private readonly NetworkVariable<float> m_Shield = new(
+            0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
         private readonly float[] m_ClientCooldownRemaining = new float[TankBrain.SkillCount];
         private readonly float[] m_ClientCooldownReceivedAt = new float[TankBrain.SkillCount];
 
@@ -51,6 +56,7 @@ namespace IronWasteland.Net
         private float m_SentAimAngle;
         private float m_SentSlowFactor = 1f;
         private bool m_SentBlocked;
+        private float m_SentShield;
         private bool m_LoadoutMissingLogged;
         private CooldownState m_SentCooldowns;
         private float m_SentCooldownsAt;
@@ -83,6 +89,12 @@ namespace IronWasteland.Net
                 m_SlowSpeedFactor.Value = m_SentSlowFactor;
                 m_SentBlocked = m_Brain.IsMovementBlocked;
                 m_MovementBlocked.Value = m_SentBlocked;
+                m_SentShield = m_Brain.CurrentShield;
+                m_Shield.Value = m_SentShield;
+
+                // Chỉ host phát hiệu ứng xuống client; client không bao giờ áp hiệu ứng lên brain.
+                m_Brain.OnEffectAppliedEvent += HandleEffectApplied;
+                m_Brain.OnEffectRemovedEvent += HandleEffectRemoved;
             }
             else
             {
@@ -110,6 +122,12 @@ namespace IronWasteland.Net
             m_Loadout.OnValueChanged -= HandleLoadoutChanged;
             m_SlowSpeedFactor.OnValueChanged -= HandleSlowChanged;
             m_MovementBlocked.OnValueChanged -= HandleBlockedChanged;
+
+            if (IsServer && m_Brain != null)
+            {
+                m_Brain.OnEffectAppliedEvent -= HandleEffectApplied;
+                m_Brain.OnEffectRemovedEvent -= HandleEffectRemoved;
+            }
         }
 
         /// <summary>Xe mà state này gắn vào (null khi chưa spawn).</summary>
@@ -126,6 +144,9 @@ namespace IronWasteland.Net
 
         /// <summary>Năng lượng tối đa.</summary>
         public float MaxEnergy => m_Brain != null && m_Brain.Stats != null ? m_Brain.Stats.MaxEnergy : 0f;
+
+        /// <summary>Khiên hiện tại: host đọc trực tiếp brain, client đọc bản host gửi (chỉ để hiển thị).</summary>
+        public float ShieldAmount => IsServer && m_Brain != null ? m_Brain.CurrentShield : m_Shield.Value;
 
         /// <summary>Góc nòng hiện tại (độ) — chủ xe đọc look target, máy khác đọc bản đã nhận.</summary>
         public float AimAngle => IsOwner ? ReadAimAngle() : m_AimAngle.Value;
@@ -197,6 +218,25 @@ namespace IronWasteland.Net
                 m_SentBlocked = blocked;
                 m_MovementBlocked.Value = blocked;
             }
+
+            float shield = m_Brain.CurrentShield;
+            if (Mathf.Abs(shield - m_SentShield) >= 0.5f)
+            {
+                m_SentShield = shield;
+                m_Shield.Value = shield;
+            }
+        }
+
+        private void HandleEffectApplied(StatusEffect effect)
+        {
+            if (!IsServer || effect == null) return;
+            NetEffectSync.Instance?.Broadcast(OwnerClientId, NetEffectSync.OpApply, effect);
+        }
+
+        private void HandleEffectRemoved(StatusEffect effect)
+        {
+            if (!IsServer || effect == null) return;
+            NetEffectSync.Instance?.Broadcast(OwnerClientId, NetEffectSync.OpRemove, effect);
         }
 
         /// <summary>Chủ xe ghi hướng nòng khi lệch đủ ngưỡng — nhờ vậy nòng xe người khác bám chuột liên tục.</summary>

@@ -141,6 +141,12 @@ namespace IronWasteland.Net
                     .Append(' ').Append(stageEvents.StageKills).Append('/').Append(stageEvents.StageKillTarget);
             }
 
+            if (Time.time < NetPlayerController.LocalCastMessageUntil &&
+                !string.IsNullOrEmpty(NetPlayerController.LocalCastMessage))
+            {
+                m_Builder.Append(" | cast=").Append(NetPlayerController.LocalCastMessage);
+            }
+
             CollectPlayers();
             PlayerNetState local = FindLocalPlayer();
 
@@ -213,6 +219,22 @@ namespace IronWasteland.Net
 
             builder.Append(" | owner=").Append(player.IsOwner);
             builder.Append(" | loadout=").Append(player.LoadoutApplied);
+            builder.Append(" | khiên ").Append(Mathf.Round(player.ShieldAmount));
+
+            NetEffectSync effects = NetEffectSync.Instance;
+            if (effects != null && player.IsSpawned)
+            {
+                IReadOnlyCollection<NetEffectInfo> list = effects.GetEffects(player.OwnerClientId);
+                if (list.Count > 0)
+                {
+                    builder.Append(" | ef");
+                    foreach (NetEffectInfo info in list)
+                    {
+                        builder.Append(' ').Append(info.EffectId);
+                        if (info.Stacks > 1) builder.Append('x').Append(info.Stacks);
+                    }
+                }
+            }
         }
 
         private int CountEnemies()
