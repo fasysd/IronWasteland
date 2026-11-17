@@ -31,6 +31,7 @@ namespace IronWasteland.Net
 
         /// <summary>Trong khoảng này bỏ qua kiểm tra tốc độ vì vừa có lệnh dịch chuyển hợp lệ từ kỹ năng.</summary>
         private float m_TeleportGraceUntil;
+        private float m_ClientTeleportGraceUntil;
         private float m_LastTeleportSendTime = -1f;
         private Vector3 m_LastTeleportSentPosition;
 
@@ -76,12 +77,16 @@ namespace IronWasteland.Net
         /// </summary>
         private void ValidateOwnerMovement()
         {
-            // Vừa có teleport hợp lệ từ kỹ năng: nhận vị trí hiện tại làm mốc mới thay vì kéo về.
+            // Vừa có teleport hợp lệ từ kỹ năng: giữ mốc là vị trí teleport, chỉ dời mốc thời gian.
+            // (Không lấy transform hiện tại làm mốc vì vị trí đó đang trễ so với client do độ trễ mạng,
+            //  lấy nó sẽ khiến client bị kéo lùi một chút ngay sau khi teleport.)
             if (Time.time < m_TeleportGraceUntil)
             {
-                m_LastAcceptedPosition = transform.position;
+                // Ghim bản sao trên host vào đúng vị trí teleport: gói vị trí cũ của chủ xe còn bay
+                // trên đường sẽ bị ghi đè trước khi kịp phát lại cho người khác.
+                transform.position = m_LastAcceptedPosition;
+                if (m_Body != null) m_Body.position = m_LastAcceptedPosition;
                 m_LastAcceptTime = Time.time;
-                m_MoveBudget = 0f;
                 return;
             }
 
@@ -129,6 +134,11 @@ namespace IronWasteland.Net
         private void CorrectPositionClientRpc(Vector3 position, ClientRpcParams rpcParams = default)
         {
             if (IsServer) return; // host đã áp trực tiếp
+
+            // Bỏ qua hiệu chỉnh bắn tới ngay sau khi vừa teleport (gói cũ còn bay trên đường),
+            // tránh cảnh xe nhảy tới rồi bị kéo lùi một chút.
+            if (Time.time < m_ClientTeleportGraceUntil) return;
+
             transform.position = position;
             if (m_Body != null) m_Body.position = position;
         }
@@ -152,10 +162,14 @@ namespace IronWasteland.Net
                 m_Body.linearVelocity = Vector2.zero;
             }
 
+            float maxSpeed = Mathf.Max(0.01f, m_Brain.Stats.MoveSpeed / 100f);
+
             m_LastAcceptedPosition = fixedPosition;
             m_LastAcceptTime = Time.time;
-            m_MoveBudget = 0f;
-            m_TeleportGraceUntil = Time.time + 0.3f;
+            // Cấp sẵn ngân sách để sau cửa sổ miễn kiểm tra, phần client đã chạy thêm trong lúc
+            // gói tin còn trên đường không bị coi là vượt tốc độ (tránh giật lùi sau teleport).
+            m_MoveBudget = maxSpeed * 0.6f;
+            m_TeleportGraceUntil = Time.time + 0.45f;
 
             // Host chính là chủ xe thì không cần gửi RPC.
             if (OwnerClientId == NetworkManager.ServerClientId)
@@ -190,6 +204,9 @@ namespace IronWasteland.Net
                 m_Body.position = fixedPosition;
                 m_Body.linearVelocity = Vector2.zero;
             }
+
+            // Bỏ qua các hiệu chỉnh vị trí bắn tới ngay sau lệnh teleport này.
+            m_ClientTeleportGraceUntil = Time.time + 0.35f;
         }
 
         private void BindLocalInput()
