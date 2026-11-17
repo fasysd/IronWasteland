@@ -1,5 +1,6 @@
 using IronWasteland.Core;
 using IronWasteland.Enemies;
+using IronWasteland.Net;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -940,7 +941,7 @@ namespace IronWasteland.Tanks.RedNova
             if (vfx != null)
                 vfx.PlayRushTrail(currentPos, targetPos);
 
-            transform.position = new Vector3(targetPos.x, targetPos.y, transform.position.z);
+            NetTeleport.Move(this, targetPos);
 
             // Đòn tấn công thành công ngay sau cú lướt gây thêm sát thương (GDD: +200% ATK).
             m_HasNovaRushEmpoweredShot = true;

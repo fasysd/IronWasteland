@@ -17,6 +17,9 @@ namespace IronWasteland.Net
 
         private const float MinCastRequestInterval = 0.08f;
 
+        /// <summary>Khoảng tối thiểu giữa 2 lệnh teleport gửi xuống chủ xe (tránh spam RPC khi kỹ năng bám theo đồng minh).</summary>
+        private const float MinTeleportRpcInterval = 0.05f;
+
         private TankBrain m_Brain;
         private Rigidbody2D m_Body;
         private GameController m_GameController;
@@ -25,6 +28,11 @@ namespace IronWasteland.Net
         private float m_LastAcceptTime;
         private float m_MoveBudget;
         private float m_LastCastRequestTime = -1f;
+
+        /// <summary>Trong khoảng này bỏ qua kiểm tra tốc độ vì vừa có lệnh dịch chuyển hợp lệ từ kỹ năng.</summary>
+        private float m_TeleportGraceUntil;
+        private float m_LastTeleportSendTime = -1f;
+        private Vector3 m_LastTeleportSentPosition;
 
         public override void OnNetworkSpawn()
         {
@@ -68,6 +76,15 @@ namespace IronWasteland.Net
         /// </summary>
         private void ValidateOwnerMovement()
         {
+            // Vừa có teleport hợp lệ từ kỹ năng: nhận vị trí hiện tại làm mốc mới thay vì kéo về.
+            if (Time.time < m_TeleportGraceUntil)
+            {
+                m_LastAcceptedPosition = transform.position;
+                m_LastAcceptTime = Time.time;
+                m_MoveBudget = 0f;
+                return;
+            }
+
             float elapsed = Mathf.Clamp(Time.time - m_LastAcceptTime, Time.fixedDeltaTime, 0.25f);
             float maxSpeed = m_Brain != null ? Mathf.Max(0.01f, m_Brain.Stats.MoveSpeed / 100f) : 1f;
 
@@ -114,6 +131,65 @@ namespace IronWasteland.Net
             if (IsServer) return; // host đã áp trực tiếp
             transform.position = position;
             if (m_Body != null) m_Body.position = position;
+        }
+
+        /// <summary>
+        /// Server gọi khi kỹ năng dịch chuyển tức thời chiếc xe này (Shadow Step, Shadow Ambush,
+        /// Shadow Possession, Shadow Exchange, Nova Rush…). Cập nhật vị trí chuẩn, mở cửa sổ
+        /// miễn kiểm tra tốc độ để không bị kéo về, rồi lệnh cho chủ xe áp cùng vị trí.
+        /// </summary>
+        public void ServerTeleport(Vector3 position)
+        {
+            if (!IsServer || !IsSpawned || m_Brain == null)
+                return;
+
+            Vector3 fixedPosition = new Vector3(position.x, position.y, transform.position.z);
+
+            transform.position = fixedPosition;
+            if (m_Body != null)
+            {
+                m_Body.position = fixedPosition;
+                m_Body.linearVelocity = Vector2.zero;
+            }
+
+            m_LastAcceptedPosition = fixedPosition;
+            m_LastAcceptTime = Time.time;
+            m_MoveBudget = 0f;
+            m_TeleportGraceUntil = Time.time + 0.3f;
+
+            // Host chính là chủ xe thì không cần gửi RPC.
+            if (OwnerClientId == NetworkManager.ServerClientId)
+                return;
+
+            // Kỹ năng bám theo đồng minh (Shadow Possession) gọi mỗi frame — gộp bớt RPC,
+            // nhưng teleport xa thì luôn gửi ngay.
+            bool withinInterval = Time.time - m_LastTeleportSendTime < MinTeleportRpcInterval;
+            bool smallStep = (fixedPosition - m_LastTeleportSentPosition).sqrMagnitude < 0.75f * 0.75f;
+            if (withinInterval && smallStep)
+                return;
+
+            m_LastTeleportSendTime = Time.time;
+            m_LastTeleportSentPosition = fixedPosition;
+
+            ClientRpcParams target = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = new[] { OwnerClientId } }
+            };
+            TeleportOwnerClientRpc(fixedPosition, target);
+        }
+
+        [ClientRpc]
+        private void TeleportOwnerClientRpc(Vector3 position, ClientRpcParams rpcParams = default)
+        {
+            if (IsServer) return; // host đã áp trực tiếp
+
+            Vector3 fixedPosition = new Vector3(position.x, position.y, transform.position.z);
+            transform.position = fixedPosition;
+            if (m_Body != null)
+            {
+                m_Body.position = fixedPosition;
+                m_Body.linearVelocity = Vector2.zero;
+            }
         }
 
         private void BindLocalInput()

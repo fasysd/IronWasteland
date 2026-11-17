@@ -1,6 +1,7 @@
 using IronWasteland;
 using IronWasteland.Core;
 using IronWasteland.Enemies;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using System.Collections.Generic;
 using UnityEngine;
@@ -604,8 +605,9 @@ namespace IronWasteland.Tanks.BlackShadow
                 Vector2 oldPosition = transform.position;
                 Vector2 targetPosition = activeSpecializedSkill.CopyPosition;
 
-                // Đổi vị trí xe tăng tới vị trí ảo ảnh
-                transform.position = targetPosition;
+                // Đổi vị trí xe tăng tới vị trí ảo ảnh (đi qua NetTeleport để server cho phép
+                // dịch chuyển tức thời và gửi vị trí xuống chủ xe trong phiên mạng).
+                NetTeleport.Move(this, targetPosition);
 
                 // Kích nổ ảo ảnh
                 SpecializedSkill explodingSkill = activeSpecializedSkill;

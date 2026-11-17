@@ -1,4 +1,5 @@
 using IronWasteland;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using System;
 using System.Collections;
@@ -51,7 +52,6 @@ namespace IronWasteland.Tanks.BlackShadow
         private bool isPossessing = false;
         private float remainingTime = 0f;
         private Collider2D[] cachedOwnerColliders;
-        private Rigidbody2D ownerRb;
         private Coroutine hideBurstCoroutine;
 
         // Thuộc tính công khai (Read-only Getters)
@@ -88,7 +88,6 @@ namespace IronWasteland.Tanks.BlackShadow
             Clear();
 
             this.ownerTank = owner;
-            this.ownerRb = owner.GetComponent<Rigidbody2D>();
 
             if (mouseWorldPos == Vector2.zero && owner.HasLookTarget)
             {
@@ -212,12 +211,7 @@ namespace IronWasteland.Tanks.BlackShadow
         {
             if (ownerTank == null || allyTank == null) return;
 
-            ownerTank.transform.position = allyTank.transform.position;
-            if (ownerRb != null)
-            {
-                ownerRb.position = allyTank.transform.position;
-                ownerRb.linearVelocity = Vector2.zero;
-            }
+            NetTeleport.Move(ownerTank, allyTank.transform.position);
         }
 
         /// <summary>
@@ -287,19 +281,13 @@ namespace IronWasteland.Tanks.BlackShadow
                         : Vector2.left * 0.8f;
 
                     Vector2 spawnPos = exitPos + offset;
-                    ownerTank.transform.position = spawnPos;
-                    if (ownerRb != null)
-                    {
-                        ownerRb.position = spawnPos;
-                        ownerRb.linearVelocity = Vector2.zero;
-                    }
+                    NetTeleport.Move(ownerTank, spawnPos);
                 }
             }
 
             // 7. Xoá các tham chiếu runtime đã dùng xong
             allyTank = null;
             cachedOwnerColliders = null;
-            ownerRb = null;
         }
 
         /// <summary>

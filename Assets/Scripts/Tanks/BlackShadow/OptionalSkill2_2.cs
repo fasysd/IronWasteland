@@ -187,13 +187,7 @@ namespace IronWasteland.Tanks.BlackShadow
             Vector2 targetPos = cloneInstance.transform.position;
 
             // 1. Dịch chuyển Black Shadow tới vị trí bản sao
-            ownerTank.transform.position = targetPos;
-            Rigidbody2D rb = ownerTank.GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                rb.position = targetPos;
-                rb.linearVelocity = Vector2.zero;
-            }
+            NetTeleport.Move(ownerTank, targetPos);
 
             // 2. Phát hiệu ứng khói đen tại cả 2 vị trí
             PlayBurst(targetPos);

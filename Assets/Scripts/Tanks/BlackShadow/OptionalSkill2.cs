@@ -1,6 +1,7 @@
 using IronWasteland;
 using IronWasteland.Core;
 using IronWasteland.Enemies;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using System;
 using System.Collections;
@@ -113,13 +114,7 @@ namespace IronWasteland.Tanks.BlackShadow
             PlayBurstAt(originPos);
 
             // 2. Dịch chuyển xe tank ra sau lưng mục tiêu
-            ownerTank.transform.position = behindPos;
-            Rigidbody2D ownerRb = ownerTank.GetComponent<Rigidbody2D>();
-            if (ownerRb != null)
-            {
-                ownerRb.position = behindPos;
-                ownerRb.linearVelocity = Vector2.zero;
-            }
+            NetTeleport.Move(ownerTank, behindPos);
 
             // 3. Hướng nòng súng ngắm thẳng vào tâm kẻ địch
             ownerTank.SetLookTarget(enemy.transform.position);
