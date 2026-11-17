@@ -43,6 +43,9 @@ namespace IronWasteland.Enemies
         private float m_InvisibleTimer;
         private bool m_Invisible;
         private GameObject m_Rift;
+
+        /// <summary>Handle ghost vết nứt đã gửi xuống client (0 = không gửi hoặc chơi offline).</summary>
+        private int m_RiftGhostHandle;
         private float m_RiftAge;
 
         protected override void OnBrainTick(float deltaTime)
@@ -78,6 +81,10 @@ namespace IronWasteland.Enemies
             renderer.color = new Color(0.6f, 0.2f, 0.95f, 0.55f);
             renderer.transform.localScale = Vector3.one * (riftRadius * 2f);
             renderer.sortingOrder = -1;
+
+            // Chơi mạng: client dựng lại vết nứt bằng ghost thủ tục, giữ handle để thu hồi khi vết nứt đóng.
+            m_RiftGhostHandle = IronWasteland.Net.NetVisual.SpawnPrimitive(position, Vector2.zero, riftRadius, riftLifetime,
+                fade: false, sortingOrder: -1, color: new Color(0.6f, 0.2f, 0.95f, 0.55f));
 
             m_RiftAge = 0f;
             Debug.Log("[Phantom] mo vet nut tai " + position.ToString("0.00"));
@@ -142,6 +149,12 @@ namespace IronWasteland.Enemies
         {
             if (m_Rift != null) Destroy(m_Rift);
             m_Rift = null;
+
+            if (m_RiftGhostHandle != 0)
+            {
+                IronWasteland.Net.NetVisual.EndGhost(m_RiftGhostHandle);
+                m_RiftGhostHandle = 0;
+            }
             m_RiftAge = 0f;
         }
 

@@ -113,13 +113,26 @@ namespace IronWasteland.Net
         /// Nhân bản visual thủ tục (object do host tạo bằng <c>new GameObject</c>, không có template trong prefab).
         /// Dùng cho vệt lửa và gai đá; client chỉ vẽ sprite, không có logic gameplay.
         /// </summary>
-        public static void SpawnPrimitive(Vector3 position, Vector2 velocity, float radius, float lifetime,
-            bool fade, int sortingOrder, Color color)
+        public static int SpawnPrimitive(Vector3 position, Vector2 velocity, float radius, float lifetime,
+            bool fade, int sortingOrder, Color color, float rotationDeg = 0f, float stretchX = 1f)
         {
+            if (!TankBrain.NetworkSessionActive || NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+                return 0;
+
+            return NetVisualSpawn.Instance != null
+                ? NetVisualSpawn.Instance.BroadcastPrimitive(position, velocity, radius, lifetime, fade, sortingOrder,
+                    color, rotationDeg, stretchX)
+                : 0;
+        }
+
+        /// <summary>Thu hồi sớm một ghost thủ tục theo handle (host gọi khi hiệu ứng kết thúc trước hạn).</summary>
+        public static void EndGhost(int handle)
+        {
+            if (handle <= 0) return;
             if (!TankBrain.NetworkSessionActive || NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
                 return;
 
-            NetVisualSpawn.Instance?.BroadcastPrimitive(position, velocity, radius, lifetime, fade, sortingOrder, color);
+            NetVisualSpawn.Instance?.BroadcastDespawn(handle);
         }
     }
 }

@@ -335,9 +335,6 @@ namespace IronWasteland.Tanks.Leviathan
             return base.GetSkillEnergyGain(index);
         }
 
-        /// <summary>Đòn thường (Water Pulse) và kỹ năng chuyên biệt (Water Bubble) là visual thuần, an toàn để client phát lại.</summary>
-        protected override bool CanReplayRemoteFx(int index) => index <= 1;
-
         protected override void OnUseSkill(int index)
         {
             if (index == normalSkillIndex)

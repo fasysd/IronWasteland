@@ -166,12 +166,8 @@ namespace IronWasteland.Tanks.BlackShadow
             cloneInstance.OnCloneDestroyed -= OnCloneExpiredOrDestroyed;
             cloneInstance.OnCloneDestroyed += OnCloneExpiredOrDestroyed;
 
-            // Online: bản sao do host mô phỏng, client chỉ dựng một bản sao visual tĩnh để nhìn thấy.
-            if (TankBrain.NetworkSessionActive && NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
-            {
-                NetworkObject ownerNetworkObject = ownerTank != null ? ownerTank.GetComponent<NetworkObject>() : null;
-                NetVisualSpawn.Instance?.BroadcastByName(ownerNetworkObject, cloneInstance.name, spawnPos, bodyRot, duration, false);
-            }
+            // Chơi mạng: mỗi máy tự phát lại kỹ năng này (client dựng bản sao cục bộ trong lúc replay),
+            // nên host không gửi thêm ghost để tránh hai bản sao chồng lên nhau.
 
             PlayBurst(spawnPos);
             skillState = 1;

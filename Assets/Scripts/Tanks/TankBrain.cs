@@ -750,10 +750,12 @@ namespace IronWasteland.Tanks
         }
 
         /// <summary>
-        /// Slot nào được phép phát lại hình ảnh trên client. Mặc định chỉ đòn thường (slot 0).
-        /// Lớp con mở thêm slot chuyên biệt nếu visual của nó không phụ thuộc trạng thái nội bộ.
+        /// Slot nào được phép phát lại hình ảnh trên client. Mặc định cho phép cả 4 slot vì
+        /// mọi tác động gameplay (sát thương, năng lượng, hồi chiêu, buff, khiên, gánh hộ,
+        /// dịch chuyển) đều đã bị khoá khi <see cref="IsRemoteFxReplay"/> bật; client chỉ dựng
+        /// lại phần hình ảnh để trận đấu nhìn giống nhau ở mọi máy.
         /// </summary>
-        protected virtual bool CanReplayRemoteFx(int index) => index == 0;
+        protected virtual bool CanReplayRemoteFx(int index) => index >= 0 && index < SkillCount;
 
         protected virtual void OnUseSkill(int index)
         {

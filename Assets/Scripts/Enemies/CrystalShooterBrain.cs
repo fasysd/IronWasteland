@@ -128,6 +128,23 @@ namespace IronWasteland.Enemies
             m_Beam.transform.localScale = new Vector3(length, beamHalfWidth * 2f, 1f);
             m_Beam.enabled = true;
             m_BeamTimer = beamDuration;
+
+            // Chơi mạng: client dựng lại tia laser bằng ghost thủ tục (không có template con để nhân bản).
+            if (TankBrain.NetworkSessionActive
+                && Unity.Netcode.NetworkManager.Singleton != null
+                && Unity.Netcode.NetworkManager.Singleton.IsServer)
+            {
+                IronWasteland.Net.NetVisual.SpawnPrimitive(
+                    transform.position + (Vector3)(direction * (length * 0.5f)),
+                    Vector2.zero,
+                    beamHalfWidth,
+                    beamDuration,
+                    fade: true,
+                    sortingOrder: 5,
+                    color: new Color(0.55f, 0.95f, 1f, 0.9f),
+                    rotationDeg: angle,
+                    stretchX: length / Mathf.Max(0.01f, beamHalfWidth * 2f));
+            }
         }
 
         /// <summary>Gay sat thuong cho tank nam tren duong thang tu origin theo huong direction.</summary>

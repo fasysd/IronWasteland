@@ -289,7 +289,7 @@ namespace IronWasteland.Net
         /// Client tự dựng SpriteRenderer đơn giản, bay theo vận tốc và mờ dần nếu bật <paramref name="fade"/>.
         /// </summary>
         public int BroadcastPrimitive(Vector3 position, Vector2 velocity, float radius, float lifetime,
-            bool fade, int sortingOrder, Color color)
+            bool fade, int sortingOrder, Color color, float rotationDeg = 0f, float stretchX = 1f)
         {
             NetworkManager manager = NetworkManager.Singleton;
             if (manager == null || !manager.IsServer || manager.CustomMessagingManager == null) return 0;
@@ -297,7 +297,7 @@ namespace IronWasteland.Net
             int handle = m_NextHandle++;
             if (m_NextHandle <= 0) m_NextHandle = 1;
 
-            using FastBufferWriter writer = new FastBufferWriter(64, Allocator.Temp);
+            using FastBufferWriter writer = new FastBufferWriter(80, Allocator.Temp);
             writer.WriteValueSafe(handle);
             writer.WriteValueSafe((Vector2)position);
             writer.WriteValueSafe(velocity);
@@ -307,6 +307,8 @@ namespace IronWasteland.Net
             writer.WriteValueSafe(sortingOrder);
             Color32 packed = color;
             writer.WriteValueSafe(packed);
+            writer.WriteValueSafe(rotationDeg);
+            writer.WriteValueSafe(Mathf.Max(0.01f, stretchX));
             manager.CustomMessagingManager.SendNamedMessageToAll(PrimitiveMessageName, writer);
 
             return handle;
@@ -457,12 +459,18 @@ namespace IronWasteland.Net
             reader.ReadValueSafe(out bool fade);
             reader.ReadValueSafe(out int sortingOrder);
             reader.ReadValueSafe(out Color32 packedColor);
+            reader.ReadValueSafe(out float rotationDeg);
+            reader.ReadValueSafe(out float stretchX);
 
             if (m_Ghosts.Count >= maxGhosts) RemoveOldestGhost();
 
             GameObject ghost = new GameObject(fade ? "SoftCircle (Ghost)" : "Circle (Ghost)");
             ghost.transform.position = position;
-            ghost.transform.localScale = Vector3.one * (Mathf.Max(0.01f, radius) * 2f);
+            ghost.transform.rotation = Quaternion.Euler(0f, 0f, rotationDeg);
+            ghost.transform.localScale = new Vector3(
+                Mathf.Max(0.01f, radius) * 2f * Mathf.Max(0.01f, stretchX),
+                Mathf.Max(0.01f, radius) * 2f,
+                1f);
 
             SpriteRenderer renderer = ghost.AddComponent<SpriteRenderer>();
             renderer.sprite = fade ? SpriteFactory.SoftCircle : SpriteFactory.Circle;

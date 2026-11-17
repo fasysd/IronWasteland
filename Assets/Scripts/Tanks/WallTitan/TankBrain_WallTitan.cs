@@ -244,9 +244,6 @@ namespace IronWasteland.Tanks.WallTitan
             PrewarmEarthquakePool();
         }
 
-        /// <summary>Earth Break và Earth Wall là visual thuần (tường phát lại dạng chỉ-hình-ảnh), an toàn để client phát lại.</summary>
-        protected override bool CanReplayRemoteFx(int index) => index <= 1;
-
         protected override void OnUseSkill(int index)
         {
             switch (index)

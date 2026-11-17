@@ -251,9 +251,6 @@ namespace IronWasteland.Tanks.RedNova
             PrewarmBarragePool();
         }
 
-        /// <summary>Nova Shot và loạt 3 phát chuyên biệt là visual thuần, an toàn để client phát lại.</summary>
-        protected override bool CanReplayRemoteFx(int index) => index <= 1;
-
         protected override void OnUseSkill(int index)
         {
             switch (index)
