@@ -391,7 +391,9 @@ namespace IronWasteland.Net
                     ? $" stage={stage.State} kills={stage.Kills}/{stage.KillTarget} wave={stage.WaveIndex + 1}"
                     : " stage=none";
 
+                NetBootstrap boot = FindAnyObjectByType<NetBootstrap>();
                 Debug.Log($"[NetState] listening={manager.IsListening} server={manager.IsServer}" +
+                          $" lost={(boot != null && boot.ConnectionLost)}" +
                           $" clients={manager.ConnectedClientsIds.Count} tick={manager.NetworkConfig.TickRate}" +
                           $" tanks={tanks.Length}{details} enemies={enemies.Length}{enemyDetails}" +
                           $" ghosts={(NetVisualSpawn.Instance != null ? NetVisualSpawn.Instance.GhostCount : 0)}" +

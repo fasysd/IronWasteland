@@ -55,6 +55,12 @@ namespace IronWasteland.Net
         /// <summary>Phiên mạng đang chạy hay chưa (dùng để tắt đường offline).</summary>
         public bool IsRunning => networkManager != null && networkManager.IsListening;
 
+        /// <summary>
+        /// Client đã từng vào phòng nhưng mất kết nối (thường do host thoát).
+        /// Dùng cho HUD/debug để báo "MẤT KẾT NỐI" thay vì để màn hình đứng im.
+        /// </summary>
+        public bool ConnectionLost { get; private set; }
+
         private void Awake()
         {
             if (networkManager == null) networkManager = GetComponent<NetworkManager>();
@@ -95,6 +101,7 @@ namespace IronWasteland.Net
         {
             if (networkManager == null) return false;
 
+            ConnectionLost = false;
             ClearSceneEnemies();
             DestroyLocalOfflineTank();
             EnsureTransport();
@@ -115,6 +122,7 @@ namespace IronWasteland.Net
         {
             if (networkManager == null) return false;
 
+            ConnectionLost = false;
             ClearSceneEnemies();
             DestroyLocalOfflineTank();
             EnsureTransport();
@@ -137,6 +145,7 @@ namespace IronWasteland.Net
         {
             if (networkManager == null || networkManager.IsListening) return;
 
+            ConnectionLost = false;
             RelayServerData? relayData = await NetRelayService.CreateHostAllocationAsync(region);
             if (relayData == null)
             {
@@ -168,6 +177,7 @@ namespace IronWasteland.Net
         {
             if (networkManager == null || networkManager.IsListening) return;
 
+            ConnectionLost = false;
             RelayServerData? relayData = await NetRelayService.JoinAllocationAsync(relayJoinCode);
             if (relayData == null)
             {
@@ -193,6 +203,7 @@ namespace IronWasteland.Net
         /// <summary>Đóng phòng ở cả hai phía.</summary>
         public void Shutdown()
         {
+            ConnectionLost = false;
             if (networkManager != null && networkManager.IsListening) networkManager.Shutdown();
             NetRelayService.ResetSession();
         }
@@ -200,11 +211,20 @@ namespace IronWasteland.Net
         private void EnsureTransport()
         {
             if (networkManager == null) return;
-            if (networkManager.NetworkConfig.NetworkTransport != null) return;
 
-            UnityTransport transport = GetComponent<UnityTransport>();
-            if (transport == null) transport = gameObject.AddComponent<UnityTransport>();
-            networkManager.NetworkConfig.NetworkTransport = transport;
+            if (networkManager.NetworkConfig.NetworkTransport == null)
+            {
+                UnityTransport created = GetComponent<UnityTransport>();
+                if (created == null) created = gameObject.AddComponent<UnityTransport>();
+                networkManager.NetworkConfig.NetworkTransport = created;
+            }
+
+            // Mặc định của Unity Transport là 30 giây mới phát hiện host biến mất — quá lâu với co-op.
+            // Hạ xuống 10 giây để client báo "MẤT KẾT NỐI" sớm, vẫn đủ rộng cho mạng yếu.
+            if (networkManager.NetworkConfig.NetworkTransport is UnityTransport transport)
+            {
+                transport.DisconnectTimeoutMS = 10000;
+            }
         }
 
         /// <summary>
@@ -294,6 +314,15 @@ namespace IronWasteland.Net
 
         private void HandleClientDisconnected(ulong clientId)
         {
+            // Trên client: host đóng phòng (hoặc mạng đứt) thì NGO báo disconnect cho chính mình.
+            // Không dọn loadout ở đây vì client không sở hữu danh sách người chơi.
+            if (networkManager != null && !networkManager.IsServer && clientId == networkManager.LocalClientId)
+            {
+                ConnectionLost = true;
+                Debug.LogWarning($"[NetBootstrap] Mất kết nối tới host (clientId={clientId}).");
+                return;
+            }
+
             m_Loadouts.Remove(clientId);
             spawnService?.DespawnPlayerTank(clientId);
         }

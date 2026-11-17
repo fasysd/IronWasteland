@@ -40,10 +40,13 @@ namespace IronWasteland.Net
         private GUIStyle m_Style;
         private GUIStyle m_BannerStyle;
         private Texture2D m_Background;
+        private NetBootstrap m_Bootstrap;
 
         private void Awake()
         {
             m_Visible = visibleOnStart;
+            // HUD nằm cùng GameObject với NetworkManager/NetBootstrap nên lấy trực tiếp.
+            m_Bootstrap = GetComponent<NetBootstrap>();
         }
 
         private void Update()
@@ -67,12 +70,25 @@ namespace IronWasteland.Net
 
             EnsureStyle();
 
+            bool lost = m_Bootstrap != null && m_Bootstrap.ConnectionLost;
             NetStageEvents stageEvents = NetStageEvents.Instance;
-            if (stageEvents != null && stageEvents.HasStageState &&
-                (stageEvents.StageState == NetStageEvents.StateCleared || stageEvents.StageState == NetStageEvents.StateFailed))
+            string banner = null;
+            if (lost)
+            {
+                banner = "MẤT KẾT NỐI";
+            }
+            else if (stageEvents != null && stageEvents.HasStageState &&
+                     (stageEvents.StageState == NetStageEvents.StateCleared || stageEvents.StageState == NetStageEvents.StateFailed))
+            {
+                banner = stageEvents.StageState == NetStageEvents.StateCleared ? "THẮNG" : "THUA";
+            }
+
+            if (banner != null)
             {
                 EnsureBannerStyle();
-                string banner = stageEvents.StageState == NetStageEvents.StateCleared ? "THẮNG" : "THUA";
+                m_BannerStyle.normal.textColor = lost
+                    ? new Color(1f, 0.35f, 0.3f, 0.95f)
+                    : new Color(1f, 0.92f, 0.35f, 0.95f);
                 GUI.Label(new Rect(0f, Screen.height * 0.32f, Screen.width, 90f), banner, m_BannerStyle);
             }
 
@@ -110,6 +126,7 @@ namespace IronWasteland.Net
 
             m_Builder.Append(" | quái=").Append(CountEnemies());
             m_Builder.Append(" | FPS=").Append(Mathf.RoundToInt(1f / Mathf.Max(0.0001f, Time.unscaledDeltaTime)));
+            if (m_Bootstrap != null) m_Builder.Append(" | kết nối=").Append(m_Bootstrap.ConnectionLost ? "MẤT" : "OK");
 
             NetStageEvents stageEvents = NetStageEvents.Instance;
             if (stageEvents != null && stageEvents.HasStageState)
