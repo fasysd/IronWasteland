@@ -739,7 +739,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetPlayerController
   ShowTopMostFoldoutHeaderGroup: 1
   speedTolerance: 1.6
-  positionSlack: 0.15
 --- !u!114 &7437220667687193557
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1694,7 +1693,7 @@ GameObject:
   - component: {fileID: 3940737987913269519}
   - component: {fileID: 7525699571634279953}
   - component: {fileID: 77935794088687141}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ShadowExchangeClone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2404,7 +2403,7 @@ GameObject:
   - component: {fileID: 6725913280884534124}
   - component: {fileID: 2676203206921719234}
   - component: {fileID: 4974221802635930531}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: specializeSkill
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -353,7 +353,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetPlayerController
   ShowTopMostFoldoutHeaderGroup: 1
   speedTolerance: 1.6
-  positionSlack: 0.15
 --- !u!114 &4825434775728875594
 MonoBehaviour:
   m_ObjectHideFlags: 0

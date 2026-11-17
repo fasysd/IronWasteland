@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5214295656186019436}
   - component: {fileID: 2516163698616550546}
   - component: {fileID: 5982024409606801555}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SpecializedSkill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -208,7 +208,7 @@ GameObject:
   - component: {fileID: 6332390440787263002}
   - component: {fileID: 3667766633562872120}
   - component: {fileID: 5685933052413300437}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: NormalSkill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -963,7 +963,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetPlayerController
   ShowTopMostFoldoutHeaderGroup: 1
   speedTolerance: 1.6
-  positionSlack: 0.15
 --- !u!114 &7034889297360913972
 MonoBehaviour:
   m_ObjectHideFlags: 0
