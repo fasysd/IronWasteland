@@ -38,6 +38,7 @@ namespace IronWasteland.Net
         private float m_RefreshTimer;
         private string[] m_Lines = Array.Empty<string>();
         private GUIStyle m_Style;
+        private GUIStyle m_BannerStyle;
         private Texture2D m_Background;
 
         private void Awake()
@@ -65,6 +66,15 @@ namespace IronWasteland.Net
             if (!m_Visible || m_Lines.Length == 0) return;
 
             EnsureStyle();
+
+            NetStageEvents stageEvents = NetStageEvents.Instance;
+            if (stageEvents != null && stageEvents.HasStageState &&
+                (stageEvents.StageState == NetStageEvents.StateCleared || stageEvents.StageState == NetStageEvents.StateFailed))
+            {
+                EnsureBannerStyle();
+                string banner = stageEvents.StageState == NetStageEvents.StateCleared ? "THẮNG" : "THUA";
+                GUI.Label(new Rect(0f, Screen.height * 0.32f, Screen.width, 90f), banner, m_BannerStyle);
+            }
 
             const float width = 520f;
             const float lineHeight = 20f;
@@ -100,6 +110,13 @@ namespace IronWasteland.Net
 
             m_Builder.Append(" | quái=").Append(CountEnemies());
             m_Builder.Append(" | FPS=").Append(Mathf.RoundToInt(1f / Mathf.Max(0.0001f, Time.unscaledDeltaTime)));
+
+            NetStageEvents stageEvents = NetStageEvents.Instance;
+            if (stageEvents != null && stageEvents.HasStageState)
+            {
+                m_Builder.Append(" | ải=").Append(StageLabel(stageEvents.StageState))
+                    .Append(' ').Append(stageEvents.StageKills).Append('/').Append(stageEvents.StageKillTarget);
+            }
 
             CollectPlayers();
             PlayerNetState local = FindLocalPlayer();
@@ -197,6 +214,30 @@ namespace IronWasteland.Net
                 padding = new RectOffset(0, 0, 0, 0),
             };
             m_Style.normal.textColor = Color.white;
+        }
+
+        private static string StageLabel(byte state)
+        {
+            return state switch
+            {
+                NetStageEvents.StateCleared => "THẮNG",
+                NetStageEvents.StateFailed => "THUA",
+                _ => "ĐANG CHƠI"
+            };
+        }
+
+        private void EnsureBannerStyle()
+        {
+            if (m_BannerStyle != null) return;
+
+            m_BannerStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 64,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter,
+                richText = false,
+            };
+            m_BannerStyle.normal.textColor = new Color(1f, 0.92f, 0.35f, 0.95f);
         }
 
         private void OnDestroy()

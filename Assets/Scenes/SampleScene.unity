@@ -2346,6 +2346,7 @@ GameObject:
   - component: {fileID: 1596902873}
   - component: {fileID: 1596902874}
   - component: {fileID: 1596902875}
+  - component: {fileID: 1596902876}
   m_Layer: 0
   m_Name: Network
   m_TagString: Untagged
@@ -2575,6 +2576,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40d2504c3d5cfc340bb961ac64d4f61f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetStageEvents
+--- !u!114 &1596902876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1596902864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3802c3b2e281f0b4f9444b27e292c677, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetDebugHud
+  toggleKey: 96
+  visibleOnStart: 1
+  refreshInterval: 0.2
+  showAllPlayers: 1
 --- !u!1 &1708749389
 GameObject:
   m_ObjectHideFlags: 0
