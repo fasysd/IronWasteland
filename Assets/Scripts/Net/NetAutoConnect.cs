@@ -18,6 +18,9 @@ namespace IronWasteland.Net
     [DefaultExecutionOrder(-50)]
     public sealed class NetAutoConnect : MonoBehaviour
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // Toàn bộ công cụ test dòng lệnh (-iw-*, gồm -iw-rehost-after) chỉ tồn tại ở Editor và Development Build.
+        // Bản build phát hành (Release) biên dịch ra component rỗng, không có logic tự rehost hay tự kết nối.
         [Tooltip("Cho phép đọc tham số dòng lệnh để tự vào phòng. Chỉ nên bật khi test nhiều client.")]
         [SerializeField] private bool enableCommandLine = true;
 
@@ -709,5 +712,6 @@ namespace IronWasteland.Net
             string raw = ReadValue(args, flag);
             return float.TryParse(raw, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float value) && value > 0f ? value : fallback;
         }
+#endif
     }
 }
