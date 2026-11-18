@@ -63,9 +63,28 @@ namespace IronWasteland.Tanks.GreenFox
             m_Trail.endWidth = 0f;
             m_Trail.minVertexDistance = 0.05f;
             m_Trail.numCapVertices = 4;
-            m_Trail.material = new Material(Shader.Find("Sprites/Default"));
+            m_Trail.material = CreateSpriteMaterial();
             m_Trail.startColor = startColor;
             m_Trail.endColor = endColor;
+        }
+
+        /// <summary>
+        /// Tạo material cho vệt sáng. Shader.Find("Sprites/Default") trả về null trong bản build khi
+        /// shader không nằm trong danh sách include, khiến vệt hoàn toàn tàng hình trên máy build;
+        /// vì vậy thử lần lượt các shader sprite phổ biến và chỉ tạo material khi tìm thấy shader.
+        /// </summary>
+        private static Material CreateSpriteMaterial()
+        {
+            Shader shader = Shader.Find("Sprites/Default");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null)
+            {
+                Debug.LogWarning("[GreenFox] Không tìm thấy shader sprite cho vệt sáng kỹ năng — vệt sẽ không hiển thị.");
+                return null;
+            }
+
+            return new Material(shader);
         }
 
         private void Update()

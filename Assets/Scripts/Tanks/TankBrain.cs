@@ -770,12 +770,18 @@ namespace IronWasteland.Tanks
             // để client biết chỗ cũ mà vẽ khói/hiệu ứng để lại.
             Vector2 origin = transform.position;
 
+            // Mặc định coi như chiêu chạy được; chiêu nào thất bại sẽ tự gán false bên trong OnUseSkill.
+            SkillExecutionSucceeded = true;
+
             OnUseSkill(index);
 
             // Host vừa thi triển xong: báo client phát lại hình ảnh bằng pool cục bộ.
             // Gửi kèm biến thể Optional đang dùng để client chọn đúng hình ảnh (1A/1B/1C...) dù
             // Context cục bộ của client có lệch.
-            if (!IsRemoteFxReplay && NetworkSessionActive && HasGameplayAuthority)
+            // CHỈ gửi khi chiêu thật sự chạy được trên máy chủ: nếu server không tạo ra hình ảnh nào
+            // (ví dụ 2A không có ấn nào trong tầm, hoặc thiếu prefab) mà vẫn gửi thì client sẽ phát
+            // lại một hiệu ứng mà máy chủ hoàn toàn không có — đúng hiện tượng "client thấy, server không thấy".
+            if (SkillExecutionSucceeded && !IsRemoteFxReplay && NetworkSessionActive && HasGameplayAuthority)
             {
                 NetSkillFx.Instance?.Broadcast(
                     this,
@@ -829,6 +835,13 @@ namespace IronWasteland.Tanks
         /// lại phần hình ảnh để trận đấu nhìn giống nhau ở mọi máy.
         /// </summary>
         protected virtual bool CanReplayRemoteFx(int index) => index >= 0 && index < SkillCount;
+
+        /// <summary>
+        /// Kết quả của lần thi triển gần nhất: true khi chiêu thật sự tạo ra tác dụng/hình ảnh.
+        /// Chiêu nào thất bại (trượt mục tiêu, thiếu prefab, không có ấn trong tầm...) phải gán false
+        /// để host KHÔNG gửi gói phát lại hình ảnh, tránh client hiện hiệu ứng mà máy chủ không có.
+        /// </summary>
+        protected bool SkillExecutionSucceeded { get; set; } = true;
 
         protected virtual void OnUseSkill(int index)
         {

@@ -82,6 +82,9 @@ namespace IronWasteland.Tanks.GreenFox
         private readonly Dictionary<EnemyBrain, Sign> m_Signs = new Dictionary<EnemyBrain, Sign>();
         private readonly Dictionary<EnemyBrain, GreenFox_BurnEffect> m_Burns = new Dictionary<EnemyBrain, GreenFox_BurnEffect>();
 
+        // Bộ đệm dùng lại khi client dò ấn của kẻ địch vừa chết (tránh cấp phát bộ nhớ mỗi khung hình)
+        private readonly List<Sign> m_DeadSigns = new List<Sign>();
+
         private bool m_Is1ABuffActive;
         private Coroutine m_1ABuffCoroutine;
 
@@ -199,9 +202,25 @@ namespace IronWasteland.Tanks.GreenFox
             // Tung chiêu thất bại (trượt, thiếu prefab...) thì hoàn lại năng lượng và hồi chiêu
             if (!success)
             {
+                SkillExecutionSucceeded = false;
                 GainEnergy(GetSkillEnergyCost(index));
                 SetSkillCooldown(index, 0f);
             }
+
+            // Một dòng nhật ký mỗi lần thi triển: máy nào chạy, biến thể nào, có ra hình ảnh hay không.
+            LogCastDiagnostics(index, success);
+        }
+
+        /// <summary>
+        /// Ghi nhật ký chẩn đoán cho mỗi lần thi triển chiêu Green Fox: máy nào chạy (máy chủ hay
+        /// client phát lại), biến thể 1A/1B/1C - 2A/2B/2C đang dùng, kết quả và số ấn/lãnh địa hiện có.
+        /// Nhờ đó log của cả hai máy đối chiếu được lỗi lệch hình ảnh giữa máy chủ và client.
+        /// </summary>
+        private void LogCastDiagnostics(int index, bool success)
+        {
+            string machine = IsRemoteFxReplay ? "client phát lại" : (HasGameplayAuthority ? "máy chủ" : "client");
+            string variant = index == Skill2Index ? GetSkill2Variant().ToString() : GetSkill1Variant().ToString();
+            Debug.Log($"[GreenFox] {machine}: skill {index} ({variant}) thành công={success}, ấn={m_Signs.Count}, 1A={m_Is1ABuffActive}, lãnh địa={(m_ActiveTerritory != null ? m_ActiveTerritory.name : "không có")}.");
         }
 
         // ------------------------------------------------------------------
@@ -394,8 +413,10 @@ namespace IronWasteland.Tanks.GreenFox
         {
             if (enemy == null || signPrefab == null) return;
 
-            // Host quyết định ấn; client chỉ vẽ theo thông báo của host.
-            if (!HasGameplayAuthority) return;
+            // Host quyết định ấn thật. Trên client, chỉ lượt PHÁT LẠI hình ảnh của host mới được dựng
+            // dấu ấn THUẦN HÌNH ẢNH (không gây sát thương, không đồng bộ ngược về host) để Fox Mark,
+            // Mark Hunter (1A) và Mark Explosion (2A) hiện giống máy chủ.
+            if (!HasGameplayAuthority && !IsRemoteFxReplay) return;
 
             ulong netId = GetNetworkId(enemy);
 
@@ -534,10 +555,50 @@ namespace IronWasteland.Tanks.GreenFox
 
         private IEnumerator Buff1ARoutine(float duration)
         {
-            yield return new WaitForSeconds(duration);
+            // Client không chạy luồng sát thương nên không bao giờ nhận được NotifyEnemyKilled.
+            // Trong suốt thời gian hiệu lực, tự dò kẻ địch mang ấn vừa chết (máu do host đồng bộ về 0)
+            // để vẽ lại các vệt sáng giống máy chủ. Máy chủ giữ nguyên hành vi cũ.
+            float expireTime = Time.time + duration;
+            while (Time.time < expireTime)
+            {
+                MirrorClientKillStreams();
+                yield return null;
+            }
+
             m_Is1ABuffActive = false;
             m_1ABuffCoroutine = null;
             UpdateAllSignsState(false);
+        }
+
+        /// <summary>
+        /// Mark Hunter (1A) trên client: phát lại các vệt sáng chạy về Green Fox khi kẻ địch mang ấn chết.
+        /// Chỉ chạy ở client vì máy chủ đã gọi <see cref="NotifyEnemyKilled"/> từ luồng sát thương thật.
+        /// Hồi chiêu khi hạ gục vẫn do máy chủ quyết định nên ở đây KHÔNG đụng tới cooldown.
+        /// </summary>
+        private void MirrorClientKillStreams()
+        {
+            if (HasGameplayAuthority || m_Signs.Count == 0) return;
+
+            m_DeadSigns.Clear();
+            foreach (var kv in m_Signs)
+            {
+                if (kv.Key == null || kv.Value == null) continue;
+                if (kv.Key.IsAlive) continue;
+                m_DeadSigns.Add(kv.Value);
+            }
+
+            for (int i = 0; i < m_DeadSigns.Count; i++)
+            {
+                Sign sign = m_DeadSigns[i];
+                if (sign == null) continue;
+
+                SpawnKillStreams(sign.transform.position);
+
+                // Dọn ấn: OnDestroy -> OnSignRemoved gỡ khỏi m_Signs (không sửa danh sách khi đang duyệt)
+                Destroy(sign.gameObject);
+            }
+
+            m_DeadSigns.Clear();
         }
 
         private IEnumerator Buff1BRoutine(float duration)
@@ -665,6 +726,23 @@ namespace IronWasteland.Tanks.GreenFox
             }
 
             if (signsInRange.Count == 0) return false; // không có ấn thì không tung chiêu
+
+            // Client (hoặc máy không có quyền gameplay) chỉ phát lại phần hình ảnh: sát thương, thiêu đốt
+            // và buff tấn công đã do host xử lý sẵn (con số sát thương đi qua NetCombatFeedback).
+            // Ở đây chỉ nổ hiệu ứng tại từng ấn rồi tiêu hao ấn cục bộ cho khớp với máy chủ.
+            if (!HasGameplayAuthority)
+            {
+                for (int i = 0; i < signsInRange.Count; i++)
+                {
+                    Sign replaySign = signsInRange[i];
+                    if (replaySign == null) continue;
+
+                    SpawnExplosionEffect(replaySign.transform.position);
+                    Destroy(replaySign.gameObject);
+                }
+
+                return true;
+            }
 
             float damagePerStack = ScaledDamage(skill2SubDesign.DamagePerStackPercent / 100f);
 

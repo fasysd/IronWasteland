@@ -135,6 +135,19 @@ namespace IronWasteland.Net
                     if (HasFlag(args, "-iw-selftest-move")) StartCoroutine(MoveSelfTestRoutine());
                     if (HasFlag(args, "-iw-selftest-kills")) StartCoroutine(KillSelfTestRoutine());
 
+                    // Tự động thi triển đúng một kỹ năng chỉ định vào quái gần nhất để kiểm chứng
+                    // hiệu ứng hình ảnh hiển thị đồng thời ở host và client (dùng khi test tự động
+                    // không có chuột/bàn phím để chọn kỹ năng).
+                    // Truyền giá trị lớn hơn số kỹ năng (ví dụ 9) để luân phiên 1 → 2 → 3.
+                    int autoCastSkill = ReadInt(args, "-iw-autocast", -1);
+                    if (autoCastSkill >= 0)
+                    {
+                        int firstSkill = autoCastSkill >= TankBrain.SkillCount
+                            ? -1
+                            : Mathf.Clamp(autoCastSkill, 0, TankBrain.SkillCount - 1);
+                        StartCoroutine(AutoCastRoutine(firstSkill, ReadFloat(args, "-iw-autocast-interval", 4f)));
+                    }
+
                     // Thoát êm sau N giây (dùng để test disconnect sạch thay vì kill tiến trình).
                     float exitAfter = ReadFloat(args, "-iw-exit-after", 0f);
                     if (exitAfter > 0f) StartCoroutine(ExitAfterRoutine(boot, exitAfter));
@@ -461,6 +474,100 @@ namespace IronWasteland.Net
             }
 
             Debug.Log($"[NetSelfTest] kills: client xin thi trien {casts} lan trong {duration:F0}s");
+        }
+
+        /// <summary>
+        /// Client tự ngắm quái gần nhất rồi xin host thi triển đúng kỹ năng được chỉ định, lặp lại theo chu kỳ.
+        /// Dùng để kiểm chứng hiệu ứng hình ảnh của một kỹ năng cụ thể có xuất hiện đồng thời ở host và client
+        /// hay không khi môi trường test tự động không thể bấm phím chọn kỹ năng.
+        /// Chỉ chạy khi có tham số -iw-autocast (kèm -iw-autocast-interval nếu muốn đổi nhịp).
+        /// Truyền skillIndex = -1 để luân phiên ba kỹ năng 1 → 2 → 3 (ấn → 1A → 2B của GreenFox).
+        /// </summary>
+        private IEnumerator AutoCastRoutine(int skillIndex, float interval)
+        {
+            yield return new WaitForSeconds(selfTestDelay);
+
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || manager.IsServer) yield break;
+
+            float period = Mathf.Max(0.5f, interval);
+            bool rotate = skillIndex < 0;
+            int[] rotation = { 1, 2, 3 };
+            int rotationIndex = 0;
+            Debug.Log($"[NetSelfTest] autocast {(rotate ? "luân phiên 1→2→3" : "skill=" + skillIndex)} mỗi {period:F1}s");
+
+            while (true)
+            {
+                yield return new WaitForSeconds(period);
+
+                MatchFlow flow = FindAnyObjectByType<MatchFlow>();
+                if (flow == null)
+                {
+                    Debug.Log("[NetSelfTest] autocast bỏ qua: chưa tìm thấy MatchFlow");
+                    continue;
+                }
+
+                if (flow.Phase != MatchPhase.Playing)
+                {
+                    Debug.Log($"[NetSelfTest] autocast bỏ qua: phase={flow.Phase}");
+                    continue;
+                }
+
+                // Client không giữ danh sách spawn của host (chỉ host gọi SpawnPlayerTank), nên
+                // NetSpawnService.TryGetTank luôn trả về false ở client. Phải quét NetworkObject
+                // đang tồn tại để tìm xe của chính mình giống CastSelfTestRoutine.
+                TankBrain ownTank = null;
+                TankBrain[] tanks = FindObjectsByType<TankBrain>(FindObjectsInactive.Exclude);
+                for (int i = 0; i < tanks.Length; i++)
+                {
+                    NetworkObject networkObject = tanks[i].GetComponent<NetworkObject>();
+                    if (networkObject == null || !networkObject.IsSpawned) continue;
+                    if (networkObject.OwnerClientId != manager.LocalClientId) continue;
+
+                    ownTank = tanks[i];
+                    break;
+                }
+
+                if (ownTank == null)
+                {
+                    Debug.Log("[NetSelfTest] autocast bỏ qua: không tìm thấy xe của client");
+                    continue;
+                }
+
+                NetPlayerController controller = ownTank.GetComponent<NetPlayerController>();
+                if (controller == null || !ownTank.IsAlive)
+                {
+                    Debug.Log($"[NetSelfTest] autocast bỏ qua: controller={(controller != null)} alive={ownTank.IsAlive} hp={ownTank.CurrentHealth:F0}");
+                    continue;
+                }
+
+                EnemyBrain target = null;
+                float bestDistance = float.MaxValue;
+                EnemyBrain[] enemies = FindObjectsByType<EnemyBrain>(FindObjectsInactive.Exclude);
+                for (int i = 0; i < enemies.Length; i++)
+                {
+                    EnemyBrain enemy = enemies[i];
+                    if (enemy == null || !enemy.IsAlive) continue;
+
+                    float distance = ((Vector2)enemy.transform.position - (Vector2)ownTank.transform.position).sqrMagnitude;
+                    if (distance >= bestDistance) continue;
+
+                    bestDistance = distance;
+                    target = enemy;
+                }
+
+                if (target == null)
+                {
+                    Debug.Log("[NetSelfTest] autocast bỏ qua: không còn quái sống");
+                    continue;
+                }
+
+                int castIndex = rotate ? rotation[rotationIndex % rotation.Length] : skillIndex;
+                if (rotate) rotationIndex++;
+
+                bool requested = controller.RequestCast(castIndex, (Vector2)target.transform.position);
+                Debug.Log($"[NetSelfTest] autocast xin thi triển {castIndex} vào {target.name} tại {target.transform.position.x:F1},{target.transform.position.y:F1} requested={requested} en={ownTank.CurrentEnergy:F0}");
+            }
         }
 
         /// <summary>
