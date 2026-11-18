@@ -27,6 +27,9 @@ namespace IronWasteland.Net
         /// <summary>Mã trạng thái: ải đang chạy (gói cập nhật số mạng/thời gian định kỳ).</summary>
         public const byte StateRunning = 3;
 
+        /// <summary>Mã trạng thái: không có ải nào (về lobby / tạo phòng mới) — xoá cache phía client.</summary>
+        public const byte StateIdle = 4;
+
         /// <summary>Instance đang hoạt động (mỗi máy chỉ có một).</summary>
         public static NetStageEvents Instance { get; private set; }
 
@@ -126,6 +129,28 @@ namespace IronWasteland.Net
             Broadcast(stage, StateRunning);
         }
 
+        /// <summary>
+        /// Host báo "không còn ải" (về lobby / tạo phòng mới) để client xoá cache THẮNG/THUA cũ.
+        /// Nếu không gửi, client giữ trạng thái của trận trước và HUD hiện banner THUA ngay khi vào lobby.
+        /// </summary>
+        public void BroadcastIdle()
+        {
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsServer) return;
+
+            CustomMessagingManager messaging = manager.CustomMessagingManager;
+            if (messaging == null) return;
+
+            using FastBufferWriter writer = new FastBufferWriter(16, Allocator.Temp);
+            writer.WriteValueSafe(StateIdle);
+            writer.WriteValueSafe(0);
+            writer.WriteValueSafe(0);
+            writer.WriteValueSafe(0f);
+            messaging.SendNamedMessageToAll(MessageName, writer);
+
+            ResetState();
+        }
+
         /// <summary>Client nhận trạng thái ải và ghi log (HUD thật sẽ do nhóm UI làm sau).</summary>
         private void HandleMessage(ulong senderClientId, FastBufferReader reader)
         {
@@ -137,7 +162,7 @@ namespace IronWasteland.Net
 
             ApplyState(state, kills, target, elapsed);
 
-            if (state == StateRunning) return; // gói nhịp 1 giây không log để tránh spam
+            if (state == StateRunning || state == StateIdle) return; // gói nhịp / gói xoá cache không log
 
             string label = state switch
             {
@@ -157,7 +182,7 @@ namespace IronWasteland.Net
             StageKills = kills;
             StageKillTarget = target;
             StageElapsed = elapsed;
-            HasStageState = true;
+            HasStageState = state != StateIdle;
         }
     }
 }

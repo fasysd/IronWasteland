@@ -84,10 +84,15 @@ namespace IronWasteland.Net
             {
                 banner = "PHIÊN ĐÃ KẾT THÚC";
             }
-            else if (stageEvents != null && stageEvents.HasStageState &&
-                     (stageEvents.StageState == NetStageEvents.StateCleared || stageEvents.StageState == NetStageEvents.StateFailed))
+            else if (m_Flow != null && m_Flow.Phase == MatchPhase.Cleared)
             {
-                banner = stageEvents.StageState == NetStageEvents.StateCleared ? "THẮNG" : "THUA";
+                // Banner lấy theo phase đã đồng bộ (MatchFlow), không lấy cache sự kiện ải,
+                // để trạng thái THẮNG/THUA cũ không còn hiện khi đã về lobby/trận mới.
+                banner = "THẮNG";
+            }
+            else if (m_Flow != null && m_Flow.Phase == MatchPhase.Failed)
+            {
+                banner = "THUA";
             }
 
             if (banner != null)

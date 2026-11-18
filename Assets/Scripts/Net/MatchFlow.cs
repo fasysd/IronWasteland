@@ -132,6 +132,20 @@ namespace IronWasteland.Net
             UnhookStage();
         }
 
+        /// <summary>
+        /// Xoá trạng thái ải trên host và báo client xoá cache tương ứng.
+        /// Nếu chỉ ResetState cục bộ, client vẫn giữ THẮNG/THUA của trận trước nên HUD hiện
+        /// banner sai ngay khi vừa về lobby hoặc vừa vào trận mới.
+        /// </summary>
+        private static void ResetStageEventsState()
+        {
+            NetStageEvents events = NetStageEvents.Instance;
+            if (events == null) return;
+
+            events.ResetState();
+            events.BroadcastIdle();
+        }
+
         private void HookStage()
         {
             StageManager stage = bootstrap != null ? bootstrap.Stage : null;
@@ -217,7 +231,7 @@ namespace IronWasteland.Net
             m_PlayerCount = 0;
             Phase = MatchPhase.Lobby;
             bootstrap?.Stage?.ResetToIdle();
-            NetStageEvents.Instance?.ResetState();
+            ResetStageEventsState();
             NetLoadout hostLoadout = bootstrap != null ? bootstrap.GetLoadout(NetBootstrap.ServerClientId) : default;
             AddOrUpdatePlayer(NetBootstrap.ServerClientId, bootstrap != null ? bootstrap.LocalTankIndex : (byte)0, true,
                 (byte)hostLoadout.OptionSkill1, (byte)hostLoadout.OptionSkill2);
@@ -279,7 +293,7 @@ namespace IronWasteland.Net
 
             bootstrap?.DespawnAllTanks();
             bootstrap?.Stage?.ResetToIdle();
-            NetStageEvents.Instance?.ResetState();
+            ResetStageEventsState();
 
             for (int i = 0; i < m_PlayerCount; i++) m_Ready[i] = false;
             m_Ready[0] = true; // host luôn sẵn sàng
@@ -306,7 +320,7 @@ namespace IronWasteland.Net
 
             bootstrap?.Stage?.SetDefinition(stage);
             bootstrap?.Stage?.ResetToIdle();
-            NetStageEvents.Instance?.ResetState();
+            ResetStageEventsState();
             HookStage();
 
             for (int i = 0; i < m_PlayerCount; i++)
