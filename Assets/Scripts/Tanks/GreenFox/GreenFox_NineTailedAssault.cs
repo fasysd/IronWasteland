@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using IronWasteland.Enemies;
+using IronWasteland.Net;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace IronWasteland.Tanks.GreenFox
@@ -17,6 +19,17 @@ namespace IronWasteland.Tanks.GreenFox
     [RequireComponent(typeof(ColliderOwnerRef))]
     public class GreenFox_NineTailedAssault : MonoBehaviour
     {
+        private const string TailEffectId = "GreenFox_Tail";
+        private const float TailVisualDuration = 0.35f;
+
+        /// <summary>Lấy NetworkObjectId của mục tiêu để gửi hiệu ứng cho client vẽ.</summary>
+        private static ulong GetNetworkId(Component target)
+        {
+            if (target == null) return 0UL;
+            NetworkObject netObject = target.GetComponentInParent<NetworkObject>();
+            return netObject != null && netObject.IsSpawned ? netObject.NetworkObjectId : 0UL;
+        }
+
         private ColliderOwnerRef m_OwnerRef;
         private TankBrain_GreenFox m_OwnerTank;
         private float m_Duration;
@@ -72,6 +85,9 @@ namespace IronWasteland.Tanks.GreenFox
         {
             if (m_OwnerTank == null || m_OwnerRef == null) return;
 
+            // Client chỉ vẽ cosmetic của cast; chọn mục tiêu + sát thương do host quyết định.
+            if (!m_OwnerTank.HasGameplayAuthority) return;
+
             m_Targets.Clear();
             var seen = new HashSet<EnemyBrain>();
 
@@ -98,6 +114,7 @@ namespace IronWasteland.Tanks.GreenFox
 
                 m_OwnerTank.DamageEnemy(enemy, m_TailDamage, enemy.transform.position);
                 m_OwnerTank.TryApplyBurn(enemy);
+                NetEffectSync.Instance?.BroadcastEnemyEffect(GetNetworkId(enemy), TailEffectId, 1, TailVisualDuration);
             }
         }
     }

@@ -2349,6 +2349,7 @@ GameObject:
   - component: {fileID: 1596902876}
   - component: {fileID: 1596902877}
   - component: {fileID: 1596902878}
+  - component: {fileID: 1596902879}
   m_Layer: 0
   m_Name: Network
   m_TagString: Untagged
@@ -2625,6 +2626,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 278908f07bf46b543bdc06b03bd73ecb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetEffectSync
+--- !u!114 &1596902879
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1596902864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd0709a7077c2d94e8b2ac0ed188284f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetEnemyEffectView
+  styles: []
+  pollInterval: 0.1
+  sortingOrder: 8
+  sortingLayer: Default
 --- !u!1 &1708749389
 GameObject:
   m_ObjectHideFlags: 0

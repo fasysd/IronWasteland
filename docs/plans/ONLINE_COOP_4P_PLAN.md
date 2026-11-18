@@ -769,3 +769,10 @@ Build 0 Error / 5 Warning (đều là warning cũ có sẵn). Chưa push.
 Build 0 Error / 5 Warning (đều là warning cũ có sẵn). Chưa push.
 
 *Hết tài liệu. Bản 4.4 — 2026-11-18.*
+
+## Hiệu ứng trạng thái gắn lên quái (2026-11-18)
+Nguyên tắc: trong replay, client chỉ vẽ cosmetic của hành động cast; mọi kết quả mô phỏng (hit, trạng thái lên quái, ấn, chọn mục tiêu) do host quyết định và client chỉ hiển thị theo thông báo của host.
+- Kênh `IW.EnemyEffect` mở rộng trong `Assets/Scripts/Net/NetEffectSync.cs` (không tạo kênh ghost mới).
+- `Assets/Scripts/Net/NetEnemyEffectView.cs` gắn root `Network`, vẽ vòng Burn/Mark/Tail theo `NetworkObjectId`.
+- GreenFox: `TryApplyBurn`, `ApplyMark`, `AddMarkStacks`, nổ ấn và `GreenFox_NineTailedAssault` chỉ chạy trên host; client replay chỉ còn hiệu ứng cast (hào quang 1B) — không bị vẽ hai lần vì 1B dùng `AddBonusStats` chứ không dùng `StatusEffect`.
+- Chưa sửa (chờ duyệt): visual phụ thuộc hit/Random ở `WaterB_LifeDrainStreamEffect`, `WaterB_HealingProjectile`, `OptionalSkill2_2_Leviathan` (random offset), `OptionalSkill1Orb` (random direction), `OptionalSkill1_2` (visualBurstAlly), `GreenFox_Skill0` (root effect).

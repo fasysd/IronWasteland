@@ -1,5 +1,7 @@
 using IronWasteland.Core;
 using IronWasteland.Enemies;
+using IronWasteland.Net;
+using Unity.Netcode;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -23,6 +25,16 @@ namespace IronWasteland.Tanks.GreenFox
         private const int Skill2Index = 3;
 
         private const string MarkExplosionBuffKey = "GreenFox_MarkExplosion_AttackBuff";
+        private const string BurnEffectId = "GreenFox_Burn";
+        private const string MarkEffectId = "GreenFox_Mark";
+
+        /// <summary>Lấy NetworkObjectId của mục tiêu để gửi hiệu ứng cho client vẽ.</summary>
+        private static ulong GetNetworkId(Component target)
+        {
+            if (target == null) return 0UL;
+            NetworkObject netObject = target.GetComponentInParent<NetworkObject>();
+            return netObject != null && netObject.IsSpawned ? netObject.NetworkObjectId : 0UL;
+        }
 
         [Header("Skill 0 - Fox Fang")]
         [SerializeField] private GreenFox_Skill0 skill0Design;
@@ -378,10 +390,16 @@ namespace IronWasteland.Tanks.GreenFox
         {
             if (enemy == null || signPrefab == null) return;
 
+            // Host quyết định ấn; client chỉ vẽ theo thông báo của host.
+            if (!HasGameplayAuthority) return;
+
+            ulong netId = GetNetworkId(enemy);
+
             // Đã có ấn: chỉ làm mới thời gian tồn tại
             if (m_Signs.TryGetValue(enemy, out Sign existing) && existing != null)
             {
                 existing.Refresh(markLifetime);
+                NetEffectSync.Instance?.BroadcastEnemyEffect(netId, MarkEffectId, existing.CurrentStacks, markLifetime);
                 return;
             }
 
@@ -389,6 +407,7 @@ namespace IronWasteland.Tanks.GreenFox
             sign.SetTarget(enemy, markLifetime, OnSignRemoved);
             sign.UpdateVisualState(m_Is1ABuffActive);
             m_Signs[enemy] = sign;
+            NetEffectSync.Instance?.BroadcastEnemyEffect(netId, MarkEffectId, sign.CurrentStacks, markLifetime);
         }
 
         private void OnSignRemoved(Sign sign)
@@ -404,7 +423,11 @@ namespace IronWasteland.Tanks.GreenFox
                     break;
                 }
             }
-            if (found) m_Signs.Remove(key);
+            if (found)
+            {
+                m_Signs.Remove(key);
+                NetEffectSync.Instance?.BroadcastEnemyRemove(GetNetworkId(key), MarkEffectId);
+            }
         }
 
         /// <summary>Khi Green Fox gây sát thương lên mục tiêu có dấu ấn: cộng dồn; đủ tối đa thì nổ.</summary>
@@ -414,6 +437,8 @@ namespace IronWasteland.Tanks.GreenFox
 
             int stacks = (m_Is1ABuffActive && skill1SubDesign != null) ? skill1SubDesign.Buff1AStackAmount : markStacksPerAttack;
             sign.AddStack(stacks);
+
+            NetEffectSync.Instance?.BroadcastEnemyEffect(GetNetworkId(enemy), MarkEffectId, sign.CurrentStacks, markLifetime);
 
             if (sign.IsFull) TriggerMarkExplosion(sign, enemy);
         }
@@ -434,6 +459,7 @@ namespace IronWasteland.Tanks.GreenFox
             SpawnExplosionEffect(explosionPos);
 
             TryApplyBurn(enemy);
+            NetEffectSync.Instance?.BroadcastEnemyRemove(GetNetworkId(enemy), MarkEffectId);
             Destroy(sign.gameObject);
         }
 
@@ -541,17 +567,23 @@ namespace IronWasteland.Tanks.GreenFox
         {
             if (enemy == null || !m_Is1BBuffActive || skill1SubDesign == null || burnPrefab == null) return;
 
+            // Host quyết định trạng thái cháy; client chỉ vẽ theo thông báo của host.
+            if (!HasGameplayAuthority) return;
+
             float tickDamage = ScaledDamage(skill1SubDesign.BurnDamagePercent);
+            ulong netId = GetNetworkId(enemy);
 
             if (m_Burns.TryGetValue(enemy, out GreenFox_BurnEffect existing) && existing != null)
             {
                 existing.Refresh(tickDamage, skill1SubDesign.BurnDuration);
+                NetEffectSync.Instance?.BroadcastEnemyEffect(netId, BurnEffectId, 1, skill1SubDesign.BurnDuration);
                 return;
             }
 
             GreenFox_BurnEffect burn = Instantiate(burnPrefab, enemy.transform.position, Quaternion.identity);
             m_Burns[enemy] = burn;
             burn.ApplyBurn(this, enemy, tickDamage, skill1SubDesign.BurnDuration, skill1SubDesign.BurnInterval, OnBurnEnded);
+            NetEffectSync.Instance?.BroadcastEnemyEffect(netId, BurnEffectId, 1, skill1SubDesign.BurnDuration);
         }
 
         private void OnBurnEnded(GreenFox_BurnEffect burn)
@@ -567,7 +599,11 @@ namespace IronWasteland.Tanks.GreenFox
                     break;
                 }
             }
-            if (found) m_Burns.Remove(key);
+            if (found)
+            {
+                m_Burns.Remove(key);
+                NetEffectSync.Instance?.BroadcastEnemyRemove(GetNetworkId(key), BurnEffectId);
+            }
         }
 
         // ------------------------------------------------------------------
