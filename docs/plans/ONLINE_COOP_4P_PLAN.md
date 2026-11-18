@@ -783,3 +783,9 @@ Mục tiêu: client thấy đúng prefab lửa/ấn như host thay vì vòng `So
 - `Assets/Scripts/Net/NetEnemyEffectView.cs`: danh sách `effectPrefabs` (`match`, `prefab`, `selfFollow`) — client `Instantiate` đúng prefab (`Burn.prefab`, `sign.prefab`); host `IsServer` thì `ClearAll()` và không vẽ gì; ấn được refresh/gia hạn theo gói mới; hiệu ứng chưa có prefab vẫn fallback `SoftCircle`.
 - Scene: `Network/NetEnemyEffectView.effectPrefabs` = `[Burn → Assets/Prefabs/Tanks/GreenFox/Burn.prefab, Mark → Assets/Prefabs/Tanks/GreenFox/sign.prefab]`.
 - Kiểm chứng: `dotnet build` 0 Error / 5 Warning; smoke Play host `visualOnly=True burning=True hostGhostEntries=0`; HP quái `220 → 220` sau 2 s ⇒ visual-only không gây sát thương; prefab tự huỷ sau thời lượng.
+
+### Bổ sung — Root proc của GreenFox normal skill (2026-11-18)
+- Nguyên nhân client chỉ thấy vòng `SoftCircle`: `GreenFox_Skill0.rootEffectPrefab` = `Assets/Prefabs/Tanks/GreenFox/Root.prefab` nhưng scene chưa có entry `Root` trong `effectPrefabs` ⇒ fallback.
+- Đã thêm `NetEnemyEffectView.EnsureEntry` nhánh `GreenFox_RootEffect` (`SetTarget(enemy, duration)`) để prefab bám quái như host, và đăng ký `Root → Assets/Prefabs/Tanks/GreenFox/Root.prefab` vào `effectPrefabs` (size 3).
+- Gỡ 2 log chẩn đoán tạm `[EnemyFxDbg]`, `[EnemySyncDbg]`.
+- Kiểm chứng e2e dev build (host Editor + client dev): client log có `[NetSkillFx] phát lại kỹ năng 0/1 cho xe GreenFox`, `[EnemySyncDbg] GreenFox_Root`, `[EnemySyncDbg] GreenFox_Mark`; trước khi đăng ký `prefab=False` (fallback), sau khi đăng ký `prefab` dùng `Root.prefab`.

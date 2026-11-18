@@ -2646,6 +2646,9 @@ MonoBehaviour:
   - match: Mark
     prefab: {fileID: 1374597350927784502, guid: 4d22e82004df3bf41b960d912ec94e22, type: 3}
     selfFollow: 1
+  - match: Root
+    prefab: {fileID: 7097947749654271453, guid: f5bcbed4f6ea44946a730c4e7a28cb36, type: 3}
+    selfFollow: 1
   pollInterval: 0.1
   sortingOrder: 8
   sortingLayer: Default

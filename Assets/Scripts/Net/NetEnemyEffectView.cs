@@ -224,7 +224,15 @@ namespace IronWasteland.Net
                     }
                     else
                     {
-                        Destroy(instance, duration);
+                        GreenFox_RootEffect rootEffect = instance.GetComponent<GreenFox_RootEffect>();
+                        if (rootEffect != null)
+                        {
+                            rootEffect.SetTarget(enemy, duration);
+                        }
+                        else
+                        {
+                            Destroy(instance, duration);
+                        }
                     }
                 }
 
