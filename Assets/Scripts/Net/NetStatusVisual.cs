@@ -1,0 +1,170 @@
+using System;
+using System.Collections.Generic;
+using IronWasteland.Core.Effects;
+using IronWasteland.Tanks;
+using UnityEngine;
+
+namespace IronWasteland.Net
+{
+    /// <summary>
+    /// Vẽ hào quang khiên và buff quanh xe trên client. Dữ liệu lấy từ host qua
+    /// <see cref="PlayerNetState.ShieldAmount"/> và <see cref="NetEffectSync"/>; host/offline đọc trực tiếp từ
+    /// <see cref="TankBrain.CurrentShield"/> / <see cref="TankBrain.ActiveEffects"/>.
+    /// Hai hào quang là object con dựng sẵn trên prefab (component này chỉ bật/tắt, đổi màu và nhịp sáng).
+    /// </summary>
+    public class NetStatusVisual : MonoBehaviour
+    {
+        [Header("Hào quang khiên")]
+        [SerializeField, Tooltip("SpriteRenderer của hào quang khiên (object con dựng sẵn trên prefab).")]
+        private SpriteRenderer shieldAura;
+
+        [SerializeField, Tooltip("Màu hào quang khiên.")]
+        private Color shieldColor = new Color(0.55f, 0.85f, 1f, 0.55f);
+
+        [SerializeField, Min(0.1f), Tooltip("Tốc độ nhịp sáng của hào quang khiên (radian/giây).")]
+        private float shieldPulseSpeed = 2.5f;
+
+        [SerializeField, Min(0f), Tooltip("Alpha nhỏ nhất của hào quang khiên.")]
+        private float shieldMinAlpha = 0.28f;
+
+        [SerializeField, Min(0f), Tooltip("Alpha lớn nhất của hào quang khiên.")]
+        private float shieldMaxAlpha = 0.62f;
+
+        [Header("Hào quang buff")]
+        [SerializeField, Tooltip("SpriteRenderer của hào quang buff (object con dựng sẵn trên prefab).")]
+        private SpriteRenderer buffAura;
+
+        [SerializeField, Min(0.1f), Tooltip("Tốc độ nhịp sáng của hào quang buff (radian/giây).")]
+        private float buffPulseSpeed = 4f;
+
+        [SerializeField, Min(0f), Tooltip("Alpha nhỏ nhất của hào quang buff.")]
+        private float buffMinAlpha = 0.18f;
+
+        [SerializeField, Min(0f), Tooltip("Alpha lớn nhất của hào quang buff.")]
+        private float buffMaxAlpha = 0.45f;
+
+        private TankBrain m_Brain;
+        private PlayerNetState m_NetState;
+        private float m_ShieldPulse;
+        private float m_BuffPulse;
+
+        private void Awake()
+        {
+            m_Brain = GetComponent<TankBrain>();
+            m_NetState = GetComponent<PlayerNetState>();
+
+            if (shieldAura != null) shieldAura.enabled = false;
+            if (buffAura != null) buffAura.enabled = false;
+        }
+
+        private void Update()
+        {
+            UpdateShieldAura();
+            UpdateBuffAura();
+        }
+
+        private void UpdateShieldAura()
+        {
+            if (shieldAura == null) return;
+
+            float amount = ResolveShieldAmount();
+            if (amount <= 0.01f)
+            {
+                shieldAura.enabled = false;
+                m_ShieldPulse = 0f;
+                return;
+            }
+
+            m_ShieldPulse += Time.deltaTime * shieldPulseSpeed;
+            float pulse = (Mathf.Sin(m_ShieldPulse) + 1f) * 0.5f;
+
+            Color color = shieldColor;
+            color.a = Mathf.Lerp(shieldMinAlpha, shieldMaxAlpha, pulse);
+            shieldAura.color = color;
+            shieldAura.enabled = true;
+        }
+
+        private void UpdateBuffAura()
+        {
+            if (buffAura == null) return;
+
+            if (!TryGetBuffColor(out Color buffColor))
+            {
+                buffAura.enabled = false;
+                m_BuffPulse = 0f;
+                return;
+            }
+
+            m_BuffPulse += Time.deltaTime * buffPulseSpeed;
+            float pulse = (Mathf.Sin(m_BuffPulse) + 1f) * 0.5f;
+
+            buffColor.a = Mathf.Lerp(buffMinAlpha, buffMaxAlpha, pulse);
+            buffAura.color = buffColor;
+            buffAura.enabled = true;
+        }
+
+        private float ResolveShieldAmount()
+        {
+            // Client: giá trị host đồng bộ qua NetworkVariable. Host/offline: đọc trực tiếp từ brain.
+            if (m_NetState != null && m_NetState.IsSpawned) return m_NetState.ShieldAmount;
+            return m_Brain != null ? m_Brain.CurrentShield : 0f;
+        }
+
+        private bool TryGetBuffColor(out Color color)
+        {
+            color = default;
+            if (m_Brain == null) return false;
+
+            if (m_NetState != null && m_NetState.IsSpawned && !m_NetState.IsServer)
+            {
+                NetEffectSync sync = NetEffectSync.Instance;
+                if (sync == null) return false;
+
+                IReadOnlyCollection<NetEffectInfo> effects = sync.GetEffects(m_NetState.OwnerClientId);
+                if (effects == null) return false;
+
+                foreach (NetEffectInfo effect in effects)
+                {
+                    if (string.IsNullOrEmpty(effect.EffectId)) continue;
+                    if (IsShieldEffect(effect.EffectId)) continue;
+
+                    color = ColorForEffect(effect.EffectId);
+                    return true;
+                }
+
+                return false;
+            }
+
+            IReadOnlyList<StatusEffect> active = m_Brain.ActiveEffects;
+            for (int i = 0; i < active.Count; i++)
+            {
+                StatusEffect effect = active[i];
+                if (effect == null || effect.IsExpired) continue;
+                if (effect is ShieldEffect) continue;
+                if (IsShieldEffect(effect.EffectId)) continue;
+
+                color = ColorForEffect(effect.EffectId);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>Hiệu ứng khiên đã có hào quang riêng nên bỏ khỏi hào quang buff (tránh hai vòng chồng nhau).</summary>
+        private static bool IsShieldEffect(string effectId)
+        {
+            return effectId.IndexOf("Shield", StringComparison.OrdinalIgnoreCase) >= 0
+                || effectId.IndexOf("Guard", StringComparison.OrdinalIgnoreCase) >= 0
+                || effectId.IndexOf("Fortress", StringComparison.OrdinalIgnoreCase) >= 0
+                || effectId.IndexOf("Guardian", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        /// <summary>Màu ổn định theo tên hiệu ứng để mỗi buff có một màu khác nhau.</summary>
+        private static Color ColorForEffect(string effectId)
+        {
+            int hash = effectId.GetHashCode();
+            float hue = Mathf.Abs(hash % 360) / 360f;
+            return Color.HSVToRGB(hue, 0.6f, 1f);
+        }
+    }
+}
