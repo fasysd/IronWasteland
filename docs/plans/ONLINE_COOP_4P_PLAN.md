@@ -789,3 +789,9 @@ Mục tiêu: client thấy đúng prefab lửa/ấn như host thay vì vòng `So
 - Đã thêm `NetEnemyEffectView.EnsureEntry` nhánh `GreenFox_RootEffect` (`SetTarget(enemy, duration)`) để prefab bám quái như host, và đăng ký `Root → Assets/Prefabs/Tanks/GreenFox/Root.prefab` vào `effectPrefabs` (size 3).
 - Gỡ 2 log chẩn đoán tạm `[EnemyFxDbg]`, `[EnemySyncDbg]`.
 - Kiểm chứng e2e dev build (host Editor + client dev): client log có `[NetSkillFx] phát lại kỹ năng 0/1 cho xe GreenFox`, `[EnemySyncDbg] GreenFox_Root`, `[EnemySyncDbg] GreenFox_Mark`; trước khi đăng ký `prefab=False` (fallback), sau khi đăng ký `prefab` dùng `Root.prefab`.
+
+### Đồng bộ biến thể Optional trong replay hình ảnh (2026-11-18)
+- Vấn đề: client phát lại kỹ năng theo `TankBrainContext.OptionSkill1/2` **cục bộ**; nếu Context hai máy lệch (vào phòng đổi biến thể, join giữa trận...), client vẽ biến thể khác host (ví dụ host thi triển 1B Burning Fox nhưng client dựng 1A nên không có hào quang lửa).
+- Sửa: `NetSkillFx` gửi kèm 2 byte biến thể Optional trong gói `IW.SkillFx`; `TankBrain.PlayRemoteSkillFx(index, aim, origin, option1, option2)` lưu `RemoteFxOption1/RemoteFxOption2` trong lúc replay; `TankBrain_GreenFox.GetSkill1Variant/GetSkill2Variant` ưu tiên biến thể host gửi khi `IsRemoteFxReplay`.
+- Kiểm chứng: spawn GreenFox với `Context.OptionSkill1 = 0` (1A), gọi replay slot 2 kèm `option1 = 1` → `1BSkilActive(Clone)` được tạo ⇒ client hiển thị đúng biến thể host thi triển dù Context lệch.
+- `dotnet build` 0 Error / 5 Warning.

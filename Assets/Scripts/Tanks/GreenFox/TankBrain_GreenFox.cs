@@ -99,7 +99,9 @@ namespace IronWasteland.Tanks.GreenFox
         // ------------------------------------------------------------------
         private Skill1Variant GetSkill1Variant()
         {
-            switch (Context.OptionSkill1)
+            // Khi phát lại hình ảnh, ưu tiên biến thể host đã gửi kèm — tránh lệch 1A/1B/1C giữa hai máy.
+            int option1 = (IsRemoteFxReplay && RemoteFxOption1 >= 0) ? RemoteFxOption1 : Context.OptionSkill1;
+            switch (option1)
             {
                 case 1: return Skill1Variant.Variant_1B;
                 case 2: return Skill1Variant.Variant_1C;
@@ -109,7 +111,8 @@ namespace IronWasteland.Tanks.GreenFox
 
         private Skill2Variant GetSkill2Variant()
         {
-            switch (Context.OptionSkill2)
+            int option2 = (IsRemoteFxReplay && RemoteFxOption2 >= 0) ? RemoteFxOption2 : Context.OptionSkill2;
+            switch (option2)
             {
                 case 1: return Skill2Variant.Variant_2B;
                 case 2: return Skill2Variant.Variant_2C;

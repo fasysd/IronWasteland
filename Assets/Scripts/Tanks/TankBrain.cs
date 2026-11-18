@@ -157,6 +157,10 @@ namespace IronWasteland.Tanks
         /// Chế độ này chỉ chạy <see cref="OnUseSkill"/> để sinh visual, bỏ qua năng lượng, hồi chiêu và event gameplay.
         /// </summary>
         public bool IsRemoteFxReplay { get; private set; }
+        /// <summary>Biến thể Optional Skill 1 của host trong lượt phát lại hiện tại (-1 = không có).</summary>
+        public int RemoteFxOption1 { get; private set; } = -1;
+        /// <summary>Biến thể Optional Skill 2 của host trong lượt phát lại hiện tại (-1 = không có).</summary>
+        public int RemoteFxOption2 { get; private set; } = -1;
 
         /// <summary>
         /// Vị trí xe trên host ngay TRƯỚC khi thi triển kỹ năng vừa được phát lại.
@@ -769,9 +773,17 @@ namespace IronWasteland.Tanks
             OnUseSkill(index);
 
             // Host vừa thi triển xong: báo client phát lại hình ảnh bằng pool cục bộ.
+            // Gửi kèm biến thể Optional đang dùng để client chọn đúng hình ảnh (1A/1B/1C...) dù
+            // Context cục bộ của client có lệch.
             if (!IsRemoteFxReplay && NetworkSessionActive && HasGameplayAuthority)
             {
-                NetSkillFx.Instance?.Broadcast(this, index, aim, origin);
+                NetSkillFx.Instance?.Broadcast(
+                    this,
+                    index,
+                    aim,
+                    origin,
+                    (byte)Mathf.Clamp(Context.OptionSkill1, 0, 2),
+                    (byte)Mathf.Clamp(Context.OptionSkill2, 0, 2));
             }
         }
 
@@ -780,7 +792,7 @@ namespace IronWasteland.Tanks
         /// Không tiêu năng lượng, không đụng hồi chiêu, không phát event gameplay.
         /// Chỉ những slot có visual thuần mới được phát lại (xem <see cref="CanReplayRemoteFx"/>).
         /// </summary>
-        public void PlayRemoteSkillFx(int index, Vector2 aimWorld, Vector2 originWorld)
+        public void PlayRemoteSkillFx(int index, Vector2 aimWorld, Vector2 originWorld, int option1 = -1, int option2 = -1)
         {
             if (IsServerSimulated) return;
             if (index < 0 || index >= SkillCount) return;
@@ -789,6 +801,8 @@ namespace IronWasteland.Tanks
             bool hadLookTarget = HasLookTarget;
             Vector2 previousAim = m_LookTarget;
             RemoteFxOrigin = originWorld;
+            RemoteFxOption1 = option1;
+            RemoteFxOption2 = option2;
 
             IsRemoteFxReplay = true;
             try
@@ -799,6 +813,8 @@ namespace IronWasteland.Tanks
             finally
             {
                 IsRemoteFxReplay = false;
+                RemoteFxOption1 = -1;
+                RemoteFxOption2 = -1;
 
                 // Trả lại hướng ngắm cũ để replay không kéo lệch nòng thật của người chơi.
                 if (hadLookTarget) SetLookTarget(previousAim);

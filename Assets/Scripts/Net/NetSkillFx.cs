@@ -15,8 +15,8 @@ namespace IronWasteland.Net
     {
         private const string MessageName = "IW.SkillFx";
 
-        // ulong owner (8) + byte index (1) + Vector2 aim (8) = 17 byte, cấp dư 32 cho an toàn.
-        private const int MessageSize = 32;
+        // ulong owner (8) + byte index (1) + Vector2 aim (8) + Vector2 origin (8) + 2 byte biến thể = 27 byte, cấp dư 40.
+        private const int MessageSize = 40;
 
         private bool m_Registered;
 
@@ -54,7 +54,7 @@ namespace IronWasteland.Net
         /// Host gọi sau khi thi triển kỹ năng thành công để client phát lại hình ảnh.
         /// Chỉ server được gửi; client gọi hàm này sẽ bị bỏ qua.
         /// </summary>
-        public void Broadcast(TankBrain brain, int skillIndex, Vector2 aim, Vector2 origin)
+        public void Broadcast(TankBrain brain, int skillIndex, Vector2 aim, Vector2 origin, byte option1 = 0, byte option2 = 0)
         {
             if (brain == null) return;
 
@@ -70,6 +70,8 @@ namespace IronWasteland.Net
             writer.WriteValueSafe((byte)skillIndex);
             writer.WriteValueSafe(aim);
             writer.WriteValueSafe(origin);
+            writer.WriteValueSafe(option1);
+            writer.WriteValueSafe(option2);
             manager.CustomMessagingManager.SendNamedMessageToAll(MessageName, writer);
         }
 
@@ -102,6 +104,8 @@ namespace IronWasteland.Net
             reader.ReadValueSafe(out byte skillIndex);
             reader.ReadValueSafe(out Vector2 aim);
             reader.ReadValueSafe(out Vector2 origin);
+            reader.ReadValueSafe(out byte option1);
+            reader.ReadValueSafe(out byte option2);
 
             NetSpawnService spawnService = FindAnyObjectByType<NetSpawnService>();
             if (spawnService == null) return;
@@ -117,7 +121,7 @@ namespace IronWasteland.Net
                 Debug.Log($"[NetSkillFx] phát lại kỹ năng {skillIndex} cho xe {tank.name} (owner={ownerClientId}).");
             }
 
-            tank.PlayRemoteSkillFx(skillIndex, aim, origin);
+            tank.PlayRemoteSkillFx(skillIndex, aim, origin, option1, option2);
         }
     }
 }
