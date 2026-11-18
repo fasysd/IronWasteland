@@ -1,5 +1,6 @@
 using UnityEngine;
 using IronWasteland.Enemies;
+using IronWasteland.Net;
 
 namespace IronWasteland.Tanks.WaterB
 {
@@ -133,9 +134,14 @@ namespace IronWasteland.Tanks.WaterB
         {
             if (hitEffectPrefab == null) return;
 
+            // Client không tự vẽ hit (va chạm phía client khác host); host gửi ghost cho cả phòng.
+            if (m_OwnerTank != null && !m_OwnerTank.HasGameplayAuthority) return;
+
             position.z = 0f;
             GameObject fx = Instantiate(hitEffectPrefab, position, Quaternion.identity);
             Destroy(fx, hitEffectLifetime);
+            NetVisual.SpawnPrimitive(position, Vector2.zero, 0.7f, Mathf.Max(0.2f, hitEffectLifetime),
+                fade: true, sortingOrder: 6, color: new Color(0.55f, 0.85f, 1f, 0.85f));
         }
     }
 }

@@ -107,6 +107,19 @@ namespace IronWasteland.Enemies
         /// </summary>
         public virtual bool IsElite => false;
         public bool CanMove => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Root);
+
+        /// <summary>True khi đang bị khoá di chuyển (Root/Stun). Mọi script tự di chuyển phải tôn trọng cờ này.</summary>
+        public bool IsMovementLocked => !CanMove;
+
+        /// <summary>Hệ số tốc độ do Slow CC (1 = không bị làm chậm).</summary>
+        public float SlowSpeedFactor
+        {
+            get
+            {
+                if (!m_ActiveCC.TryGetValue(CrowdControlType.Slow, out ActiveCrowdControl slow) || slow == null) return 1f;
+                return Mathf.Clamp01(1f - Mathf.Max(0f, slow.Strength));
+            }
+        }
         public bool CanLook => IsAlive && !HasCC(CrowdControlType.Stun);
         public bool CanUseSkill => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Silence);
 

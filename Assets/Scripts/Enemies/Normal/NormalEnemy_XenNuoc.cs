@@ -267,6 +267,13 @@ namespace IronWasteland.Enemies.Normal
 
             while (elapsed < maxDuration && isCharging)
             {
+                // Bị Root/Stun: huỷ pha lao, đứng yên.
+                if (IsMovementLocked)
+                {
+                    if (m_Rigidbody != null) m_Rigidbody.linearVelocity = Vector2.zero;
+                    break;
+                }
+
                 elapsed += Time.deltaTime;
                 Vector2 currentPos = transform.position;
                 Vector2 nextPos = Vector2.MoveTowards(currentPos, endPoint, chargeSpeed * Time.deltaTime);
@@ -355,6 +362,13 @@ namespace IronWasteland.Enemies.Normal
 
             while (elapsed < recoilDuration)
             {
+                // Bị Root/Stun: dừng lùi.
+                if (IsMovementLocked)
+                {
+                    if (m_Rigidbody != null) m_Rigidbody.linearVelocity = Vector2.zero;
+                    break;
+                }
+
                 elapsed += Time.deltaTime;
                 Vector2 currentPos = transform.position;
                 Vector2 nextPos = Vector2.MoveTowards(currentPos, targetRecoilPos, recoilSpeed * Time.deltaTime);

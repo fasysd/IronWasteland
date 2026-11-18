@@ -1,6 +1,8 @@
 using IronWasteland.Enemies;
+using IronWasteland.Net;
 using System;
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -97,6 +99,13 @@ namespace IronWasteland.Tanks.GreenFox
             m_Consumed = true;
             Vector3 hitPos = enemy.transform.position;
 
+            // Client chỉ vẽ cosmetic của cast; hit/proc/trạng thái do host quyết định và gửi xuống.
+            if (!m_OwnerTank.HasGameplayAuthority)
+            {
+                ReturnSelf();
+                return;
+            }
+
             // Sát thương cơ bản
             m_OwnerTank.DamageEnemy(enemy, m_Damage, hitPos);
 
@@ -111,6 +120,7 @@ namespace IronWasteland.Tanks.GreenFox
                 else if (m_OwnerTank.RootEnemy(enemy, rootDuration))
                 {
                     SpawnRootEffect(enemy);
+                    NetEffectSync.Instance?.BroadcastEnemyEffect(GetNetworkId(enemy), "GreenFox_Root", 1, rootDuration);
                 }
             }
 
@@ -118,6 +128,14 @@ namespace IronWasteland.Tanks.GreenFox
             m_OwnerTank.HandleSkill0Hit(enemy);
 
             ReturnSelf();
+        }
+
+        /// <summary>Lấy NetworkObjectId của mục tiêu để gửi hiệu ứng cho client vẽ.</summary>
+        private static ulong GetNetworkId(EnemyBrain enemy)
+        {
+            if (enemy == null) return 0UL;
+            NetworkObject netObject = enemy.GetComponentInParent<NetworkObject>();
+            return netObject != null && netObject.IsSpawned ? netObject.NetworkObjectId : 0UL;
         }
 
         private void SpawnRootEffect(EnemyBrain enemy)

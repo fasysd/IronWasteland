@@ -103,6 +103,7 @@ namespace IronWasteland.Enemies
             float distance = toTarget.magnitude;
 
             Vector2 desired = ComputeDesiredVelocity(target, distance);
+            desired *= SlowSpeedFactor;
 
             // Lam min huong chay de quai khong giat khi muc tieu doi huong dot ngot.
             float t = 1f - Mathf.Exp(-turnSharpness * deltaTime);
@@ -122,6 +123,14 @@ namespace IronWasteland.Enemies
 
             Rigidbody2D body = Body;
             if (body == null) return;
+
+            // Bi khong che cung (Root/Stun): dung han, khong di chuyen.
+            if (IsMovementLocked)
+            {
+                m_DesiredVelocity = Vector2.zero;
+                body.linearVelocity = Vector2.zero;
+                return;
+            }
 
             // Prefab quai dung Kinematic (khong bi trong luc / khong day tank):
             // voi Kinematic phai dung MovePosition, linearVelocity se bi bo qua.

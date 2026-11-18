@@ -280,6 +280,15 @@ namespace IronWasteland.Net
                 offset = new Vector3(0f, 0.1f, 0f),
                 pulseSpeed = 10f
             });
+
+            styles.Add(new EffectStyle
+            {
+                match = "Root",
+                color = new Color(0.9f, 0.85f, 0.2f, 0.6f),
+                diameter = 1.25f,
+                offset = new Vector3(0f, 0.15f, 0f),
+                pulseSpeed = 4f
+            });
         }
 
         private static readonly EffectStyle DefaultStyle = new EffectStyle

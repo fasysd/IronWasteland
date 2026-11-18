@@ -139,21 +139,9 @@ namespace IronWasteland.Tanks.WaterB
         /// <summary>Hào quang xanh nhạt quanh xe có khiên đài tế. Mỗi xe 1 hào quang, tự biến mất khi khiên hết.</summary>
         private void EnsureShieldAura(TankBrain tank)
         {
-            if (m_Auras.TryGetValue(tank, out WaterB_ShieldAura existing) && existing != null)
-            {
-                existing.Refresh();
-                return;
-            }
-
-            GameObject go = shieldAuraPrefab != null
-                ? Instantiate(shieldAuraPrefab, tank.transform.position, Quaternion.identity)
-                : new GameObject("WaterB_ShieldAura");
-
-            WaterB_ShieldAura aura = go.GetComponent<WaterB_ShieldAura>();
-            if (aura == null) aura = go.AddComponent<WaterB_ShieldAura>();
-
-            aura.Initialize(tank, m_ShieldId);
-            m_Auras[tank] = aura;
+            // Đã có NetStatusVisual vẽ hào quang nước theo ShieldEffect đã đồng bộ cho cả host lẫn client;
+            // không tạo thêm bản cục bộ để tránh hai vòng sáng chồng nhau và lệch giữa hai bên.
+            if (tank == null) return;
         }
 
         private void Finish()

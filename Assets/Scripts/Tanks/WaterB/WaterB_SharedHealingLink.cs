@@ -262,6 +262,9 @@ namespace IronWasteland.Tanks.WaterB
         {
             if (target == null || m_Pulses.Count >= maxPulses) return;
 
+            // Client chỉ vẽ theo trạng thái host đồng bộ; không tự chạy nhịp hồi máu cục bộ.
+            if (m_OwnerTank == null || !m_OwnerTank.HasGameplayAuthority) return;
+
             Vector3 startPos = RopePoint(towardAlly ? 0f : 1f);
 
             GameObject go = pulsePrefab != null
@@ -332,6 +335,9 @@ namespace IronWasteland.Tanks.WaterB
         private void SpawnBurst(TankBrain target)
         {
             if (healBurstPrefab == null || target == null) return;
+
+            // Chỉ host phát hiệu ứng; client không tự chạy tick hồi máu.
+            if (m_OwnerTank == null || !m_OwnerTank.HasGameplayAuthority) return;
 
             GameObject burst = Instantiate(healBurstPrefab, target.transform.position, Quaternion.identity, target.transform);
             Destroy(burst, burstLifetime);

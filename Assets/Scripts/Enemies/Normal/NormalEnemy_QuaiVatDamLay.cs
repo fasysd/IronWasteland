@@ -210,6 +210,13 @@ namespace IronWasteland.Enemies.Normal
 
             while (elapsed < maxChargeDuration)
             {
+                // Bị Root/Stun: huỷ pha lao, đứng yên.
+                if (IsMovementLocked)
+                {
+                    if (body != null) body.linearVelocity = Vector2.zero;
+                    break;
+                }
+
                 elapsed += Time.deltaTime;
                 Vector2 currentPos = transform.position;
                 Vector2 nextPos = Vector2.MoveTowards(currentPos, targetPosition, chargeSpeed * Time.deltaTime);

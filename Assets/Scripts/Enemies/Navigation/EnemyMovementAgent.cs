@@ -17,6 +17,7 @@ namespace IronWasteland.Enemies.Navigation
         [Header("Components")]
         [SerializeField] private Rigidbody2D body;
         [SerializeField] private EnemyModel model;
+        private EnemyBrain m_Brain;
 
         [Header("Layers")]
         [SerializeField] private LayerMask enemyLayer;
@@ -174,6 +175,7 @@ namespace IronWasteland.Enemies.Navigation
             if (body == null) body = GetComponent<Rigidbody2D>();
             if (model == null) model = GetComponentInChildren<EnemyModel>();
             if (enemyLayer.value == 0) enemyLayer = LayerMask.GetMask("Enemy");
+            if (m_Brain == null) m_Brain = GetComponent<EnemyBrain>();
             if (body != null)
             {
                 body.freezeRotation = true;
@@ -198,6 +200,14 @@ namespace IronWasteland.Enemies.Navigation
         {
             // Client không mô phỏng di chuyển; vị trí do NetworkTransform của host đẩy xuống.
             if (!IsServerSimulated) return;
+
+            // Bị Root/Stun: đứng yên hoàn toàn (Water Bubble, trói chân...).
+            if (m_Brain != null && m_Brain.IsMovementLocked)
+            {
+                if (body != null) body.linearVelocity = Vector2.zero;
+                model?.SetMoveSpeed(0f);
+                return;
+            }
 
             Vector2 currentPos = body != null ? body.position : (Vector2)transform.position;
 
@@ -242,6 +252,7 @@ namespace IronWasteland.Enemies.Navigation
             }
 
             Vector2 finalVelocity = combinedDir.normalized * moveSpeed;
+            if (m_Brain != null) finalVelocity *= m_Brain.SlowSpeedFactor;
 
             if (body != null)
             {
