@@ -8,6 +8,16 @@ namespace IronWasteland.Menu
 {
     /// <summary>
     /// Lấy chỉ số cơ bản của một xe ở cấp L để HIỂN THỊ trong Menu / Nhà xe.
+    ///
+    /// ĐÂY LÀ ĐIỂM NỐI DUY NHẤT giữa Menu và nội bộ của TankDefinition. Cách tìm (theo thứ tự):
+    ///   1. Hai field/property kiểu <see cref="TankStats"/> có tên kết thúc bằng "Level1" và "Level90"
+    ///      (đúng thiết kế: baseStatsLevel1, baseStatsLevel90) -> nội suy tuyến tính theo mục 4.6 của tài liệu:
+    ///      Stat(L) = Stat(1) + (Stat(90) - Stat(1)) * (L - 1) / 89.
+    ///   2. (Dự phòng) Hàm instance trả về <see cref="TankStats"/>, nhận 1 tham số int (cấp), tên có chữ "Stat".
+    ///
+    /// Nếu không tìm thấy cả hai, bảng chỉ số hiện 0 và có cảnh báo trong Console.
+    /// <see cref="GetReport"/> trả về một dòng mô tả nguồn đọc + chỉ số cấp 1 / cấp 90 để hiện lên màn Nhà xe
+    /// (bật bằng MenuBootstrap.showStatsDebug) khi cần dò lỗi "nâng cấp mà chỉ số không tăng".
     /// </summary>
     public static class TankStatsBridge
     {
@@ -18,10 +28,7 @@ namespace IronWasteland.Menu
             new Dictionary<Type, Func<TankDefinition, int, TankStats>>();
 
         private static readonly Dictionary<Type, string> Sources = new Dictionary<Type, string>();
-
-        // Sửa kiểu key từ int sang EntityId để khớp với def.GetEntityId()
         private static readonly Dictionary<EntityId, string> Reports = new Dictionary<EntityId, string>();
-
         private static readonly HashSet<Type> Warned = new HashSet<Type>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -124,6 +131,7 @@ namespace IronWasteland.Menu
 
         private static Func<TankDefinition, int, TankStats> BuildResolver(Type type)
         {
+            // Cách 1 (đúng thiết kế): hai mốc cấp 1 và cấp 90 -> nội suy
             Func<TankDefinition, TankStats> getLv1 = FindStatsMember(type, "1", out string name1);
             Func<TankDefinition, TankStats> getLv90 = FindStatsMember(type, "90", out string name90);
             if (getLv1 != null && getLv90 != null)
@@ -137,6 +145,7 @@ namespace IronWasteland.Menu
                 };
             }
 
+            // Cách 2 (dự phòng): hàm (int) -> TankStats
             for (Type cur = type; cur != null && cur != typeof(ScriptableObject); cur = cur.BaseType)
             {
                 foreach (MethodInfo m in cur.GetMethods(Flags))
@@ -193,6 +202,10 @@ namespace IronWasteland.Menu
         }
 
         private static string Normalize(string name) => name.Replace("_", "").ToLowerInvariant();
+
+        // ============================================================
+        // TIỆN ÍCH
+        // ============================================================
 
         public static TankStats Lerp(TankStats a, TankStats b, float t)
         {

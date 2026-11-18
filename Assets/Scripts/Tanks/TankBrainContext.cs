@@ -15,13 +15,13 @@ namespace IronWasteland.Tanks
 
         public int OptionSkill1;
         public int OptionSkill2;
-
         public TankBrainContext(int level, int equipmentId = -1, int optionSkill1 = 0, int optionSkill2 = 0)
         {
             Level = level;
             EquipmentId = equipmentId;
             OptionSkill1 = optionSkill1;
             OptionSkill2 = optionSkill2;
-        }
+            
+    }
     }
 }

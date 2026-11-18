@@ -33,6 +33,13 @@ namespace IronWasteland.Menu
             if (entry.viewPrefab != null) return entry.viewPrefab;
             if (entry.definition == null) return null;
 
+            // Thiết kế mới: TankView nằm trong hierarchy của tankPrefab.
+            TankBrain brainPrefab = entry.definition.TankPrefab;
+            if (brainPrefab != null)
+            {
+                TankView view = brainPrefab.GetComponentInChildren<TankView>(true);
+                if (view != null) return view;
+            }
             Type type = entry.definition.GetType();
             if (!Cache.TryGetValue(type, out Func<TankDefinition, IList<TankView>> getter))
             {

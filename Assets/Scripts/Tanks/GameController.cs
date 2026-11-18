@@ -59,7 +59,7 @@ namespace IronWasteland.Tanks
                 Level = playerLevel,
                 EquipmentId = equipmentId,
                 OptionSkill1 = optionSkill1,
-                OptionSkill2 = optionSkill2
+                OptionSkill2 = optionSkill2,
             };
 
             // Tích hợp từ Main Menu: Nếu có lựa chọn từ GameSession thì ghi đè lại

@@ -1,2 +1,13 @@
 fileFormatVersion: 2
 guid: 90ca2f8cafd86134b87881b257253f06
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - tankDefinition: {instanceID: 0}
+  - targetCamera: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

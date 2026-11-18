@@ -149,10 +149,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Menu.MenuBootstrap
   tankCatalog: {fileID: 11400000, guid: bad3c0804e845a24691ca1a677356a5a, type: 2}
-  accessoryCatalog: {fileID: 0}
-  stageDatabase: {fileID: 0}
+  accessoryCatalog: {fileID: 11400000, guid: 0333e37c897fa754a83c508f856216af, type: 2}
+  stageDatabase: {fileID: 11400000, guid: 72efec04b2de7ed459e3873b0fb6ad24, type: 2}
   uiFont: {fileID: 0}
-  displayFont: {fileID: 0}
+  displayFont: {fileID: 11400000, guid: 8a89fa14b10d46a99122fd4f73fca9a2, type: 2}
   backgroundSprite: {fileID: 0}
   backgroundOpacity: 0.35
   profileDefaults:
