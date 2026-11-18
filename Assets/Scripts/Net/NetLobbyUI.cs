@@ -23,6 +23,7 @@ namespace IronWasteland.Net
         private GameController m_GameController;
         private string m_RelayJoinCodeInput = string.Empty;
         private string m_LobbyCodeInput = string.Empty;
+        private string m_ProfileInput = "client1";
 
         /// <summary>Cách đã dùng để mở phòng gần nhất — cần cho nút "Tạo phòng mới".</summary>
         private enum HostMode { None, Single, Relay, Ip }
@@ -51,8 +52,9 @@ namespace IronWasteland.Net
                 return;
             }
 
-            // Phiên đã kết thúc / đã có kết quả trận: hiện màn kết thúc toàn màn hình.
-            if (bootstrap.IsRunning && IsEndState())
+            // Phiên đã chết vẫn phải hiện màn kết thúc, kể cả khi NGO đã ngắt kết nối,
+            // để người chơi chủ động bấm "Về menu" thay vì bị đẩy thẳng ra menu.
+            if (IsEndState())
             {
                 DrawEndOverlay();
                 return;
@@ -86,6 +88,14 @@ namespace IronWasteland.Net
             if (GUILayout.Button("Optional 2: bien the " + (bootstrap.LocalOptionSkill2 + 1) + "/3 (bam de doi)"))
             {
                 bootstrap.SetLocalOptionSkills(bootstrap.LocalOptionSkill1, (bootstrap.LocalOptionSkill2 + 1) % 3);
+            }
+
+            GUILayout.Label("--- Test nhieu nguoi tren 1 may ---");
+            GUILayout.Label("Profile: " + NetRelayService.CurrentProfile);
+            m_ProfileInput = GUILayout.TextField(m_ProfileInput ?? string.Empty);
+            if (GUILayout.Button("Doi profile test (vd: client1)"))
+            {
+                SwitchProfileThenHint(m_ProfileInput);
             }
 
             GUILayout.Label("--- Choi mot minh ---");
@@ -381,6 +391,20 @@ namespace IronWasteland.Net
             if (string.IsNullOrEmpty(relayCode)) return;
 
             bootstrap.StartClientWithRelay(relayCode);
+        }
+
+        /// <summary>Đổi profile đăng nhập ẩn danh để test 2 "người chơi" trên cùng một máy.</summary>
+        private async void SwitchProfileThenHint(string profile)
+        {
+            bool ok = await NetRelayService.SwitchProfileAsync(profile);
+            if (ok)
+            {
+                Debug.Log($"[NetLobbyUI] Đổi profile sang '{NetRelayService.CurrentProfile}' thành công.");
+            }
+            else
+            {
+                Debug.LogWarning($"[NetLobbyUI] Đổi profile thất bại: {NetRelayService.LastError}");
+            }
         }
 
         /// <summary>

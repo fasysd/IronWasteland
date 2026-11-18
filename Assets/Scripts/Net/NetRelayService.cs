@@ -30,6 +30,19 @@ namespace IronWasteland.Net
         /// <summary>Lỗi gần nhất để hiển thị lên UI (null nếu không có).</summary>
         public static string LastError { get; private set; }
 
+        /// <summary>
+        /// Profile đăng nhập ẩn danh hiện tại. Hai cửa sổ trên cùng một máy dùng chung profile mặc định
+        /// nên Lobby coi là cùng một người chơi; đổi profile cho cửa sổ client để test join bằng mã phòng.
+        /// </summary>
+        public static string CurrentProfile
+        {
+            get
+            {
+                try { return AuthenticationService.Instance.Profile; }
+                catch { return "(chua dang nhap)"; }
+            }
+        }
+
         /// <summary>Mã Relay host nhận được (dùng cho người chơi join trực tiếp).</summary>
         public static string RelayJoinCode { get; private set; }
 
@@ -49,6 +62,41 @@ namespace IronWasteland.Net
         private static string s_HeartbeatLobbyId;
 
         /// <summary>Khởi tạo Unity Services và đăng nhập ẩn danh nếu chưa có phiên.</summary>
+        /// <summary>
+        /// Đổi profile đăng nhập ẩn danh (dùng để test nhiều "người chơi" trên cùng một máy).
+        /// Phải đăng xuất trước; SDK sẽ tạo player id mới cho profile mới.
+        /// </summary>
+        public static async Task<bool> SwitchProfileAsync(string profileName)
+        {
+            LastError = null;
+            if (string.IsNullOrWhiteSpace(profileName))
+            {
+                LastError = "Tên profile không được để trống.";
+                return false;
+            }
+
+            try
+            {
+                await UnityServices.InitializeAsync();
+
+                if (AuthenticationService.Instance.IsSignedIn)
+                {
+                    AuthenticationService.Instance.SignOut();
+                }
+
+                AuthenticationService.Instance.SwitchProfile(profileName.Trim());
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                ServicesReady = true;
+                return true;
+            }
+            catch (Exception exception)
+            {
+                LastError = $"Đổi profile lỗi: {exception.Message}";
+                ServicesReady = false;
+                return false;
+            }
+        }
+
         public static async Task<bool> EnsureServicesAsync()
         {
             if (ServicesReady) return true;
@@ -241,9 +289,29 @@ namespace IronWasteland.Net
             }
             catch (Exception exception)
             {
-                LastError = exception.Message;
+                LastError = DescribeJoinError(exception);
                 return null;
             }
+        }
+
+        /// <summary>Chuyển lỗi join lobby thành câu tiếng Việt dễ hiểu cho người chơi.</summary>
+        private static string DescribeJoinError(Exception exception)
+        {
+            string message = exception.Message ?? string.Empty;
+            string lower = message.ToLowerInvariant();
+
+            if (lower.Contains("already a member"))
+            {
+                return "Tài khoản này đã ở trong phòng (2 cửa sổ trên cùng máy dùng chung profile). " +
+                       "Đổi profile ở cửa sổ này rồi thử lại.";
+            }
+
+            if (lower.Contains("not found"))
+            {
+                return "Không tìm thấy phòng (có thể đã đóng hoặc mã sai).";
+            }
+
+            return "Vào phòng lỗi: " + message;
         }
 
         /// <summary>Bắt đầu gửi heartbeat giữ lobby sống (chỉ host gọi).</summary>
