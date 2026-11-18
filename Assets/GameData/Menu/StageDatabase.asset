@@ -1,0 +1,128 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c5133bc6b8c3424a82fef46b999d91f, type: 3}
+  m_Name: StageDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Menu.StageDatabase
+  stages:
+  - id: 1-1
+    displayName: "S\u01B0\u01A1ng M\xF9 T\xEDm"
+    chapterLabel: "CH\u01AF\u01A0NG 1 \xB7 L\u1EE4C \u0110\u1ECAA \u0110EN"
+    description: "\u0110i\u1EC1u ki\u1EC7n th\u1EAFng: Ti\xEAu di\u1EC7t 40 qu\xE1i
+      v\u1EADt. Th\u1EDDi l\u01B0\u1EE3ng ~90s."
+    sceneName: Stage_1_1
+    kind: 0
+    recommendedLevel: 1
+    rewardGems: 20
+    accessoryDropChance: 0.2
+    accessoryPool: 
+    accessoryDropCount: 1
+  - id: 1-2
+    displayName: "Hang \u0110\xE1 Gai"
+    chapterLabel: "CH\u01AF\u01A0NG 1 \xB7 L\u1EE4C \u0110\u1ECAA \u0110EN"
+    description: "\u0110i\u1EC1u ki\u1EC7n th\u1EAFng: Sinh t\u1ED3n trong 100 gi\xE2y.
+      Th\u1EDDi l\u01B0\u1EE3ng 100s."
+    sceneName: Stage_1_2
+    kind: 0
+    recommendedLevel: 5
+    rewardGems: 30
+    accessoryDropChance: 0.2
+    accessoryPool: 
+    accessoryDropCount: 1
+  - id: 1-3
+    displayName: "D\u1EA5u V\u1EBFt T\xF9 Binh"
+    chapterLabel: "CH\u01AF\u01A0NG 1 \xB7 L\u1EE4C \u0110\u1ECAA \u0110EN"
+    description: "\u0110i\u1EC1u ki\u1EC7n th\u1EAFng: K\xEDch ho\u1EA1t 2 Tr\u1EA1m
+      Radar & H\u1ED9 t\u1ED1ng xe Mones \u0111i 150m. Th\u1EDDi l\u01B0\u1EE3ng
+      ~120s."
+    sceneName: Stage_1_3
+    kind: 0
+    recommendedLevel: 10
+    rewardGems: 40
+    accessoryDropChance: 0.2
+    accessoryPool: 
+    accessoryDropCount: 1
+  - id: 1-4
+    displayName: "V\xF2ng Xo\xE1y Kh\xF4ng Gian"
+    chapterLabel: "CH\u01AF\u01A0NG 1 \xB7 L\u1EE4C \u0110\u1ECAA \u0110EN"
+    description: "\u0110i\u1EC1u ki\u1EC7n th\u1EAFng: \u0110\xE1nh b\u1EA1i c\u1EA3
+      2 boss li\xEAn ti\u1EBFp (b\xF3ng ma t\u1EED \u0111\u1ECBa & seaubearus). Th\u1EDDi
+      l\u01B0\u1EE3ng ~180s."
+    sceneName: Stage_1_4
+    kind: 1
+    recommendedLevel: 20
+    rewardGems: 60
+    accessoryDropChance: 0.2
+    accessoryPool: 
+    accessoryDropCount: 3
+  - id: 2-1
+    displayName: "V\xE0nh \u0110ai B\xE3o L\u1EEDa"
+    chapterLabel: "CH\u01AF\u01A0NG 2 \xB7 V\xD9NG \u0110\u1EA4T NGUY\xCAN T\u1ED0"
+    description: "\u0110i\u1EC1u ki\u1EC7n th\u1EAFng: Ti\xEAu di\u1EC7t 50 qu\xE1i
+      v\u1EADt. Th\u1EDDi l\u01B0\u1EE3ng ~90s."
+    sceneName: Stage_2_1
+    kind: 0
+    recommendedLevel: 30
+    rewardGems: 50
+    accessoryDropChance: 0.2
+    accessoryPool: 
+    accessoryDropCount: 1
+  - id: 2-2
+    displayName: "\u0110\u1EA7m L\u1EA7y \u0110\u1ED9c Kh\xED & B\xE3o \u0110i\u1EC7n"
+    chapterLabel: "CH\u01AF\u01A0NG 2 \xB7 V\xD9NG \u0110\u1EA4T NGUY\xCAN T\u1ED0"
+    description: "\u0110i\u1EC1u ki\u1EC7n th\u1EAFng: Ph\xE1 h\u1EE7y 4 C\u1EE5m
+      N\u1EA5m M\u1EB9 & Sinh t\u1ED3n 120s. Th\u1EDDi l\u01B0\u1EE3ng 120s."
+    sceneName: Stage_2_2
+    kind: 0
+    recommendedLevel: 40
+    rewardGems: 60
+    accessoryDropChance: 0.2
+    accessoryPool: 
+    accessoryDropCount: 1
+  - id: 2-3
+    displayName: "\u0110\u1ED9t K\xEDch Ti\u1EC1n \u0110\u1ED3n"
+    chapterLabel: "CH\u01AF\u01A0NG 2 \xB7 V\xD9NG \u0110\u1EA4T NGUY\xCAN T\u1ED0"
+    description: "\u0110i\u1EC1u ki\u1EC7n th\u1EAFng: B\u1EA3o v\u1EC7 Xe ph\xE1
+      th\xE0nh ph\xE1 3 Tr\u1EE5 \u0110i\u1EC7n Tr\u01B0\u1EDDng. Th\u1EDDi l\u01B0\u1EE3ng
+      ~130s."
+    sceneName: Stage_2_3
+    kind: 0
+    recommendedLevel: 50
+    rewardGems: 70
+    accessoryDropChance: 0.2
+    accessoryPool: 
+    accessoryDropCount: 1
+  - id: 2-4
+    displayName: "Phi Thuy\u1EC1n Hai M\u1EB7t & Ph\xE1o \u0110\xE0i Hira"
+    chapterLabel: "CH\u01AF\u01A0NG 2 \xB7 V\xD9NG \u0110\u1EA4T NGUY\xCAN T\u1ED0"
+    description: "\u0110i\u1EC1u ki\u1EC7n th\u1EAFng: \u0110\xE1nh b\u1EA1i c\u1EA3
+      2 boss li\xEAn ti\u1EBFp (t\u1EED th\u1EA7n nguy\xEAn t\u1ED1 & the2face).
+      Th\u1EDDi l\u01B0\u1EE3ng ~200s."
+    sceneName: Stage_2_4
+    kind: 1
+    recommendedLevel: 60
+    rewardGems: 90
+    accessoryDropChance: 0.2
+    accessoryPool: 
+    accessoryDropCount: 2
+  - id: 2-5
+    displayName: "Chi\u1EBFn H\u1EA1m D1ONK"
+    chapterLabel: "CH\u01AF\u01A0NG 2 \xB7 K\u1EF2 H\u1EA0M HIRA"
+    description: "\u0110i\u1EC1u ki\u1EC7n th\u1EAFng: \u0110\xE1nh b\u1EA1i \u0111\u1EA1i
+      c\u01A1 gi\xE1p: tr\u01B0\u1EDFng qu\u1EA3n ng\u1EE5c d1onk. Th\u1EDDi l\u01B0\u1EE3ng
+      ~240s."
+    sceneName: Stage_2_5
+    kind: 2
+    recommendedLevel: 75
+    rewardGems: 120
+    accessoryDropChance: 0.2
+    accessoryPool: 
+    accessoryDropCount: 3

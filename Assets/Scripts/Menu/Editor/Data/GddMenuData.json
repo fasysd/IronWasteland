@@ -1,0 +1,686 @@
+{
+ "tanks": [
+  {
+   "id": "wall_titan",
+   "name": "Wall Titan",
+   "role": "Tanker",
+   "role2": "Support",
+   "normal": {
+    "name": "Earth Break",
+    "desc": "Wall Titan ngưng tụ ma thuật đất để tấn công kẻ địch. Khi mục tiêu ở phạm vi xung quanh 3 mét sẽ gây lượng sát thương cao nhất; lực này giảm dần theo khoảng cách bay, tối đa 7 mét. Mỗi khi cú đánh trúng mục tiêu, xe tăng hồi phục…",
+    "energy": "10",
+    "cooldown": "0.6s",
+    "gain": true
+   },
+   "special": {
+    "name": "Earth Wall",
+    "desc": "Tiêu hao năng lượng để dựng một chướng ngại vật vững chắc. Bức tường hoàn toàn ngăn cản đường di chuyển của kẻ địch cũng như chặn đứng các đòn tấn công dạng đạn bay đi qua vị trí của nó. Khi hết thời gian duy trì, hiệu ứng kết…",
+    "energy": "45",
+    "cooldown": "10s",
+    "gain": false
+   },
+   "option1": [
+    {
+     "name": "Stone Fortress",
+     "desc": "Wall Titan gia cố lớp giáp, giúp nhận một lớp khiên, tăng phòng thủ. Đổi lại, trọng lượng tăng thêm khiến tốc độ di chuyển của xe tăng bị giảm trong thời gian hiệu lực.",
+     "energy": "50",
+     "cooldown": "12s",
+     "gain": false
+    },
+    {
+     "name": "Guardian Wall",
+     "desc": "Bảo vệ bản thân và một đồng minh được chọn bằng lớp bảo hộ ma thuật giúp nhận một lớp khiên. Trong thời gian duy trì, Wall Titan sẽ gánh chịu một phần sát thương thay cho mục tiêu được bảo vệ. Lượng sát thương được chuyển sang…",
+     "energy": "50",
+     "cooldown": "10s",
+     "gain": false
+    },
+    {
+     "name": "Earth Prison",
+     "desc": "Dựng nên cấu trúc giam giữ khép kín, nhốt hoàn toàn kẻ địch trong một vùng hình tròn. Sau một khoảng thời gian trì hoãn ngắn, vách đá sụp đổ đè nát và gây sát thương diện rộng lên các mục tiêu bên trong.",
+     "energy": "60",
+     "cooldown": "14s",
+     "gain": false
+    }
+   ],
+   "option2": [
+    {
+     "name": "Immovable Titan",
+     "desc": "Biến Wall Titan thành một khối kiên cố bất động, hoàn toàn miễn nhiễm với mọi hiệu ứng khống chế và tăng Phòng thủ trong thời gian hiệu lực.",
+     "energy": "40",
+     "cooldown": "10s",
+     "gain": true
+    },
+    {
+     "name": "Earth Guardian",
+     "desc": "Đánh dấu một đồng minh đồng thời bao phủ mục tiêu bằng lớp bảo vệ ma thuật đất giúp tăng Phòng thủ cho đồng minh. Một phần sát thương mà đồng minh nhận phải sẽ chuyển sang cho Wall Titan gánh chịu khi đồng minh có lớp bảo vệ.…",
+     "energy": "50",
+     "cooldown": "10s",
+     "gain": false
+    },
+    {
+     "name": "Earthquake",
+     "desc": "Tạo ra cơn chấn động địa chấn trên diện rộng, liên tục gây sát thương định kỳ và làm giảm tốc độ di chuyển của toàn bộ kẻ địch đứng trong phạm vi tác động.",
+     "energy": "65",
+     "cooldown": "14s",
+     "gain": false
+    }
+   ],
+   "base1": {
+    "attack": 15.0,
+    "maxHealth": 1200.0,
+    "maxEnergy": 100.0,
+    "defense": 25.0,
+    "moveSpeed": 100.0,
+    "cooldownReduction": 0.0,
+    "damageRate": 0.0,
+    "armorPenetration": 0.0
+   },
+   "base90": {
+    "attack": 50.0,
+    "maxHealth": 6500.0,
+    "maxEnergy": 300.0,
+    "defense": 55.0,
+    "moveSpeed": 100.0,
+    "cooldownReduction": 0.2,
+    "damageRate": 0.0,
+    "armorPenetration": 0.0
+   }
+  },
+  {
+   "id": "red_nova",
+   "name": "Red Nova",
+   "role": "DPS",
+   "role2": "DPS",
+   "normal": {
+    "name": "Nova Shot",
+    "desc": "Bắn một đòn năng lượng ma pháp đỏ cực nhanh về phía kẻ địch, gây sát thương trực tiếp. Mỗi lần tấn công trúng mục tiêu giúp tích lũy một phần năng lượng chiến đấu.",
+    "energy": "10",
+    "cooldown": "0.5s",
+    "gain": true
+   },
+   "special": {
+    "name": "Triple Nova",
+    "desc": "Tiêu hao năng lượng để phóng cùng lúc nhiều đạn năng lượng đỏ. Các viên đạn có thể hội tụ vào một mục tiêu duy nhất để dồn sát thương hoặc phân tán sang các kẻ địch lân cận.",
+    "energy": "40",
+    "cooldown": "5s",
+    "gain": false
+   },
+   "option1": [
+    {
+     "name": "Overdrive",
+     "desc": "Nâng công suất động cơ lên tối đa, giúp gia tăng mạnh tốc độ di chuyển và đặt lại thời gian hồi đòn đánh thường. Đồng thời sẽ tăng Tỉ lệ sát thương, khi gây sát thương sẽ mất hiệu ứng này.",
+     "energy": "20",
+     "cooldown": "1s",
+     "gain": false
+    },
+    {
+     "name": "Laser Cannon",
+     "desc": "Chuyển đổi trạng thái Kỹ năng thường thành chùm tia laser xuyên thấu hàng loạt mục tiêu trên đường thẳng và tăng hệ số sát thương gây ra. Trong trạng thái này, thời gian hồi đòn đánh gia tăng và không thể kích hoạt Triple Nova.…",
+     "energy": "",
+     "cooldown": "1s",
+     "gain": false
+    },
+    {
+     "name": "Execution Core",
+     "desc": "Tăng mạnh Tỉ lệ sát thương và Tỉ lệ xuyên giáp, duy trì khi gây sát thương sẽ mất hiệu ứng này. Khi tiêu diệt thành công một mục tiêu trong thời gian hiệu lực, thời gian hồi của kỹ năng này được hồi lại ngay lập tức và lần thi…",
+     "energy": "45",
+     "cooldown": "10s",
+     "gain": false
+    }
+   ],
+   "option2": [
+    {
+     "name": "Nova Barrage",
+     "desc": "Triệu hồi mưa đạn năng lượng oanh kích liên tục xuống khu vực chỉ định, gây sát thương dồn dập nhiều lần lên mọi kẻ địch nằm trong vùng ảnh hưởng.",
+     "energy": "65",
+     "cooldown": "12s",
+     "gain": false
+    },
+    {
+     "name": "Nova Pierce",
+     "desc": "Tăng cường Tấn công, Tỉ lệ sát thương và Tỉ lệ xuyên giáp.",
+     "energy": "55",
+     "cooldown": "12s",
+     "gain": false
+    },
+    {
+     "name": "Nova Rush",
+     "desc": "Thực hiện pha lướt nhanh tức thì về vị trí chỉ định. Lần tấn công thành công ngay sau khi kết thúc cú lướt sẽ thi triển một đòn tấn công gây thêm một lượng sát thương lớn.",
+     "energy": "35",
+     "cooldown": "7s",
+     "gain": false
+    }
+   ],
+   "base1": {
+    "attack": 25.0,
+    "maxHealth": 600.0,
+    "maxEnergy": 100.0,
+    "defense": 10.0,
+    "moveSpeed": 100.0,
+    "cooldownReduction": 0.0,
+    "damageRate": 0.0,
+    "armorPenetration": 0.0
+   },
+   "base90": {
+    "attack": 95.0,
+    "maxHealth": 3200.0,
+    "maxEnergy": 300.0,
+    "defense": 15.0,
+    "moveSpeed": 100.0,
+    "cooldownReduction": 0.0,
+    "damageRate": 0.15,
+    "armorPenetration": 0.25
+   }
+  },
+  {
+   "id": "black_shadow",
+   "name": "Black Shadow",
+   "role": "DPS",
+   "role2": "Support",
+   "normal": {
+    "name": "Shadow Claw",
+    "desc": "Phóng đòn đao bóng tối có khả năng bay xuyên qua mọi địa hình và chướng ngại vật để gây sát thương. Mỗi lần đánh trúng mục tiêu giúp tích nạp năng lượng.",
+    "energy": "10",
+    "cooldown": "0.5s",
+    "gain": true
+   },
+   "special": {
+    "name": "Shadow Step",
+    "desc": "Tiêu hao năng lượng đặt một phân thân bóng tối tại điểm chọn. Kích hoạt lần hai để lập tức hoán đổi vị trí với bóng, đồng thời bùng nổ sát thương ra khu vực xung quanh điểm đến mới.",
+    "energy": "40",
+    "cooldown": "8s",
+    "gain": false
+   },
+   "option1": [
+    {
+     "name": "Shadow Predator",
+     "desc": "Cường hóa đòn tấn công bóng tối giúp gia tăng kích cỡ đạn trong Shadow Claw và tăng Tấn công. Mỗi khi kết liễu một kẻ địch, thời gian hồi chiêu của kỹ năng dịch chuyển Shadow Step được giảm lập tức.",
+     "energy": "45",
+     "cooldown": "10s",
+     "gain": false
+    },
+    {
+     "name": "Shadow Link",
+     "desc": "Tạo dải liên kết bóng tối với một đồng minh, giúp tăng tốc độ di chuyển cho cả hai đồng thời giảm thời gian hồi kỹ năng cho đồng minh đó.",
+     "energy": "50",
+     "cooldown": "12s",
+     "gain": false
+    },
+    {
+     "name": "Shadow Guard",
+     "desc": "Bao phủ đồng minh bằng một bóng vệ tinh bảo vệ. Khi đồng minh phải chịu đòn tấn công từ kẻ địch, bóng này sẽ lập tức triệt tiêu hoàn toàn đòn đánh đó rồi biến mất và hồi cho Black Shadow một lượng năng lượng.",
+     "energy": "40",
+     "cooldown": "8s",
+     "gain": false
+    }
+   ],
+   "option2": [
+    {
+     "name": "Shadow Ambush",
+     "desc": "Dịch chuyển bóng tối ra ngay phía sau lưng mục tiêu và gây sát thương. Đòn tấn công kế tiếp nếu đánh trúng từ phía sau lưng sẽ tạo một đòn tấn công thêm vào mục tiêu trúng đòn.",
+     "energy": "50",
+     "cooldown": "9s",
+     "gain": false
+    },
+    {
+     "name": "Shadow Possession",
+     "desc": "Hòa làm một vào bóng của đồng minh, khiến Black Shadow không thể bị chỉ định hay nhận sát thương trực tiếp. Trong trạng thái này, tốc độ di chuyển của cả hai cùng được gia tăng.",
+     "energy": "60",
+     "cooldown": "15s",
+     "gain": false
+    },
+    {
+     "name": "Shadow Exchange",
+     "desc": "Tạo ra một bản sao bóng tối của đồng minh có thể hấp thụ đòn đánh để bảo vệ đồng minh. Kích hoạt kỹ năng cho phép đổi vị trí trực tiếp với bản sao này và bản thân tăng Tốc độ.",
+     "energy": "65",
+     "cooldown": "14s",
+     "gain": false
+    }
+   ],
+   "base1": {
+    "attack": 20.0,
+    "maxHealth": 650.0,
+    "maxEnergy": 120.0,
+    "defense": 12.0,
+    "moveSpeed": 110.0,
+    "cooldownReduction": 0.0,
+    "damageRate": 0.0,
+    "armorPenetration": 0.0
+   },
+   "base90": {
+    "attack": 90.0,
+    "maxHealth": 3400.0,
+    "maxEnergy": 300.0,
+    "defense": 18.0,
+    "moveSpeed": 130.0,
+    "cooldownReduction": 0.15,
+    "damageRate": 0.15,
+    "armorPenetration": 0.0
+   }
+  },
+  {
+   "id": "leviathan",
+   "name": "Leviathan",
+   "role": "Tanker",
+   "role2": "Tanker",
+   "normal": {
+    "name": "Water Pulse",
+    "desc": "Phóng ra sóng xung kích bằng nước ma thuật gây sát thương lên kẻ địch. Mỗi đòn đánh trúng giúp tích lũy năng lượng cho xe tăng.",
+    "energy": "12",
+    "cooldown": "0.6s",
+    "gain": true
+   },
+   "special": {
+    "name": "Water Bubble",
+    "desc": "Tiêu hao năng lượng bắn ra bong bóng nước khổng lồ nhốt cố định kẻ địch trong thời gian ngắn, nếu là Tinh anh sẽ thay thành gây sát thương và làm chậm. Khi bong bóng nổ tung sẽ gây sát thương diện rộng xung quanh.",
+    "energy": "50",
+    "cooldown": "9s",
+    "gain": false
+   },
+   "option1": [
+    {
+     "name": "Water Armor",
+     "desc": "Tạo màng nước bao phủ làm tăng đáng kể Phòng thủ; khi hết thời gian, giáp nước phát nổ gây sát thương diện rộng. Trong thời gian giáp duy trì, sát thương Water Pulse gây ra của Leviathan tăng nhẹ.",
+     "energy": "55",
+     "cooldown": "12s",
+     "gain": false
+    },
+    {
+     "name": "Guardian Current",
+     "desc": "Liên kết dòng nước với đồng minh. Một phần sát thương đồng minh chịu sẽ gánh bởi Leviathan, đồng thời đồng minh được hồi máu liên tục. Liên kết sẽ đứt nếu khoảng cách quá xa. Lượng sát thương được chuyển sang cho Leviathan được…",
+     "energy": "60",
+     "cooldown": "13s",
+     "gain": false
+    },
+    {
+     "name": "Regenerative Shell",
+     "desc": "Bao phủ Leviathan bằng lớp nước trị liệu liên tục hồi máu. Nếu không nhận sát thương trong suốt thời gian duy trì, hiệu quả hồi phục được gia tăng mạnh mẽ.",
+     "energy": "50",
+     "cooldown": "15s",
+     "gain": false
+    }
+   ],
+   "option2": [
+    {
+     "name": "Tidal Return",
+     "desc": "Đánh dấu vị trí kẻ địch trong vùng. Sau thời gian trì hoãn ngắn, một đợt thủy triều cưỡng chế kéo toàn bộ kẻ địch trở lại vị trí đã đánh dấu và gây sát thương.",
+     "energy": "60",
+     "cooldown": "14s",
+     "gain": false
+    },
+    {
+     "name": "Leviathan Form",
+     "desc": "Chuyển sang dạng thủy quái phòng thủ, tăng mạnh giới hạn máu và liên tục hồi máu. Đổi lại, chỉ số tấn công và thời gian hồi chiêu thường bị giảm.",
+     "energy": "80",
+     "cooldown": "18s",
+     "gain": false
+    },
+    {
+     "name": "Tide Commander",
+     "desc": "Tạo ra vùng thủy triều di chuyển theo xe tăng. Đồng minh đi trong vùng được gia tăng tốc độ di chuyển và nhận lớp giáp nước hấp thụ sát thương. Nếu như đồng minh ở trên vùng đã có khiên thì sẽ chuyển thành hồi lại giá trị khiên…",
+     "energy": "70",
+     "cooldown": "16s",
+     "gain": false
+    }
+   ],
+   "base1": {
+    "attack": 5.0,
+    "maxHealth": 1300.0,
+    "maxEnergy": 120.0,
+    "defense": 28.0,
+    "moveSpeed": 100.0,
+    "cooldownReduction": 0.0,
+    "damageRate": 0.0,
+    "armorPenetration": 0.0
+   },
+   "base90": {
+    "attack": 45.0,
+    "maxHealth": 7000.0,
+    "maxEnergy": 350.0,
+    "defense": 60.0,
+    "moveSpeed": 100.0,
+    "cooldownReduction": 0.1,
+    "damageRate": 0.0,
+    "armorPenetration": 0.0
+   }
+  },
+  {
+   "id": "water_b",
+   "name": "Water B",
+   "role": "Support",
+   "role2": "DPS",
+   "normal": {
+    "name": "Healing Water",
+    "desc": "Phóng dòng nước tấn công kẻ địch. Mỗi lần hồi máu thành công sẽ tích lũy lại năng lượng cho Water B.",
+    "energy": "10",
+    "cooldown": "0.6s",
+    "gain": true
+   },
+   "special": {
+    "name": "Bubble Shield",
+    "desc": "Tiêu hao năng lượng tạo bóng bong bảo vệ giúp hấp thụ sát thương nhận vào. Khi lớp bóng này vỡ hoặc hết thời gian duy trì sẽ lập tức hồi máu cho mục tiêu.",
+    "energy": "45",
+    "cooldown": "9s",
+    "gain": false
+   },
+   "option1": [
+    {
+     "name": "Shared Healing",
+     "desc": "Thiết lập liên kết hồi phục với một đồng minh. Bất kỳ hiệu quả hồi máu nào mà một bên nhận được cũng sẽ tự động san sẻ một phần sang cho bên còn lại.",
+     "energy": "50",
+     "cooldown": "12s",
+     "gain": false
+    },
+    {
+     "name": "Life Drain",
+     "desc": "Trong thời gian kích hoạt, sẽ tăng Tấn công. Mỗi khi đòn tấn công của Water B gây sát thương lên kẻ địch, nó sẽ chuyển hóa một phần sát thương đó thành lượng máu phục hồi cho đồng minh có máu thấp nhất xung quanh.",
+     "energy": "45",
+     "cooldown": "11s",
+     "gain": false
+    },
+    {
+     "name": "Bubble Protector",
+     "desc": "Tạo ra vòm bong bóng nước lớn bảo vệ nhiều đồng minh trong phạm vi, tăng Phòng thủ và Tấn công; khi hết thời gian, tất cả đồng minh bên trong được hồi máu.",
+     "energy": "45",
+     "cooldown": "11s",
+     "gain": false
+    }
+   ],
+   "option2": [
+    {
+     "name": "Mobile Altar",
+     "desc": "Triển khai đài tế thủy triều di động. Water B không thể tấn công trong thời gian này nhưng liên tục chữa lành và tạo khiên bảo vệ cho mọi đồng minh xung quanh. Nếu đồng đổi đã có khiên thì sẽ đặt lại giá trị và thời gian duy trì.",
+     "energy": "75",
+     "cooldown": "16s",
+     "gain": false
+    },
+    {
+     "name": "Water Turrets",
+     "desc": "Triệu hồi các tháp nước tự động tấn công kẻ địch đang gây nguy hiểm cho đồng minh. Các phát bắn của tháp đồng thời hồi phục một phần năng lượng cho Water B theo thời gian.",
+     "energy": "75",
+     "cooldown": "14s",
+     "gain": false
+    },
+    {
+     "name": "Aqua Assault",
+     "desc": "Chuyển đổi sang thiên hướng tấn công: tăng Tỉ lệ giảm thời gian hồi chiêu, tăng Tấn công, tăng Tỉ lệ sát thương, tăng Tỉ lệ xuyên giáp.",
+     "energy": "65",
+     "cooldown": "14s",
+     "gain": false
+    }
+   ],
+   "base1": {
+    "attack": 15.0,
+    "maxHealth": 650.0,
+    "maxEnergy": 100.0,
+    "defense": 12.0,
+    "moveSpeed": 100.0,
+    "cooldownReduction": 0.0,
+    "damageRate": 0.0,
+    "armorPenetration": 0.0
+   },
+   "base90": {
+    "attack": 75.0,
+    "maxHealth": 3500.0,
+    "maxEnergy": 300.0,
+    "defense": 18.0,
+    "moveSpeed": 110.0,
+    "cooldownReduction": 0.3,
+    "damageRate": 0.0,
+    "armorPenetration": 0.0
+   }
+  },
+  {
+   "id": "green_fox",
+   "name": "Green Fox",
+   "role": "DPS",
+   "role2": "DPS",
+   "normal": {
+    "name": "Fox Fang",
+    "desc": "Bắn ra đòn ma thuật hình nanh cáo gây sát thương và có khả năng trói chân mục tiêu trong thời gian ngắn, nếu trúng Tinh anh sẽ tăng sát thương thay vì trói chân. Đánh trúng đòn giúp hồi năng lượng cho xe tăng.",
+    "energy": "10",
+    "cooldown": "0.5s",
+    "gain": true
+   },
+   "special": {
+    "name": "Fox Mark",
+    "desc": "Tiêu hao năng lượng gắn dấu ấn dồn dập lên mục tiêu. Khi Green Fox tấn công mục tiêu có dấu ấn sẽ tăng cộng dồn. Khi đủ cộng dồn, kích hoạt nổ sát thương.",
+    "energy": "30",
+    "cooldown": "6s",
+    "gain": false
+   },
+   "option1": [
+    {
+     "name": "Mark Hunter",
+     "desc": "Gia tăng tốc độ tích dấu ấn cáo và đẩy cao sát thương bùng nổ khi kích hoạt ấn. Hạ gục kẻ địch giúp lập tức rút ngắn thời gian hồi kỹ năng Fox Mark.",
+     "energy": "45",
+     "cooldown": "10s",
+     "gain": false
+    },
+    {
+     "name": "Burning Fox",
+     "desc": "Khiến tất cả đòn đánh và chiêu thức đính kèm hiệu ứng thiêu đốt ma thuật gây sát thương theo thời gian. Khi Fox Fang đánh trúng kẻ địch đang bị thiêu đốt sẽ hồi thêm năng lượng chiến đấu.",
+     "energy": "40",
+     "cooldown": "11s",
+     "gain": false
+    },
+    {
+     "name": "Fox Trap",
+     "desc": "Đặt bẫy ma thuật dưới đất. Kẻ địch dẫm phải sẽ bị trói chân cố định, sau đó bẫy nổ tung gây sát thương lớn. Nếu mục tiêu là Tinh anh, sẽ thay trói chân thành gây lượng sát thương lớn hơn.",
+     "energy": "50",
+     "cooldown": "10s",
+     "gain": false
+    }
+   ],
+   "option2": [
+    {
+     "name": "Mark Explosion",
+     "desc": "Kích nổ tức thì toàn bộ dấu ấn trên kẻ địch trong vùng. Sau vụ nổ, Green Fox nhận được hiệu ứng tăng cường sức mạnh tấn công.",
+     "energy": "55",
+     "cooldown": "12s",
+     "gain": false
+    },
+    {
+     "name": "Fox Territory",
+     "desc": "Tạo ra một vùng lãnh địa ma thuật làm chậm kẻ địch và tăng tốc di chuyển cho đồng minh. Gây sát thương trong vùng giúp Green Fox tích nạp năng lượng.",
+     "energy": "60",
+     "cooldown": "15s",
+     "gain": false
+    },
+    {
+     "name": "Nine-Tailed Assault",
+     "desc": "Bộc phát dạng chín đuôi ma thuật, các đuôi tự động hỗ trợ tấn công dồn dập vào các kẻ địch xung quanh.",
+     "energy": "75",
+     "cooldown": "16s",
+     "gain": false
+    }
+   ],
+   "base1": {
+    "attack": 25.0,
+    "maxHealth": 700.0,
+    "maxEnergy": 100.0,
+    "defense": 12.0,
+    "moveSpeed": 100.0,
+    "cooldownReduction": 0.0,
+    "damageRate": 0.0,
+    "armorPenetration": 0.0
+   },
+   "base90": {
+    "attack": 85.0,
+    "maxHealth": 3600.0,
+    "maxEnergy": 300.0,
+    "defense": 20.0,
+    "moveSpeed": 100.0,
+    "cooldownReduction": 0.0,
+    "damageRate": 0.1,
+    "armorPenetration": 0.05
+   }
+  }
+ ],
+ "stages": [
+  {
+   "id": "1-1",
+   "name": "Sương Mù Tím",
+   "win": "Tiêu diệt 40 quái vật",
+   "gems": 20,
+   "unlock": "",
+   "dropCount": 1,
+   "dropChance": 0.2,
+   "pool": [
+    "Lõi Động Cơ Trọng Lực Địa Mạch",
+    "Lõi Năng Lượng Thiên Thạch Nổ",
+    "Lõi Ma Pháp Hắc Nguyệt"
+   ],
+   "kind": "normal",
+   "time": "~90s"
+  },
+  {
+   "id": "1-2",
+   "name": "Hang Đá Gai",
+   "win": "Sinh tồn trong 100 giây",
+   "gems": 30,
+   "unlock": "black_shadow",
+   "dropCount": 1,
+   "dropChance": 0.2,
+   "pool": [
+    "Lõi Ma Pháp Hội Tụ Quang Tử",
+    "Động Cơ Xung Kích Tinh Thể Thạch Anh",
+    "Động Cơ Tua-Bin Linh Hỏa"
+   ],
+   "kind": "normal",
+   "time": "100s"
+  },
+  {
+   "id": "1-3",
+   "name": "Dấu Vết Tù Binh",
+   "win": "Kích hoạt 2 Trạm Radar & Hộ tống xe Mones đi 150m",
+   "gems": 40,
+   "unlock": "leviathan",
+   "dropCount": 1,
+   "dropChance": 0.2,
+   "pool": [
+    "Lõi Huyết Tinh Sinh Học",
+    "Lõi Ma Trận Cộng Hưởng Mones",
+    "Động Cơ Xung Kích Tinh Thể Thạch Anh"
+   ],
+   "kind": "normal",
+   "time": "~120s"
+  },
+  {
+   "id": "1-4",
+   "name": "Vòng Xoáy Không Gian",
+   "win": "ĐÁNH BẠI CẢ 2 BOSS LIÊN TIẾP (BÓNG MA TỬ ĐỊA & SEAUBEARUS)",
+   "gems": 60,
+   "unlock": "",
+   "dropCount": 3,
+   "dropChance": 0.2,
+   "pool": [
+    "Lõi Động Cơ Trọng Lực Địa Mạch",
+    "Lõi Năng Lượng Thiên Thạch Nổ",
+    "Lõi Ma Pháp Hắc Nguyệt",
+    "Lõi Ma Pháp Hội Tụ Quang Tử",
+    "Động Cơ Xung Kích Tinh Thể Thạch Anh",
+    "Động Cơ Tua-Bin Linh Hỏa",
+    "Lõi Huyết Tinh Sinh Học",
+    "Lõi Ma Trận Cộng Hưởng Mones",
+    "Động Cơ Phân Pha Hư Không",
+    "Lõi Nhiệt Hạch Ba Lõi"
+   ],
+   "kind": "elite",
+   "time": "~180s"
+  },
+  {
+   "id": "2-1",
+   "name": "Vành Đai Bão Lửa",
+   "win": "Tiêu diệt 50 quái vật",
+   "gems": 50,
+   "unlock": "water_b",
+   "dropCount": 1,
+   "dropChance": 0.2,
+   "pool": [
+    "Động Cơ Thủy Lực Ma Pháp Đầm Lầy",
+    "Lõi Ma Pháp Bào Tử Độc",
+    "Lõi Ma Trận Khiên Nhật Thực"
+   ],
+   "kind": "normal",
+   "time": "~90s"
+  },
+  {
+   "id": "2-2",
+   "name": "Đầm Lầy Độc Khí & Bão Điện",
+   "win": "Phá hủy 4 Cụm Nấm Mẹ & Sinh tồn 120s",
+   "gems": 60,
+   "unlock": "",
+   "dropCount": 1,
+   "dropChance": 0.2,
+   "pool": [
+    "Động Cơ Tua-Bin Xoáy Nước",
+    "Lõi Tụ Điện Ma Pháp Sấm Sét",
+    "Lõi Động Cơ Tái Sinh Chữ Thập"
+   ],
+   "kind": "normal",
+   "time": "120s"
+  },
+  {
+   "id": "2-3",
+   "name": "Đột Kích Tiền Đồn",
+   "win": "Bảo vệ Xe phá thành phá 3 Trụ Điện Trường",
+   "gems": 70,
+   "unlock": "green_fox",
+   "dropCount": 1,
+   "dropChance": 0.2,
+   "pool": [
+    "Lõi Thủy Tinh Trị Liệu",
+    "Lõi Liên Kết Song Tinh Nguyên Tố",
+    "Lõi Động Cơ Lưỡng Cực THE2FACE"
+   ],
+   "kind": "normal",
+   "time": "~130s"
+  },
+  {
+   "id": "2-4",
+   "name": "Phi Thuyền Hai Mặt & Pháo Đài Hira",
+   "win": "ĐÁNH BẠI CẢ 2 BOSS LIÊN TIẾP (TỬ THẦN NGUYÊN TỐ & THE2FACE)",
+   "gems": 90,
+   "unlock": "",
+   "dropCount": 2,
+   "dropChance": 0.2,
+   "pool": [
+    "Động Cơ Thủy Lực Ma Pháp Đầm Lầy",
+    "Động Cơ Tua-Bin Xoáy Nước",
+    "Lõi Ma Pháp Bào Tử Độc",
+    "Lõi Tụ Điện Ma Pháp Sấm Sét",
+    "Lõi Ma Trận Khiên Nhật Thực",
+    "Lõi Động Cơ Tái Sinh Chữ Thập",
+    "Lõi Thủy Tinh Trị Liệu",
+    "Lõi Liên Kết Song Tinh Nguyên Tố",
+    "Lõi Động Cơ Lưỡng Cực THE2FACE"
+   ],
+   "kind": "elite",
+   "time": "~200s"
+  },
+  {
+   "id": "2-5",
+   "name": "Chiến Hạm D1ONK",
+   "win": "ĐÁNH BẠI ĐẠI CƠ GIÁP: TRƯỞNG QUẢN NGỤC D1ONK",
+   "gems": 120,
+   "unlock": "",
+   "dropCount": 3,
+   "dropChance": 0.2,
+   "pool": [
+    "Động Cơ Thủy Lực Ma Pháp Đầm Lầy",
+    "Động Cơ Tua-Bin Xoáy Nước",
+    "Lõi Ma Pháp Bào Tử Độc",
+    "Lõi Tụ Điện Ma Pháp Sấm Sét",
+    "Lõi Ma Trận Khiên Nhật Thực",
+    "Lõi Động Cơ Tái Sinh Chữ Thập",
+    "Lõi Thủy Tinh Trị Liệu",
+    "Lõi Liên Kết Song Tinh Nguyên Tố",
+    "Lõi Động Cơ Lưỡng Cực THE2FACE",
+    "Lõi Siêu Cơ Giáp Thống Lĩnh D1ONK"
+   ],
+   "kind": "final",
+   "time": "~240s"
+  }
+ ]
+}

@@ -1,13 +1,15 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using IronWasteland.Menu; // Thêm namespace để đọc dữ liệu từ Main Menu
 
 namespace IronWasteland.Tanks
 {
     /// <summary>
     /// Đọc input của Player, tạo TankBrain từ ScriptableObject và gửi lệnh cho nó.
+    /// Hỗ trợ cả khởi tạo trực tiếp từ Inspector lẫn lấy dữ liệu từ GameSession (Main Menu).
     /// Điều khiển kỹ năng 3 giai đoạn:
     /// 1. Chọn target / hướng ngắm qua vị trí con trỏ chuột (SetLookTarget).
-    /// 2. Chọn kỹ năng (phím 1, 2, 3, 4). Phím 1 dùng để hủy và quay lại kỹ năng thường.
+    /// 2. Chọn kỹ năng (hỗ trợ GameSettings hoặc phím 1, 2, 3, 4). Phím 1 dùng để hủy và quay lại kỹ năng thường.
     /// 3. Xác nhận thi triển bằng Click chuột trái (gửi lại LookTarget, gọi UseSkill, sau đó reset về kỹ năng thường 0).
     /// </summary>
     public class GameController : MonoBehaviour
@@ -17,6 +19,9 @@ namespace IronWasteland.Tanks
 
         [Tooltip("Level của Tank, thay đổi được theo ý thích Player. Chỉ đọc trong lúc khởi tạo.")]
         [SerializeField, Range(TankDefinition.MinLevel, TankDefinition.MaxLevel)] private int playerLevel = 1;
+
+        [Tooltip("Index trong danh sách TankView của TankDefinition.")]
+        [SerializeField] private int viewId;
 
         [SerializeField] private Vector2 spawnPosition = Vector2.zero;
 
@@ -47,7 +52,8 @@ namespace IronWasteland.Tanks
         {
             if (targetCamera == null) targetCamera = Camera.main;
 
-            // Xây TankBrainContext từ fields hiện có (level, equipmentId, optionSkills).
+            // Mặc định lấy từ Inspector để test trực tiếp Scene
+            TankDefinition definition = tankDefinition;
             var context = new TankBrainContext
             {
                 Level = playerLevel,
@@ -56,10 +62,17 @@ namespace IronWasteland.Tanks
                 OptionSkill2 = optionSkill2
             };
 
-            // Khởi tạo 1 lần duy nhất (guard).
-            if (m_PlayerTank == null && tankDefinition != null)
+            // Tích hợp từ Main Menu: Nếu có lựa chọn từ GameSession thì ghi đè lại
+            if (GameSession.HasSelection && GameSession.Tank != null)
             {
-                m_PlayerTank = tankDefinition.CreateTank(context);
+                definition = GameSession.Tank;
+                context = GameSession.Context;
+            }
+
+            // Khởi tạo 1 lần duy nhất (guard).
+            if (m_PlayerTank == null && definition != null)
+            {
+                m_PlayerTank = definition.CreateTank(context);
             }
 
             if (m_PlayerTank == null)
@@ -78,16 +91,16 @@ namespace IronWasteland.Tanks
             Keyboard keyboard = Keyboard.current;
             Mouse mouse = Mouse.current;
 
-            // --- Di chuyển: WASD / phím mũi tên ---
+            // --- Di chuyển: Hỗ trợ GameSettings kết hợp phím WASD / phím mũi tên truyền thống ---
             float x = 0f;
             float y = 0f;
 
             if (keyboard != null)
             {
-                if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) x += 1f;
-                if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) x -= 1f;
-                if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) y += 1f;
-                if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed) y -= 1f;
+                if (GameSettings.IsHeld(GameAction.MoveRight, keyboard) || keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) x += 1f;
+                if (GameSettings.IsHeld(GameAction.MoveLeft, keyboard) || keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) x -= 1f;
+                if (GameSettings.IsHeld(GameAction.MoveUp, keyboard) || keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) y += 1f;
+                if (GameSettings.IsHeld(GameAction.MoveDown, keyboard) || keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed) y -= 1f;
             }
 
             m_PlayerTank.SetMoveInput(Vector2.ClampMagnitude(new Vector2(x, y), 1f));
@@ -99,24 +112,29 @@ namespace IronWasteland.Tanks
                 m_PlayerTank.SetLookTarget(new Vector2(world.x, world.y));
             }
 
-            // --- Giai đoạn 2: Chọn kỹ năng (Phím 1, 2, 3, 4) ---
-            // Phím 1: Kỹ năng thường (hoặc dùng để hủy kỹ năng đang chọn)
-            // Phím 2, 3, 4: Chọn kỹ năng tương ứng (1, 2, 3)
+            // --- Giai đoạn 2: Chọn kỹ năng (Hỗ trợ GameSettings HOẶC phím số 1, 2, 3, 4 / Numpad) ---
+            // Phím 1 (hoặc action BasicAttack): Kỹ năng thường (hoặc dùng để hủy kỹ năng đang chọn)
+            // Phím 2, 3, 4 (hoặc action tương ứng): Chọn kỹ năng (1, 2, 3)
             if (keyboard != null)
             {
-                if (keyboard.digit1Key.wasPressedThisFrame || keyboard.numpad1Key.wasPressedThisFrame)
+                bool selectBasic = GameSettings.WasPressedThisFrame(GameAction.BasicAttack, keyboard) || keyboard.digit1Key.wasPressedThisFrame || keyboard.numpad1Key.wasPressedThisFrame;
+                bool selectSpecial = GameSettings.WasPressedThisFrame(GameAction.SpecialSkill, keyboard) || keyboard.digit2Key.wasPressedThisFrame || keyboard.numpad2Key.wasPressedThisFrame;
+                bool selectOpt1 = GameSettings.WasPressedThisFrame(GameAction.Option1, keyboard) || keyboard.digit3Key.wasPressedThisFrame || keyboard.numpad3Key.wasPressedThisFrame;
+                bool selectOpt2 = GameSettings.WasPressedThisFrame(GameAction.Option2, keyboard) || keyboard.digit4Key.wasPressedThisFrame || keyboard.numpad4Key.wasPressedThisFrame;
+
+                if (selectBasic)
                 {
                     selectedSkillIndex = 0;
                 }
-                else if (keyboard.digit2Key.wasPressedThisFrame || keyboard.numpad2Key.wasPressedThisFrame)
+                else if (selectSpecial)
                 {
                     selectedSkillIndex = 1;
                 }
-                else if (keyboard.digit3Key.wasPressedThisFrame || keyboard.numpad3Key.wasPressedThisFrame)
+                else if (selectOpt1)
                 {
                     selectedSkillIndex = 2;
                 }
-                else if (keyboard.digit4Key.wasPressedThisFrame || keyboard.numpad4Key.wasPressedThisFrame)
+                else if (selectOpt2)
                 {
                     selectedSkillIndex = 3;
                 }
