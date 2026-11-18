@@ -24,6 +24,12 @@ namespace IronWasteland.Net
         // ulong owner (8) + ulong enemy NetworkObjectId (8) + Vector3 vị trí nổ (12) = 28 byte, cấp dư 32.
         private const int MarkExplosionMessageSize = 32;
 
+        /// <summary>Kênh riêng cho vệt sáng Mark Hunter (1A) khi kẻ địch mang ấn bị hạ gục.</summary>
+        private const string KillStreamMessageName = "IW.SkillFxKillStream";
+
+        // ulong owner (8) + Vector3 vị trí kẻ địch chết (12) = 20 byte, cấp dư 24.
+        private const int KillStreamMessageSize = 24;
+
         private bool m_Registered;
 
         /// <summary>Đếm số lần phát lại để chỉ ghi vài dòng log chẩn đoán đầu tiên.</summary>
@@ -31,6 +37,9 @@ namespace IronWasteland.Net
 
         /// <summary>Đếm số lần phát lại vụ nổ ấn để chỉ ghi vài dòng log chẩn đoán đầu tiên.</summary>
         private static int s_MarkExplosionLogCount;
+
+        /// <summary>Đếm số lần phát lại vệt sáng hạ gục để chỉ ghi vài dòng log chẩn đoán đầu tiên.</summary>
+        private static int s_KillStreamLogCount;
 
         /// <summary>Instance duy nhất trong scene do NetBootstrap/Network root giữ.</summary>
         public static NetSkillFx Instance { get; private set; }
@@ -106,6 +115,27 @@ namespace IronWasteland.Net
             manager.CustomMessagingManager.SendNamedMessageToAll(MarkExplosionMessageName, writer);
         }
 
+        /// <summary>
+        /// Host gọi khi hạ gục kẻ địch trong lúc Mark Hunter (1A) đang bật, để mọi client vẽ lại
+        /// các vệt sáng chảy về xe của người thi triển. Chỉ server được gửi; client gọi sẽ bị bỏ qua.
+        /// </summary>
+        public void BroadcastKillStream(TankBrain brain, Vector3 enemyPosition)
+        {
+            if (brain == null) return;
+
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsListening || !manager.IsServer) return;
+            if (manager.CustomMessagingManager == null) return;
+
+            NetworkObject networkObject = brain.GetComponent<NetworkObject>();
+            if (networkObject == null || !networkObject.IsSpawned) return;
+
+            using FastBufferWriter writer = new FastBufferWriter(KillStreamMessageSize, Allocator.Temp);
+            writer.WriteValueSafe(networkObject.OwnerClientId);
+            writer.WriteValueSafe(enemyPosition);
+            manager.CustomMessagingManager.SendNamedMessageToAll(KillStreamMessageName, writer);
+        }
+
         private void Register(NetworkManager manager)
         {
             if (m_Registered) return;
@@ -113,6 +143,7 @@ namespace IronWasteland.Net
 
             manager.CustomMessagingManager.RegisterNamedMessageHandler(MessageName, HandleMessage);
             manager.CustomMessagingManager.RegisterNamedMessageHandler(MarkExplosionMessageName, HandleMarkExplosion);
+            manager.CustomMessagingManager.RegisterNamedMessageHandler(KillStreamMessageName, HandleKillStream);
             m_Registered = true;
         }
 
@@ -125,6 +156,7 @@ namespace IronWasteland.Net
             {
                 manager.CustomMessagingManager.UnregisterNamedMessageHandler(MessageName);
                 manager.CustomMessagingManager.UnregisterNamedMessageHandler(MarkExplosionMessageName);
+                manager.CustomMessagingManager.UnregisterNamedMessageHandler(KillStreamMessageName);
             }
 
             m_Registered = false;
@@ -182,6 +214,32 @@ namespace IronWasteland.Net
             }
 
             tank.PlayRemoteMarkExplosionFx(position, enemyNetworkObjectId);
+        }
+
+        /// <summary>
+        /// Client nhận vị trí kẻ địch vừa chết từ host rồi chuyển cho brain dựng lại vệt sáng 1A.
+        /// </summary>
+        private void HandleKillStream(ulong senderClientId, FastBufferReader reader)
+        {
+            if (senderClientId != NetworkManager.ServerClientId) return; // chỉ host được phát lại VFX
+            reader.ReadValueSafe(out ulong ownerClientId);
+            reader.ReadValueSafe(out Vector3 enemyPosition);
+
+            NetSpawnService spawnService = FindAnyObjectByType<NetSpawnService>();
+            if (spawnService == null) return;
+            if (!spawnService.TryResolveTank(ownerClientId, out TankBrain tank) || tank == null)
+            {
+                Debug.LogWarning($"[NetSkillFx] không tìm thấy xe của owner={ownerClientId} để phát lại vệt sáng hạ gục.");
+                return;
+            }
+
+            if (s_KillStreamLogCount < 3)
+            {
+                s_KillStreamLogCount++;
+                Debug.Log($"[NetSkillFx] phát lại vệt sáng hạ gục cho xe {tank.name} (owner={ownerClientId}).");
+            }
+
+            tank.PlayRemoteKillStreamFx(enemyPosition);
         }
     }
 }

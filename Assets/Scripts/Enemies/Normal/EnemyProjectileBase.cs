@@ -267,6 +267,10 @@ namespace IronWasteland.Enemies.Normal
 
         public virtual void Despawn()
         {
+            // Host phải thu hồi bản sao visual trên client ngay khi đạn trúng đích hoặc hết hạn;
+            // thiếu bước này client giữ ghost và đạn tiếp tục bay xuyên qua xe tăng.
+            IronWasteland.Net.NetVisualSpawn.End(gameObject);
+
             Action<EnemyProjectileBase> onFinished = m_OnFinished;
             Clear();
 

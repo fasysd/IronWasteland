@@ -840,6 +840,16 @@ namespace IronWasteland.Tanks
         }
 
         /// <summary>
+        /// Client phát lại vệt sáng Mark Hunter (1A) khi host hạ gục kẻ địch đang mang ấn.
+        /// Vệt sáng bám về phía xe của người thi triển nên gói tin chỉ cần kèm vị trí kẻ địch chết.
+        /// Lớp nào có hiệu ứng riêng thì ghi đè; mặc định không làm gì.
+        /// </summary>
+        /// <param name="enemyPosition">Vị trí kẻ địch chết do host gửi xuống.</param>
+        public virtual void PlayRemoteKillStreamFx(Vector3 enemyPosition)
+        {
+        }
+
+        /// <summary>
         /// Slot nào được phép phát lại hình ảnh trên client. Mặc định cho phép cả 4 slot vì
         /// mọi tác động gameplay (sát thương, năng lượng, hồi chiêu, buff, khiên, gánh hộ,
         /// dịch chuyển) đều đã bị khoá khi <see cref="IsRemoteFxReplay"/> bật; client chỉ dựng

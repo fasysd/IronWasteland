@@ -82,9 +82,6 @@ namespace IronWasteland.Tanks.GreenFox
         private readonly Dictionary<EnemyBrain, Sign> m_Signs = new Dictionary<EnemyBrain, Sign>();
         private readonly Dictionary<EnemyBrain, GreenFox_BurnEffect> m_Burns = new Dictionary<EnemyBrain, GreenFox_BurnEffect>();
 
-        // Bộ đệm dùng lại khi client dò ấn của kẻ địch vừa chết (tránh cấp phát bộ nhớ mỗi khung hình)
-        private readonly List<Sign> m_DeadSigns = new List<Sign>();
-
         private bool m_Is1ABuffActive;
         private Coroutine m_1ABuffCoroutine;
 
@@ -582,50 +579,13 @@ namespace IronWasteland.Tanks.GreenFox
 
         private IEnumerator Buff1ARoutine(float duration)
         {
-            // Client không chạy luồng sát thương nên không bao giờ nhận được NotifyEnemyKilled.
-            // Trong suốt thời gian hiệu lực, tự dò kẻ địch mang ấn vừa chết (máu do host đồng bộ về 0)
-            // để vẽ lại các vệt sáng giống máy chủ. Máy chủ giữ nguyên hành vi cũ.
-            float expireTime = Time.time + duration;
-            while (Time.time < expireTime)
-            {
-                MirrorClientKillStreams();
-                yield return null;
-            }
+            // Vệt sáng khi hạ gục do host gửi xuống qua NetSkillFx (xem PlayRemoteKillStreamFx).
+            // Client không tự dò được vì kẻ địch bị despawn ngay khi chết nên chưa kịp thấy IsAlive = false.
+            yield return new WaitForSeconds(duration);
 
             m_Is1ABuffActive = false;
             m_1ABuffCoroutine = null;
             UpdateAllSignsState(false);
-        }
-
-        /// <summary>
-        /// Mark Hunter (1A) trên client: phát lại các vệt sáng chạy về Green Fox khi kẻ địch mang ấn chết.
-        /// Chỉ chạy ở client vì máy chủ đã gọi <see cref="NotifyEnemyKilled"/> từ luồng sát thương thật.
-        /// Hồi chiêu khi hạ gục vẫn do máy chủ quyết định nên ở đây KHÔNG đụng tới cooldown.
-        /// </summary>
-        private void MirrorClientKillStreams()
-        {
-            if (HasGameplayAuthority || m_Signs.Count == 0) return;
-
-            m_DeadSigns.Clear();
-            foreach (var kv in m_Signs)
-            {
-                if (kv.Key == null || kv.Value == null) continue;
-                if (kv.Key.IsAlive) continue;
-                m_DeadSigns.Add(kv.Value);
-            }
-
-            for (int i = 0; i < m_DeadSigns.Count; i++)
-            {
-                Sign sign = m_DeadSigns[i];
-                if (sign == null) continue;
-
-                SpawnKillStreams(sign.transform.position);
-
-                // Dọn ấn: OnDestroy -> OnSignRemoved gỡ khỏi m_Signs (không sửa danh sách khi đang duyệt)
-                Destroy(sign.gameObject);
-            }
-
-            m_DeadSigns.Clear();
         }
 
         private IEnumerator Buff1BRoutine(float duration)
@@ -707,6 +667,10 @@ namespace IronWasteland.Tanks.GreenFox
 
             SpawnKillStreams(enemyPosition);
             ReduceSkillCooldown(Skill1Index, skill1SubDesign.Buff1ACooldownReductionOnKill);
+
+            // Client không chạy luồng sát thương nên không thể tự biết kẻ địch vừa chết;
+            // máy chủ gửi vị trí xuống để mọi máy vẽ lại các vệt sáng giống hệt nhau.
+            NetSkillFx.Instance?.BroadcastKillStream(this, enemyPosition);
         }
 
         /// <summary>Mark Hunter (1A): các luồng xanh chảy từ chỗ kẻ địch chết về Green Fox.</summary>
@@ -722,6 +686,18 @@ namespace IronWasteland.Tanks.GreenFox
                 if (stream == null) stream = go.AddComponent<GreenFox_KillStreamEffect>();
                 stream.Initialize(from, transform);
             }
+        }
+
+        /// <summary>
+        /// Client dựng lại vệt sáng Mark Hunter (1A) theo vị trí máy chủ gửi xuống.
+        /// Chỉ vẽ hình ảnh, không đụng tới sát thương hay hồi chiêu vì máy chủ đã xử lý xong.
+        /// </summary>
+        public override void PlayRemoteKillStreamFx(Vector3 enemyPosition)
+        {
+            if (HasGameplayAuthority) return;
+            if (!m_Is1ABuffActive) return;
+
+            SpawnKillStreams(enemyPosition);
         }
 
         // ------------------------------------------------------------------

@@ -45,8 +45,16 @@ namespace IronWasteland.Net
             GameObject instance = Object.Instantiate(template.gameObject, position, rotation);
             instance.SetActive(true);
 
-            if (TankBrain.NetworkSessionActive && NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
-                NetVisualSpawn.Instance?.Broadcast(template.gameObject, position, rotation, velocity, lifetime, animate);
+            // Ghi nhớ handle ghost để host thu hồi đúng lúc (đạn trúng đích/hết hạn). Thiếu bước này
+            // client giữ lại bản sao và đạn bay xuyên qua xe tăng cho tới khi tự hết hạn.
+            int handle = 0;
+            if (TankBrain.NetworkSessionActive && NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer
+                && NetVisualSpawn.Instance != null)
+            {
+                handle = NetVisualSpawn.Instance.Broadcast(template.gameObject, position, rotation, velocity, lifetime, animate);
+            }
+
+            NetVisualSpawn.Remember(instance, handle);
 
             return instance.GetComponent<T>();
         }
@@ -78,6 +86,7 @@ namespace IronWasteland.Net
             GameObject instance = Object.Instantiate(template.gameObject, position, rotation);
             instance.SetActive(true);
 
+            int handle = 0;
             if (TankBrain.NetworkSessionActive && NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
             {
                 ulong targetId = 0UL;
@@ -89,9 +98,9 @@ namespace IronWasteland.Net
                 }
 
                 NetworkObject root = template.GetComponentInParent<NetworkObject>(true);
-                if (root != null)
+                if (root != null && NetVisualSpawn.Instance != null)
                 {
-                    NetVisualSpawn.Instance?.BroadcastByName(
+                    handle = NetVisualSpawn.Instance.BroadcastByName(
                         root,
                         template.gameObject.name,
                         position,
@@ -105,6 +114,8 @@ namespace IronWasteland.Net
                         homingDuration);
                 }
             }
+
+            NetVisualSpawn.Remember(instance, handle);
 
             return instance.GetComponent<T>();
         }
