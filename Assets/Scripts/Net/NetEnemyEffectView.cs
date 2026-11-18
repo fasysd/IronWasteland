@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using IronWasteland.Enemies;
+using IronWasteland.Tanks.GreenFox;
 using IronWasteland.Utilities;
 using Unity.Netcode;
 using UnityEngine;
@@ -37,6 +38,23 @@ namespace IronWasteland.Net
         [Header("Kiểu hiển thị theo EffectId")]
         [SerializeField] private List<EffectStyle> styles = new List<EffectStyle>();
 
+        /// <summary>Prefab hiệu ứng thật để client dựng giống host (thay cho vòng tròn mờ).</summary>
+        [Serializable]
+        public class EffectPrefab
+        {
+            [Tooltip("Chuỗi con trong EffectId, ví dụ GreenFox_Burn")]
+            public string match = "";
+
+            [Tooltip("Prefab hiệu ứng thật (để trống thì dùng vòng tròn mờ)")]
+            public GameObject prefab;
+
+            [Tooltip("Prefab tự bám theo quái (cháy, ấn) — bật thì view không tự di chuyển nó")]
+            public bool selfFollow = true;
+        }
+
+        [Header("Prefab hiệu ứng thật (client dựng giống host)")]
+        [SerializeField] private List<EffectPrefab> effectPrefabs = new List<EffectPrefab>();
+
         [Header("Cấu hình")]
         [SerializeField, Min(0.05f)] private float pollInterval = 0.1f;
         [SerializeField] private int sortingOrder = 8;
@@ -47,6 +65,9 @@ namespace IronWasteland.Net
             public GameObject Go;
             public SpriteRenderer Renderer;
             public EffectStyle Style;
+            public GreenFox_BurnEffect Burn;
+            public Sign Sign;
+            public bool SelfFollow;
             public float Phase;
         }
 
@@ -70,7 +91,8 @@ namespace IronWasteland.Net
         private void Update()
         {
             NetworkManager manager = NetworkManager.Singleton;
-            if (manager == null || !manager.IsListening)
+            // Host đã tự dựng prefab hiệu ứng gốc khi gây trạng thái; không vẽ ghost đè lên nữa.
+            if (manager == null || !manager.IsListening || manager.IsServer)
             {
                 ClearAll();
                 return;
@@ -97,7 +119,7 @@ namespace IronWasteland.Net
             {
                 NetworkObject netObj = pair.Value;
                 if (netObj == null || !netObj.IsSpawned) continue;
-                if (!netObj.TryGetComponent(out EnemyBrain _)) continue;
+                if (!netObj.TryGetComponent(out EnemyBrain enemyBrain)) continue;
 
                 ulong netId = netObj.NetworkObjectId;
                 int count = sync.CopyEnemyEffects(netId, m_Buffer);
@@ -120,7 +142,7 @@ namespace IronWasteland.Net
                     NetEffectInfo info = m_Buffer[i];
                     if (string.IsNullOrEmpty(info.EffectId)) continue;
                     seen.Add(info.EffectId);
-                    EnsureEntry(netId, info.EffectId, map);
+                    EnsureEntry(netId, info, enemyBrain, map);
                 }
             }
 
@@ -162,9 +184,61 @@ namespace IronWasteland.Net
             }
         }
 
-        private void EnsureEntry(ulong netId, string effectId, Dictionary<string, Entry> map)
+        private void EnsureEntry(ulong netId, NetEffectInfo info, EnemyBrain enemy, Dictionary<string, Entry> map)
         {
-            if (map.TryGetValue(effectId, out Entry existing) && existing.Go != null) return;
+            string effectId = info.EffectId;
+            float duration = info.TotalDuration > 0f ? info.TotalDuration : 8f;
+
+            if (map.TryGetValue(effectId, out Entry existing) && existing.Go != null)
+            {
+                // Đòn mới trúng quái: host báo làm mới, chỉ gia hạn hiển thị.
+                if (existing.Burn != null)
+                {
+                    existing.Burn.RefreshVisualOnly(enemy, duration);
+                }
+                else if (existing.Sign != null && enemy != null)
+                {
+                    existing.Sign.Refresh(duration);
+                    existing.Sign.SetInitialStacks(Mathf.Max(1, info.Stacks));
+                }
+                return;
+            }
+
+            EffectPrefab prefabStyle = PrefabFor(effectId);
+            if (prefabStyle != null && prefabStyle.prefab != null && enemy != null)
+            {
+                GameObject instance = Instantiate(prefabStyle.prefab, enemy.transform.position, Quaternion.identity);
+                GreenFox_BurnEffect burn = instance.GetComponent<GreenFox_BurnEffect>();
+                Sign sign = null;
+                if (burn != null)
+                {
+                    burn.InitializeVisualOnly(enemy, duration);
+                }
+                else
+                {
+                    sign = instance.GetComponent<Sign>();
+                    if (sign != null)
+                    {
+                        sign.SetTarget(enemy, duration, null);
+                        sign.SetInitialStacks(Mathf.Max(1, info.Stacks));
+                    }
+                    else
+                    {
+                        Destroy(instance, duration);
+                    }
+                }
+
+                map[effectId] = new Entry
+                {
+                    Go = instance,
+                    Style = StyleFor(effectId),
+                    Burn = burn,
+                    Sign = sign,
+                    SelfFollow = prefabStyle.selfFollow,
+                    Phase = (netId % 97) * 0.37f
+                };
+                return;
+            }
 
             EffectStyle style = StyleFor(effectId);
             GameObject go = new GameObject("NetFx_" + effectId);
@@ -185,6 +259,7 @@ namespace IronWasteland.Net
                 Go = go,
                 Renderer = renderer,
                 Style = style,
+                SelfFollow = false,
                 Phase = (netId % 97) * 0.37f
             };
         }
@@ -203,11 +278,11 @@ namespace IronWasteland.Net
                 foreach (KeyValuePair<string, Entry> effectPair in ownerPair.Value)
                 {
                     Entry entry = effectPair.Value;
-                    if (entry.Go == null) continue;
+                    if (entry.Go == null || entry.SelfFollow) continue;
 
                     entry.Go.transform.position = center + entry.Style.offset;
 
-                    if (entry.Style.pulseSpeed > 0f)
+                    if (entry.Renderer != null && entry.Style.pulseSpeed > 0f)
                     {
                         Color color = entry.Style.color;
                         float pulse = 0.75f + 0.25f * Mathf.Sin(Time.time * entry.Style.pulseSpeed + entry.Phase);
@@ -216,6 +291,18 @@ namespace IronWasteland.Net
                     }
                 }
             }
+        }
+
+        private EffectPrefab PrefabFor(string effectId)
+        {
+            for (int i = 0; i < effectPrefabs.Count; i++)
+            {
+                EffectPrefab entry = effectPrefabs[i];
+                if (entry == null || entry.prefab == null || string.IsNullOrEmpty(entry.match)) continue;
+                if (effectId.IndexOf(entry.match, StringComparison.OrdinalIgnoreCase) >= 0) return entry;
+            }
+
+            return null;
         }
 
         private EffectStyle StyleFor(string effectId)

@@ -2639,6 +2639,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetEnemyEffectView
   styles: []
+  effectPrefabs:
+  - match: Burn
+    prefab: {fileID: 2067845583780236539, guid: 6965cdc62f9a14941803df40016d7304, type: 3}
+    selfFollow: 1
+  - match: Mark
+    prefab: {fileID: 1374597350927784502, guid: 4d22e82004df3bf41b960d912ec94e22, type: 3}
+    selfFollow: 1
   pollInterval: 0.1
   sortingOrder: 8
   sortingLayer: Default

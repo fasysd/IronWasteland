@@ -16,6 +16,7 @@ namespace IronWasteland.Tanks.GreenFox
     public class GreenFox_BurnEffect : MonoBehaviour
     {
         private bool m_IsBurning;
+        private bool m_VisualOnly;
         private TankBrain_GreenFox m_Owner;
         private EnemyBrain m_OwnerEnemy;
         private Transform m_TargetTransform;
@@ -26,6 +27,7 @@ namespace IronWasteland.Tanks.GreenFox
         private Action<GreenFox_BurnEffect> m_OnEnded;
 
         public bool IsBurning => m_IsBurning;
+        public bool IsVisualOnly => m_VisualOnly;
         public EnemyBrain OwnerEnemy => m_OwnerEnemy;
 
         // --- DẤU ẤN CHÁY TRÊN KẺ ĐỊCH ---
@@ -55,6 +57,40 @@ namespace IronWasteland.Tanks.GreenFox
             m_EndTime = Time.time + duration;
         }
 
+        /// <summary>
+        /// Client: chỉ chạy hiệu ứng hình ảnh của vết cháy theo tín hiệu host, KHÔNG gây sát thương.
+        /// Tự huỷ khi hết thời gian hoặc khi quái chết/despawn.
+        /// </summary>
+        public void InitializeVisualOnly(EnemyBrain enemy, float duration)
+        {
+            m_VisualOnly = true;
+            m_IsBurning = true;
+            m_Owner = null;
+            m_OwnerEnemy = enemy;
+            m_TargetTransform = enemy != null ? enemy.transform : null;
+            m_EndTime = Time.time + Mathf.Max(0.05f, duration);
+
+            if (m_TargetTransform == null)
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        /// <summary>Client: host báo hiệu ứng được làm mới (đòn mới trúng) — chỉ gia hạn hiển thị.</summary>
+        public void RefreshVisualOnly(EnemyBrain enemy, float duration)
+        {
+            if (!m_VisualOnly) return;
+
+            if (enemy != null)
+            {
+                m_OwnerEnemy = enemy;
+                m_TargetTransform = enemy.transform;
+            }
+
+            m_EndTime = Time.time + Mathf.Max(0.05f, duration);
+            m_IsBurning = true;
+        }
+
         // --- VÒNG TRÒN BUFF QUANH XE TANK ---
         public void Initialize(Transform target, float duration)
         {
@@ -64,6 +100,16 @@ namespace IronWasteland.Tanks.GreenFox
 
         private void LateUpdate()
         {
+            if (m_VisualOnly)
+            {
+                if (m_TargetTransform == null || m_OwnerEnemy == null || !m_OwnerEnemy.IsAlive || Time.time >= m_EndTime)
+                {
+                    m_IsBurning = false;
+                    Destroy(gameObject);
+                    return;
+                }
+            }
+
             UpdatePosition();
         }
 

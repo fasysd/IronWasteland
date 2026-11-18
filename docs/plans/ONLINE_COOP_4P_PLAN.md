@@ -776,3 +776,10 @@ Nguyên tắc: trong replay, client chỉ vẽ cosmetic của hành động cast
 - `Assets/Scripts/Net/NetEnemyEffectView.cs` gắn root `Network`, vẽ vòng Burn/Mark/Tail theo `NetworkObjectId`.
 - GreenFox: `TryApplyBurn`, `ApplyMark`, `AddMarkStacks`, nổ ấn và `GreenFox_NineTailedAssault` chỉ chạy trên host; client replay chỉ còn hiệu ứng cast (hào quang 1B) — không bị vẽ hai lần vì 1B dùng `AddBonusStats` chứ không dùng `StatusEffect`.
 - Chưa sửa (chờ duyệt): visual phụ thuộc hit/Random ở `WaterB_LifeDrainStreamEffect`, `WaterB_HealingProjectile`, `OptionalSkill2_2_Leviathan` (random offset), `OptionalSkill1Orb` (random direction), `OptionalSkill1_2` (visualBurstAlly), `GreenFox_Skill0` (root effect).
+
+## Hướng 1 — client dùng đúng prefab hiệu ứng như host (2026-11-18)
+Mục tiêu: client thấy đúng prefab lửa/ấn như host thay vì vòng `SoftCircle`, và host không vẽ chồng ghost lên hiệu ứng host đã Instantiate.
+- `Assets/Scripts/Tanks/GreenFox/GreenFox_BurnEffect.cs`: thêm chế độ visual-only (`InitializeVisualOnly`, `RefreshVisualOnly`, `IsVisualOnly`); chỉ bám mục tiêu và tự huỷ khi hết hạn/mục tiêu chết, **không chạy coroutine sát thương**.
+- `Assets/Scripts/Net/NetEnemyEffectView.cs`: danh sách `effectPrefabs` (`match`, `prefab`, `selfFollow`) — client `Instantiate` đúng prefab (`Burn.prefab`, `sign.prefab`); host `IsServer` thì `ClearAll()` và không vẽ gì; ấn được refresh/gia hạn theo gói mới; hiệu ứng chưa có prefab vẫn fallback `SoftCircle`.
+- Scene: `Network/NetEnemyEffectView.effectPrefabs` = `[Burn → Assets/Prefabs/Tanks/GreenFox/Burn.prefab, Mark → Assets/Prefabs/Tanks/GreenFox/sign.prefab]`.
+- Kiểm chứng: `dotnet build` 0 Error / 5 Warning; smoke Play host `visualOnly=True burning=True hostGhostEntries=0`; HP quái `220 → 220` sau 2 s ⇒ visual-only không gây sát thương; prefab tự huỷ sau thời lượng.
