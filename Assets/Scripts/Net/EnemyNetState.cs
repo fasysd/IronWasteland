@@ -16,11 +16,11 @@ namespace IronWasteland.Net
     [RequireComponent(typeof(EnemyBrain))]
     public class EnemyNetState : NetworkBehaviour
     {
-        /// <summary>Chu kỳ host gửi máu; 10 Hz là đủ cho thanh máu, không cần mỗi khung hình.</summary>
-        private const float SyncInterval = 0.1f;
+        /// <summary>Chu kỳ host gửi máu; 4 Hz là đủ cho thanh máu (giảm băng thông khi đông quái).</summary>
+        private const float SyncInterval = 0.25f;
 
         /// <summary>Chỉ ghi khi máu lệch quá ngưỡng này để tránh gói tin thừa.</summary>
-        private const float ValueEpsilon = 0.1f;
+        private const float ValueEpsilon = 0.5f;
 
         private readonly NetworkVariable<float> m_Health = new(
             0f,

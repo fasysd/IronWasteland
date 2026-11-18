@@ -238,18 +238,31 @@ namespace IronWasteland.Net
         /// <summary>Danh sách hiệu ứng đang hiển thị của một xe (rỗng nếu chưa có).</summary>
         public IReadOnlyCollection<NetEffectInfo> GetEffects(ulong ownerClientId)
         {
-            if (!m_Effects.TryGetValue(ownerClientId, out Dictionary<string, NetEffectInfo> list))
-                return System.Array.Empty<NetEffectInfo>();
+            List<NetEffectInfo> result = new List<NetEffectInfo>();
+            CopyEffects(ownerClientId, result);
+            return result;
+        }
 
-            List<NetEffectInfo> result = new List<NetEffectInfo>(list.Count);
+        /// <summary>
+        /// Bản không cấp phát: đổ hiệu ứng còn sống vào <paramref name="buffer"/> (buffer được Clear trước).
+        /// Dùng cho UI/visual gọi mỗi frame để tránh tạo List rác.
+        /// </summary>
+        public int CopyEffects(ulong ownerClientId, List<NetEffectInfo> buffer)
+        {
+            if (buffer == null) return 0;
+            buffer.Clear();
+
+            if (!m_Effects.TryGetValue(ownerClientId, out Dictionary<string, NetEffectInfo> list))
+                return 0;
+
             foreach (KeyValuePair<string, NetEffectInfo> pair in list)
             {
                 NetEffectInfo info = pair.Value;
                 if (EstimateRemaining(info) <= 0f && info.TotalDuration > 0f) continue;
-                result.Add(info);
+                buffer.Add(info);
             }
 
-            return result;
+            return buffer.Count;
         }
 
         private static string Trim(string value)

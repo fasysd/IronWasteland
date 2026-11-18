@@ -771,15 +771,15 @@ MonoBehaviour:
   UseUnreliableDeltas: 0
   SyncPositionX: 1
   SyncPositionY: 1
-  SyncPositionZ: 1
-  SyncRotAngleX: 1
-  SyncRotAngleY: 1
+  SyncPositionZ: 0
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
   SyncRotAngleZ: 1
-  SyncScaleX: 1
-  SyncScaleY: 1
-  SyncScaleZ: 1
-  PositionThreshold: 0.001
-  RotAngleThreshold: 0.01
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.01
+  RotAngleThreshold: 1
   ScaleThreshold: 0.01
   UseQuaternionSynchronization: 0
   UseQuaternionCompression: 0
@@ -802,6 +802,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetProxyVisual
   moveThreshold: 0.05
   aimRadius: 10
+  aimLerpSpeed: 18
 --- !u!114 &7955696052223430288
 MonoBehaviour:
   m_ObjectHideFlags: 0

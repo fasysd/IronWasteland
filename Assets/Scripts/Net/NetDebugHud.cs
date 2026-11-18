@@ -33,6 +33,7 @@ namespace IronWasteland.Net
 
         private readonly StringBuilder m_Builder = new();
         private readonly List<PlayerNetState> m_Players = new();
+        private readonly List<NetEffectInfo> m_EffectBuffer = new();
 
         private bool m_Visible;
         private float m_RefreshTimer;
@@ -247,11 +248,10 @@ namespace IronWasteland.Net
             NetEffectSync effects = NetEffectSync.Instance;
             if (effects != null && player.IsSpawned)
             {
-                IReadOnlyCollection<NetEffectInfo> list = effects.GetEffects(player.OwnerClientId);
-                if (list.Count > 0)
+                if (effects.CopyEffects(player.OwnerClientId, m_EffectBuffer) > 0)
                 {
                     builder.Append(" | ef");
-                    foreach (NetEffectInfo info in list)
+                    foreach (NetEffectInfo info in m_EffectBuffer)
                     {
                         builder.Append(' ').Append(info.EffectId);
                         if (info.Stacks > 1) builder.Append('x').Append(info.Stacks);

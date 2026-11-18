@@ -754,4 +754,18 @@ Kiểm chứng Play (host): xe 650/650, `nvMax=650`, `nvSpeed=110`; tăng `MaxHe
 
 Build 0 Error / 5 Warning (đều là warning cũ có sẵn). Chưa push.
 
-*Hết tài liệu. Bản 4.3 — 2026-11-18.*
+## Nhóm 3 — hiệu năng/đo đạc (2026-11-18)
+
+| Việc | Kết quả |
+| --- | --- |
+| Đo trước | 1 host + 1 client (build Development, Relay), 30 quái, ghost chạm trần 120: NIC tổng **~25,1 KB/s** (down 12,2 / up 13,0). Máy rảnh đo được **~3,2 KB/s** ⇒ traffic của game **~21,9 KB/s**. |
+| Cấu hình NetworkTransform | 6 prefab tank + 24 prefab quái: `SyncPositionZ=false`, `SyncRotAngleX=false`, `SyncRotAngleY=false`, `SyncScaleX/Y/Z=false`, `PositionThreshold=0.01`, `RotAngleThreshold=1°` (đọc lại tại runtime xác nhận đã áp). |
+| HP quái | `EnemyNetState.SyncInterval` 0,1 s → **0,25 s** (4 Hz), `ValueEpsilon` 0,1 → 0,5. |
+| Cache hiệu ứng | `NetEffectSync.CopyEffects(ulong, List<NetEffectInfo>)` (không cấp phát); `NetStatusVisual` gom hiệu ứng **1 lần/frame** dùng chung cho hào quang khiên + buff; `NetDebugHud` dùng buffer thay `GetEffects`. |
+| Log rác | `TextDamageManager` cảnh báo "Font material khong ho tro Outline" chỉ in **một lần** (trước đó 6 401 dòng trong ~1 phút, mỗi hạt sát thương một dòng). |
+| Đo sau | NIC **~24,4–24,7 KB/s** (down 11,9–12,0 / up 12,5–12,7) ⇒ traffic game **~21,2–21,5 KB/s**, giảm ~3% (nằm trong biên nhiễu ±1 KB/s của phép đo NIC). |
+| Nhận định | Phần lớn băng thông còn lại là `NetworkTransform` 20 Hz cho ~30 quái + overhead gói Relay/DTLS + các named message nhỏ (ghost, hiệu ứng, trạng thái ải) chứ không phải payload trục toạ độ. Muốn giảm mạnh hơn cần hạ tần số gửi transform theo khoảng cách hoặc tick riêng cho quái — ngoài phạm vi nhóm này. |
+
+Build 0 Error / 5 Warning (đều là warning cũ có sẵn). Chưa push.
+
+*Hết tài liệu. Bản 4.4 — 2026-11-18.*

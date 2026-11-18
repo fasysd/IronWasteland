@@ -71,6 +71,11 @@ namespace IronWasteland.Net
         private Sprite m_DefaultShieldSprite;
         private Vector3 m_DefaultShieldScale;
 
+        // Buffer tái sử dụng cho client: gom hiệu ứng 1 lần/frame thay vì cấp phát List
+        // riêng cho từng hào quang (khiên + buff) mỗi khung hình.
+        private readonly List<NetEffectInfo> m_ClientEffects = new List<NetEffectInfo>();
+        private int m_ClientEffectsFrame = -1;
+
         private void Awake()
         {
             m_Brain = GetComponent<TankBrain>();
@@ -167,12 +172,28 @@ namespace IronWasteland.Net
         {
             if (m_NetState != null && m_NetState.IsSpawned && !m_NetState.IsServer)
             {
-                NetEffectSync sync = NetEffectSync.Instance;
-                if (sync == null) return ShieldAuraKind.Default;
-                return ClassifyEffects(sync.GetEffects(m_NetState.OwnerClientId), null);
+                EnsureClientEffects();
+                return ClassifyEffects(m_ClientEffects, null);
             }
 
             return ClassifyEffects(null, m_Brain != null ? m_Brain.ActiveEffects : null);
+        }
+
+        /// <summary>
+        /// Client chỉ copy hiệu ứng từ <see cref="NetEffectSync"/> một lần mỗi frame, dùng chung cho
+        /// cả hào quang khiên và hào quang buff (tránh cấp phát List mỗi khung hình).
+        /// </summary>
+        private void EnsureClientEffects()
+        {
+            if (m_ClientEffectsFrame == Time.frameCount) return;
+
+            m_ClientEffectsFrame = Time.frameCount;
+            m_ClientEffects.Clear();
+
+            if (m_NetState == null || !m_NetState.IsSpawned || m_NetState.IsServer) return;
+
+            NetEffectSync sync = NetEffectSync.Instance;
+            if (sync != null) sync.CopyEffects(m_NetState.OwnerClientId, m_ClientEffects);
         }
 
         private static ShieldAuraKind ClassifyEffects(
@@ -234,13 +255,10 @@ namespace IronWasteland.Net
 
             if (m_NetState != null && m_NetState.IsSpawned && !m_NetState.IsServer)
             {
-                NetEffectSync sync = NetEffectSync.Instance;
-                if (sync == null) return false;
+                EnsureClientEffects();
+                if (m_ClientEffects.Count == 0) return false;
 
-                IReadOnlyCollection<NetEffectInfo> effects = sync.GetEffects(m_NetState.OwnerClientId);
-                if (effects == null) return false;
-
-                foreach (NetEffectInfo effect in effects)
+                foreach (NetEffectInfo effect in m_ClientEffects)
                 {
                     if (string.IsNullOrEmpty(effect.EffectId)) continue;
                     if (IsShieldEffect(effect.EffectId)) continue;

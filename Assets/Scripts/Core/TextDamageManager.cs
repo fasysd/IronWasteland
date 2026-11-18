@@ -78,6 +78,9 @@ namespace IronWasteland
 
         private static TextDamageManager m_Instance;
 
+        /// <summary>Đảm bảo cảnh báo thiếu Outline chỉ in một lần cho cả phiên.</summary>
+        private static bool s_OutlineWarningLogged;
+
         /// <summary>Instance duy nhat. Tu tao GameObject neu chua co trong Scene.</summary>
         public static TextDamageManager Instance
         {
@@ -251,10 +254,16 @@ namespace IronWasteland
             }
             else
             {
-                Debug.LogWarning(
-                    $"[{nameof(TextDamageManager)}] Font material khong ho tro Outline. " +
-                    "Hay dung TMP Distance Field shader cho Font Asset.",
-                    item.Go);
+                // Chỉ cảnh báo một lần: thiếu outline không chặn hiển thị, nhưng log mỗi hạt
+                // sát thương sẽ bắn hàng nghìn dòng và làm chậm trận đông quái.
+                if (!s_OutlineWarningLogged)
+                {
+                    s_OutlineWarningLogged = true;
+                    Debug.LogWarning(
+                        $"[{nameof(TextDamageManager)}] Font material khong ho tro Outline. " +
+                        "Hay dung TMP Distance Field shader cho Font Asset.",
+                        item.Go);
+                }
             }
 
             item.Renderer.sortingOrder = sortingOrder;
