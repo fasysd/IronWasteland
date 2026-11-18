@@ -161,9 +161,28 @@ namespace IronWasteland.Net
             }
             catch (Exception exception)
             {
-                LastError = exception.Message;
+                LastError = DescribeRelayError(exception);
                 return null;
             }
+        }
+
+        /// <summary>Dịch lỗi Relay sang câu dễ hiểu cho người chơi.</summary>
+        private static string DescribeRelayError(Exception exception)
+        {
+            string message = exception.Message ?? string.Empty;
+            string lower = message.ToLowerInvariant();
+
+            if (lower.Contains("not found") || lower.Contains("join code") || lower.Contains("invalid allocation"))
+            {
+                return "Mã Relay không còn hiệu lực — phòng đã đóng hoặc host vừa tạo phòng mới. Hãy xin mã mới ở cửa sổ host.";
+            }
+
+            if (lower.Contains("expired") || lower.Contains("timeout"))
+            {
+                return "Mã Relay đã hết hạn hoặc phòng không phản hồi. Hãy tạo phòng mới.";
+            }
+
+            return "Vào Relay lỗi: " + message;
         }
 
         /// <summary>Tạo lobby công khai gắn mã Relay vừa tạo. Host gọi sau khi đã có allocation.</summary>

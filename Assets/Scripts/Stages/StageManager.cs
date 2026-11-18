@@ -165,6 +165,10 @@ namespace IronWasteland.Stages
             m_Spawned.Clear();
             m_PendingWaves.Clear();
 
+            // Xoá roster cũ để lần Update đầu tiên của trận mới quét lại danh sách xe thật.
+            m_Players.Clear();
+            m_RosterTimer = 0f;
+
             if (definition.Waves != null)
             {
                 for (int i = 0; i < definition.Waves.Count; i++)
@@ -216,6 +220,8 @@ namespace IronWasteland.Stages
 
             m_Spawned.Clear();
             m_PendingWaves.Clear();
+            m_Players.Clear();
+            m_RosterTimer = 0f;
 
             Kills = 0;
             m_NextStatusBroadcastTime = 0f;
@@ -373,8 +379,25 @@ namespace IronWasteland.Stages
 
         private void EvaluateOutcome()
         {
-            // Chỉ thua khi cả đội đã chết; lúc mới vào chưa kịp spawn thì bỏ qua.
-            if (m_Players.Count > 0 && !AnyPlayerAlive())
+            // Chỉ thua khi cả đội đã chết. Nhưng roster có thể còn tham chiếu cũ đã bị huỷ
+            // (xe của trận trước bị despawn khi chơi lại) — lúc đó mọi phần tử đều null,
+            // không được coi là "cả đội chết" vì sẽ thua ngay giây 0 của trận mới.
+            bool hasPlayer = false;
+            bool anyAlive = false;
+            for (int i = 0; i < m_Players.Count; i++)
+            {
+                TankBrain tank = m_Players[i];
+                if (tank == null) continue;
+
+                hasPlayer = true;
+                if (tank.IsAlive)
+                {
+                    anyAlive = true;
+                    break;
+                }
+            }
+
+            if (hasPlayer && !anyAlive)
             {
                 FailStage();
                 return;
