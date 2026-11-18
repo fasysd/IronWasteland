@@ -62,6 +62,8 @@ namespace IronWasteland.Tanks.BlackShadow
         private DamageInterceptEffect guardEffect;
         private string guardEffectId;
         private bool isGuarding;
+        private bool replayVisualOnly;
+        private float replayEndTime;
         private float currentAngle;
         private Coroutine burstCoroutine;
 
@@ -142,10 +144,19 @@ namespace IronWasteland.Tanks.BlackShadow
             }
             else
             {
-                // Brain từ chối hiệu ứng (ví dụ mục tiêu đã chết trong frame này) → không giữ trạng thái bảo vệ.
-                targetTank = null;
-                casterTank = null;
-                return;
+                // Client phát lại kỹ năng: Brain chặn ApplyEffect nên không có hiệu ứng thật.
+                // Vẫn giữ bóng ma đúng thời lượng để hình ảnh khớp với host.
+                bool replaying = target.IsRemoteFxReplay || (casterTank != null && casterTank.IsRemoteFxReplay);
+                if (!replaying)
+                {
+                    // Brain từ chối hiệu ứng (ví dụ mục tiêu đã chết trong frame này) → không giữ trạng thái bảo vệ.
+                    targetTank = null;
+                    casterTank = null;
+                    return;
+                }
+
+                replayVisualOnly = true;
+                replayEndTime = Time.time + Mathf.Max(0.1f, duration);
             }
 
             isGuarding = true;
@@ -229,6 +240,13 @@ namespace IronWasteland.Tanks.BlackShadow
         {
             if (!isGuarding) return;
 
+            // Bản phát lại trên client chỉ có hình ảnh: tự tắt khi hết thời lượng hiệu lực.
+            if (replayVisualOnly)
+            {
+                if (Time.time >= replayEndTime) EndGuard(hideBurst: true);
+                return;
+            }
+
             // Hiệu ứng có thể biến mất vì hết thời gian, bị gỡ bởi hiệu ứng khác (Dispel/ClearAllEffects)
             // hoặc vì mục tiêu đã chết — khi đó dọn luôn bóng ma thay vì tự đếm giờ song song.
             if (targetTank == null || !targetTank.IsAlive || targetTank.GetEffect(GuardEffectId) == null)
@@ -298,6 +316,7 @@ namespace IronWasteland.Tanks.BlackShadow
 
             casterTank = null;
             isGuarding = false;
+            replayVisualOnly = false;
 
             if (visualGuard != null)
             {
@@ -387,6 +406,7 @@ namespace IronWasteland.Tanks.BlackShadow
 
             casterTank = null;
             isGuarding = false;
+            replayVisualOnly = false;
 
             if (burstCoroutine != null)
             {

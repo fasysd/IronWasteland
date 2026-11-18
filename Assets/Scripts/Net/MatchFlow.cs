@@ -216,6 +216,8 @@ namespace IronWasteland.Net
 
             m_PlayerCount = 0;
             Phase = MatchPhase.Lobby;
+            bootstrap?.Stage?.ResetToIdle();
+            NetStageEvents.Instance?.ResetState();
             NetLoadout hostLoadout = bootstrap != null ? bootstrap.GetLoadout(NetBootstrap.ServerClientId) : default;
             AddOrUpdatePlayer(NetBootstrap.ServerClientId, bootstrap != null ? bootstrap.LocalTankIndex : (byte)0, true,
                 (byte)hostLoadout.OptionSkill1, (byte)hostLoadout.OptionSkill2);
@@ -277,6 +279,7 @@ namespace IronWasteland.Net
 
             bootstrap?.DespawnAllTanks();
             bootstrap?.Stage?.ResetToIdle();
+            NetStageEvents.Instance?.ResetState();
 
             for (int i = 0; i < m_PlayerCount; i++) m_Ready[i] = false;
             m_Ready[0] = true; // host luôn sẵn sàng
@@ -302,6 +305,8 @@ namespace IronWasteland.Net
             }
 
             bootstrap?.Stage?.SetDefinition(stage);
+            bootstrap?.Stage?.ResetToIdle();
+            NetStageEvents.Instance?.ResetState();
             HookStage();
 
             for (int i = 0; i < m_PlayerCount; i++)

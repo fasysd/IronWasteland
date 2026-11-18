@@ -1,4 +1,4 @@
-﻿using IronWasteland.Core.Effects;
+using IronWasteland.Core.Effects;
 using UnityEngine;
 
 namespace IronWasteland.Tanks.WaterB
@@ -53,6 +53,15 @@ namespace IronWasteland.Tanks.WaterB
 
             if (shield == null)
             {
+                // Client phát lại kỹ năng: Brain chặn AddShield nên không có khiên thật, nhưng vẫn phải
+                // giữ hình bong bóng đúng thời lượng để người chơi thấy giống host.
+                if (caster != null && caster.IsRemoteFxReplay)
+                {
+                    Cleanup();
+                    Destroy(gameObject, Mathf.Max(0.2f, duration > 0f ? duration : 4f));
+                    return;
+                }
+
                 Cleanup();
                 Destroy(gameObject);
             }

@@ -44,6 +44,16 @@ namespace IronWasteland.Net
 
         private bool m_Registered;
 
+        /// <summary>Xoá trạng thái ải đã nhớ (dùng khi tạo phòng mới để HUD không còn hiện THẮNG/THUA cũ).</summary>
+        public void ResetState()
+        {
+            HasStageState = false;
+            StageState = StateStarted;
+            StageKills = 0;
+            StageKillTarget = 0;
+            StageElapsed = 0f;
+        }
+
         private void Awake()
         {
             Instance = this;

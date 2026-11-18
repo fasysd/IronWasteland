@@ -68,7 +68,7 @@ namespace IronWasteland.Net
             if (shieldAura == null) return;
 
             float amount = ResolveShieldAmount();
-            if (amount <= 0.01f)
+            if (amount <= 0.01f || HasExternalShieldVisual())
             {
                 shieldAura.enabled = false;
                 m_ShieldPulse = 0f;
@@ -108,6 +108,43 @@ namespace IronWasteland.Net
             // Client: giá trị host đồng bộ qua NetworkVariable. Host/offline: đọc trực tiếp từ brain.
             if (m_NetState != null && m_NetState.IsSpawned) return m_NetState.ShieldAmount;
             return m_Brain != null ? m_Brain.CurrentShield : 0f;
+        }
+
+        /// <summary>
+        /// Khi hiệu ứng khiên đã có visual riêng do chính kỹ năng dựng (Bubble Shield), không vẽ thêm
+        /// hào quang chung để tránh hai hình khác nhau chồng lên nhau.
+        /// </summary>
+        private bool HasExternalShieldVisual()
+        {
+            if (m_NetState != null && m_NetState.IsSpawned && !m_NetState.IsServer)
+            {
+                NetEffectSync sync = NetEffectSync.Instance;
+                if (sync == null) return false;
+
+                foreach (NetEffectInfo effect in sync.GetEffects(m_NetState.OwnerClientId))
+                {
+                    if (HasSkillShieldVisual(effect.EffectId)) return true;
+                }
+
+                return false;
+            }
+
+            if (m_Brain != null)
+            {
+                IReadOnlyList<StatusEffect> active = m_Brain.ActiveEffects;
+                for (int i = 0; i < active.Count; i++)
+                {
+                    StatusEffect effect = active[i];
+                    if (effect != null && HasSkillShieldVisual(effect.EffectId)) return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasSkillShieldVisual(string effectId)
+        {
+            return effectId != null && effectId.IndexOf("Bubble", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private bool TryGetBuffColor(out Color color)
