@@ -378,6 +378,7 @@ namespace IronWasteland.Tanks.GreenFox
             GreenFox_Skill1 skill = GetSkillFromPool();
             if (skill == null) return false;
 
+
             bool found = false;
             skill.transform.SetParent(null);
             skill.Initialize(targetPos, enemy =>

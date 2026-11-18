@@ -795,3 +795,8 @@ Mục tiêu: client thấy đúng prefab lửa/ấn như host thay vì vòng `So
 - Sửa: `NetSkillFx` gửi kèm 2 byte biến thể Optional trong gói `IW.SkillFx`; `TankBrain.PlayRemoteSkillFx(index, aim, origin, option1, option2)` lưu `RemoteFxOption1/RemoteFxOption2` trong lúc replay; `TankBrain_GreenFox.GetSkill1Variant/GetSkill2Variant` ưu tiên biến thể host gửi khi `IsRemoteFxReplay`.
 - Kiểm chứng: spawn GreenFox với `Context.OptionSkill1 = 0` (1A), gọi replay slot 2 kèm `option1 = 1` → `1BSkilActive(Clone)` được tạo ⇒ client hiển thị đúng biến thể host thi triển dù Context lệch.
 - `dotnet build` 0 Error / 5 Warning.
+
+### Chẩn đoán visual GreenFox trên client (2026-11-18)
+- Đã chứng minh bằng log client (dev build) rằng kênh `IW.SkillFx` và nhánh hình ảnh GreenFox **chạy đúng trên client**: `[NetSkillFx] phát lại kỹ năng 1/2/3 …`, `[FxDbg] CastFoxMark replay=True`, `[FxDbg] Cast1BBurningFox replay=True variant=Variant_1B`, và aura được tạo thật (`active=True`, `SpriteRenderer.enabled=True`).
+- Nguyên nhân không thấy: **độ mờ và thứ tự vẽ của prefab**. `1BSkilActive.prefab` có `m_Color.a = 0.078` và `sortingOrder = 0` (nằm dưới thân xe); `Skill1.prefab` (ấn Fox Mark) có `sortingOrder = 0`. Đã chỉnh: aura alpha **0.45**, sorting **5**; Skill1 sorting **6**.
+- Thêm cờ test dev-only để tái hiện không cần UI: `-iw-tank <0..5>`, `-iw-opt1 <n>`, `-iw-opt2 <n>` (chọn xe/biến thể cho client trong batchmode).

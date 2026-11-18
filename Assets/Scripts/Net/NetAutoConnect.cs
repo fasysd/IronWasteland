@@ -116,8 +116,19 @@ namespace IronWasteland.Net
                     if (string.IsNullOrEmpty(join)) return;
 
                     boot.SetJoinTarget(join, ReadPort(args));
+
+                    // Chọn xe/biến thể khi test tự động (không có UI để bấm trong batchmode).
+                    int tankArg = ReadInt(args, "-iw-tank", -1);
+                    if (tankArg >= 0) boot.SetLocalTankIndex((byte)Mathf.Clamp(tankArg, 0, 5));
+                    int opt1Arg = ReadInt(args, "-iw-opt1", -1);
+                    int opt2Arg = ReadInt(args, "-iw-opt2", -1);
+                    if (opt1Arg >= 0 || opt2Arg >= 0)
+                    {
+                        boot.SetLocalOptionSkills(Mathf.Clamp(opt1Arg, 0, 2), Mathf.Clamp(opt2Arg, 0, 2));
+                    }
+
                     bool ok = boot.StartClient();
-                    Debug.Log($"[NetAutoConnect] join {join} ok={ok}");
+                    Debug.Log($"[NetAutoConnect] join {join} ok={ok} tank={tankArg} opt1={opt1Arg} opt2={opt2Arg}");
 
                     if (HasFlag(args, "-iw-retry")) StartCoroutine(RetryConnectRoutine(boot));
                     if (HasFlag(args, "-iw-selftest-cast")) StartCoroutine(CastSelfTestRoutine());
@@ -711,6 +722,13 @@ namespace IronWasteland.Net
         {
             string raw = ReadValue(args, flag);
             return float.TryParse(raw, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float value) && value > 0f ? value : fallback;
+        }
+
+        /// <summary>Đọc số nguyên từ dòng lệnh (dùng cho -iw-tank/-iw-opt1/-iw-opt2), trả fallback khi thiếu hoặc sai.</summary>
+        private static int ReadInt(string[] args, string flag, int fallback)
+        {
+            string raw = ReadValue(args, flag);
+            return int.TryParse(raw, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int value) ? value : fallback;
         }
 #endif
     }
