@@ -126,14 +126,17 @@ namespace IronWasteland.Net
                 netState.SetServerLoadout(loadout);
             }
 
-            networkObject.SpawnAsPlayerObject(clientId);
-
+            // Khởi tạo xe TRƯỚC khi SpawnAsPlayerObject: NetworkVariable máu/năng lượng/thống kê
+            // được chụp ngay tại thời điểm spawn, nên nếu init sau thì client nhận giá trị prefab
+            // (level 1, không trang bị) và thanh máu/kỹ năng sẽ lệch suốt trận.
             TankBrainContext context = new TankBrainContext(
                 Mathf.Clamp(loadout.Level, TankDefinition.MinLevel, TankDefinition.MaxLevel),
                 loadout.EquipmentId,
                 loadout.OptionSkill1,
                 loadout.OptionSkill2);
             definition.InitializeTank(brain, context);
+
+            networkObject.SpawnAsPlayerObject(clientId);
 
             m_Spawned[clientId] = brain;
             return brain;

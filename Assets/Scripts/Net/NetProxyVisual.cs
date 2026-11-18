@@ -18,9 +18,14 @@ namespace IronWasteland.Net
         [Tooltip("Khoảng cách tạm (unit) để quy đổi góc ngắm thành một điểm trong world cho TankView.Look.")]
         [SerializeField, Min(0.1f)] private float aimRadius = 10f;
 
+        [Tooltip("Tốc độ nội suy góc nòng khi hiển thị (càng cao càng bám sát, càng thấp càng mượt).")]
+        [SerializeField, Min(0f)] private float aimLerpSpeed = 18f;
+
         private TankBrain m_Brain;
         private PlayerNetState m_NetState;
         private Vector3 m_LastPosition;
+        private float m_SmoothedAim;
+        private bool m_HasSmoothedAim;
 
         private void Awake()
         {
@@ -63,7 +68,21 @@ namespace IronWasteland.Net
 
                 if (m_NetState != null)
                 {
-                    float radians = m_NetState.AimAngle * Mathf.Deg2Rad;
+                    // Host chỉ gửi góc ngắm ~15 Hz khi lệch ≥0,5°, nên nội suy để nòng quay mượt
+                    // thay vì giật theo từng gói tin.
+                    float targetAim = m_NetState.AimAngle;
+                    if (!m_HasSmoothedAim)
+                    {
+                        m_SmoothedAim = targetAim;
+                        m_HasSmoothedAim = true;
+                    }
+                    else
+                    {
+                        m_SmoothedAim = Mathf.LerpAngle(
+                            m_SmoothedAim, targetAim, 1f - Mathf.Exp(-aimLerpSpeed * deltaTime));
+                    }
+
+                    float radians = m_SmoothedAim * Mathf.Deg2Rad;
                     Vector2 aimPoint = (Vector2)position + new Vector2(Mathf.Cos(radians), Mathf.Sin(radians)) * aimRadius;
                     m_Brain.View.Look(aimPoint);
                 }

@@ -15,7 +15,9 @@ namespace IronWasteland.Net
         private const float SyncInterval = 0.1f;
         private const float ValueEpsilon = 0.1f;
         private const float CooldownDriftEpsilon = 0.2f;
-        private const float AimEpsilon = 1f;
+        private const float AimEpsilon = 0.5f;
+        private const float AimSendInterval = 1f / 15f;
+        private const float StatEpsilon = 0.5f;
 
         private readonly NetworkVariable<float> m_Health = new(
             0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -45,6 +47,14 @@ namespace IronWasteland.Net
         private readonly NetworkVariable<float> m_Shield = new(
             0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+        /// <summary>Máu tối đa thực tế của host (đã gồm buff như Leviathan Form +50%) để client kẹp máu đúng.</summary>
+        private readonly NetworkVariable<float> m_MaxHealth = new(
+            0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+        /// <summary>Tốc độ di chuyển thực tế của host để client di chuyển khớp buff/debuff.</summary>
+        private readonly NetworkVariable<float> m_MoveSpeed = new(
+            0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
         private readonly float[] m_ClientCooldownRemaining = new float[TankBrain.SkillCount];
         private readonly float[] m_ClientCooldownReceivedAt = new float[TankBrain.SkillCount];
 
@@ -57,6 +67,9 @@ namespace IronWasteland.Net
         private float m_SentSlowFactor = 1f;
         private bool m_SentBlocked;
         private float m_SentShield;
+        private float m_SentMaxHealth;
+        private float m_SentMoveSpeed;
+        private float m_AimSendTimer;
         private bool m_LoadoutMissingLogged;
         private CooldownState m_SentCooldowns;
         private float m_SentCooldownsAt;
@@ -74,6 +87,8 @@ namespace IronWasteland.Net
             m_Loadout.OnValueChanged += HandleLoadoutChanged;
             m_SlowSpeedFactor.OnValueChanged += HandleSlowChanged;
             m_MovementBlocked.OnValueChanged += HandleBlockedChanged;
+            m_MaxHealth.OnValueChanged += HandleMaxHealthChanged;
+            m_MoveSpeed.OnValueChanged += HandleMoveSpeedChanged;
 
             if (IsServer)
             {
@@ -92,13 +107,24 @@ namespace IronWasteland.Net
                 m_SentShield = m_Brain.CurrentShield;
                 m_Shield.Value = m_SentShield;
 
+                // Client không tự tính stats theo buff của host, nên gửi máu tối đa + tốc độ cuối.
+                m_SentMaxHealth = m_Brain.Stats != null ? m_Brain.Stats.MaxHealth : 0f;
+                m_SentMoveSpeed = m_Brain.Stats != null ? m_Brain.Stats.MoveSpeed : 0f;
+                m_MaxHealth.Value = m_SentMaxHealth;
+                m_MoveSpeed.Value = m_SentMoveSpeed;
+
                 // Chỉ host phát hiệu ứng xuống client; client không bao giờ áp hiệu ứng lên brain.
                 m_Brain.OnEffectAppliedEvent += HandleEffectApplied;
                 m_Brain.OnEffectRemovedEvent += HandleEffectRemoved;
+
+                // Người vào giữa trận không nhận lại các hiệu ứng đang có (named message chỉ phát lúc áp/gỡ),
+                // nên gửi snapshot riêng cho chính client sở hữu xe này.
+                StartCoroutine(SendEffectSnapshotRoutine());
             }
             else
             {
                 ApplyLoadout(m_Loadout.Value);
+                ApplyNetworkStats(m_MaxHealth.Value, m_MoveSpeed.Value);
                 ApplyHealth(m_Health.Value);
                 ApplyEnergy(m_Energy.Value);
                 ApplyCooldowns(m_Cooldowns.Value);
@@ -122,11 +148,18 @@ namespace IronWasteland.Net
             m_Loadout.OnValueChanged -= HandleLoadoutChanged;
             m_SlowSpeedFactor.OnValueChanged -= HandleSlowChanged;
             m_MovementBlocked.OnValueChanged -= HandleBlockedChanged;
+            m_MaxHealth.OnValueChanged -= HandleMaxHealthChanged;
+            m_MoveSpeed.OnValueChanged -= HandleMoveSpeedChanged;
 
             if (IsServer && m_Brain != null)
             {
                 m_Brain.OnEffectAppliedEvent -= HandleEffectApplied;
                 m_Brain.OnEffectRemovedEvent -= HandleEffectRemoved;
+            }
+            else if (!IsServer)
+            {
+                // Xe despawn (Replay/rời phòng) phải xoá aura/buff đang cache để không hiện lại vĩnh viễn.
+                NetEffectSync.Instance?.ClearOwner(OwnerClientId);
             }
         }
 
@@ -136,8 +169,10 @@ namespace IronWasteland.Net
         /// <summary>Máu hiện tại: host đọc trực tiếp từ brain, client đọc bản đã áp từ host.</summary>
         public float Health => m_Brain != null ? m_Brain.CurrentHealth : m_Health.Value;
 
-        /// <summary>Máu tối đa theo chỉ số đã khởi tạo.</summary>
-        public float MaxHealth => m_Brain != null && m_Brain.Stats != null ? m_Brain.Stats.MaxHealth : 0f;
+        /// <summary>Máu tối đa: host đọc stats thật (đã gồm buff), client đọc giá trị host gửi.</summary>
+        public float MaxHealth => IsServer && m_Brain != null && m_Brain.Stats != null
+            ? m_Brain.Stats.MaxHealth
+            : m_MaxHealth.Value;
 
         /// <summary>Năng lượng hiện tại.</summary>
         public float Energy => m_Brain != null ? m_Brain.CurrentEnergy : m_Energy.Value;
@@ -172,13 +207,13 @@ namespace IronWasteland.Net
         {
             if (!IsSpawned || m_Brain == null) return;
 
+            // Aim phải chạy mỗi frame: nếu đặt sau nhịp 0,1 s của các NetworkVariable khác thì
+            // khi HP/EN/cooldown đứng yên, góc nòng cũng không được gửi và nòng xe người khác kẹt.
+            if (IsOwner) UpdateAim();
+
             m_SyncTimer += Time.deltaTime;
             if (m_SyncTimer < SyncInterval) return;
             m_SyncTimer = 0f;
-
-            // Chủ xe ghi hướng nòng TRƯỚC khi rẽ nhánh host/client — nếu để cuối hàm,
-            // client sẽ return sớm ở nhánh dưới và không bao giờ gửi góc ngắm lên host.
-            if (IsOwner) UpdateAim();
 
             if (!IsServer)
             {
@@ -231,6 +266,35 @@ namespace IronWasteland.Net
                 m_SentShield = shield;
                 m_Shield.Value = shield;
             }
+
+            float maxHealth = m_Brain.Stats != null ? m_Brain.Stats.MaxHealth : 0f;
+            if (Mathf.Abs(maxHealth - m_SentMaxHealth) >= StatEpsilon)
+            {
+                m_SentMaxHealth = maxHealth;
+                m_MaxHealth.Value = maxHealth;
+            }
+
+            float moveSpeed = m_Brain.Stats != null ? m_Brain.Stats.MoveSpeed : 0f;
+            if (Mathf.Abs(moveSpeed - m_SentMoveSpeed) >= StatEpsilon)
+            {
+                m_SentMoveSpeed = moveSpeed;
+                m_MoveSpeed.Value = moveSpeed;
+            }
+        }
+
+        /// <summary>Gửi lại toàn bộ hiệu ứng đang có cho client vừa nhận xe (người vào giữa trận).</summary>
+        private System.Collections.IEnumerator SendEffectSnapshotRoutine()
+        {
+            // NetEffectSync đăng ký handler trong Update nên chờ tối đa vài frame trước khi gửi.
+            for (int i = 0; i < 120 && NetEffectSync.Instance == null; i++)
+            {
+                yield return null;
+            }
+
+            NetEffectSync sync = NetEffectSync.Instance;
+            if (sync == null || m_Brain == null) yield break;
+
+            sync.SendSnapshotToClient(OwnerClientId, OwnerClientId, m_Brain.ActiveEffects);
         }
 
         private void HandleEffectApplied(StatusEffect effect)
@@ -245,9 +309,13 @@ namespace IronWasteland.Net
             NetEffectSync.Instance?.Broadcast(OwnerClientId, NetEffectSync.OpRemove, effect);
         }
 
-        /// <summary>Chủ xe ghi hướng nòng khi lệch đủ ngưỡng — nhờ vậy nòng xe người khác bám chuột liên tục.</summary>
+        /// <summary>Chủ xe ghi hướng nòng: tính mỗi frame nhưng chỉ gửi tối đa 15 Hz và khi lệch ≥ 0,5°.</summary>
         private void UpdateAim()
         {
+            m_AimSendTimer -= Time.deltaTime;
+            if (m_AimSendTimer > 0f) return;
+            m_AimSendTimer = AimSendInterval;
+
             float aim = ReadAimAngle();
             if (Mathf.Abs(Mathf.DeltaAngle(m_SentAimAngle, aim)) < AimEpsilon) return;
 
@@ -326,6 +394,19 @@ namespace IronWasteland.Net
 
         private void HandleBlockedChanged(bool previous, bool current) => ApplyBlocked(current);
 
+        private void HandleMaxHealthChanged(float previous, float current)
+        {
+            if (IsServer) return;
+            ApplyNetworkStats(current, m_MoveSpeed.Value);
+            ApplyHealth(m_Health.Value);
+        }
+
+        private void HandleMoveSpeedChanged(float previous, float current)
+        {
+            if (IsServer) return;
+            ApplyNetworkStats(m_MaxHealth.Value, current);
+        }
+
         /// <summary>Client áp hệ số Slow do host gửi — client không tick CC nên không tự tính được.</summary>
         private void ApplySlow(float value)
         {
@@ -367,9 +448,19 @@ namespace IronWasteland.Net
                 m_Brain,
                 new TankBrainContext(loadout.Level, loadout.EquipmentId, loadout.OptionSkill1, loadout.OptionSkill2));
 
+            // Áp chỉ số cuối của host trước khi kẹp máu/năng lượng, nếu không máu sẽ bị chặn theo stats cũ.
+            ApplyNetworkStats(m_MaxHealth.Value, m_MoveSpeed.Value);
+
             m_LoadoutApplied = true;
             ApplyHealth(m_Health.Value);
             ApplyEnergy(m_Energy.Value);
+        }
+
+        /// <summary>Client áp máu tối đa/tốc độ host gửi để kẹp máu và di chuyển khớp host.</summary>
+        private void ApplyNetworkStats(float maxHealth, float moveSpeed)
+        {
+            if (m_Brain == null || IsServer) return;
+            m_Brain.ApplyNetworkStats(maxHealth, moveSpeed);
         }
 
         private void ApplyHealth(float value)

@@ -723,4 +723,18 @@ Nếu vượt: giảm `TickRate` xuống 15, giảm số quái/wave, hoặc gi�
 
 ---
 
-*Hết tài liệu. Bản 4.1 — 2026-11-16.*
+## Nhóm 1 — sửa đồng bộ chặn chơi (2026-11-18)
+
+| Việc | Kết quả |
+| --- | --- |
+| ③ Thứ tự spawn xe | `NetSpawnService.SpawnPlayerTank`: `Instantiate → SetServerLoadout → InitializeTank → SpawnAsPlayerObject` — NetworkVariable máu/năng lượng phát đi đã đúng level/trang bị, không còn theo stats prefab level 1. |
+| ① Máu tối đa/tốc độ | `PlayerNetState` thêm `m_MaxHealth` + `m_MoveSpeed` (server ghi, client áp `TankBrain.ApplyNetworkStats`); `TankBrain` có `EffectiveMaxHealth`/`EffectiveMoveSpeed`, `SetHealth`/`Heal` kẹp theo giá trị host gửi, `FixedUpdate` dùng tốc độ host. Hết bão hoà thanh máu khi Leviathan Form +50% HP, hết lệch tốc độ khi có buff. |
+| ② Hiệu ứng/khiên | `NetEffectSync` có `SendSnapshotToClient` (người vào giữa trận nhận đủ aura/buff), `SweepExpired` 1 s/lần (buff hết hạn tự biến mất), `ClearOwner` khi xe despawn/rời phòng. |
+| ④ Góc nòng | `UpdateAim()` chạy mỗi frame, throttle 15 Hz + epsilon 0,5°; `NetProxyVisual` nội suy `LerpAngle` — nòng proxy mượt, không còn kẹt/giật 10 Hz. |
+| ⑤ CC | `RemoveCrowdControl`/`ClearAllCrowdControl` thêm cổng `HasGameplayAuthority` — client replay không tự gỡ Stun/Root. |
+| ⑥ Screen shake | `OptionalSkill2_2` bỏ rung màn hình khi `IsRemoteFxReplay` — đồng đội mở Form không làm rung máy người khác. |
+| ⑪ MaxPlayers | `NetBootstrap.HandleConnectionApproval` từ chối client thứ 5 với lý do "Phòng đã đủ 4 người". |
+
+Kiểm chứng Play (host): xe 650/650, `nvMax=650`, `nvSpeed=110`; tăng `MaxHealth +50%` → `Stats.MaxHealth=975`, nhịp sau `nvMax=975`; `SendSnapshotToClient` + `AddShield` không lỗi. Build 0 Error / 5 Warning (đều là warning cũ có sẵn).
+
+*Hết tài liệu. Bản 4.2 — 2026-11-18.*

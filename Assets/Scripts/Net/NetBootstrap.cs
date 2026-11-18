@@ -429,6 +429,18 @@ namespace IronWasteland.Net
                 return;
             }
 
+            // Chặn phòng quá 4 người ngay tại cổng duyệt: chỉ dựa vào MatchFlow thì client thứ 5
+            // vẫn kết nối được, chiếm slot rồi bị treo ở lobby.
+            if (networkManager != null && networkManager.ConnectedClientsIds.Count >= MatchFlow.MaxPlayers)
+            {
+                response.Approved = false;
+                response.CreatePlayerObject = false;
+                response.Pending = false;
+                response.Reason = "Phòng đã đủ 4 người.";
+                Debug.LogWarning($"[NetBootstrap] Từ chối client {request.ClientNetworkId}: phòng đã đủ {MatchFlow.MaxPlayers} người.");
+                return;
+            }
+
             bool valid = NetLoadout.TryFromPayload(request.Payload, out NetLoadout loadout);
             response.Approved = valid;
             response.CreatePlayerObject = false;
@@ -482,6 +494,9 @@ namespace IronWasteland.Net
 
         private void HandleClientDisconnected(ulong clientId)
         {
+            // Xe đã rời thì xoá cache hiệu ứng của xe đó trên mọi máy, tránh aura/buff "ma".
+            NetEffectSync.Instance?.ClearOwner(clientId);
+
             // Trên client: host đóng phòng (hoặc mạng đứt) thì NGO báo disconnect cho chính mình.
             // Không dọn loadout ở đây vì client không sở hữu danh sách người chơi.
             if (networkManager != null && !networkManager.IsServer && clientId == networkManager.LocalClientId)

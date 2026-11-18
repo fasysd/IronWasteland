@@ -1,4 +1,4 @@
-﻿using IronWasteland;
+using IronWasteland;
 using IronWasteland.Core;
 using IronWasteland.Core.Effects;
 using IronWasteland.Tanks;
@@ -212,8 +212,13 @@ namespace IronWasteland.Tanks.Leviathan
             if (burstCoroutine != null) StopCoroutine(burstCoroutine);
             burstCoroutine = StartCoroutine(AnimateRoarBurst());
 
-            if (shakeCoroutine != null) StopCoroutine(shakeCoroutine);
-            shakeCoroutine = StartCoroutine(AnimateScreenShake(roarShakeDuration, roarShakeMagnitude));
+            // Client phát lại visual cũng chạy tới đây; rung màn hình là trải nghiệm của người
+            // đang mở Form nên chỉ chạy khi không phải replay visual.
+            if (ownerTank == null || !ownerTank.IsRemoteFxReplay)
+            {
+                if (shakeCoroutine != null) StopCoroutine(shakeCoroutine);
+                shakeCoroutine = StartCoroutine(AnimateScreenShake(roarShakeDuration, roarShakeMagnitude));
+            }
 
             OnRoarTriggered?.Invoke();
             OnFormStateChange?.Invoke(true);

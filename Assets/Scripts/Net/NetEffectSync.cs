@@ -25,6 +25,7 @@ namespace IronWasteland.Net
     {
         private const string MessageName = "IW.Effect";
         private const int MaxIdBytes = 48;
+        private const float SweepInterval = 1f;
         public const byte OpApply = 0;
         public const byte OpRemove = 1;
 
@@ -34,8 +35,11 @@ namespace IronWasteland.Net
         public static NetEffectSync Instance => s_Instance;
 
         private bool m_Registered;
+        private float m_SweepTimer;
         private readonly Dictionary<ulong, Dictionary<string, NetEffectInfo>> m_Effects =
             new Dictionary<ulong, Dictionary<string, NetEffectInfo>>();
+        private readonly List<ulong> m_SweepOwners = new List<ulong>();
+        private readonly List<string> m_SweepIds = new List<string>();
 
         private void Awake()
         {
@@ -62,6 +66,52 @@ namespace IronWasteland.Net
             {
                 Unregister();
             }
+
+            // Dọn hiệu ứng đã hết hạn và nhánh của xe đã despawn — nếu không aura/buff sẽ đứng lại
+            // hoặc hiện lại vĩnh viễn sau khi chơi lại.
+            m_SweepTimer += Time.deltaTime;
+            if (m_SweepTimer >= SweepInterval)
+            {
+                m_SweepTimer = 0f;
+                SweepExpired();
+            }
+        }
+
+        private void SweepExpired()
+        {
+            if (m_Effects.Count == 0) return;
+
+            m_SweepOwners.Clear();
+            foreach (ulong owner in m_Effects.Keys) m_SweepOwners.Add(owner);
+
+            foreach (ulong owner in m_SweepOwners)
+            {
+                if (!m_Effects.TryGetValue(owner, out Dictionary<string, NetEffectInfo> list) || list.Count == 0)
+                {
+                    m_Effects.Remove(owner);
+                    continue;
+                }
+
+                m_SweepIds.Clear();
+                foreach (KeyValuePair<string, NetEffectInfo> pair in list)
+                {
+                    NetEffectInfo info = pair.Value;
+                    if (info.TotalDuration > 0f && EstimateRemaining(info) <= 0f)
+                    {
+                        m_SweepIds.Add(pair.Key);
+                    }
+                }
+
+                foreach (string id in m_SweepIds) list.Remove(id);
+                if (list.Count == 0) m_Effects.Remove(owner);
+            }
+        }
+
+        /// <summary>Xoá toàn bộ hiệu ứng đang cache của một xe (gọi khi xe despawn/rời phòng).</summary>
+        public void ClearOwner(ulong ownerClientId)
+        {
+            if (ownerClientId == 0UL && !m_Effects.ContainsKey(ownerClientId)) return;
+            m_Effects.Remove(ownerClientId);
         }
 
         private void Unregister()
@@ -77,13 +127,42 @@ namespace IronWasteland.Net
         /// <summary>Host gửi trạng thái một hiệu ứng cho toàn phòng; client chỉ ghi nhận để vẽ.</summary>
         public void Broadcast(ulong ownerClientId, byte op, StatusEffect effect)
         {
-            if (effect == null) return;
-
             NetworkManager manager = NetworkManager.Singleton;
             if (manager == null || !manager.IsServer || manager.CustomMessagingManager == null) return;
+            if (effect == null) return;
 
+            using FastBufferWriter writer = BuildMessage(manager, op, ownerClientId, effect);
+            manager.CustomMessagingManager.SendNamedMessageToAll(MessageName, writer);
+        }
+
+        /// <summary>Host gửi một hiệu ứng cho đúng một client (dùng cho snapshot người vào giữa trận).</summary>
+        public void BroadcastToClient(ulong targetClientId, ulong ownerClientId, byte op, StatusEffect effect)
+        {
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsServer || manager.CustomMessagingManager == null) return;
+            if (effect == null) return;
+
+            using FastBufferWriter writer = BuildMessage(manager, op, ownerClientId, effect);
+            manager.CustomMessagingManager.SendNamedMessage(MessageName, targetClientId, writer);
+        }
+
+        /// <summary>Gửi toàn bộ hiệu ứng đang sống của một xe cho client vừa nhận xe đó.</summary>
+        public void SendSnapshotToClient(ulong targetClientId, ulong ownerClientId, IReadOnlyList<StatusEffect> effects)
+        {
+            if (effects == null) return;
+
+            for (int i = 0; i < effects.Count; i++)
+            {
+                StatusEffect effect = effects[i];
+                if (effect == null || effect.IsExpired) continue;
+                BroadcastToClient(targetClientId, ownerClientId, OpApply, effect);
+            }
+        }
+
+        private static FastBufferWriter BuildMessage(NetworkManager manager, byte op, ulong ownerClientId, StatusEffect effect)
+        {
             FixedString64Bytes id = new FixedString64Bytes(Trim(effect.EffectId));
-            using FastBufferWriter writer = new FastBufferWriter(128, Allocator.Temp);
+            FastBufferWriter writer = new FastBufferWriter(128, Allocator.Temp);
             writer.WriteValueSafe(op);
             writer.WriteValueSafe(ownerClientId);
             writer.WriteValueSafe(id);
@@ -91,7 +170,7 @@ namespace IronWasteland.Net
             writer.WriteValueSafe(effect.Duration);
             writer.WriteValueSafe(effect.RemainingTime);
             writer.WriteValueSafe(manager.ServerTime.Time);
-            manager.CustomMessagingManager.SendNamedMessageToAll(MessageName, writer);
+            return writer;
         }
 
         private void HandleMessage(ulong senderClientId, FastBufferReader reader)

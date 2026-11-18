@@ -57,6 +57,10 @@ namespace IronWasteland.Tanks
         private Vector2 m_LookTarget;
         private bool m_HasLookTarget;
 
+        // Chỉ số cuối do host gửi xuống cho client (máu tối đa, tốc độ) để kẹp máu và chạy đúng tốc độ.
+        private float m_NetworkMaxHealth;
+        private float m_NetworkMoveSpeed;
+
         // Bonus stats storage by key
         private readonly Dictionary<string, TankStats> m_FlatBonusByKey = new Dictionary<string, TankStats>();
         private readonly Dictionary<string, TankStats> m_PercentBonusByKey = new Dictionary<string, TankStats>();
@@ -186,6 +190,25 @@ namespace IronWasteland.Tanks
         public bool CanLook => IsAlive && !HasCC(CrowdControlType.Stun);
 
         public IReadOnlyList<StatusEffect> ActiveEffects => m_ActiveEffects;
+
+        /// <summary>
+        /// Áp chỉ số cuối do host gửi (máu tối đa, tốc độ di chuyển). Client dùng để kẹp máu và
+        /// chạy đúng tốc độ khi host có buff/debuff; host truyền 0 nên vẫn dùng stats local.
+        /// </summary>
+        public void ApplyNetworkStats(float maxHealth, float moveSpeed)
+        {
+            m_NetworkMaxHealth = maxHealth > 0f ? maxHealth : 0f;
+            m_NetworkMoveSpeed = moveSpeed > 0f ? moveSpeed : 0f;
+
+            if (currentHealth > EffectiveMaxHealth) currentHealth = EffectiveMaxHealth;
+        }
+
+        /// <summary>Máu tối đa hiệu dụng: ưu tiên giá trị host gửi, nếu chưa có thì dùng stats local.</summary>
+        public float EffectiveMaxHealth => m_NetworkMaxHealth > 0f ? m_NetworkMaxHealth : m_FinalStats.MaxHealth;
+
+        /// <summary>Tốc độ di chuyển hiệu dụng: ưu tiên giá trị host gửi khi đang chơi mạng.</summary>
+        public float EffectiveMoveSpeed => m_NetworkMoveSpeed > 0f ? m_NetworkMoveSpeed : m_FinalStats.MoveSpeed;
+
         public float GetSkillCooldown(int index) => skillCooldowns[Mathf.Clamp(index, 0, SkillCount - 1)];
 
         /// <summary>
@@ -394,6 +417,9 @@ namespace IronWasteland.Tanks
 
         public virtual void RemoveCrowdControl(CrowdControlType type)
         {
+            // Gỡ CC là quyết định của host; client (kể cả đường replay visual) không được tự xoá.
+            if (!HasGameplayAuthority) return;
+
             if (m_ActiveCC.Remove(type))
             {
                 OnCrowdControlRemoved?.Invoke(type);
@@ -402,6 +428,8 @@ namespace IronWasteland.Tanks
 
         public virtual void ClearAllCrowdControl()
         {
+            if (!HasGameplayAuthority) return;
+
             foreach (var type in m_ActiveCC.Keys)
             {
                 OnCrowdControlRemoved?.Invoke(type);
@@ -1012,7 +1040,7 @@ namespace IronWasteland.Tanks
         {
             if (!IsAlive) return;
             if (!HasGameplayAuthority) return;
-            currentHealth = Mathf.Min(currentHealth + amount, m_FinalStats.MaxHealth);
+            currentHealth = Mathf.Min(currentHealth + amount, EffectiveMaxHealth);
             OnHealEvent?.Invoke(amount);
         }
 
@@ -1034,7 +1062,7 @@ namespace IronWasteland.Tanks
         /// </summary>
         public virtual void SetHealth(float value)
         {
-            currentHealth = Mathf.Clamp(value, 0f, m_FinalStats.MaxHealth);
+            currentHealth = Mathf.Clamp(value, 0f, EffectiveMaxHealth);
         }
 
         /// <summary>
@@ -1097,7 +1125,7 @@ namespace IronWasteland.Tanks
             if (!IsLocallyControlled) return;
 
             // Theo GDD: Tank di chuyen voi toc do Tuan theo cong thuc: Toc do di chuyen / 100 (units/s)
-            float speed = m_FinalStats.MoveSpeed / 100f;
+            float speed = EffectiveMoveSpeed / 100f;
 
             // Giam toc do neu bi Slow
             if (m_ActiveCC.TryGetValue(CrowdControlType.Slow, out var slowCC))
