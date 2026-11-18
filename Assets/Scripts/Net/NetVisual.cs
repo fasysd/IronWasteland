@@ -136,6 +136,26 @@ namespace IronWasteland.Net
                 : 0;
         }
 
+        /// <summary>
+        /// Tạo material sprite cho các vệt sáng tạo bằng code. Shader.Find("Sprites/Default") trả về null
+        /// trong bản build khi shader không nằm trong danh sách include, khiến vệt hoàn toàn tàng hình;
+        /// vì vậy thử lần lượt các shader sprite phổ biến và chỉ tạo material khi tìm thấy shader.
+        /// </summary>
+        /// <param name="ownerLabel">Nhãn ghi vào cảnh báo (tên hệ thống đang tạo vệt sáng).</param>
+        public static Material CreateSpriteMaterial(string ownerLabel)
+        {
+            Shader shader = Shader.Find("Sprites/Default");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null)
+            {
+                Debug.LogWarning($"[{ownerLabel}] Không tìm thấy shader sprite cho vệt sáng — vệt sẽ không hiển thị.");
+                return null;
+            }
+
+            return new Material(shader);
+        }
+
         /// <summary>Thu hồi sớm một ghost thủ tục theo handle (host gọi khi hiệu ứng kết thúc trước hạn).</summary>
         public static void EndGhost(int handle)
         {

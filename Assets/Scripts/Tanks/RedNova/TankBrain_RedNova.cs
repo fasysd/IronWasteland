@@ -330,6 +330,17 @@ namespace IronWasteland.Tanks.RedNova
             }
         }
 
+        /// <summary>Mã hiệu ứng sóng xung kích khi Execution Core hạ gục mục tiêu.</summary>
+        public const byte FxCodeExecutionShockwave = 1;
+
+        /// <summary>Client dựng lại sóng xung kích khi máy chủ hạ gục mục tiêu bằng Execution Core.</summary>
+        public override void PlayRemoteTankFx(byte fxCode, Vector3 position)
+        {
+            if (HasGameplayAuthority) return;
+            if (fxCode != FxCodeExecutionShockwave) return;
+            if (vfx != null) vfx.PlayExecutionShockwave(position);
+        }
+
         private void OnExecutionCoreKill()
         {
             RemoveExecutionCoreBuff();
@@ -338,6 +349,8 @@ namespace IronWasteland.Tanks.RedNova
 
             if (vfx != null)
                 vfx.PlayExecutionShockwave(transform.position);
+
+            NetSkillFx.Instance?.BroadcastTankFx(this, FxCodeExecutionShockwave, transform.position);
         }
 
         private void RemoveOverdriveDamageBuff()

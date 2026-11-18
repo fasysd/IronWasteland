@@ -1,3 +1,4 @@
+using IronWasteland.Net;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,6 +19,12 @@ namespace IronWasteland.Tanks.WaterB
     public class WaterB_SharedHealingLink : MonoBehaviour
     {
         private const int KeyCount = 8; // Gradient của Unity tối đa 8 key màu / 8 key alpha
+
+        /// <summary>Mã hiệu ứng: đồng minh nhận máu chia sẻ (xung sáng chạy từ Water B sang đồng minh).</summary>
+        public const byte FxCodeSharedHealFromOwner = 1;
+
+        /// <summary>Mã hiệu ứng: Water B nhận máu chia sẻ (xung sáng chạy từ đồng minh về Water B).</summary>
+        public const byte FxCodeSharedHealFromAlly = 2;
 
         [Header("Rope")]
         [SerializeField, Range(4, 64)] private int segments = 24;
@@ -175,9 +182,17 @@ namespace IronWasteland.Tanks.WaterB
 
             Debug.Log($"[SharedHealing] {receiver.name} nhận {amount} HP -> chia sẻ {sharedAmount} HP cho {other.name}.");
 
-            // HÌNH ẢNH: tỏa hồi phục ở bên nhận, xung sáng chạy sang bên còn lại
-            SpawnBurst(receiver);
-            SpawnPulse(other, receiver == m_OwnerTank);
+            // HÌNH ẢNH: tỏa hồi phục ở bên nhận, xung sáng chạy sang bên còn lại.
+            // Chỉ máy chủ chạy nhịp hồi máu nên máy chủ vẽ rồi gửi mã hiệu ứng xuống client dựng lại.
+            if (HasHealFxAuthority)
+            {
+                SpawnBurst(receiver);
+                SpawnPulse(other, receiver == m_OwnerTank);
+
+                NetSkillFx.Instance?.BroadcastTankFx(m_OwnerTank,
+                    receiver == m_OwnerTank ? FxCodeSharedHealFromOwner : FxCodeSharedHealFromAlly,
+                    receiver.transform.position);
+            }
         }
 
         // ------------------------------------------------------------------
@@ -258,12 +273,26 @@ namespace IronWasteland.Tanks.WaterB
         // ------------------------------------------------------------------
         // HÌNH ẢNH: xung sáng & hiệu ứng tỏa hồi phục
         // ------------------------------------------------------------------
+
+        /// <summary>Chỉ máy chủ chạy nhịp hồi máu nên chỉ máy chủ được vẽ hiệu ứng gốc.</summary>
+        private bool HasHealFxAuthority => m_OwnerTank != null && m_OwnerTank.HasGameplayAuthority;
+
+        /// <summary>
+        /// Client dựng lại hiệu ứng chia sẻ hồi máu theo gói tin của máy chủ (chỉ vẽ hình, không hồi máu).
+        /// </summary>
+        /// <param name="receiverIsOwner">True nếu bên nhận máu là chủ sợi dây, ngược lại là đồng minh.</param>
+        public void PlayRemoteHealVisual(bool receiverIsOwner)
+        {
+            TankBrain receiver = receiverIsOwner ? m_OwnerTank : m_TargetAllyTank;
+            TankBrain other = receiverIsOwner ? m_TargetAllyTank : m_OwnerTank;
+            if (receiver == null || other == null) return;
+
+            SpawnBurst(receiver);
+            SpawnPulse(other, receiverIsOwner);
+        }
         private void SpawnPulse(TankBrain target, bool towardAlly)
         {
             if (target == null || m_Pulses.Count >= maxPulses) return;
-
-            // Client chỉ vẽ theo trạng thái host đồng bộ; không tự chạy nhịp hồi máu cục bộ.
-            if (m_OwnerTank == null || !m_OwnerTank.HasGameplayAuthority) return;
 
             Vector3 startPos = RopePoint(towardAlly ? 0f : 1f);
 
@@ -281,7 +310,7 @@ namespace IronWasteland.Tanks.WaterB
                 trail.endWidth = 0f;
                 trail.minVertexDistance = 0.05f;
                 trail.numCapVertices = 4;
-                trail.material = new Material(Shader.Find("Sprites/Default"));
+                trail.material = NetVisual.CreateSpriteMaterial("WaterB");
                 trail.startColor = pulseColor;
                 trail.endColor = new Color(pulseColor.r, pulseColor.g, pulseColor.b, 0f);
             }
@@ -335,9 +364,6 @@ namespace IronWasteland.Tanks.WaterB
         private void SpawnBurst(TankBrain target)
         {
             if (healBurstPrefab == null || target == null) return;
-
-            // Chỉ host phát hiệu ứng; client không tự chạy tick hồi máu.
-            if (m_OwnerTank == null || !m_OwnerTank.HasGameplayAuthority) return;
 
             GameObject burst = Instantiate(healBurstPrefab, target.transform.position, Quaternion.identity, target.transform);
             Destroy(burst, burstLifetime);

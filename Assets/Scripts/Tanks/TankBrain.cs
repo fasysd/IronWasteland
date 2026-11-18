@@ -850,6 +850,17 @@ namespace IronWasteland.Tanks
         }
 
         /// <summary>
+        /// Client phát lại một hiệu ứng hình ảnh sinh ra trong luồng chỉ máy chủ chạy
+        /// (sát thương, hạ gục, hồi máu...) nên không đi qua <see cref="UseSkill"/>.
+        /// Mã hiệu ứng do từng lớp tank tự quy ước; lớp nào có hiệu ứng riêng thì ghi đè.
+        /// </summary>
+        /// <param name="fxCode">Mã hiệu ứng do lớp tank quy ước.</param>
+        /// <param name="position">Vị trí hiệu ứng do host gửi xuống.</param>
+        public virtual void PlayRemoteTankFx(byte fxCode, Vector3 position)
+        {
+        }
+
+        /// <summary>
         /// Slot nào được phép phát lại hình ảnh trên client. Mặc định cho phép cả 4 slot vì
         /// mọi tác động gameplay (sát thương, năng lượng, hồi chiêu, buff, khiên, gánh hộ,
         /// dịch chuyển) đều đã bị khoá khi <see cref="IsRemoteFxReplay"/> bật; client chỉ dựng

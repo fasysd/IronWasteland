@@ -1,5 +1,6 @@
 using IronWasteland.Core;
 using IronWasteland.Enemies;
+using IronWasteland.Net;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -417,6 +418,17 @@ namespace IronWasteland.Tanks.WallTitan
             skill.gameObject.SetActive(true);
         }
 
+        /// <summary>Mã hiệu ứng đá văng (Earth Break) dùng cho kênh phát lại NetSkillFx.</summary>
+        public const byte FxCodeEarthShards = 1;
+
+        /// <summary>Client dựng lại hiệu ứng đá văng khi máy chủ bắn trúng đích.</summary>
+        public override void PlayRemoteTankFx(byte fxCode, Vector3 position)
+        {
+            if (HasGameplayAuthority) return;
+            if (fxCode != FxCodeEarthShards) return;
+            if (vfx != null) vfx.PlayEarthShards(position);
+        }
+
         private void OnEarthBreakTargetFound(Skill_EarthBreak skill, EnemyBrain enemy, float travelDistance)
         {
             if (enemy == null)
@@ -431,6 +443,8 @@ namespace IronWasteland.Tanks.WallTitan
 
             if (vfx != null)
                 vfx.PlayEarthShards(skill.transform.position);
+
+            NetSkillFx.Instance?.BroadcastTankFx(this, FxCodeEarthShards, skill.transform.position);
 
             GainEnergy(earthBreakEnergyGain);
         }

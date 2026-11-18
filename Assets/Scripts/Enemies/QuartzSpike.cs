@@ -36,6 +36,7 @@ namespace IronWasteland.Enemies
         private float m_Lifetime = 4f;
         private float m_Age;
         private SpriteRenderer m_Renderer;
+        private int m_GhostHandle;
 
         public static QuartzSpike Spawn(Vector2 position, TankBrain target, QuartzVolley volley, float speed, float lifetime)
         {
@@ -63,7 +64,7 @@ namespace IronWasteland.Enemies
                 if (toTarget.sqrMagnitude > 0.0001f) ghostVelocity = toTarget.normalized * spike.m_Speed;
             }
 
-            NetVisual.SpawnPrimitive(position, ghostVelocity, 0.2f, spike.m_Lifetime,
+            spike.m_GhostHandle = NetVisual.SpawnPrimitive(position, ghostVelocity, 0.2f, spike.m_Lifetime,
                 fade: false, sortingOrder: 4, color: new Color(0.85f, 0.75f, 1f, 1f));
 
             return spike;
@@ -145,6 +146,8 @@ namespace IronWasteland.Enemies
 
         private void OnDestroy()
         {
+            // Thu hồi ghost bên client ngay khi gai biến mất, tránh gai bay xuyên xe tới hết thời gian sống.
+            NetVisual.EndGhost(m_GhostHandle);
             if (m_Renderer != null) m_Renderer.sprite = null;
         }
     }

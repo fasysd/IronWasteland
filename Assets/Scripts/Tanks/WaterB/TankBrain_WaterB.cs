@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using IronWasteland.Enemies;
+using IronWasteland.Net;
 
 namespace IronWasteland.Tanks.WaterB
 {
@@ -352,6 +353,16 @@ namespace IronWasteland.Tanks.WaterB
         }
 
         /// <summary>Life Drain: 35% sát thương gây ra -> hồi cho đồng minh (kể cả bản thân) có máu thấp nhất xung quanh.</summary>
+        /// <summary>Client dựng lại hiệu ứng chia sẻ hồi máu khi máy chủ chia máu giữa 2 xe.</summary>
+        public override void PlayRemoteTankFx(byte fxCode, Vector3 position)
+        {
+            if (HasGameplayAuthority) return;
+            if (m_ActiveLink == null) return;
+
+            if (fxCode == WaterB_SharedHealingLink.FxCodeSharedHealFromOwner) m_ActiveLink.PlayRemoteHealVisual(true);
+            else if (fxCode == WaterB_SharedHealingLink.FxCodeSharedHealFromAlly) m_ActiveLink.PlayRemoteHealVisual(false);
+        }
+
         private void ApplyLifeDrain(float damageDealt, Vector3 fromPosition)
         {
             if (!m_IsLifeDrainActive || skill1SubDesign == null) return;
