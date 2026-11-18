@@ -580,10 +580,16 @@ namespace IronWasteland.Net
                 reader.ReadValueSafe(out byte stageIndex);
                 reader.ReadValueSafe(out byte count);
 
+                MatchPhase previousPhase = Phase;
                 Phase = (MatchPhase)phase;
                 Mode = (MatchMode)mode;
                 StageIndex = stageIndex;
                 m_PlayerCount = Mathf.Clamp((int)count, 0, MaxPlayers);
+
+                if (previousPhase != Phase)
+                {
+                    Debug.Log($"[MatchFlow] Client nhận phase mạng: {previousPhase} -> {Phase}");
+                }
 
                 for (int i = 0; i < m_PlayerCount; i++)
                 {

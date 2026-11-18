@@ -24,6 +24,9 @@ namespace IronWasteland.Net
         /// <summary>Mã trạng thái: ải đã thua.</summary>
         public const byte StateFailed = 2;
 
+        /// <summary>Mã trạng thái: ải đang chạy (gói cập nhật số mạng/thời gian định kỳ).</summary>
+        public const byte StateRunning = 3;
+
         /// <summary>Instance đang hoạt động (mỗi máy chỉ có một).</summary>
         public static NetStageEvents Instance { get; private set; }
 
@@ -114,6 +117,15 @@ namespace IronWasteland.Net
             ApplyState(state, stage.Kills, stage.KillTarget, stage.Elapsed);
         }
 
+        /// <summary>
+        /// Host gửi nhịp cập nhật số mạng/thời gian khi ải đang chạy.
+        /// Không log mỗi gói để tránh spam; client chỉ cập nhật cache cho HUD và màn kết quả.
+        /// </summary>
+        public void BroadcastStatus(StageManager stage)
+        {
+            Broadcast(stage, StateRunning);
+        }
+
         /// <summary>Client nhận trạng thái ải và ghi log (HUD thật sẽ do nhóm UI làm sau).</summary>
         private void HandleMessage(ulong senderClientId, FastBufferReader reader)
         {
@@ -124,6 +136,8 @@ namespace IronWasteland.Net
             reader.ReadValueSafe(out float elapsed);
 
             ApplyState(state, kills, target, elapsed);
+
+            if (state == StateRunning) return; // gói nhịp 1 giây không log để tránh spam
 
             string label = state switch
             {

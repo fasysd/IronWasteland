@@ -311,10 +311,35 @@ namespace IronWasteland.Net
             GUILayout.Label(flow.Phase == MatchPhase.Cleared ? "KET QUA: THANG" : "KET QUA: THUA");
 
             StageManager stage = bootstrap.Stage;
-            if (stage != null)
+            int kills = 0;
+            int target = 0;
+            float elapsed = 0f;
+
+            if (IsHost() && stage != null)
             {
-                GUILayout.Label($"Ha guc: {stage.Kills}/{stage.KillTarget}   |   Thoi gian: {Mathf.FloorToInt(stage.Elapsed)}s");
+                kills = stage.Kills;
+                target = stage.KillTarget;
+                elapsed = stage.Elapsed;
             }
+            else
+            {
+                // Client không mô phỏng ải: đọc số liệu đã sync từ NetStageEvents thay vì StageManager local.
+                NetStageEvents events = NetStageEvents.Instance;
+                if (events != null && events.HasStageState)
+                {
+                    kills = events.StageKills;
+                    target = events.StageKillTarget;
+                    elapsed = events.StageElapsed;
+                }
+                else if (stage != null)
+                {
+                    kills = stage.Kills;
+                    target = stage.KillTarget;
+                    elapsed = stage.Elapsed;
+                }
+            }
+
+            GUILayout.Label($"Ha guc: {kills}/{target}   |   Thoi gian: {Mathf.FloorToInt(elapsed)}s");
 
             StageDefinition definition = flow.SelectedStage;
             if (definition != null)

@@ -1102,6 +1102,10 @@ MonoBehaviour:
   shieldPulseSpeed: 2.5
   shieldMinAlpha: 0.28
   shieldMaxAlpha: 0.62
+  waterShieldSprite: {fileID: 21300000, guid: a26602c8f1e681147808f11c09de302e, type: 3}
+  waterShieldColor: {r: 0.55, g: 0.85, b: 1, a: 0.5}
+  waterShieldDiameter: 5.8
+  waterMaxAlpha: 0.38
   buffAura: {fileID: 4423515430374040967}
   buffPulseSpeed: 4
   buffMinAlpha: 0.18
@@ -2814,7 +2818,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalScale: {x: 0.85, y: 0.85, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1066437049449928896}
@@ -2869,7 +2873,7 @@ SpriteRenderer:
   m_SortingOrder: 5
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: a26602c8f1e681147808f11c09de302e, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.7254902}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.45}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

@@ -433,6 +433,10 @@ MonoBehaviour:
   shieldPulseSpeed: 2.5
   shieldMinAlpha: 0.28
   shieldMaxAlpha: 0.62
+  waterShieldSprite: {fileID: 21300000, guid: a26602c8f1e681147808f11c09de302e, type: 3}
+  waterShieldColor: {r: 0.55, g: 0.85, b: 1, a: 0.5}
+  waterShieldDiameter: 5.8
+  waterMaxAlpha: 0.38
   buffAura: {fileID: 7523746689351526276}
   buffPulseSpeed: 4
   buffMinAlpha: 0.18

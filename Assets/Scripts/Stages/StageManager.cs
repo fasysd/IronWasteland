@@ -90,6 +90,7 @@ namespace IronWasteland.Stages
         private int m_SpawnedCount;
         private int m_TotalWaves;
         private bool m_Initialized;
+        private float m_NextStatusBroadcastTime;
 
         #region Lifecycle
 
@@ -120,6 +121,14 @@ namespace IronWasteland.Stages
             SpawnDueWaves();
             RefreshRoster();
             EvaluateOutcome();
+
+            // Host gửi nhịp số mạng/thời gian mỗi giây để HUD và màn kết quả của client
+            // hiển thị đúng (client không tự mô phỏng ải nên StageManager local luôn Idle).
+            if (TankBrain.NetworkSessionActive && Time.time >= m_NextStatusBroadcastTime)
+            {
+                m_NextStatusBroadcastTime = Time.time + 1f;
+                NetStageEvents.Instance?.BroadcastStatus(this);
+            }
         }
 
         private void OnDestroy()
@@ -168,6 +177,7 @@ namespace IronWasteland.Stages
             m_TotalWaves = m_PendingWaves.Count;
 
             State = StageState.Running;
+            m_NextStatusBroadcastTime = Time.time + 1f;
 
             if (logEvents)
             {
@@ -208,6 +218,7 @@ namespace IronWasteland.Stages
             m_PendingWaves.Clear();
 
             Kills = 0;
+            m_NextStatusBroadcastTime = 0f;
             Elapsed = 0f;
             WaveIndex = -1;
             m_SpawnedCount = 0;
