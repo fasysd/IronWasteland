@@ -41,6 +41,8 @@ namespace IronWasteland.Net
         public const byte OpSetReady = 1;
         public const byte OpStart = 2;
         public const byte OpReplay = 3;
+        public const byte OpSetOption1 = 4;
+        public const byte OpSetOption2 = 5;
 
         public const int MaxPlayers = 4;
 
@@ -58,6 +60,8 @@ namespace IronWasteland.Net
         private readonly ulong[] m_ClientIds = new ulong[MaxPlayers];
         private readonly byte[] m_TankIndexes = new byte[MaxPlayers];
         private readonly bool[] m_Ready = new bool[MaxPlayers];
+        private readonly byte[] m_Option1s = new byte[MaxPlayers];
+        private readonly byte[] m_Option2s = new byte[MaxPlayers];
         private int m_PlayerCount;
 
         private bool m_Registered;
@@ -212,7 +216,9 @@ namespace IronWasteland.Net
 
             m_PlayerCount = 0;
             Phase = MatchPhase.Lobby;
-            AddOrUpdatePlayer(NetBootstrap.ServerClientId, bootstrap != null ? bootstrap.LocalTankIndex : (byte)0, true);
+            NetLoadout hostLoadout = bootstrap != null ? bootstrap.GetLoadout(NetBootstrap.ServerClientId) : default;
+            AddOrUpdatePlayer(NetBootstrap.ServerClientId, bootstrap != null ? bootstrap.LocalTankIndex : (byte)0, true,
+                (byte)hostLoadout.OptionSkill1, (byte)hostLoadout.OptionSkill2);
             Broadcast();
         }
 
@@ -225,7 +231,9 @@ namespace IronWasteland.Net
             {
                 RegisterIfNeeded();
                 HookHost();
-                AddOrUpdatePlayer(NetBootstrap.ServerClientId, bootstrap != null ? bootstrap.LocalTankIndex : (byte)0, true);
+                NetLoadout hostLoadout = bootstrap != null ? bootstrap.GetLoadout(NetBootstrap.ServerClientId) : default;
+                AddOrUpdatePlayer(NetBootstrap.ServerClientId, bootstrap != null ? bootstrap.LocalTankIndex : (byte)0, true,
+                    (byte)hostLoadout.OptionSkill1, (byte)hostLoadout.OptionSkill2);
             }
 
             Mode = MatchMode.Single;
@@ -298,7 +306,7 @@ namespace IronWasteland.Net
 
             for (int i = 0; i < m_PlayerCount; i++)
             {
-                bootstrap?.SpawnTankFor(m_ClientIds[i], m_TankIndexes[i]);
+                bootstrap?.SpawnTankFor(m_ClientIds[i], m_TankIndexes[i], m_Option1s[i], m_Option2s[i]);
             }
 
             Phase = MatchPhase.Playing;
@@ -323,13 +331,15 @@ namespace IronWasteland.Net
             StartMatchInternal();
         }
 
-        private void AddOrUpdatePlayer(ulong clientId, byte tankIndex, bool ready)
+        private void AddOrUpdatePlayer(ulong clientId, byte tankIndex, bool ready, byte option1, byte option2)
         {
             for (int i = 0; i < m_PlayerCount; i++)
             {
                 if (m_ClientIds[i] != clientId) continue;
                 m_TankIndexes[i] = tankIndex;
                 m_Ready[i] = ready;
+                m_Option1s[i] = option1;
+                m_Option2s[i] = option2;
                 return;
             }
 
@@ -338,6 +348,8 @@ namespace IronWasteland.Net
             m_ClientIds[m_PlayerCount] = clientId;
             m_TankIndexes[m_PlayerCount] = tankIndex;
             m_Ready[m_PlayerCount] = ready;
+            m_Option1s[m_PlayerCount] = option1;
+            m_Option2s[m_PlayerCount] = option2;
             m_PlayerCount++;
         }
 
@@ -352,6 +364,8 @@ namespace IronWasteland.Net
                     m_ClientIds[j] = m_ClientIds[j + 1];
                     m_TankIndexes[j] = m_TankIndexes[j + 1];
                     m_Ready[j] = m_Ready[j + 1];
+                    m_Option1s[j] = m_Option1s[j + 1];
+                    m_Option2s[j] = m_Option2s[j + 1];
                 }
 
                 m_PlayerCount--;
@@ -364,12 +378,13 @@ namespace IronWasteland.Net
             if (!IsServer) return;
 
             byte tankIndex = bootstrap != null ? bootstrap.GetLoadoutTankIndex(clientId) : (byte)0;
-            AddOrUpdatePlayer(clientId, tankIndex, false);
+            NetLoadout loadout = bootstrap != null ? bootstrap.GetLoadout(clientId) : default;
+            AddOrUpdatePlayer(clientId, tankIndex, false, (byte)loadout.OptionSkill1, (byte)loadout.OptionSkill2);
 
             // Người vào giữa trận: spawn xe ngay với tank đã chọn để không bị đứng ngoài.
             if (Phase == MatchPhase.Playing)
             {
-                bootstrap?.SpawnTankFor(clientId, tankIndex);
+                bootstrap?.SpawnTankFor(clientId, tankIndex, loadout.OptionSkill1, loadout.OptionSkill2);
             }
 
             Broadcast();
@@ -413,6 +428,22 @@ namespace IronWasteland.Net
             }
 
             SendRequest(OpSetTank, tankIndex);
+        }
+
+        /// <summary>Client xin đổi biến thể Optional Skill (mỗi nhóm 0..2) trong lobby.</summary>
+        public void RequestOptionSkills(byte option1, byte option2)
+        {
+            if (!Listening) return;
+
+            if (IsServer)
+            {
+                ApplyOptionRequest(NetBootstrap.ServerClientId, true, option1);
+                ApplyOptionRequest(NetBootstrap.ServerClientId, false, option2);
+                return;
+            }
+
+            SendRequest(OpSetOption1, option1);
+            SendRequest(OpSetOption2, option2);
         }
 
         /// <summary>Client xin đổi trạng thái sẵn sàng.</summary>
@@ -470,6 +501,23 @@ namespace IronWasteland.Net
             Broadcast();
         }
 
+        private void ApplyOptionRequest(ulong clientId, bool firstOption, byte value)
+        {
+            if (!IsServer || Phase != MatchPhase.Lobby) return;
+
+            byte clamped = (byte)Mathf.Clamp((int)value, 0, 2);
+            for (int i = 0; i < m_PlayerCount; i++)
+            {
+                if (m_ClientIds[i] != clientId) continue;
+                if (firstOption) m_Option1s[i] = clamped;
+                else m_Option2s[i] = clamped;
+                m_Ready[i] = false;
+                break;
+            }
+
+            Broadcast();
+        }
+
         private void ApplyReadyRequest(ulong clientId, bool ready)
         {
             if (!IsServer || Phase != MatchPhase.Lobby) return;
@@ -508,6 +556,8 @@ namespace IronWasteland.Net
                 writer.WriteValueSafe(m_ClientIds[i]);
                 writer.WriteValueSafe(m_TankIndexes[i]);
                 writer.WriteValueSafe(m_Ready[i]);
+                writer.WriteValueSafe(m_Option1s[i]);
+                writer.WriteValueSafe(m_Option2s[i]);
             }
 
             messaging.SendNamedMessageToAll(SnapshotMessage, writer);
@@ -535,6 +585,8 @@ namespace IronWasteland.Net
                     reader.ReadValueSafe(out m_ClientIds[i]);
                     reader.ReadValueSafe(out m_TankIndexes[i]);
                     reader.ReadValueSafe(out m_Ready[i]);
+                    reader.ReadValueSafe(out m_Option1s[i]);
+                    reader.ReadValueSafe(out m_Option2s[i]);
                 }
             }
             catch (Exception exception)
@@ -563,6 +615,12 @@ namespace IronWasteland.Net
                     case OpSetReady:
                         ApplyReadyRequest(senderClientId, value != 0);
                         break;
+                    case OpSetOption1:
+                        ApplyOptionRequest(senderClientId, true, value);
+                        break;
+                    case OpSetOption2:
+                        ApplyOptionRequest(senderClientId, false, value);
+                        break;
                     case OpReplay:
                         if (Phase == MatchPhase.Cleared || Phase == MatchPhase.Failed) Replay();
                         break;
@@ -581,15 +639,26 @@ namespace IronWasteland.Net
         /// <summary>Lấy thông tin người chơi theo chỉ số trong danh sách phòng.</summary>
         public bool TryGetPlayer(int index, out ulong clientId, out byte tankIndex, out bool ready)
         {
+            return TryGetPlayer(index, out clientId, out tankIndex, out ready, out _, out _);
+        }
+
+        /// <summary>Lấy thông tin người chơi kèm biến thể Optional Skill trong lobby.</summary>
+        public bool TryGetPlayer(int index, out ulong clientId, out byte tankIndex, out bool ready,
+            out byte option1, out byte option2)
+        {
             clientId = 0UL;
             tankIndex = 0;
             ready = false;
+            option1 = 0;
+            option2 = 0;
 
             if (index < 0 || index >= m_PlayerCount) return false;
 
             clientId = m_ClientIds[index];
             tankIndex = m_TankIndexes[index];
             ready = m_Ready[index];
+            option1 = m_Option1s[index];
+            option2 = m_Option2s[index];
             return true;
         }
 
@@ -605,6 +674,36 @@ namespace IronWasteland.Net
                 }
 
                 return bootstrap != null ? bootstrap.LocalTankIndex : (byte)0;
+            }
+        }
+
+        /// <summary>Biến thể Optional Skill 1 của máy này (client lấy từ snapshot).</summary>
+        public byte LocalOption1
+        {
+            get
+            {
+                ulong localId = Manager != null ? Manager.LocalClientId : 0UL;
+                for (int i = 0; i < m_PlayerCount; i++)
+                {
+                    if (m_ClientIds[i] == localId) return m_Option1s[i];
+                }
+
+                return bootstrap != null ? (byte)bootstrap.LocalOptionSkill1 : (byte)0;
+            }
+        }
+
+        /// <summary>Biến thể Optional Skill 2 của máy này (client lấy từ snapshot).</summary>
+        public byte LocalOption2
+        {
+            get
+            {
+                ulong localId = Manager != null ? Manager.LocalClientId : 0UL;
+                for (int i = 0; i < m_PlayerCount; i++)
+                {
+                    if (m_ClientIds[i] == localId) return m_Option2s[i];
+                }
+
+                return bootstrap != null ? (byte)bootstrap.LocalOptionSkill2 : (byte)0;
             }
         }
 

@@ -37,7 +37,7 @@ namespace IronWasteland.Net
         {
             if (!showPanel || bootstrap == null) return;
 
-            GUILayout.BeginArea(new Rect(10f, 10f, 380f, 420f), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(10f, 10f, 380f, 540f), GUI.skin.box);
             GUILayout.Label("IronWasteland - Online (thu nghiem)");
 
             if (flow == null)
@@ -62,6 +62,17 @@ namespace IronWasteland.Net
         private void DrawConnectionMenu()
         {
             GUILayout.Label("Chua vao phong");
+
+            GUILayout.Label("--- Test ky nang (bien the Optional) ---");
+            if (GUILayout.Button("Optional 1: bien the " + (bootstrap.LocalOptionSkill1 + 1) + "/3 (bam de doi)"))
+            {
+                bootstrap.SetLocalOptionSkills((bootstrap.LocalOptionSkill1 + 1) % 3, bootstrap.LocalOptionSkill2);
+            }
+
+            if (GUILayout.Button("Optional 2: bien the " + (bootstrap.LocalOptionSkill2 + 1) + "/3 (bam de doi)"))
+            {
+                bootstrap.SetLocalOptionSkills(bootstrap.LocalOptionSkill1, (bootstrap.LocalOptionSkill2 + 1) % 3);
+            }
 
             GUILayout.Label("--- Choi mot minh ---");
             if (GUILayout.Button("Choi don (host 1 nguoi)"))
@@ -163,13 +174,24 @@ namespace IronWasteland.Net
             GUILayout.Label("--- Nguoi choi ---");
             for (int i = 0; i < flow.PlayerCount; i++)
             {
-                if (!flow.TryGetPlayer(i, out ulong clientId, out byte tankIndex, out bool ready)) continue;
+                if (!flow.TryGetPlayer(i, out ulong clientId, out byte tankIndex, out bool ready,
+                        out byte option1, out byte option2)) continue;
 
                 string tankName = TankName(tankIndex);
                 string suffix = clientId == (bootstrap.Manager != null ? bootstrap.Manager.LocalClientId : 0UL)
                     ? " (ban)"
                     : string.Empty;
-                GUILayout.Label($"{(clientId == NetBootstrap.ServerClientId ? "Host" : "Client")}{suffix}: {tankName} | {(ready ? "San sang" : "Chua san sang")}");
+                GUILayout.Label($"{(clientId == NetBootstrap.ServerClientId ? "Host" : "Client")}{suffix}: {tankName} | opt {option1 + 1}/{option2 + 1} | {(ready ? "San sang" : "Chua san sang")}");
+            }
+
+            if (GUILayout.Button("Optional 1 cua ban: bien the " + (flow.LocalOption1 + 1) + "/3 (bam de doi)"))
+            {
+                flow.RequestOptionSkills((byte)((flow.LocalOption1 + 1) % 3), flow.LocalOption2);
+            }
+
+            if (GUILayout.Button("Optional 2 cua ban: bien the " + (flow.LocalOption2 + 1) + "/3 (bam de doi)"))
+            {
+                flow.RequestOptionSkills(flow.LocalOption1, (byte)((flow.LocalOption2 + 1) % 3));
             }
 
             if (GUILayout.Button("Doi tank: " + TankName(flow.LocalTankIndex)))

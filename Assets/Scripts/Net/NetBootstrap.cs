@@ -195,16 +195,50 @@ namespace IronWasteland.Net
             tankIndex = index;
         }
 
+        /// <summary>Biến thể Optional Skill 1 mà máy này đang chọn (dùng cho UI test trong lobby).</summary>
+        public int LocalOptionSkill1 => optionSkill1;
+
+        /// <summary>Biến thể Optional Skill 2 mà máy này đang chọn (dùng cho UI test trong lobby).</summary>
+        public int LocalOptionSkill2 => optionSkill2;
+
+        /// <summary>
+        /// Đặt biến thể Optional Skill cho máy này trước khi vào phòng (mỗi nhóm 0..2).
+        /// Loadout gửi kèm lúc kết nối nên client cần chọn trước khi bấm vào phòng.
+        /// </summary>
+        public void SetLocalOptionSkills(int option1, int option2)
+        {
+            optionSkill1 = Mathf.Clamp(option1, 0, 2);
+            optionSkill2 = Mathf.Clamp(option2, 0, 2);
+        }
+
+        /// <summary>Loadout đã lưu của một client (level, trang bị, biến thể kỹ năng).</summary>
+        public NetLoadout GetLoadout(ulong clientId)
+        {
+            return m_Loadouts.TryGetValue(clientId, out NetLoadout loadout) ? loadout : default;
+        }
+
         /// <summary>
         /// Dựng xe cho một người chơi theo tank đã chọn trong lobby; các trường còn lại
         /// (level, trang bị, biến thể kỹ năng) lấy từ loadout lúc kết nối.
         /// </summary>
         public void SpawnTankFor(ulong clientId, byte tankIndexIndex)
         {
+            NetLoadout saved = m_Loadouts.TryGetValue(clientId, out NetLoadout loadout) ? loadout : default;
+            SpawnTankFor(clientId, tankIndexIndex, saved.OptionSkill1, saved.OptionSkill2);
+        }
+
+        /// <summary>
+        /// Dựng xe với tank và biến thể Optional Skill do lobby chọn (host quyết định).
+        /// Dùng khi bắt đầu trận hoặc khi người chơi vào giữa trận.
+        /// </summary>
+        public void SpawnTankFor(ulong clientId, byte tankIndexIndex, int option1, int option2)
+        {
             if (spawnService == null) return;
 
             NetLoadout loadout = m_Loadouts.TryGetValue(clientId, out NetLoadout saved) ? saved : default;
             loadout.TankIndex = tankIndexIndex;
+            loadout.OptionSkill1 = Mathf.Clamp(option1, 0, 2);
+            loadout.OptionSkill2 = Mathf.Clamp(option2, 0, 2);
             spawnService.SpawnPlayerTank(clientId, loadout);
         }
 
