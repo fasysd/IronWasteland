@@ -324,8 +324,11 @@ namespace IronWasteland.Net
             ConnectionLost = false;
             SessionEnded = false;
             m_HadRemoteClient = false;
+
+            // Rời lobby trước khi tắt mạng: host xoá phòng, client tự gỡ mình khỏi danh sách thành viên.
+            // LeaveSession chạy bất đồng bộ nên không chặn thao tác đóng NetworkManager bên dưới.
+            NetRelayService.LeaveSession();
             if (networkManager != null && networkManager.IsListening) networkManager.Shutdown();
-            NetRelayService.ResetSession();
         }
 
         private void EnsureTransport()
@@ -451,6 +454,8 @@ namespace IronWasteland.Net
             {
                 ConnectionLost = true;
                 Debug.LogWarning($"[NetBootstrap] Mất kết nối tới host (clientId={clientId}).");
+                // Host đã đóng phòng: gỡ mình khỏi lobby để lần sau tạo/join phòng mới sạch.
+                NetRelayService.LeaveSession();
                 return;
             }
 

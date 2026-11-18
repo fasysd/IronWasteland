@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.Networking.Transport.Relay;
 using Unity.Services.Authentication;
@@ -37,6 +38,15 @@ namespace IronWasteland.Net
 
         /// <summary>Id lobby đang tham gia (rỗng nếu chưa vào phòng nào).</summary>
         public static string LobbyId { get; private set; }
+
+        /// <summary>True khi máy này là người tạo phòng (chỉ host mới giữ lobby sống bằng heartbeat).</summary>
+        public static bool IsLobbyHost { get; private set; }
+
+        /// <summary>Nhịp gửi heartbeat giữ lobby không bị Unity Services coi là rảnh.</summary>
+        private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(15);
+
+        private static CancellationTokenSource s_HeartbeatCts;
+        private static string s_HeartbeatLobbyId;
 
         /// <summary>Khởi tạo Unity Services và đăng nhập ẩn danh nếu chưa có phiên.</summary>
         public static async Task<bool> EnsureServicesAsync()
@@ -128,11 +138,11 @@ namespace IronWasteland.Net
                 CreateLobbyOptions options = new CreateLobbyOptions
                 {
                     IsPrivate = false,
-                    // MVP chưa có đăng nhập người chơi: để Public để phòng hiện trong danh sách công khai
-                    // và người khác đọc được mã Relay. Khi làm tài khoản thì đổi lại Member + join bằng mã phòng.
+                    // Chỉ thành viên phòng mới đọc được mã Relay; người ngoài phải join bằng mã phòng
+                    // rồi mới lấy được dữ liệu (không lộ mã Relay qua danh sách công khai).
                     Data = new Dictionary<string, DataObject>
                     {
-                        { RelayDataKey, new DataObject(DataObject.VisibilityOptions.Public, RelayJoinCode) }
+                        { RelayDataKey, new DataObject(DataObject.VisibilityOptions.Member, RelayJoinCode) }
                     }
                 };
 
@@ -140,6 +150,8 @@ namespace IronWasteland.Net
                 Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(name, MaxPlayers, options);
                 LobbyCode = lobby.LobbyCode;
                 LobbyId = lobby.Id;
+                IsLobbyHost = true;
+                StartHeartbeat(lobby.Id);
                 return true;
             }
             catch (Exception exception)
@@ -217,6 +229,7 @@ namespace IronWasteland.Net
                 Lobby lobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode.Trim());
                 LobbyCode = lobby.LobbyCode;
                 LobbyId = lobby.Id;
+                IsLobbyHost = false;
 
                 if (lobby.Data != null && lobby.Data.TryGetValue(RelayDataKey, out DataObject data) && data != null)
                 {
@@ -233,12 +246,109 @@ namespace IronWasteland.Net
             }
         }
 
+        /// <summary>Bắt đầu gửi heartbeat giữ lobby sống (chỉ host gọi).</summary>
+        private static void StartHeartbeat(string lobbyId)
+        {
+            StopHeartbeat();
+            if (string.IsNullOrEmpty(lobbyId)) return;
+
+            s_HeartbeatLobbyId = lobbyId;
+            s_HeartbeatCts = new CancellationTokenSource();
+            HeartbeatLoopAsync(s_HeartbeatCts.Token);
+        }
+
+        /// <summary>Dừng heartbeat khi rời phòng/đóng phòng.</summary>
+        public static void StopHeartbeat()
+        {
+            if (s_HeartbeatCts == null) return;
+
+            try { s_HeartbeatCts.Cancel(); }
+            catch { /* token đã huỷ */ }
+
+            s_HeartbeatCts.Dispose();
+            s_HeartbeatCts = null;
+            s_HeartbeatLobbyId = null;
+        }
+
+        /// <summary>Vòng lặp gửi heartbeat 15 giây/lần để lobby không bị coi là rảnh.</summary>
+        private static async void HeartbeatLoopAsync(CancellationToken token)
+        {
+            string lobbyId = s_HeartbeatLobbyId;
+            if (string.IsNullOrEmpty(lobbyId)) return;
+
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    await Task.Delay(HeartbeatInterval, token);
+                    if (token.IsCancellationRequested) break;
+                    await LobbyService.Instance.SendHeartbeatPingAsync(lobbyId);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Rời phòng bình thường — không phải lỗi.
+            }
+            catch (Exception exception)
+            {
+                LastError = $"Heartbeat lobby lỗi: {exception.Message}";
+            }
+        }
+
+        /// <summary>
+        /// Rời lobby đúng cách: thành viên thì RemovePlayer, host thì DeleteLobby để không còn phòng treo
+        /// trên Unity Services sau khi đóng game.
+        /// </summary>
+        public static async Task LeaveSessionAsync()
+        {
+            StopHeartbeat();
+
+            string lobbyId = LobbyId;
+            if (string.IsNullOrEmpty(lobbyId) || !ServicesReady)
+            {
+                ResetSession();
+                return;
+            }
+
+            bool wasHost = IsLobbyHost;
+            string error = null;
+            try
+            {
+                if (wasHost)
+                {
+                    await LobbyService.Instance.DeleteLobbyAsync(lobbyId);
+                }
+                else if (AuthenticationService.Instance.IsSignedIn)
+                {
+                    await LobbyService.Instance.RemovePlayerAsync(lobbyId, AuthenticationService.Instance.PlayerId);
+                }
+            }
+            catch (Exception exception)
+            {
+                // Phòng có thể đã bị host xoá trước đó; chỉ ghi nhận để log/UI biết.
+                error = $"Rời phòng lỗi: {exception.Message}";
+            }
+            finally
+            {
+                ResetSession();
+                if (error != null) LastError = error;
+            }
+        }
+
+        /// <summary>Rời phòng không cần chờ (dùng trong lúc Shutdown).</summary>
+        public static void LeaveSession()
+        {
+            _ = LeaveSessionAsync();
+        }
+
         /// <summary>Xoá trạng thái lobby/Relay khi đóng phòng để lần sau tạo mới sạch.</summary>
         public static void ResetSession()
         {
+            StopHeartbeat();
             RelayJoinCode = null;
             LobbyCode = null;
             LobbyId = null;
+            IsLobbyHost = false;
             LastError = null;
         }
 
