@@ -331,6 +331,40 @@ namespace IronWasteland.Net
             if (networkManager != null && networkManager.IsListening) networkManager.Shutdown();
         }
 
+        /// <summary>
+        /// Tạo lại phòng khi phiên cũ đã chết (host hết client hoặc client mất host).
+        /// Đường Relay sẽ tạo allocation + lobby mới; đường IP mở lại host trên cổng cũ.
+        /// </summary>
+        public void Rehost(bool useRelay)
+        {
+            if (!isActiveAndEnabled)
+            {
+                Debug.LogWarning("[NetBootstrap] Không thể tạo lại phòng khi object đang tắt.");
+                return;
+            }
+
+            StartCoroutine(RehostRoutine(useRelay));
+        }
+
+        private System.Collections.IEnumerator RehostRoutine(bool useRelay)
+        {
+            Debug.Log($"[NetBootstrap] Tạo lại phòng ({(useRelay ? "Relay" : "IP")})…");
+            Shutdown();
+
+            // Chờ NGO dọn transport + callback xong rồi mới dựng phiên mới.
+            yield return null;
+            yield return new WaitForSecondsRealtime(0.6f);
+
+            if (useRelay)
+            {
+                StartHostWithRelay();
+            }
+            else
+            {
+                StartHost();
+            }
+        }
+
         private void EnsureTransport()
         {
             if (networkManager == null) return;

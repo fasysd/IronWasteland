@@ -24,6 +24,11 @@ namespace IronWasteland.Net
         private string m_RelayJoinCodeInput = string.Empty;
         private string m_LobbyCodeInput = string.Empty;
 
+        /// <summary>Cách đã dùng để mở phòng gần nhất — cần cho nút "Tạo phòng mới".</summary>
+        private enum HostMode { None, Single, Relay, Ip }
+
+        private HostMode m_LastHostMode = HostMode.None;
+
         private void Awake()
         {
             if (bootstrap == null) bootstrap = GetComponent<NetBootstrap>();
@@ -37,15 +42,24 @@ namespace IronWasteland.Net
         {
             if (!showPanel || bootstrap == null) return;
 
-            GUILayout.BeginArea(new Rect(10f, 10f, 380f, 540f), GUI.skin.box);
-            GUILayout.Label("IronWasteland - Online (thu nghiem)");
-
             if (flow == null)
             {
+                GUILayout.BeginArea(new Rect(10f, 10f, 380f, 540f), GUI.skin.box);
+                GUILayout.Label("IronWasteland - Online (thu nghiem)");
                 GUILayout.Label("Thieu MatchFlow trong scene.");
                 GUILayout.EndArea();
                 return;
             }
+
+            // Phiên đã kết thúc / đã có kết quả trận: hiện màn kết thúc toàn màn hình.
+            if (bootstrap.IsRunning && IsEndState())
+            {
+                DrawEndOverlay();
+                return;
+            }
+
+            GUILayout.BeginArea(new Rect(10f, 10f, 380f, 540f), GUI.skin.box);
+            GUILayout.Label("IronWasteland - Online (thu nghiem)");
 
             if (!bootstrap.IsRunning)
             {
@@ -77,6 +91,7 @@ namespace IronWasteland.Net
             GUILayout.Label("--- Choi mot minh ---");
             if (GUILayout.Button("Choi don (host 1 nguoi)"))
             {
+                m_LastHostMode = HostMode.Single;
                 PrepareOfflineTank();
                 bootstrap.SetLocalTankIndex(flow.LocalTankIndex);
                 if (bootstrap.StartHost()) flow.StartSingle();
@@ -85,6 +100,7 @@ namespace IronWasteland.Net
             GUILayout.Label("--- Co-op qua Relay ---");
             if (GUILayout.Button("Mo phong co-op (Relay)"))
             {
+                m_LastHostMode = HostMode.Relay;
                 PrepareOfflineTank();
                 bootstrap.StartHostWithRelay();
             }
@@ -106,6 +122,7 @@ namespace IronWasteland.Net
             GUILayout.Label("--- IP truc tiep (debug) ---");
             if (GUILayout.Button("Mo phong IP (Host)"))
             {
+                m_LastHostMode = HostMode.Ip;
                 PrepareOfflineTank();
                 bootstrap.StartHost();
             }
@@ -144,15 +161,13 @@ namespace IronWasteland.Net
             }
             else
             {
-                GUILayout.Label(flow.Phase == MatchPhase.Cleared ? "KET QUA: THANG" : "KET QUA: THUA");
-                if (flow.TryGetPlayer(0, out _, out _, out _) && IsHost())
-                {
-                    if (GUILayout.Button("Choi lai (ve lobby)")) flow.Replay();
-                }
-                else if (GUILayout.Button("Xin host choi lai")) flow.RequestReplay();
+                DrawResultPanel();
             }
 
-            if (GUILayout.Button("Thoat phong")) flow.Leave();
+            if (flow.Phase == MatchPhase.Lobby || flow.Phase == MatchPhase.Playing)
+            {
+                if (GUILayout.Button("Thoat phong")) flow.Leave();
+            }
 
             if (!string.IsNullOrEmpty(NetRelayService.LastError))
             {
@@ -221,6 +236,99 @@ namespace IronWasteland.Net
 
                 GUI.enabled = true;
             }
+        }
+
+        /// <summary>Đang ở trạng thái kết thúc (phiên sập hoặc trận đã có kết quả) để hiện màn kết thúc.</summary>
+        private bool IsEndState()
+        {
+            return bootstrap.SessionEnded
+                || bootstrap.ConnectionLost
+                || flow.Phase == MatchPhase.Cleared
+                || flow.Phase == MatchPhase.Failed;
+        }
+
+        /// <summary>Màn kết thúc toàn màn hình: nền mờ + hộp giữa màn hình.</summary>
+        private void DrawEndOverlay()
+        {
+            Color previous = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.6f);
+            GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), Texture2D.whiteTexture);
+            GUI.color = previous;
+
+            bool ended = bootstrap.SessionEnded || bootstrap.ConnectionLost;
+            float width = 560f;
+            float height = ended ? 240f : 330f;
+            Rect box = new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+
+            GUILayout.BeginArea(box, GUI.skin.box);
+            if (ended)
+            {
+                DrawEndedPanel();
+            }
+            else
+            {
+                DrawResultPanel();
+            }
+
+            GUILayout.EndArea();
+        }
+
+        /// <summary>Phiên đã chết: host hết client (SessionEnded) hoặc client mất host (ConnectionLost).</summary>
+        private void DrawEndedPanel()
+        {
+            GUILayout.Label(bootstrap.SessionEnded ? "PHIEN DA KET THUC" : "MAT KET NOI TOI HOST");
+
+            if (bootstrap.SessionEnded)
+            {
+                GUILayout.Label("Phong da dong vi khong con nguoi choi khac. Hay tao phong moi de choi tiep.");
+            }
+            else
+            {
+                GUILayout.Label("Host da thoat hoac mat ket noi. Hay ve menu de tim phong khac.");
+            }
+
+            if (bootstrap.SessionEnded && IsHost())
+            {
+                if (GUILayout.Button("Tao phong moi")) RehostSession();
+            }
+
+            if (GUILayout.Button("Ve menu")) flow.Leave();
+        }
+
+        /// <summary>Màn kết thúc trận: thắng/thua + thống kê ngắn + lựa chọn chơi lại/tạo phòng mới/thoát.</summary>
+        private void DrawResultPanel()
+        {
+            GUILayout.Label(flow.Phase == MatchPhase.Cleared ? "KET QUA: THANG" : "KET QUA: THUA");
+
+            StageManager stage = bootstrap.Stage;
+            if (stage != null)
+            {
+                GUILayout.Label($"Ha guc: {stage.Kills}/{stage.KillTarget}   |   Thoi gian: {Mathf.FloorToInt(stage.Elapsed)}s");
+            }
+
+            StageDefinition definition = flow.SelectedStage;
+            if (definition != null)
+            {
+                GUILayout.Label("Man: " + definition.StageCode + " - " + definition.StageName);
+            }
+
+            if (IsHost())
+            {
+                if (GUILayout.Button("Choi lai (ve lobby)")) flow.Replay();
+                if (GUILayout.Button("Tao phong moi")) RehostSession();
+            }
+            else
+            {
+                if (GUILayout.Button("Xin host choi lai")) flow.RequestReplay();
+            }
+
+            if (GUILayout.Button("Thoat phong")) flow.Leave();
+        }
+
+        /// <summary>Tạo lại phòng: giữ đúng loại phòng lần trước (Relay mặc định, IP nếu từng dùng IP).</summary>
+        private void RehostSession()
+        {
+            bootstrap.Rehost(m_LastHostMode != HostMode.Ip);
         }
 
         private bool AllReady()
