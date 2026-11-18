@@ -18,10 +18,19 @@ namespace IronWasteland.Net
         // ulong owner (8) + byte index (1) + Vector2 aim (8) + Vector2 origin (8) + 2 byte biến thể = 27 byte, cấp dư 40.
         private const int MessageSize = 40;
 
+        /// <summary>Kênh riêng cho vụ nổ ấn tự động (ấn đầy cộng dồn nhờ sát thương thường).</summary>
+        private const string MarkExplosionMessageName = "IW.SkillFxMark";
+
+        // ulong owner (8) + ulong enemy NetworkObjectId (8) + Vector3 vị trí nổ (12) = 28 byte, cấp dư 32.
+        private const int MarkExplosionMessageSize = 32;
+
         private bool m_Registered;
 
         /// <summary>Đếm số lần phát lại để chỉ ghi vài dòng log chẩn đoán đầu tiên.</summary>
         private static int s_ReplayLogCount;
+
+        /// <summary>Đếm số lần phát lại vụ nổ ấn để chỉ ghi vài dòng log chẩn đoán đầu tiên.</summary>
+        private static int s_MarkExplosionLogCount;
 
         /// <summary>Instance duy nhất trong scene do NetBootstrap/Network root giữ.</summary>
         public static NetSkillFx Instance { get; private set; }
@@ -75,12 +84,35 @@ namespace IronWasteland.Net
             manager.CustomMessagingManager.SendNamedMessageToAll(MessageName, writer);
         }
 
+        /// <summary>
+        /// Host gọi khi ấn Fox Mark đạt cộng dồn tối đa và tự phát nổ trong luồng sát thương.
+        /// Chỉ server được gửi; client gọi hàm này sẽ bị bỏ qua.
+        /// </summary>
+        public void BroadcastMarkExplosion(TankBrain brain, ulong enemyNetworkObjectId, Vector3 position)
+        {
+            if (brain == null) return;
+
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsListening || !manager.IsServer) return;
+            if (manager.CustomMessagingManager == null) return;
+
+            NetworkObject networkObject = brain.GetComponent<NetworkObject>();
+            if (networkObject == null || !networkObject.IsSpawned) return;
+
+            using FastBufferWriter writer = new FastBufferWriter(MarkExplosionMessageSize, Allocator.Temp);
+            writer.WriteValueSafe(networkObject.OwnerClientId);
+            writer.WriteValueSafe(enemyNetworkObjectId);
+            writer.WriteValueSafe(position);
+            manager.CustomMessagingManager.SendNamedMessageToAll(MarkExplosionMessageName, writer);
+        }
+
         private void Register(NetworkManager manager)
         {
             if (m_Registered) return;
             if (manager.CustomMessagingManager == null) return;
 
             manager.CustomMessagingManager.RegisterNamedMessageHandler(MessageName, HandleMessage);
+            manager.CustomMessagingManager.RegisterNamedMessageHandler(MarkExplosionMessageName, HandleMarkExplosion);
             m_Registered = true;
         }
 
@@ -92,6 +124,7 @@ namespace IronWasteland.Net
             if (manager != null && manager.CustomMessagingManager != null)
             {
                 manager.CustomMessagingManager.UnregisterNamedMessageHandler(MessageName);
+                manager.CustomMessagingManager.UnregisterNamedMessageHandler(MarkExplosionMessageName);
             }
 
             m_Registered = false;
@@ -122,6 +155,33 @@ namespace IronWasteland.Net
             }
 
             tank.PlayRemoteSkillFx(skillIndex, aim, origin, option1, option2);
+        }
+
+        /// <summary>
+        /// Client nhận lệnh phát lại vụ nổ ấn từ host rồi chuyển cho brain phụ trách hình ảnh.
+        /// </summary>
+        private void HandleMarkExplosion(ulong senderClientId, FastBufferReader reader)
+        {
+            if (senderClientId != NetworkManager.ServerClientId) return; // chỉ host được phát lại VFX
+            reader.ReadValueSafe(out ulong ownerClientId);
+            reader.ReadValueSafe(out ulong enemyNetworkObjectId);
+            reader.ReadValueSafe(out Vector3 position);
+
+            NetSpawnService spawnService = FindAnyObjectByType<NetSpawnService>();
+            if (spawnService == null) return;
+            if (!spawnService.TryResolveTank(ownerClientId, out TankBrain tank) || tank == null)
+            {
+                Debug.LogWarning($"[NetSkillFx] không tìm thấy xe của owner={ownerClientId} để phát lại nổ ấn.");
+                return;
+            }
+
+            if (s_MarkExplosionLogCount < 3)
+            {
+                s_MarkExplosionLogCount++;
+                Debug.Log($"[NetSkillFx] phát lại nổ ấn cho xe {tank.name} (owner={ownerClientId}, enemy={enemyNetworkObjectId}).");
+            }
+
+            tank.PlayRemoteMarkExplosionFx(position, enemyNetworkObjectId);
         }
     }
 }

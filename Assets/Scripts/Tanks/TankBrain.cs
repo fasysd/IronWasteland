@@ -829,6 +829,17 @@ namespace IronWasteland.Tanks
         }
 
         /// <summary>
+        /// Client phát lại hình ảnh vụ nổ ấn Fox Mark khi host làm đầy cộng dồn (vụ nổ tự động,
+        /// không đi qua <see cref="UseSkill"/> nên không dùng được gói phát lại kỹ năng).
+        /// Lớp nào có hiệu ứng riêng thì ghi đè; mặc định không làm gì.
+        /// </summary>
+        /// <param name="position">Vị trí phát nổ do host gửi xuống.</param>
+        /// <param name="enemyNetworkObjectId">NetworkObjectId của kẻ địch mang ấn (0 nếu host không xác định được).</param>
+        public virtual void PlayRemoteMarkExplosionFx(Vector3 position, ulong enemyNetworkObjectId)
+        {
+        }
+
+        /// <summary>
         /// Slot nào được phép phát lại hình ảnh trên client. Mặc định cho phép cả 4 slot vì
         /// mọi tác động gameplay (sát thương, năng lượng, hồi chiêu, buff, khiên, gánh hộ,
         /// dịch chuyển) đều đã bị khoá khi <see cref="IsRemoteFxReplay"/> bật; client chỉ dựng

@@ -483,9 +483,36 @@ namespace IronWasteland.Tanks.GreenFox
             DamageEnemy(enemy, ScaledDamage(percent / 100f), explosionPos, false);
             SpawnExplosionEffect(explosionPos);
 
+            // Client không chạy luồng sát thương nên không tự biết ấn đã đầy cộng dồn:
+            // gửi riêng gói phát lại vụ nổ để máy client cũng thấy hiệu ứng như máy chủ.
+            NetSkillFx.Instance?.BroadcastMarkExplosion(this, GetNetworkId(enemy), explosionPos);
+
             TryApplyBurn(enemy);
             NetEffectSync.Instance?.BroadcastEnemyRemove(GetNetworkId(enemy), MarkEffectId);
             Destroy(sign.gameObject);
+        }
+
+        /// <summary>
+        /// Client dựng lại vụ nổ khi ấn Fox Mark đạt cộng dồn tối đa trên máy chủ. Sát thương và
+        /// thiêu đốt đã do host xử lý (con số sát thương đi qua NetCombatFeedback), ở đây chỉ hình ảnh.
+        /// </summary>
+        public override void PlayRemoteMarkExplosionFx(Vector3 position, ulong enemyNetworkObjectId)
+        {
+            if (HasGameplayAuthority) return;
+
+            SpawnExplosionEffect(position);
+
+            if (enemyNetworkObjectId == 0UL) return;
+
+            // Dọn ấn thuần hình ảnh của client để nó không nằm lại tới khi hết hạn.
+            foreach (var kv in m_Signs)
+            {
+                if (kv.Key == null || kv.Value == null) continue;
+                if (GetNetworkId(kv.Key) != enemyNetworkObjectId) continue;
+
+                Destroy(kv.Value.gameObject);
+                break;
+            }
         }
 
         private void SpawnExplosionEffect(Vector3 position)
