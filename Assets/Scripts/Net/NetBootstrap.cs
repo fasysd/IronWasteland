@@ -100,6 +100,12 @@ namespace IronWasteland.Net
         /// </summary>
         public string LastDisconnectReason { get; private set; }
 
+        /// <summary>Đang tạo/join phiên (Relay/Lobby) — UI dùng để khoá nút và tránh bấm hai lần.</summary>
+        public bool IsStartingSession { get; private set; }
+
+        /// <summary>Thông báo tiến trình cho UI (rỗng khi không có gì đang chạy).</summary>
+        public string SessionStatus { get; private set; }
+
         private bool m_HadRemoteClient;
 
         private void Awake()
@@ -151,6 +157,10 @@ namespace IronWasteland.Net
             DestroyLocalOfflineTank();
             EnsureTransport();
 
+            // Dọn trạng thái trận của phiên trước TRƯỚC khi mở mạng: nếu để Phase còn Playing,
+            // callback OnClientConnected của host mới sẽ spawn xe ngay trong lobby.
+            matchFlow?.PrepareNewSession();
+
             // Mở phòng trên cổng đã cấu hình (mặc định 7777). Đổi cổng giúp tránh đụng cổng khi
             // chạy nhiều phòng trên cùng một máy hoặc khi cổng cũ còn bị giữ.
             UnityTransport hostTransport = networkManager.NetworkConfig.NetworkTransport as UnityTransport;
@@ -185,6 +195,7 @@ namespace IronWasteland.Net
             ClearSceneEnemies();
             DestroyLocalOfflineTank();
             EnsureTransport();
+            matchFlow?.PrepareNewSession();
             UnityTransport transport = networkManager.NetworkConfig.NetworkTransport as UnityTransport;
             if (transport != null) transport.SetConnectionData(joinAddress, joinPort);
 
@@ -274,7 +285,16 @@ namespace IronWasteland.Net
         public async void StartHostWithRelay(string region = null)
         {
             if (networkManager == null || networkManager.IsListening) return;
+            if (IsStartingSession)
+            {
+                Debug.LogWarning("[NetBootstrap] Đang tạo phiên khác — bỏ qua yêu cầu mở phòng Relay.");
+                return;
+            }
 
+            IsStartingSession = true;
+            SessionStatus = "Đang tạo phòng Relay…";
+            try
+            {
             ConnectionLost = false;
             LastDisconnectReason = null;
             m_ReservedClients.Clear();
@@ -304,13 +324,28 @@ namespace IronWasteland.Net
 
             bool lobbyCreated = await NetRelayService.CreateLobbyAsync("IronWasteland");
             Debug.Log($"[NetBootstrap] Relay code={NetRelayService.RelayJoinCode} lobby={lobbyCreated} lobbyCode={NetRelayService.LobbyCode} err={NetRelayService.LastError}");
+            }
+            finally
+            {
+                IsStartingSession = false;
+                SessionStatus = string.Empty;
+            }
         }
 
         /// <summary>Vào phòng Relay bằng mã join code (không dùng địa chỉ IP).</summary>
         public async void StartClientWithRelay(string relayJoinCode)
         {
             if (networkManager == null || networkManager.IsListening) return;
+            if (IsStartingSession)
+            {
+                Debug.LogWarning("[NetBootstrap] Đang vào phòng khác — bỏ qua yêu cầu join Relay.");
+                return;
+            }
 
+            IsStartingSession = true;
+            SessionStatus = "Đang vào phòng Relay…";
+            try
+            {
             ConnectionLost = false;
             LastDisconnectReason = null;
             m_ReservedClients.Clear();
@@ -336,6 +371,12 @@ namespace IronWasteland.Net
             transport.SetRelayServerData(relayData.Value);
             networkManager.NetworkConfig.ConnectionData = BuildLocalLoadout().ToPayload();
             networkManager.StartClient();
+            }
+            finally
+            {
+                IsStartingSession = false;
+                SessionStatus = string.Empty;
+            }
         }
 
         /// <summary>Đóng phòng ở cả hai phía.</summary>
@@ -346,6 +387,10 @@ namespace IronWasteland.Net
             m_ReservedClients.Clear();
             SessionEnded = false;
             m_HadRemoteClient = false;
+
+            // Rời phiên: dọn trạng thái trận ngay trên máy này trước khi tắt mạng, để menu không
+            // còn Phase Playing/kills cũ và không spawn quái offline khi quay về.
+            matchFlow?.PrepareNewSession();
 
             // Rời lobby trước khi tắt mạng: host xoá phòng, client tự gỡ mình khỏi danh sách thành viên.
             // LeaveSession chạy bất đồng bộ nên không chặn thao tác đóng NetworkManager bên dưới.
@@ -375,6 +420,16 @@ namespace IronWasteland.Net
 
             // Chờ NGO dọn transport + callback xong rồi mới dựng phiên mới.
             yield return null;
+
+            // Chờ LeaveSessionAsync xoá/Leave lobby cũ xong trước khi tạo lobby mới — nếu không,
+            // finally của lần Leave cũ có thể ResetSession() đè lên phiên vừa tạo.
+            float wait = 0f;
+            while (NetRelayService.IsLeavingSession && wait < 3f)
+            {
+                wait += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
             yield return new WaitForSecondsRealtime(0.6f);
 
             if (useRelay)

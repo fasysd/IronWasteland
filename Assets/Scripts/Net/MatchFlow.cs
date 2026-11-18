@@ -206,15 +206,13 @@ namespace IronWasteland.Net
 
         private void HookHost()
         {
-            if (Manager == null) return;
-            Manager.OnClientConnectedCallback -= HandleServerClientConnectedCallback;
-            Manager.OnClientConnectedCallback += HandleServerClientConnectedCallback;
+            // Roster do NetBootstrap.HandleClientConnected gọi OnClientJoined; MatchFlow KHÔNG đăng ký
+            // callback OnClientConnected riêng để tránh xử lý một client hai lần (add/spawn/broadcast trùng).
             m_HostHooked = true;
         }
 
         private void UnhookHost()
         {
-            if (Manager != null) Manager.OnClientConnectedCallback -= HandleServerClientConnectedCallback;
             m_HostHooked = false;
         }
 
@@ -237,14 +235,31 @@ namespace IronWasteland.Net
             RegisterIfNeeded();
             HookHost();
 
-            m_PlayerCount = 0;
-            Phase = MatchPhase.Lobby;
-            bootstrap?.Stage?.ResetToIdle();
-            ResetStageEventsState();
+            // Dọn sạch trạng thái phiên cũ; PrepareNewSession chỉ reset cục bộ nên gọi lặp vô hại.
+            PrepareNewSession();
             NetLoadout hostLoadout = bootstrap != null ? bootstrap.GetLoadout(NetBootstrap.ServerClientId) : default;
             AddOrUpdatePlayer(NetBootstrap.ServerClientId, bootstrap != null ? bootstrap.LocalTankIndex : (byte)0, true,
                 (byte)hostLoadout.OptionSkill1, (byte)hostLoadout.OptionSkill2);
             Broadcast();
+        }
+
+        /// <summary>
+        /// Dọn trạng thái phiên cũ trên máy này trước khi mở/join phiên mới: despawn xe, đưa Phase
+        /// về Lobby, reset ải + cache sự kiện ải. Nếu bỏ bước này, host mới có thể vẫn ở Phase Playing
+        /// và spawn xe ngay trong lobby (hoặc quái của ải cũ còn sót khi về menu).
+        /// </summary>
+        public void PrepareNewSession()
+        {
+            bootstrap?.DespawnAllTanks();
+            bootstrap?.Stage?.ResetToIdle();
+            ResetStageEventsState();
+
+            m_PlayerCount = 0;
+            Phase = MatchPhase.Lobby;
+            Mode = MatchMode.Coop;
+            for (int i = 0; i < MaxPlayers; i++) m_Ready[i] = false;
+
+            Changed?.Invoke();
         }
 
         /// <summary>Chế độ chơi đơn: vào trận ngay với một mình host.</summary>
@@ -668,7 +683,9 @@ namespace IronWasteland.Net
                         ApplyOptionRequest(senderClientId, false, value);
                         break;
                     case OpReplay:
-                        if (Phase == MatchPhase.Cleared || Phase == MatchPhase.Failed) Replay();
+                        // Chỉ host được quyết định chơi lại. Trước đây client bấm "xin" là cả phòng bị kéo
+                        // về lobby, kể cả khi host đang muốn xem kết quả.
+                        Debug.Log($"[MatchFlow] Bỏ qua yêu cầu chơi lại từ client {senderClientId} — chỉ host được đổi trạng thái phòng.");
                         break;
                 }
             }

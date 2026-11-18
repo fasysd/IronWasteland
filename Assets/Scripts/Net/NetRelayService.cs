@@ -55,6 +55,9 @@ namespace IronWasteland.Net
         /// <summary>True khi máy này là người tạo phòng (chỉ host mới giữ lobby sống bằng heartbeat).</summary>
         public static bool IsLobbyHost { get; private set; }
 
+        /// <summary>Đang chờ xoá/rời lobby cũ — Rehost phải đợi xong mới tạo lobby mới.</summary>
+        public static bool IsLeavingSession { get; private set; }
+
         /// <summary>Nhịp gửi heartbeat giữ lobby không bị Unity Services coi là rảnh.</summary>
         private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(15);
 
@@ -398,6 +401,7 @@ namespace IronWasteland.Net
             }
 
             bool wasHost = IsLobbyHost;
+            IsLeavingSession = true;
             string error = null;
             try
             {
@@ -417,8 +421,10 @@ namespace IronWasteland.Net
             }
             finally
             {
-                ResetSession();
+                // Chỉ reset nếu chưa có phiên mới chen vào trong lúc await (Rehost tạo lobby khác).
+                if (LobbyId == lobbyId) ResetSession();
                 if (error != null) LastError = error;
+                IsLeavingSession = false;
             }
         }
 

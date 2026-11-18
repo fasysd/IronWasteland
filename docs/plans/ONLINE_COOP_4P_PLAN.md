@@ -741,4 +741,17 @@ Nếu vượt: giảm `TickRate` xuống 15, giảm số quái/wave, hoặc gi�
 
 Kiểm chứng Play (host): xe 650/650, `nvMax=650`, `nvSpeed=110`; tăng `MaxHealth +50%` → `Stats.MaxHealth=975`, nhịp sau `nvMax=975`; `SendSnapshotToClient` + `AddShield` không lỗi. Build 0 Error / 5 Warning (đều là warning cũ có sẵn).
 
-*Hết tài liệu. Bản 4.2 — 2026-11-18.*
+## Nhóm 2 — vòng đời phiên/lobby (2026-11-18)
+
+| Việc | Kết quả |
+| --- | --- |
+| ⑦ Tạo phòng mới không phá heartbeat | `NetBootstrap.RehostRoutine` chờ `NetRelayService.IsLeavingSession` xong (tối đa 3 s) rồi mới chờ 0,6 s và `StartHostWithRelay`; `LeaveSessionAsync` chỉ gọi `ResetSession()` khi `LobbyId` vẫn là lobby cũ nên không đè lên phiên mới. |
+| ⑦ Kiểm chứng | Phiên 1: lobby `Kd6hkVwEJ454vhEvWoYg66`, mã phòng `7DBFQL`, Relay `8RLFFQ`, heartbeat trỏ đúng lobby. Bấm "Tạo phòng mới" (`Rehost(true)`): lobby `jwjdqGy5J3XqVFpdTzThwH`, mã phòng `HJ9PRF`, Relay `BNFRLF`, `s_HeartbeatLobbyId` = lobby mới, `LastError=null`, `IsLeavingSession=False`. |
+| ⑧ Không spawn xe trong lobby | `MatchFlow.PrepareNewSession()` được gọi ở `NetBootstrap.StartHost()`, `StartClient()`, `Shutdown()`: despawn toàn bộ xe, `Stage.ResetToIdle()`, reset `NetStageEvents`, `Phase=Lobby`, `Mode=Coop`, xoá ready. `OnHostStarted` dùng lại cùng hàm. Kiểm chứng sau rehost: `phase=Lobby stage=Idle tankInLobby=False`. |
+| ⑨ Chống double-click tạo phòng | `NetBootstrap.IsStartingSession` + `SessionStatus`; `StartHostWithRelay`/`StartClientWithRelay` guard ở đầu và bọc `try/finally` để luôn mở cờ. `NetLobbyUI` tính `busy = IsStartingSession || m_SessionRequestBusy`, tắt toàn bộ nút trong lúc bận và hiện trạng thái/lỗi gần nhất. Chưa test trực tiếp 2 cú click (chỉ kiểm code + `busy=True` khi tạo phiên). |
+| ⑩ Về menu dọn ải | `Shutdown()` gọi `PrepareNewSession()` trước `NetRelayService.LeaveSession()`. Kiểm chứng sau `flow.Leave()` 2 s: `running=False phase=Lobby stage=Idle enemies=0 hasStageState=False lobbyId=null hb=null`. |
+| WARNING flow khác | `MatchFlow.HookHost`/`UnhookHost` không còn đăng ký `OnClientConnectedCallback` (chỉ `NetBootstrap` xử lý, tránh double-handle); yêu cầu `OpReplay` từ client bị bỏ qua (chỉ host đổi trạng thái phòng) và UI client hiện label thay vì nút; `RehostSession()` chỉ mở Relay khi host mode là Relay (chế độ Single/IP không mở phòng Relay). |
+
+Build 0 Error / 5 Warning (đều là warning cũ có sẵn). Chưa push.
+
+*Hết tài liệu. Bản 4.3 — 2026-11-18.*

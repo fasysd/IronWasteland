@@ -79,6 +79,18 @@ namespace IronWasteland.Net
         {
             GUILayout.Label("Chua vao phong");
 
+            // Khoá toàn bộ nút trong lúc tạo/join phiên để tránh bấm hai lần sinh hai phòng.
+            bool busy = bootstrap.IsStartingSession || m_SessionRequestBusy;
+            if (busy)
+            {
+                GUILayout.Label(string.IsNullOrEmpty(bootstrap.SessionStatus) ? "Dang tao phien…" : bootstrap.SessionStatus);
+            }
+            if (!string.IsNullOrEmpty(NetRelayService.LastError)) GUILayout.Label("Loi: " + NetRelayService.LastError);
+            if (!string.IsNullOrEmpty(bootstrap.LastDisconnectReason)) GUILayout.Label("Ngat ket noi: " + bootstrap.LastDisconnectReason);
+
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = !busy;
+
             GUILayout.Label("--- Test ky nang (bien the Optional) ---");
             if (GUILayout.Button("Optional 1: bien the " + (bootstrap.LocalOptionSkill1 + 1) + "/3 (bam de doi)"))
             {
@@ -143,6 +155,7 @@ namespace IronWasteland.Net
                 bootstrap.StartClient();
             }
 
+            GUI.enabled = previousEnabled;
             DrawServiceInfo();
         }
 
@@ -365,7 +378,8 @@ namespace IronWasteland.Net
             }
             else
             {
-                if (GUILayout.Button("Xin host choi lai")) flow.RequestReplay();
+                // Client không có quyền đổi trạng thái phòng — chỉ host được chơi lại.
+                GUILayout.Label("Cho host bam 'Choi lai' de ve lobby.");
             }
 
             if (GUILayout.Button("Thoat phong")) flow.Leave();
@@ -374,7 +388,8 @@ namespace IronWasteland.Net
         /// <summary>Tạo lại phòng: giữ đúng loại phòng lần trước (Relay mặc định, IP nếu từng dùng IP).</summary>
         private void RehostSession()
         {
-            bootstrap.Rehost(m_LastHostMode != HostMode.Ip);
+            // Chỉ phòng Relay mới cần tạo allocation mới; Single/IP mở lại host trên cùng cấu hình.
+            bootstrap.Rehost(m_LastHostMode == HostMode.Relay);
         }
 
         private bool AllReady()
@@ -421,12 +436,24 @@ namespace IronWasteland.Net
         }
 
         /// <summary>Join lobby bằng mã phòng, lấy mã Relay rồi mới kết nối transport.</summary>
+        private bool m_SessionRequestBusy;
+
         private async void JoinLobbyThenClient(string lobbyCode)
         {
-            string relayCode = await NetRelayService.JoinLobbyAndGetRelayCodeAsync(lobbyCode);
-            if (string.IsNullOrEmpty(relayCode)) return;
+            if (m_SessionRequestBusy) return;
 
-            bootstrap.StartClientWithRelay(relayCode);
+            m_SessionRequestBusy = true;
+            try
+            {
+                string relayCode = await NetRelayService.JoinLobbyAndGetRelayCodeAsync(lobbyCode);
+                if (string.IsNullOrEmpty(relayCode)) return;
+
+                bootstrap.StartClientWithRelay(relayCode);
+            }
+            finally
+            {
+                m_SessionRequestBusy = false;
+            }
         }
 
         /// <summary>Đổi profile đăng nhập ẩn danh để test 2 "người chơi" trên cùng một máy.</summary>
