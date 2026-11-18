@@ -1517,3 +1517,30 @@ Bấm **M** để bật/tắt bàn đồ (`MinimapUI.ToggleMap()`, `toggleKey`).
 ### 18.5 Còn lại
 1. Nhãn tên quái vẫn chồng thành cột khi nhiều quái dồn quanh tank (nameplate chưa có thuật toán xếp hàng ngang).
 2. Bản đồ chỉ 37,63×21 nên camera chỉ chạy được ±6,4 / ±3,5 unit ⇒ khung nhìn di chuyển khoảng 1/3 bản đồ. Muốn khung chạy nhiều hơn phải mở rộng bản đồ (scale nền) hoặc giảm orthographic size nữa.
+
+---
+
+## 19. Sửa cảnh báo "objects were not cleaned up" ([PathfindingGrid2D]) — 18/11/2026
+
+### 19.1 Hiện tượng
+Khi thoát play mode / đóng scene, Unity báo:
+
+```
+Some objects were not cleaned up when closing the scene.
+(Did you spawn new GameObjects from OnDestroy?)
+The following scene GameObjects were found:
+[PathfindingGrid2D]
+```
+
+### 19.2 Nguyên nhân
+`PathfindingGrid2D.Instance` là singleton tự tạo: nếu chưa có object nào thì nó `new GameObject("[PathfindingGrid2D]")`. Trong lúc Unity đóng scene, `EnemyMovementAgent.OnDisable()` vẫn gọi `PathfindingGrid2D.Instance?.UnregisterEnemy(...)` — lúc đó object lưới đã bị huỷ nên getter **tạo lại một object mới** ngay trong teardown, và object đó không thuộc scene nào để Unity dọn ⇒ cảnh báo trên.
+
+### 19.3 Đã sửa
+- `Assets/Scripts/Enemies/Navigation/PathfindingGrid2D.cs`: trong getter `Instance`, nếu `!Application.isPlaying` thì **trả về null** thay vì tạo mới (không sinh object trong teardown/editor).
+- `Assets/Scripts/Enemies/Navigation/EnemyMovementAgent.cs`: `OnDisable()` dùng `PathfindingGrid2D.HasInstance` rồi mới gọi `UnregisterEnemy` — không kích hoạt việc tạo mới.
+- Các chỗ khác đã đúng từ trước: `NormalEnemy_BaseChaser.OnDisable` và `Skill_EarthWall.OnDisable` đều kiểm `HasInstance`.
+
+### 19.4 Kiểm chứng
+- `error CS: 0`.
+- Vào play ở `Stage_1_1` rồi thoát: không còn log cảnh báo nào (`console-get-logs sinceSequence` trả rỗng).
+- Vào play ở `Stage_2_5` (màn boss), kiểm runtime: `HasInstance=True`, `instance=[PathfindingGrid2D]`, `enemies=4`, `agents=1` ⇒ lưới vẫn được tạo và quái vẫn chạy; thoát play không còn cảnh báo.
