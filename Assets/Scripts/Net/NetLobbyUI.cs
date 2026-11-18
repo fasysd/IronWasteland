@@ -286,11 +286,22 @@ namespace IronWasteland.Net
         /// <summary>Phiên đã chết: host hết client (SessionEnded) hoặc client mất host (ConnectionLost).</summary>
         private void DrawEndedPanel()
         {
-            GUILayout.Label(bootstrap.SessionEnded ? "PHIEN DA KET THUC" : "MAT KET NOI TOI HOST");
+            string reason = bootstrap.LastDisconnectReason;
+            bool kicked = !string.IsNullOrEmpty(reason) && reason.Contains("đủ");
 
-            if (bootstrap.SessionEnded)
+            GUILayout.Label(kicked ? "PHONG DA DU NGUOI" : bootstrap.SessionEnded ? "PHIEN DA KET THUC" : "MAT KET NOI TOI HOST");
+
+            if (kicked)
+            {
+                GUILayout.Label(reason);
+            }
+            else if (bootstrap.SessionEnded)
             {
                 GUILayout.Label("Phong da dong vi khong con nguoi choi khac. Hay tao phong moi de choi tiep.");
+            }
+            else if (!string.IsNullOrEmpty(reason))
+            {
+                GUILayout.Label("Host da thoat hoac mat ket noi: " + reason);
             }
             else
             {

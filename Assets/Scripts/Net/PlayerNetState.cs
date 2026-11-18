@@ -158,9 +158,12 @@ namespace IronWasteland.Net
             }
             else if (!IsServer)
             {
-                // Xe despawn (Replay/rời phòng) phải xoá aura/buff đang cache để không hiện lại vĩnh viễn.
-                NetEffectSync.Instance?.ClearOwner(OwnerClientId);
+                // (cache hiệu ứng được dọn chung ở dưới, cho cả host lẫn client)
             }
+
+            // Cả host lẫn client đều phải xoá cache khi xe despawn (Replay/rời phòng):
+            // host cũng nhận named message của chính mình nên cache host cũng bị nhiễm.
+            NetEffectSync.Instance?.ClearOwner(OwnerClientId);
         }
 
         /// <summary>Xe mà state này gắn vào (null khi chưa spawn).</summary>

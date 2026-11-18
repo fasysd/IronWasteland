@@ -26,6 +26,9 @@ namespace IronWasteland.Net
 
         private readonly Dictionary<ulong, TankBrain> m_Spawned = new Dictionary<ulong, TankBrain>();
 
+        /// <summary>Danh sách xe đã spawn trên host, dùng để gửi snapshot hiệu ứng cho người mới.</summary>
+        public IReadOnlyDictionary<ulong, TankBrain> SpawnedTanks => m_Spawned;
+
         public int TankCount => tankDefinitions != null ? tankDefinitions.Length : 0;
 
         /// <summary>Lấy định nghĩa xe theo chỉ số roster; trả null nếu roster chưa gán.</summary>
@@ -137,6 +140,15 @@ namespace IronWasteland.Net
             definition.InitializeTank(brain, context);
 
             networkObject.SpawnAsPlayerObject(clientId);
+
+            if (!networkObject.IsSpawned)
+            {
+                // Prefab chưa đăng ký NetworkPrefabs thì spawn thất bại nhưng object đã Initialize
+                // và sẽ lọt roster của StageManager (khiến ải không bao giờ thua). Dọn ngay.
+                Debug.LogError($"[NetSpawnService] SpawnAsPlayerObject thất bại cho client {clientId} — huỷ xe.", this);
+                Destroy(brain.gameObject);
+                return null;
+            }
 
             m_Spawned[clientId] = brain;
             return brain;

@@ -734,6 +734,10 @@ Nếu vượt: giảm `TickRate` xuống 15, giảm số quái/wave, hoặc gi�
 | ⑤ CC | `RemoveCrowdControl`/`ClearAllCrowdControl` thêm cổng `HasGameplayAuthority` — client replay không tự gỡ Stun/Root. |
 | ⑥ Screen shake | `OptionalSkill2_2` bỏ rung màn hình khi `IsRemoteFxReplay` — đồng đội mở Form không làm rung máy người khác. |
 | ⑪ MaxPlayers | `NetBootstrap.HandleConnectionApproval` từ chối client thứ 5 với lý do "Phòng đã đủ 4 người". |
+| ⑪ MaxPlayers (vòng audit) | Cổng duyệt cộng thêm `m_ReservedClients` (slot đã duyệt nhưng chưa connect) nên 2 request cùng frame không cùng lọt; `MatchFlow.AddOrUpdatePlayer`/`OnClientJoined` trả `bool` — phòng đầy thì `DisconnectClient(..., "Phòng đã đủ 4 người.")` thay vì spawn; `NetSpawnService` huỷ object nếu `SpawnAsPlayerObject` thất bại. |
+| ② Hiệu ứng (vòng audit) | `TankBrain.ApplyEffect` nhánh trùng id phát lại `OnEffectAppliedEvent` (Burn/khiên refresh không còn tắt aura sớm); snapshot gửi cho **mọi** xe tới client mới (`NetBootstrap.SendEffectSnapshotTo`); sweep dùng tuổi cục bộ (`ReceivedAtLocal + 5 s`) thay `ServerTime` để không xoá oan trước TimeSync; `ClearOwner` chạy cả host lẫn client khi despawn. |
+| ⑥ Screen shake (đính chính) | Điều kiện đúng là `ownerTank.IsLocallyControlled` (không phải `!IsRemoteFxReplay`): người tự bấm chiêu — host hoặc client — đều thấy rung, người xem replay không thấy. |
+| ⑫ Lý do ngắt kết nối | `NetBootstrap.LastDisconnectReason` lấy từ `NetworkManager.DisconnectReason`; `NetLobbyUI.DrawEndedPanel` hiện "PHONG DA DU NGUOI" + lý do thay vì thông báo mất kết nối chung chung. |
 
 Kiểm chứng Play (host): xe 650/650, `nvMax=650`, `nvSpeed=110`; tăng `MaxHealth +50%` → `Stats.MaxHealth=975`, nhịp sau `nvMax=975`; `SendSnapshotToClient` + `AddShield` không lỗi. Build 0 Error / 5 Warning (đều là warning cũ có sẵn).
 

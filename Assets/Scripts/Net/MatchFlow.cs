@@ -207,15 +207,24 @@ namespace IronWasteland.Net
         private void HookHost()
         {
             if (Manager == null) return;
-            Manager.OnClientConnectedCallback -= HandleServerClientConnected;
-            Manager.OnClientConnectedCallback += HandleServerClientConnected;
+            Manager.OnClientConnectedCallback -= HandleServerClientConnectedCallback;
+            Manager.OnClientConnectedCallback += HandleServerClientConnectedCallback;
             m_HostHooked = true;
         }
 
         private void UnhookHost()
         {
-            if (Manager != null) Manager.OnClientConnectedCallback -= HandleServerClientConnected;
+            if (Manager != null) Manager.OnClientConnectedCallback -= HandleServerClientConnectedCallback;
             m_HostHooked = false;
+        }
+
+        /// <summary>
+        /// Adapter cho callback <c>Action&lt;ulong&gt;</c> của NGO: hàm xử lý chính trả bool
+        /// (để NetBootstrap biết phòng đầy mà ngắt client), còn callback thì bắt buộc void.
+        /// </summary>
+        private void HandleServerClientConnectedCallback(ulong clientId)
+        {
+            HandleServerClientConnected(clientId);
         }
 
         #region Host API
@@ -350,7 +359,7 @@ namespace IronWasteland.Net
             StartMatchInternal();
         }
 
-        private void AddOrUpdatePlayer(ulong clientId, byte tankIndex, bool ready, byte option1, byte option2)
+        private bool AddOrUpdatePlayer(ulong clientId, byte tankIndex, bool ready, byte option1, byte option2)
         {
             for (int i = 0; i < m_PlayerCount; i++)
             {
@@ -359,10 +368,10 @@ namespace IronWasteland.Net
                 m_Ready[i] = ready;
                 m_Option1s[i] = option1;
                 m_Option2s[i] = option2;
-                return;
+                return true;
             }
 
-            if (m_PlayerCount >= MaxPlayers) return;
+            if (m_PlayerCount >= MaxPlayers) return false;
 
             m_ClientIds[m_PlayerCount] = clientId;
             m_TankIndexes[m_PlayerCount] = tankIndex;
@@ -370,6 +379,7 @@ namespace IronWasteland.Net
             m_Option1s[m_PlayerCount] = option1;
             m_Option2s[m_PlayerCount] = option2;
             m_PlayerCount++;
+            return true;
         }
 
         private void RemovePlayer(ulong clientId)
@@ -392,13 +402,22 @@ namespace IronWasteland.Net
             }
         }
 
-        private void HandleServerClientConnected(ulong clientId)
+        private bool HandleServerClientConnected(ulong clientId)
         {
-            if (!IsServer) return;
+            if (!IsServer) return false;
 
             byte tankIndex = bootstrap != null ? bootstrap.GetLoadoutTankIndex(clientId) : (byte)0;
             NetLoadout loadout = bootstrap != null ? bootstrap.GetLoadout(clientId) : default;
-            AddOrUpdatePlayer(clientId, tankIndex, false, (byte)loadout.OptionSkill1, (byte)loadout.OptionSkill2);
+            bool added = AddOrUpdatePlayer(clientId, tankIndex, false, (byte)loadout.OptionSkill1, (byte)loadout.OptionSkill2);
+
+            if (!added)
+            {
+                // Cổng duyệt của NGO có thể lọt 2 request cùng frame; chốt chặn cuối ở đây
+                // để không bao giờ spawn xe thứ 5 nằm ngoài danh sách phòng.
+                Debug.LogWarning($"[MatchFlow] Từ chối client {clientId}: phòng đã đủ {MaxPlayers} người.");
+                bootstrap?.Manager?.DisconnectClient(clientId, "Phòng đã đủ 4 người.");
+                return false;
+            }
 
             // Người vào giữa trận: spawn xe ngay với tank đã chọn để không bị đứng ngoài.
             if (Phase == MatchPhase.Playing)
@@ -407,13 +426,15 @@ namespace IronWasteland.Net
             }
 
             Broadcast();
+            return true;
         }
 
         /// <summary>NetBootstrap gọi khi một client vừa kết nối (đã lưu loadout).</summary>
-        public void OnClientJoined(ulong clientId)
+        /// <summary>Host xử lý khi có client kết nối; trả false nếu phòng đầy (client sẽ bị ngắt).</summary>
+        public bool OnClientJoined(ulong clientId)
         {
-            if (!IsServer) return;
-            HandleServerClientConnected(clientId);
+            if (!IsServer) return false;
+            return HandleServerClientConnected(clientId);
         }
 
         /// <summary>NetBootstrap gọi khi một client rời phòng.</summary>

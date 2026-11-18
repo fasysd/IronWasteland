@@ -212,9 +212,9 @@ namespace IronWasteland.Tanks.Leviathan
             if (burstCoroutine != null) StopCoroutine(burstCoroutine);
             burstCoroutine = StartCoroutine(AnimateRoarBurst());
 
-            // Client phát lại visual cũng chạy tới đây; rung màn hình là trải nghiệm của người
-            // đang mở Form nên chỉ chạy khi không phải replay visual.
-            if (ownerTank == null || !ownerTank.IsRemoteFxReplay)
+            // Client phát lại visual cũng chạy tới đây; rung màn hình chỉ dành cho người thực sự
+            // đang điều khiển xe mở Form — host tự bấm hoặc client tự bấm (cờ IsLocallyControlled).
+            if (ownerTank != null && ownerTank.IsLocallyControlled)
             {
                 if (shakeCoroutine != null) StopCoroutine(shakeCoroutine);
                 shakeCoroutine = StartCoroutine(AnimateScreenShake(roarShakeDuration, roarShakeMagnitude));

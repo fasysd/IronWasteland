@@ -14,6 +14,12 @@ namespace IronWasteland.Net
         public float TotalDuration;
         public float RemainingAtReceive;
         public double ServerTimeAtReceive;
+
+        /// <summary>
+        /// Mốc <see cref="Time.time"/> lúc client nhận gói. Dùng cho sweep thay vì ServerTime vì
+        /// trước mẫu TimeSync đầu tiên đồng hồ host có thể nhảy rất xa, làm elapsed sai.
+        /// </summary>
+        public float ReceivedAtLocal;
     }
 
     /// <summary>
@@ -96,7 +102,11 @@ namespace IronWasteland.Net
                 foreach (KeyValuePair<string, NetEffectInfo> pair in list)
                 {
                     NetEffectInfo info = pair.Value;
-                    if (info.TotalDuration > 0f && EstimateRemaining(info) <= 0f)
+
+                    // Chỉ xoá khi đồng hồ cục bộ đã trôi quá thời lượng nhận được cộng biên an toàn.
+                    // Không dùng ServerTime ở đây: trước mẫu TimeSync đầu tiên, giờ host/client lệch
+                    // rất lớn nên entry vừa snapshot có thể bị xoá oan và không bao giờ được gửi lại.
+                    if (info.TotalDuration > 0f && Time.time - info.ReceivedAtLocal > info.RemainingAtReceive + 5f)
                     {
                         m_SweepIds.Add(pair.Key);
                     }
@@ -110,7 +120,6 @@ namespace IronWasteland.Net
         /// <summary>Xoá toàn bộ hiệu ứng đang cache của một xe (gọi khi xe despawn/rời phòng).</summary>
         public void ClearOwner(ulong ownerClientId)
         {
-            if (ownerClientId == 0UL && !m_Effects.ContainsKey(ownerClientId)) return;
             m_Effects.Remove(ownerClientId);
         }
 
@@ -207,7 +216,8 @@ namespace IronWasteland.Net
                 Stacks = stacks,
                 TotalDuration = totalDuration,
                 RemainingAtReceive = remaining,
-                ServerTimeAtReceive = serverTime
+                ServerTimeAtReceive = serverTime,
+                ReceivedAtLocal = Time.time
             };
         }
 
@@ -217,7 +227,12 @@ namespace IronWasteland.Net
             NetworkManager manager = NetworkManager.Singleton;
             double now = manager != null ? manager.ServerTime.Time : info.ServerTimeAtReceive;
             double elapsed = now - info.ServerTimeAtReceive;
-            return Mathf.Max(0f, info.RemainingAtReceive - (float)elapsed);
+            float remaining = info.RemainingAtReceive - (float)elapsed;
+
+            // Trước lần TimeSync đầu, đồng hồ client có thể đứng ở 0 nên elapsed âm rất lớn —
+            // clamp theo duration gốc để aura không "sống mãi" cho tới lần sync kế tiếp.
+            if (info.TotalDuration > 0f) remaining = Mathf.Min(remaining, info.TotalDuration);
+            return Mathf.Max(0f, remaining);
         }
 
         /// <summary>Danh sách hiệu ứng đang hiển thị của một xe (rỗng nếu chưa có).</summary>

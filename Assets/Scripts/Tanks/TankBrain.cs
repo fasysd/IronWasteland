@@ -472,6 +472,14 @@ namespace IronWasteland.Tanks
                 if (m_ActiveEffects[i].EffectId == effect.EffectId)
                 {
                     m_ActiveEffects[i].OnStackAdded(this, m_ActiveEffects[i].CurrentStacks + 1);
+
+                    // Hiệu ứng trùng id chỉ refresh thời gian (Burn, khiên cấp lại...) nhưng client
+                    // vẫn cần mốc thời gian mới, nếu không aura sẽ tự tắt theo duration của lần đầu.
+                    OnEffectAppliedEvent?.Invoke(m_ActiveEffects[i]);
+                    if (m_ActiveEffects[i] is ShieldEffect)
+                    {
+                        OnShieldChangedEvent?.Invoke(CurrentShield);
+                    }
                     return;
                 }
             }

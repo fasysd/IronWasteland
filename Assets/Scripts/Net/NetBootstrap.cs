@@ -58,6 +58,13 @@ namespace IronWasteland.Net
 
         private readonly Dictionary<ulong, NetLoadout> m_Loadouts = new Dictionary<ulong, NetLoadout>();
 
+        /// <summary>
+        /// Slot đã duyệt nhưng client chưa kết nối xong. NGO gọi callback duyệt TRƯỚC khi thêm
+        /// client vào <c>ConnectedClientsIds</c>, nên nếu chỉ đếm danh sách đó thì hai request
+        /// cùng frame đều lọt qua cổng 4 người.
+        /// </summary>
+        private readonly HashSet<ulong> m_ReservedClients = new HashSet<ulong>();
+
         /// <summary>Phiên mạng đang chạy hay chưa (dùng để tắt đường offline).</summary>
         public bool IsRunning => networkManager != null && networkManager.IsListening;
 
@@ -87,6 +94,11 @@ namespace IronWasteland.Net
         /// Khi đó phiên không thể nhận thêm người mới nếu transport đã sập — cần tạo lại phòng.
         /// </summary>
         public bool SessionEnded { get; private set; }
+
+        /// <summary>
+        /// Lý do NGO ngắt kết nối (ví dụ "Phòng đã đủ 4 người."), để UI phân biệt bị đuổi với mất mạng.
+        /// </summary>
+        public string LastDisconnectReason { get; private set; }
 
         private bool m_HadRemoteClient;
 
@@ -131,6 +143,8 @@ namespace IronWasteland.Net
             if (networkManager == null) return false;
 
             ConnectionLost = false;
+            LastDisconnectReason = null;
+            m_ReservedClients.Clear();
             SessionEnded = false;
             m_HadRemoteClient = false;
             ClearSceneEnemies();
@@ -164,6 +178,8 @@ namespace IronWasteland.Net
             if (networkManager == null) return false;
 
             ConnectionLost = false;
+            LastDisconnectReason = null;
+            m_ReservedClients.Clear();
             SessionEnded = false;
             m_HadRemoteClient = false;
             ClearSceneEnemies();
@@ -260,6 +276,8 @@ namespace IronWasteland.Net
             if (networkManager == null || networkManager.IsListening) return;
 
             ConnectionLost = false;
+            LastDisconnectReason = null;
+            m_ReservedClients.Clear();
             SessionEnded = false;
             m_HadRemoteClient = false;
             RelayServerData? relayData = await NetRelayService.CreateHostAllocationAsync(region);
@@ -294,6 +312,8 @@ namespace IronWasteland.Net
             if (networkManager == null || networkManager.IsListening) return;
 
             ConnectionLost = false;
+            LastDisconnectReason = null;
+            m_ReservedClients.Clear();
             SessionEnded = false;
             m_HadRemoteClient = false;
             RelayServerData? relayData = await NetRelayService.JoinAllocationAsync(relayJoinCode);
@@ -322,6 +342,8 @@ namespace IronWasteland.Net
         public void Shutdown()
         {
             ConnectionLost = false;
+            LastDisconnectReason = null;
+            m_ReservedClients.Clear();
             SessionEnded = false;
             m_HadRemoteClient = false;
 
@@ -431,7 +453,10 @@ namespace IronWasteland.Net
 
             // Chặn phòng quá 4 người ngay tại cổng duyệt: chỉ dựa vào MatchFlow thì client thứ 5
             // vẫn kết nối được, chiếm slot rồi bị treo ở lobby.
-            if (networkManager != null && networkManager.ConnectedClientsIds.Count >= MatchFlow.MaxPlayers)
+            // Cộng thêm slot đã duyệt nhưng chưa connect xong — NGO gọi approval trước AddClient.
+            int occupiedSlots = (networkManager != null ? networkManager.ConnectedClientsIds.Count : 0)
+                + m_ReservedClients.Count;
+            if (occupiedSlots >= MatchFlow.MaxPlayers)
             {
                 response.Approved = false;
                 response.CreatePlayerObject = false;
@@ -454,12 +479,17 @@ namespace IronWasteland.Net
             }
 
             m_Loadouts[request.ClientNetworkId] = loadout;
+            m_ReservedClients.Add(request.ClientNetworkId);
             Debug.Log($"[NetBootstrap] Duyệt client {request.ClientNetworkId}: tank={loadout.TankIndex} level={loadout.Level} equipment={loadout.EquipmentId} opt1={loadout.OptionSkill1} opt2={loadout.OptionSkill2}.");
         }
 
         private void HandleClientConnected(ulong clientId)
         {
             if (networkManager == null || !networkManager.IsServer) return;
+
+            // Client đã connect xong: slot chuyển từ "đã duyệt" sang ConnectedClientsIds.
+            m_ReservedClients.Remove(clientId);
+
             if (spawnService == null)
             {
                 Debug.LogError("[NetBootstrap] Thiếu NetSpawnService — không dựng được xe.", this);
@@ -471,7 +501,13 @@ namespace IronWasteland.Net
             if (matchFlow != null)
             {
                 // MatchFlow giữ danh sách phòng: thêm người, quyết định có spawn xe ngay hay đợi vào trận.
-                matchFlow.OnClientJoined(clientId);
+                if (!matchFlow.OnClientJoined(clientId))
+                {
+                    // Phòng đầy (có thể do race với cổng duyệt): không spawn, ngắt luôn để không có xe ma.
+                    m_Loadouts.Remove(clientId);
+                    networkManager.DisconnectClient(clientId, "Phòng đã đủ 4 người.");
+                    return;
+                }
             }
             else
             {
@@ -479,6 +515,9 @@ namespace IronWasteland.Net
             }
 
             m_HadRemoteClient = true;
+
+            // Người mới vào cần thấy aura/khiên của MỌI xe đang có, không chỉ xe mình.
+            SendEffectSnapshotTo(clientId);
 
             // Người vào giữa trận cần biết ải đang ở trạng thái nào.
             if (stageManager != null && stageManager.State != StageState.Idle)
@@ -492,6 +531,19 @@ namespace IronWasteland.Net
             }
         }
 
+        /// <summary>Gửi trạng thái hiệu ứng/khiên hiện có của mọi xe tới một client vừa vào phòng.</summary>
+        private void SendEffectSnapshotTo(ulong targetClientId)
+        {
+            NetEffectSync sync = NetEffectSync.Instance;
+            if (sync == null || spawnService == null) return;
+
+            foreach (KeyValuePair<ulong, TankBrain> pair in spawnService.SpawnedTanks)
+            {
+                if (pair.Value == null) continue;
+                sync.SendSnapshotToClient(targetClientId, pair.Key, pair.Value.ActiveEffects);
+            }
+        }
+
         private void HandleClientDisconnected(ulong clientId)
         {
             // Xe đã rời thì xoá cache hiệu ứng của xe đó trên mọi máy, tránh aura/buff "ma".
@@ -501,14 +553,17 @@ namespace IronWasteland.Net
             // Không dọn loadout ở đây vì client không sở hữu danh sách người chơi.
             if (networkManager != null && !networkManager.IsServer && clientId == networkManager.LocalClientId)
             {
+                // Lưu lý do (ví dụ "Phòng đã đủ 4 người.") để UI phân biệt bị đuổi với mất mạng.
+                LastDisconnectReason = networkManager.DisconnectReason;
                 ConnectionLost = true;
-                Debug.LogWarning($"[NetBootstrap] Mất kết nối tới host (clientId={clientId}).");
+                Debug.LogWarning($"[NetBootstrap] Mất kết nối tới host (clientId={clientId}). Lý do: {LastDisconnectReason}.");
                 // Host đã đóng phòng: gỡ mình khỏi lobby để lần sau tạo/join phòng mới sạch.
                 NetRelayService.LeaveSession();
                 return;
             }
 
             m_Loadouts.Remove(clientId);
+            m_ReservedClients.Remove(clientId);
             spawnService?.DespawnPlayerTank(clientId);
             matchFlow?.OnClientLeft(clientId);
 
