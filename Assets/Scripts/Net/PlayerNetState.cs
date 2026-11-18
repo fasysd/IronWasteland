@@ -158,7 +158,13 @@ namespace IronWasteland.Net
         /// Gọi được cả TRƯỚC khi spawn (giá trị đi kèm payload spawn).</summary>
         public void SetServerLoadout(NetLoadout loadout)
         {
-            if (!IsServer) return;
+            // Không dùng IsServer ở đây: NetworkBehaviour.IsServer chỉ được gán trong lúc spawn,
+            // nên khi host ghi loadout TRƯỚC SpawnAsPlayerObject thì IsServer còn false và lệnh ghi
+            // sẽ bị bỏ qua ⇒ client nhận loadout rỗng (0/0) và hiển thị sai biến thể kỹ năng.
+            // Chỉ cần kiểm tra phía NetworkManager đang là server; NetworkVariable sẽ mang giá trị
+            // này trong gói spawn đầu tiên.
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsServer) return;
             m_Loadout.Value = loadout;
         }
 
