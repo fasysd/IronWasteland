@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df09c752a77c21c44bdaf9962ae73442, type: 3}
+  m_Name: Stage_2_3
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.StageDefinition
+  stageCode: 2-3
+  stageName: "\u0110\u1ED9t K\xEDch Ti\u1EC1n \u0110\u1ED3n"
+  killTarget: 0
+  timeLimitSeconds: 900
+  waves:
+  - Label: W1
+    StartTime: 0
+    Spawns:
+    - Enemy: {fileID: 3360813821543528772, guid: 97e171ca3a01b3d40a49e4a3727b3bae, type: 3}
+      Count: 6
+      SpeedMultiplier: 1
+      ZoneId: 
+    - Enemy: {fileID: 805287383237241067, guid: dd67fd1da0bc9f34eb67cc48121a0809, type: 3}
+      Count: 4
+      SpeedMultiplier: 1
+      ZoneId: 
+  - Label: W2
+    StartTime: 40
+    Spawns:
+    - Enemy: {fileID: 1178018034635242686, guid: b6ed689b45e5ea9459d4f520cf9423c8, type: 3}
+      Count: 4
+      SpeedMultiplier: 1
+      ZoneId: 
+    - Enemy: {fileID: 3360813821543528772, guid: 97e171ca3a01b3d40a49e4a3727b3bae, type: 3}
+      Count: 6
+      SpeedMultiplier: 1
+      ZoneId: 
+  - Label: W3
+    StartTime: 80
+    Spawns:
+    - Enemy: {fileID: 854779836358371909, guid: 68e51485bfa081c4c8cd7ac60d5639cb, type: 3}
+      Count: 4
+      SpeedMultiplier: 1
+      ZoneId: 
+    - Enemy: {fileID: 2837244264739505214, guid: fa914b93d15fd4d41920d832034cf707, type: 3}
+      Count: 6
+      SpeedMultiplier: 1
+      ZoneId: 
+  objectives:
+  - Type: 2
+    Count: 3
+    Duration: 0
+    Distance: 0
+    TargetId: tower
+  - Type: 3
+    Count: 0
+    Duration: 0
+    Distance: 30
+    TargetId: ram
+  rewardGems: 70
+  rewardAccessoryCount: 0
+  guaranteeAccessories: 0
+  nextStageCode: 2-4

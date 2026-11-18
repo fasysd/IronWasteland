@@ -227,6 +227,7 @@ GameObject:
   - component: {fileID: 7954043992660128022}
   - component: {fileID: 1425397517199936490}
   - component: {fileID: 1834200046295134080}
+  - component: {fileID: 2439154348610443375}
   m_Layer: 7
   m_Name: NamDocGaiThach
   m_TagString: Untagged
@@ -273,7 +274,7 @@ MonoBehaviour:
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
-  radiusC: 6
+  radiusC: 60
   tankLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -317,6 +318,23 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &2439154348610443375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5180357702814489762}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15107778ff79d5c44b22417178402d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Audio.EnemySfxHooks
+  brain: {fileID: 0}
+  playHit: 1
+  playDeath: 1
+  playCrowdControl: 1
+  hitCooldown: 0.1
 --- !u!1 &8192837465910283001
 GameObject:
   m_ObjectHideFlags: 0

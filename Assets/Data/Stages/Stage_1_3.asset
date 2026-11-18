@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df09c752a77c21c44bdaf9962ae73442, type: 3}
+  m_Name: Stage_1_3
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.StageDefinition
+  stageCode: 1-3
+  stageName: "D\u1EA5u V\u1EBFt T\u1EED Binh"
+  killTarget: 0
+  timeLimitSeconds: 900
+  waves:
+  - Label: W1
+    StartTime: 0
+    Spawns:
+    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
+      Count: 8
+      SpeedMultiplier: 1
+      ZoneId: 
+    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
+      Count: 8
+      SpeedMultiplier: 1
+      ZoneId: 
+  - Label: W2
+    StartTime: 30
+    Spawns:
+    - Enemy: {fileID: 3897099387530954697, guid: 3d7a3d53f4ad62449ad228d3ead96c34, type: 3}
+      Count: 4
+      SpeedMultiplier: 1
+      ZoneId: 
+  - Label: W3
+    StartTime: 60
+    Spawns:
+    - Enemy: {fileID: 6438814824446025724, guid: 56632388536e92747835f0a208002653, type: 3}
+      Count: 4
+      SpeedMultiplier: 1
+      ZoneId: 
+    - Enemy: {fileID: 8420907976510360087, guid: dd03dff10e04c7847a6ca5bc5d1dae1d, type: 3}
+      Count: 3
+      SpeedMultiplier: 1
+      ZoneId: 
+  - Label: W4
+    StartTime: 90
+    Spawns:
+    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
+      Count: 8
+      SpeedMultiplier: 1
+      ZoneId: 
+  objectives:
+  - Type: 4
+    Count: 2
+    Duration: 0
+    Distance: 0
+    TargetId: radar
+  - Type: 3
+    Count: 0
+    Duration: 0
+    Distance: 30
+    TargetId: mones
+  rewardGems: 40
+  rewardAccessoryCount: 0
+  guaranteeAccessories: 0
+  nextStageCode: 1-4

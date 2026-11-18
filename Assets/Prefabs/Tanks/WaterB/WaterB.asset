@@ -37,3 +37,29 @@ MonoBehaviour:
     CooldownReduction: 0.3
   tankPrefab: {fileID: 2337791876944670423, guid: 95ecc0b7748deb645871624e4527b5b1, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
+  context:
+    Level: 0
+    EquipmentId: 0
+    OptionSkill1: 0
+    OptionSkill2: 0
+  skillIcons:
+  - {fileID: 21300000, guid: e08c9d58a41b7fa4a826b604268a9ffd, type: 3}
+  - {fileID: 21300000, guid: 56f66e934d2eb674b86897f38f4184ca, type: 3}
+  - {fileID: 21300000, guid: 516516b7cc1bfea408dde9f340533418, type: 3}
+  - {fileID: 21300000, guid: a6f538b06804ee849b94396c0b34e4af, type: 3}
+  skillIconsCooldown:
+  - {fileID: 21300000, guid: 136c65556ca8ea146bf4d74d6c858695, type: 3}
+  - {fileID: 21300000, guid: e04261800e96c7148862241da9d4ec60, type: 3}
+  - {fileID: 21300000, guid: d389b1c0cd81ee44fa84d79e6f6c66ec, type: 3}
+  - {fileID: 21300000, guid: cec6bcbbe59076e4b9e68e80f7bf4e16, type: 3}
+  skillIconsIncludeLabels: 1
+  skillNames:
+  - HEALING WATER
+  - BUBBLE SHIELD
+  - WATER WAVE
+  - WATER RETURN
+  skillGlyphs:
+  - {fileID: 21300000, guid: ba9b4ac4c1447ba47bcb38e8fa208b86, type: 3}
+  - {fileID: 21300000, guid: 8d162fa20c7746443885c0dc655de412, type: 3}
+  - {fileID: 21300000, guid: 5c827861cf04f704a8d0f9b27d4439c4, type: 3}
+  - {fileID: 21300000, guid: de2210a2f4019834bbdc7e48b0be5e88, type: 3}

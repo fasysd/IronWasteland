@@ -33,7 +33,7 @@ MonoBehaviour:
     ArmorPenetration: 0
     MaxHealth: 6500
     MaxEnergy: 300
-    MoveSpeed: 500
+    MoveSpeed: 100
     CooldownReduction: 0.2
   tankPrefab: {fileID: 2337791876944670423, guid: 71be0061614f89346b73238783ed38d6, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
@@ -42,3 +42,24 @@ MonoBehaviour:
     EquipmentId: -1
     OptionSkill1: 0
     OptionSkill2: 0
+  skillIcons:
+  - {fileID: 21300000, guid: 161e2ffb2afa78748b3a7afc09ac4c2f, type: 3}
+  - {fileID: 21300000, guid: 3ad46faa4601ab34d96aedfa7a477027, type: 3}
+  - {fileID: 21300000, guid: 6ad5da19914dea3409f852d3bac11f5a, type: 3}
+  - {fileID: 21300000, guid: 9d3c83b33a21e424ebc931be41405043, type: 3}
+  skillIconsCooldown:
+  - {fileID: 21300000, guid: 945578695834e864ca90daf23a9fa217, type: 3}
+  - {fileID: 21300000, guid: bffd3e10ebb0d5e44a42655213d29051, type: 3}
+  - {fileID: 21300000, guid: dc9c090b9fb8a144aa21f9d97d909ebd, type: 3}
+  - {fileID: 21300000, guid: 28d53cc935ce3bc43abb52205785041b, type: 3}
+  skillIconsIncludeLabels: 1
+  skillNames:
+  - EARTH BREAK
+  - EARTH WALL
+  - EARTH PRISON
+  - EARTHQUAKE
+  skillGlyphs:
+  - {fileID: 21300000, guid: c847828ffff753544915ac1ee2a335bf, type: 3}
+  - {fileID: 21300000, guid: 279b734e29710e64abdbead70ab0b08e, type: 3}
+  - {fileID: 21300000, guid: 229151c730597f54db6fdd2c453e1676, type: 3}
+  - {fileID: 21300000, guid: 9520ac55872c40e44a179b074bae8a2f, type: 3}

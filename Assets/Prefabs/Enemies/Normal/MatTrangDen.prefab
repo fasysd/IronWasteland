@@ -392,6 +392,7 @@ GameObject:
   - component: {fileID: 8420907976510360087}
   - component: {fileID: 8430088118289894666}
   - component: {fileID: 1667638887353187510}
+  - component: {fileID: 6816603853717151191}
   m_Layer: 7
   m_Name: MatTrangDen
   m_TagString: Untagged
@@ -438,7 +439,7 @@ MonoBehaviour:
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
-  radiusC: 10
+  radiusC: 60
   radiusA: 2
   radiusB: 5
   returnHomeDelayX: 3
@@ -463,6 +464,7 @@ MonoBehaviour:
   currentTarget: {fileID: 0}
   skill: {fileID: 6164576974939704005}
   skillCooldown: 2
+  radiationTriggerRange: 2.5
   currentCooldownTimer: 0
   isCastingSkill: 0
 --- !u!50 &8430088118289894666
@@ -517,3 +519,20 @@ MonoBehaviour:
   rotationOffset: -90
   rotationSpeed: 720
   moveSpeed: 2
+--- !u!114 &6816603853717151191
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8529011875415925671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15107778ff79d5c44b22417178402d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Audio.EnemySfxHooks
+  brain: {fileID: 0}
+  playHit: 1
+  playDeath: 1
+  playCrowdControl: 1
+  hitCooldown: 0.1

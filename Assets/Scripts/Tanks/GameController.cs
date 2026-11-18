@@ -42,6 +42,10 @@ namespace IronWasteland.Tanks
 
         public TankBrain PlayerTank => m_PlayerTank;
         public int SelectedSkillIndex => selectedSkillIndex;
+        public TankDefinition TankDefinition => tankDefinition;
+
+        /// <summary>Cấp của xe đang chơi (1..90), HUD hiện cạnh tên xe.</summary>
+        public int PlayerLevel => playerLevel;
 
         private void Awake()
         {
@@ -99,51 +103,38 @@ namespace IronWasteland.Tanks
                 m_PlayerTank.SetLookTarget(new Vector2(world.x, world.y));
             }
 
-            // --- Giai đoạn 2: Chọn kỹ năng (Phím 1, 2, 3, 4) ---
-            // Phím 1: Kỹ năng thường (hoặc dùng để hủy kỹ năng đang chọn)
-            // Phím 2, 3, 4: Chọn kỹ năng tương ứng (1, 2, 3)
+            // --- Giai đoạn 2: Thi triển kỹ năng bằng phím (theo tài liệu thiết kế) ---
+            // J = kỹ năng thường (slot 0 - đánh trúng hồi năng lượng)
+            // K = kỹ năng chuyên biệt (slot 1)
+            // L = kỹ năng tuỳ chọn 1 (slot 2)
+            // I = kỹ năng tuỳ chọn 2 (slot 3)
+            // Chuột chỉ để ngắm, không bắn - đúng danh sách phím trong màn Cài đặt của tài liệu.
             if (keyboard != null)
             {
-                if (keyboard.digit1Key.wasPressedThisFrame || keyboard.numpad1Key.wasPressedThisFrame)
-                {
-                    selectedSkillIndex = 0;
-                }
-                else if (keyboard.digit2Key.wasPressedThisFrame || keyboard.numpad2Key.wasPressedThisFrame)
-                {
-                    selectedSkillIndex = 1;
-                }
-                else if (keyboard.digit3Key.wasPressedThisFrame || keyboard.numpad3Key.wasPressedThisFrame)
-                {
-                    selectedSkillIndex = 2;
-                }
-                else if (keyboard.digit4Key.wasPressedThisFrame || keyboard.numpad4Key.wasPressedThisFrame)
-                {
-                    selectedSkillIndex = 3;
-                }
+                if (keyboard.jKey.wasPressedThisFrame) CastSkill(0);
+                else if (keyboard.kKey.wasPressedThisFrame) CastSkill(1);
+                else if (keyboard.lKey.wasPressedThisFrame) CastSkill(2);
+                else if (keyboard.iKey.wasPressedThisFrame) CastSkill(3);
             }
+        }
 
-            // Chuột phải cũng hỗ trợ hủy lựa chọn kỹ năng để quay lại kỹ năng thường
-            if (mouse != null && mouse.rightButton.wasPressedThisFrame)
+        /// <summary>
+        /// Ngắm lại theo con trỏ chuột rồi thi triển ngay kỹ năng ở slot tương ứng.
+        /// Dùng cho phím J/K/L/I.
+        /// </summary>
+        private void CastSkill(int index)
+        {
+            if (m_PlayerTank == null) return;
+
+            Mouse mouse = Mouse.current;
+            if (mouse != null && targetCamera != null)
             {
-                selectedSkillIndex = 0;
+                Vector3 world = targetCamera.ScreenToWorldPoint(mouse.position.ReadValue());
+                m_PlayerTank.SetLookTarget(new Vector2(world.x, world.y));
             }
 
-            // --- Giai đoạn 3: Xác nhận thi triển bằng Click chuột trái ---
-            if (mouse != null && mouse.leftButton.wasPressedThisFrame)
-            {
-                // Gửi lại vị trí trỏ chuột tại thời điểm click để đảm bảo chính xác
-                if (targetCamera != null)
-                {
-                    Vector3 world = targetCamera.ScreenToWorldPoint(mouse.position.ReadValue());
-                    m_PlayerTank.SetLookTarget(new Vector2(world.x, world.y));
-                }
-
-                // Thi triển kỹ năng đã chọn
-                m_PlayerTank.UseSkill(selectedSkillIndex);
-
-                // Sau khi click (dù thành công hay thất bại), chuyển kỹ năng được chọn thành kỹ năng thường
-                selectedSkillIndex = 0;
-            }
+            selectedSkillIndex = index;
+            m_PlayerTank.UseSkill(index);
         }
     }
 }

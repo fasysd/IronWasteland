@@ -41,3 +41,24 @@ MonoBehaviour:
     EquipmentId: -1
     OptionSkill1: 0
     OptionSkill2: 0
+  skillIcons:
+  - {fileID: 21300000, guid: 78554c3b5e13177478894f4c4eedc070, type: 3}
+  - {fileID: 21300000, guid: 888a4185279bc3943826eb30a15113cf, type: 3}
+  - {fileID: 21300000, guid: c54a7f103b1b6f84dbec756d0fae0e0c, type: 3}
+  - {fileID: 21300000, guid: 41e32d49e81ef1c429ffed348b136d25, type: 3}
+  skillIconsCooldown:
+  - {fileID: 21300000, guid: 1c4b4dc059fb36a48afe2b2250ff5791, type: 3}
+  - {fileID: 21300000, guid: bf4ec0ea3002bbf47bfd523713489ec0, type: 3}
+  - {fileID: 21300000, guid: 304aae45cb63fe14193f6be2e47bd8a5, type: 3}
+  - {fileID: 21300000, guid: f4d35192d4c8f1f43bebd29aec87637c, type: 3}
+  skillIconsIncludeLabels: 1
+  skillNames:
+  - NOVA SHOT
+  - TRIPLE NOVA
+  - LASER CANNON
+  - NOVA BARRAGE
+  skillGlyphs:
+  - {fileID: 21300000, guid: 11b60f71d5e5fbc4688070d6e867fd4d, type: 3}
+  - {fileID: 21300000, guid: 126ae30dfc4d6a34d9da5ef0ab4379b0, type: 3}
+  - {fileID: 21300000, guid: d1c9f0cf41428094c8251e11a2ee586c, type: 3}
+  - {fileID: 21300000, guid: 3393f2816ce868f459da6216cda4d6b0, type: 3}

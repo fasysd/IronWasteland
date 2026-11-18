@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 805287383237241067}
   - component: {fileID: 3162892946091150546}
   - component: {fileID: 1525005149133546821}
+  - component: {fileID: 1709830519180184876}
   m_Layer: 7
   m_Name: XenNuoc
   m_TagString: Untagged
@@ -57,7 +58,7 @@ MonoBehaviour:
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
-  radiusC: 10
+  radiusC: 60
   radiusA: 4
   radiusB: 6
   returnHomeDelayX: 3
@@ -144,6 +145,23 @@ MonoBehaviour:
   rotationOffset: -90
   rotationSpeed: 720
   moveSpeed: 2
+--- !u!114 &1709830519180184876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2191416951487824985}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15107778ff79d5c44b22417178402d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Audio.EnemySfxHooks
+  brain: {fileID: 0}
+  playHit: 1
+  playDeath: 1
+  playCrowdControl: 1
+  hitCooldown: 0.1
 --- !u!1 &2215390785097099234
 GameObject:
   m_ObjectHideFlags: 0

@@ -104,6 +104,7 @@ GameObject:
   - component: {fileID: 6438814824446025724}
   - component: {fileID: 894335969520627437}
   - component: {fileID: 6868714686605624023}
+  - component: {fileID: 7245175825890387335}
   m_Layer: 7
   m_Name: QuaiVatTinhThach
   m_TagString: Untagged
@@ -150,7 +151,7 @@ MonoBehaviour:
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
-  radiusC: 16
+  radiusC: 60
   radiusA: 8
   radiusB: 10
   returnHomeDelayX: 3
@@ -231,6 +232,23 @@ MonoBehaviour:
   rotationOffset: -90
   rotationSpeed: 720
   moveSpeed: 2
+--- !u!114 &7245175825890387335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2217499507354383179}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15107778ff79d5c44b22417178402d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Audio.EnemySfxHooks
+  brain: {fileID: 0}
+  playHit: 1
+  playDeath: 1
+  playCrowdControl: 1
+  hitCooldown: 0.1
 --- !u!1 &4699714378849742799
 GameObject:
   m_ObjectHideFlags: 0

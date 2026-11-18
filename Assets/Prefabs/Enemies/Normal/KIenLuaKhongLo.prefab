@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3360813821543528772}
   - component: {fileID: 5501993967548307625}
   - component: {fileID: 8627560854303435684}
+  - component: {fileID: 1073904871650786730}
   m_Layer: 7
   m_Name: KIenLuaKhongLo
   m_TagString: Untagged
@@ -57,7 +58,7 @@ MonoBehaviour:
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
-  radiusC: 10
+  radiusC: 60
   radiusA: 2
   radiusB: 2
   returnHomeDelayX: 3
@@ -136,6 +137,23 @@ MonoBehaviour:
   rotationOffset: -90
   rotationSpeed: 720
   moveSpeed: 2
+--- !u!114 &1073904871650786730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031078827579660911}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15107778ff79d5c44b22417178402d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Audio.EnemySfxHooks
+  brain: {fileID: 0}
+  playHit: 1
+  playDeath: 1
+  playCrowdControl: 1
+  hitCooldown: 0.1
 --- !u!1 &4339226142179569615
 GameObject:
   m_ObjectHideFlags: 0

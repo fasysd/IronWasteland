@@ -103,6 +103,7 @@ GameObject:
   - component: {fileID: 4238031410156370506}
   - component: {fileID: 1178018034635242686}
   - component: {fileID: 259335646607110518}
+  - component: {fileID: 1632004819405311569}
   m_Layer: 7
   m_Name: SaoDen
   m_TagString: Untagged
@@ -149,7 +150,7 @@ MonoBehaviour:
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
-  radiusC: 10
+  radiusC: 60
   tankLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -189,6 +190,23 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &1632004819405311569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6100468257158417488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15107778ff79d5c44b22417178402d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Audio.EnemySfxHooks
+  brain: {fileID: 0}
+  playHit: 1
+  playDeath: 1
+  playCrowdControl: 1
+  hitCooldown: 0.1
 --- !u!1 &6653382960288177589
 GameObject:
   m_ObjectHideFlags: 0

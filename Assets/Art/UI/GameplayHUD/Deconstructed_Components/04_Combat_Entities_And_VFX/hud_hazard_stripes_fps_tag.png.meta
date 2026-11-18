@@ -1,0 +1,351 @@
+fileFormatVersion: 2
+guid: 36a574f99bf913c4787b1dedb23bef27
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3312040540380043511
+    second: hud_hazard_stripes_fps_tag_0
+  - first:
+      213: 2649826472360872894
+    second: hud_hazard_stripes_fps_tag_1
+  - first:
+      213: 4542224722153169687
+    second: hud_hazard_stripes_fps_tag_2
+  - first:
+      213: 4631168804521182905
+    second: hud_hazard_stripes_fps_tag_3
+  - first:
+      213: -5064605831227962725
+    second: hud_hazard_stripes_fps_tag_4
+  - first:
+      213: 5088027637195019240
+    second: hud_hazard_stripes_fps_tag_5
+  - first:
+      213: -7145084657569280321
+    second: hud_hazard_stripes_fps_tag_6
+  - first:
+      213: 8064495309401013801
+    second: hud_hazard_stripes_fps_tag_7
+  - first:
+      213: -2350809491558286870
+    second: hud_hazard_stripes_fps_tag_8
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: hud_hazard_stripes_fps_tag_0
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 19
+        width: 33
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f89b03d25bb6fd20800000000000000
+      internalID: 3312040540380043511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hud_hazard_stripes_fps_tag_1
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 19
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ebb0f71232316c420800000000000000
+      internalID: 2649826472360872894
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hud_hazard_stripes_fps_tag_2
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 16
+        width: 21
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 713efeda159390f30800000000000000
+      internalID: 4542224722153169687
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hud_hazard_stripes_fps_tag_3
+      rect:
+        serializedVersion: 2
+        x: 76
+        y: 19
+        width: 41
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b60b50ad77354040800000000000000
+      internalID: 4631168804521182905
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hud_hazard_stripes_fps_tag_4
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 10
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9a094674d7e6b9b0800000000000000
+      internalID: -5064605831227962725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hud_hazard_stripes_fps_tag_5
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 10
+        width: 53
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8e31162bd2e4c9640800000000000000
+      internalID: 5088027637195019240
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hud_hazard_stripes_fps_tag_6
+      rect:
+        serializedVersion: 2
+        x: 187
+        y: 10
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbe4d773c5f87dc90800000000000000
+      internalID: -7145084657569280321
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hud_hazard_stripes_fps_tag_7
+      rect:
+        serializedVersion: 2
+        x: 211
+        y: 10
+        width: 29
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 92eb6a1a1c7daef60800000000000000
+      internalID: 8064495309401013801
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hud_hazard_stripes_fps_tag_8
+      rect:
+        serializedVersion: 2
+        x: 235
+        y: 10
+        width: 5
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae93d09f83f306fd0800000000000000
+      internalID: -2350809491558286870
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      hud_hazard_stripes_fps_tag_0: 3312040540380043511
+      hud_hazard_stripes_fps_tag_1: 2649826472360872894
+      hud_hazard_stripes_fps_tag_2: 4542224722153169687
+      hud_hazard_stripes_fps_tag_3: 4631168804521182905
+      hud_hazard_stripes_fps_tag_4: -5064605831227962725
+      hud_hazard_stripes_fps_tag_5: 5088027637195019240
+      hud_hazard_stripes_fps_tag_6: -7145084657569280321
+      hud_hazard_stripes_fps_tag_7: 8064495309401013801
+      hud_hazard_stripes_fps_tag_8: -2350809491558286870
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

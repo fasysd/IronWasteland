@@ -1,0 +1,106 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c26e0336d177594429168b13da1b23c6, type: 3}
+  m_Name: SfxLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Audio.SfxLibrary
+  entries:
+  - Category: 0
+    Clips:
+    - {fileID: 8300000, guid: dff4024465b2a144f96182b55879d8e8, type: 3}
+    - {fileID: 8300000, guid: 5d94185bb5168db4cb01ab396cccfc0c, type: 3}
+    - {fileID: 8300000, guid: daa2c25988239ea419d4483c3406dd4a, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.94, y: 1.06}
+  - Category: 1
+    Clips:
+    - {fileID: 8300000, guid: 0cb5e93b6f3e86c46922ad5cd9420cef, type: 3}
+    - {fileID: 8300000, guid: 1be9fd8a0b95eea4e998462e35c013b4, type: 3}
+    - {fileID: 8300000, guid: eb8d89f73b6a0bd41be30904a3b6c727, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.94, y: 1.06}
+  - Category: 2
+    Clips:
+    - {fileID: 8300000, guid: a7e6d181bdf0fa44fa7f76e8be3909cc, type: 3}
+    - {fileID: 8300000, guid: cde356dab57f60e40b8afcfa1e8785cd, type: 3}
+    - {fileID: 8300000, guid: 424021e6f67de6f47ac9058f59a39268, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.94, y: 1.06}
+  - Category: 3
+    Clips:
+    - {fileID: 8300000, guid: 31e2d3753f569894bbab136086cc4ab4, type: 3}
+    - {fileID: 8300000, guid: 37ba13ad02f325a418c9b3b3121d40b5, type: 3}
+    - {fileID: 8300000, guid: d21f3215c685b184ea710d0ead5fcade, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.94, y: 1.06}
+  - Category: 4
+    Clips:
+    - {fileID: 8300000, guid: 268d06921e95bf74aa5587528c7af5b8, type: 3}
+    - {fileID: 8300000, guid: 7148cd2c5f072304cb6bed17324d6d03, type: 3}
+    - {fileID: 8300000, guid: f8e56397e4e95d64bbd153805d9a4e61, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.94, y: 1.06}
+  - Category: 5
+    Clips:
+    - {fileID: 8300000, guid: 73429cdc844eb4240820fa3956a334e5, type: 3}
+    - {fileID: 8300000, guid: c3ce0d893d8067842be43cbdb441499b, type: 3}
+    - {fileID: 8300000, guid: 63cab313e32dac143a2508a05807e1a1, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.94, y: 1.06}
+  - Category: 6
+    Clips:
+    - {fileID: 8300000, guid: 8c1f78d64a2010c4a83230eb7c0e2d64, type: 3}
+    - {fileID: 8300000, guid: c900bc28eae6312448d672140e33a373, type: 3}
+    - {fileID: 8300000, guid: b22a318d598b3ed43abccbe26be81846, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.94, y: 1.06}
+  - Category: 7
+    Clips:
+    - {fileID: 8300000, guid: 05ac5612865b7664f904a2f614e19185, type: 3}
+    - {fileID: 8300000, guid: b61cd01848338104dab820cfa197d504, type: 3}
+    - {fileID: 8300000, guid: 2a964c68248f9544ebd3f1e04218223b, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.94, y: 1.06}
+  - Category: 8
+    Clips:
+    - {fileID: 8300000, guid: 8eb2ebe10f78a8341bee7d44f423d564, type: 3}
+    - {fileID: 8300000, guid: 56921d053524f4143b7614d5036ede70, type: 3}
+    - {fileID: 8300000, guid: e64f1dbca6f418243805801e21dc4fd9, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.94, y: 1.06}
+  - Category: 9
+    Clips:
+    - {fileID: 8300000, guid: d3f5d145f89106d4ca03e6b83dce79eb, type: 3}
+    - {fileID: 8300000, guid: f25ea94b920cc584499c8d88113c9025, type: 3}
+    - {fileID: 8300000, guid: a844ee0ef17aff446a71a2c386f31664, type: 3}
+    Volume: 0.6
+    PitchRange: {x: 0.94, y: 1.06}
+  - Category: 10
+    Clips:
+    - {fileID: 8300000, guid: 02ed3f5d4bbd58c46974d4a6dc4b12cc, type: 3}
+    - {fileID: 8300000, guid: 9cbb57948628df847b9964203c969550, type: 3}
+    - {fileID: 8300000, guid: 52c306d7611f85c41943bc7df8f98c80, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.94, y: 1.06}
+  - Category: 11
+    Clips:
+    - {fileID: 8300000, guid: fd2bc325bcc154845b7414b377a075a0, type: 3}
+    - {fileID: 8300000, guid: 4db331cd2c2f0ab478b34a8372792f3d, type: 3}
+    - {fileID: 8300000, guid: bae01ca4ffc61864f8853942d575d671, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.94, y: 1.06}
+  - Category: 12
+    Clips:
+    - {fileID: 8300000, guid: 7b142dcd431d04a4dbdfde4f457f3e2e, type: 3}
+    - {fileID: 8300000, guid: 8fffd841f3d3b364bb387eda72ea312f, type: 3}
+    - {fileID: 8300000, guid: 239736093c71b8548b71a63d7f6b7de5, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.94, y: 1.06}

@@ -39,8 +39,27 @@ MonoBehaviour:
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
   context:
     Level: 0
-    FirepowerEquipmentId: 0
-    DefenseEquipmentId: 0
-    MobilityEquipmentId: 0
+    EquipmentId: 0
     OptionSkill1: 0
     OptionSkill2: 0
+  skillIcons:
+  - {fileID: 21300000, guid: 2054956dadb828944a8847ebe07b4096, type: 3}
+  - {fileID: 21300000, guid: 130c77c37fe92d94c8798dba50ee6178, type: 3}
+  - {fileID: 21300000, guid: 94eff26d310eb044d9deb32c36a7739e, type: 3}
+  - {fileID: 21300000, guid: c0eeefb35ebf18a4cb0fc6e7731b3283, type: 3}
+  skillIconsCooldown:
+  - {fileID: 21300000, guid: d924b809e72f31d478f7955d8aefec31, type: 3}
+  - {fileID: 21300000, guid: bbb122b1e4d7e73499300271e95c923c, type: 3}
+  - {fileID: 21300000, guid: 084e058a4a2b63c4ab362854ff570297, type: 3}
+  - {fileID: 21300000, guid: 1e3bb7b8e2a177c429fcb67d0cf81e39, type: 3}
+  skillIconsIncludeLabels: 1
+  skillNames:
+  - FOX FANG
+  - FOX MARK
+  - FOX FIRE
+  - FOX STORM
+  skillGlyphs:
+  - {fileID: 21300000, guid: 524d031a1e8f2e241b08a6d53bb63a9c, type: 3}
+  - {fileID: 21300000, guid: 7c020f4c1c2626b498a515ca9dc30c60, type: 3}
+  - {fileID: 21300000, guid: 41d70e80a20c04a4697fbb884d6dc7d8, type: 3}
+  - {fileID: 21300000, guid: 89525c39b94e6684e8912d9ff43c6ca0, type: 3}

@@ -256,7 +256,11 @@ namespace IronWasteland.Enemies.Normal
             yield return new WaitForSeconds(duration);
 
             ClearSlowDebuffs();
-            Destroy(gameObject);
+
+            // Quai tu kich no khi con song (khong qua TakeDamage) van phai duoc danh dau la chet,
+            // neu khong StageDirector se khong dem duoc kill va objective "diet X quai" khong bao gio dat.
+            if (IsAlive) Die();
+            else Destroy(gameObject);
         }
 
         private void ClearSlowDebuffs()
