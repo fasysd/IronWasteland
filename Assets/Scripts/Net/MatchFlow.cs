@@ -54,9 +54,6 @@ namespace IronWasteland.Net
         [Tooltip("Danh sách màn host có thể chọn trong lobby.")]
         [SerializeField] private StageDefinition[] stageOptions;
 
-        [Tooltip("Tự vào trận khi mọi người đã sẵn sàng.")]
-        [SerializeField] private bool autoStartWhenAllReady = true;
-
         private readonly ulong[] m_ClientIds = new ulong[MaxPlayers];
         private readonly byte[] m_TankIndexes = new byte[MaxPlayers];
         private readonly bool[] m_Ready = new bool[MaxPlayers];
@@ -359,21 +356,6 @@ namespace IronWasteland.Net
             Debug.Log($"[MatchFlow] Vào trận màn {stage.StageCode} - {stage.StageName} ({Mode}, {m_PlayerCount} người).");
         }
 
-        private void StartMatchIfReady()
-        {
-            if (!autoStartWhenAllReady || Phase != MatchPhase.Lobby || m_PlayerCount == 0) return;
-
-            // Co-op phải có ít nhất 2 người mới tự vào trận; một mình thì để host bấm "Bắt đầu".
-            if (Mode == MatchMode.Coop && m_PlayerCount < 2) return;
-
-            for (int i = 0; i < m_PlayerCount; i++)
-            {
-                if (!m_Ready[i]) return;
-            }
-
-            StartMatchInternal();
-        }
-
         private bool AddOrUpdatePlayer(ulong clientId, byte tankIndex, bool ready, byte option1, byte option2)
         {
             for (int i = 0; i < m_PlayerCount; i++)
@@ -585,7 +567,6 @@ namespace IronWasteland.Net
             }
 
             Broadcast();
-            StartMatchIfReady();
         }
 
         #endregion
