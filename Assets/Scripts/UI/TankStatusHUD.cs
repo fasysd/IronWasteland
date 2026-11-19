@@ -52,7 +52,8 @@ namespace IronWasteland.UI
         [SerializeField] private string[] skillKeyLabels = { "J", "K", "L", "I" };
 
         [Header("Màu hiển thị")]
-        [SerializeField] private Color readyColor = new Color(0.30f, 0.85f, 0.45f, 1f);
+        [Tooltip("Màu chữ \"SẴN SÀNG\" và màu tô dự phòng khi xe chưa có icon riêng.")]
+        [SerializeField] private Color readyColor = new Color32(0xE6, 0xED, 0xF5, 0xFF);
         [SerializeField] private Color cooldownColor = new Color(0.35f, 0.38f, 0.45f, 1f);
 
         [Header("Panel người chơi (art tách từ Figma)")]
@@ -150,8 +151,17 @@ namespace IronWasteland.UI
                 if (skillGlyphImages != null && i < skillGlyphImages.Length && skillGlyphImages[i] != null)
                 {
                     Sprite glyph = GetGlyph(i);
-                    if (glyph != null && skillGlyphImages[i].sprite != glyph) skillGlyphImages[i].sprite = glyph;
-                    skillGlyphImages[i].color = cooling ? new Color(0.45f, 0.47f, 0.52f, 0.75f) : Color.white;
+                    if (glyph != null)
+                    {
+                        if (skillGlyphImages[i].sprite != glyph) skillGlyphImages[i].sprite = glyph;
+                        if (!skillGlyphImages[i].enabled) skillGlyphImages[i].enabled = true;
+                        skillGlyphImages[i].color = cooling ? new Color(0.45f, 0.47f, 0.52f, 0.75f) : Color.white;
+                    }
+                    else if (skillGlyphImages[i].enabled)
+                    {
+                        // Icon the art day du: an lop glyph de khong ve trung hinh len tren.
+                        skillGlyphImages[i].enabled = false;
+                    }
                 }
 
                 if (skillCooldownOverlays != null && i < skillCooldownOverlays.Length && skillCooldownOverlays[i] != null)
@@ -196,13 +206,14 @@ namespace IronWasteland.UI
             return string.IsNullOrEmpty(name) ? $"KỸ NĂNG {index + 1}" : name;
         }
 
-        /// <summary>Biểu tượng trong suốt trong khung ô; thiếu thì lấy icon thẻ đầy đủ.</summary>
+        /// <summary>
+        /// Biểu tượng trong suốt đặt trong khung ô. Không gắn thì trả null và lớp glyph bị ẩn,
+        /// vì bộ icon mới đã là thẻ art đầy đủ (không cần vẽ thêm biểu tượng lên trên).
+        /// </summary>
         private Sprite GetGlyph(int index)
         {
             TankDefinition definition = gameController != null ? gameController.TankDefinition : null;
-            if (definition == null) return null;
-            Sprite glyph = definition.GetSkillGlyph(index);
-            return glyph != null ? glyph : definition.GetSkillIcon(index);
+            return definition != null ? definition.GetSkillGlyph(index) : null;
         }
 
         /// <summary>Dòng "20 ATK / 12 DEF / TỐC ĐỘ 110" + cấp của xe.</summary>

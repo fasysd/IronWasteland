@@ -152,7 +152,7 @@ namespace IronWasteland.UI
                 bool tooFar = !isBoss && distance > maxDistance;
                 bool overLimit = !isBoss && shown >= Mathf.Max(0, maxLabels);
 
-                if (!enemy.IsAlive || tooFar || overLimit)
+                if (!enemy.ShowsNameplate || tooFar || overLimit)
                 {
                     Hide(entry);
                     continue;

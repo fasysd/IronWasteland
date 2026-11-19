@@ -148,6 +148,12 @@ namespace IronWasteland.Enemies.Normal
             }
         }
 
+        /// <summary>
+        /// Da kich no thi model bi an ngay va GameObject chi con song cho toi khi het thoi gian lam cham,
+        /// nen khong duoc hien nhan ten nua (truoc day ten van tro lai tren mot con quai da bien mat).
+        /// </summary>
+        public override bool ShowsNameplate => IsAlive && !hasDetonated;
+
         public override void TakeDamage(float amount)
         {
             // Khi bắt đầu thi triển kỹ năng cho đến lúc chết thật sự: không nhận sát thương

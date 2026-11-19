@@ -79,6 +79,12 @@ namespace IronWasteland.Enemies
         }
         public bool IsAlive => !m_Dead && currentHealth > 0f;
 
+        /// <summary>
+        /// Con hien nhan ten tren dau hay khong. Mac dinh = con song; quai kich no (Ky Sinh Thien Thach)
+        /// ghi de vi sau khi no thi model da bien mat nhung GameObject con song them vai giay.
+        /// </summary>
+        public virtual bool ShowsNameplate => IsAlive;
+
         public bool IsCrowdControlImmune { get; set; }
 
         /// <summary>

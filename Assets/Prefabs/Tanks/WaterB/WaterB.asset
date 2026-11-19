@@ -43,23 +43,15 @@ MonoBehaviour:
     OptionSkill1: 0
     OptionSkill2: 0
   skillIcons:
-  - {fileID: 21300000, guid: e08c9d58a41b7fa4a826b604268a9ffd, type: 3}
-  - {fileID: 21300000, guid: 56f66e934d2eb674b86897f38f4184ca, type: 3}
-  - {fileID: 21300000, guid: 516516b7cc1bfea408dde9f340533418, type: 3}
-  - {fileID: 21300000, guid: a6f538b06804ee849b94396c0b34e4af, type: 3}
-  skillIconsCooldown:
-  - {fileID: 21300000, guid: 136c65556ca8ea146bf4d74d6c858695, type: 3}
-  - {fileID: 21300000, guid: e04261800e96c7148862241da9d4ec60, type: 3}
-  - {fileID: 21300000, guid: d389b1c0cd81ee44fa84d79e6f6c66ec, type: 3}
-  - {fileID: 21300000, guid: cec6bcbbe59076e4b9e68e80f7bf4e16, type: 3}
-  skillIconsIncludeLabels: 1
+  - {fileID: 21300000, guid: e91a973237a7191489217b27f6250853, type: 3}
+  - {fileID: 21300000, guid: c261a492b77e19d4998ab35f791962f8, type: 3}
+  - {fileID: 21300000, guid: f818e14da148fdd4ca5dd2db59295249, type: 3}
+  - {fileID: 21300000, guid: 475b7d7372932d74caca7a0317fe4d3b, type: 3}
+  skillIconsCooldown: []
+  skillIconsIncludeLabels: 0
   skillNames:
   - HEALING WATER
   - BUBBLE SHIELD
   - WATER WAVE
   - WATER RETURN
-  skillGlyphs:
-  - {fileID: 21300000, guid: ba9b4ac4c1447ba47bcb38e8fa208b86, type: 3}
-  - {fileID: 21300000, guid: 8d162fa20c7746443885c0dc655de412, type: 3}
-  - {fileID: 21300000, guid: 5c827861cf04f704a8d0f9b27d4439c4, type: 3}
-  - {fileID: 21300000, guid: de2210a2f4019834bbdc7e48b0be5e88, type: 3}
+  skillGlyphs: []

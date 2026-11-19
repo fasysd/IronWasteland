@@ -43,23 +43,15 @@ MonoBehaviour:
     OptionSkill1: 0
     OptionSkill2: 0
   skillIcons:
-  - {fileID: 21300000, guid: 7ee167fd7757b354b85ac32d5086b2fb, type: 3}
-  - {fileID: 21300000, guid: 07bd3df88f780e34f8c9f9e16843231c, type: 3}
-  - {fileID: 21300000, guid: aee61e850bf7ea64b96c7935819d9dfd, type: 3}
-  - {fileID: 21300000, guid: 0bc0c8f328b10144a9851fab5b296a91, type: 3}
-  skillIconsCooldown:
-  - {fileID: 21300000, guid: 32c5ca83430f9874ebcb20c4c0a8661f, type: 3}
-  - {fileID: 21300000, guid: 3397fd38229edf941a8cbeb732b03dd4, type: 3}
-  - {fileID: 21300000, guid: a183a0b20983b114da321cb5988a8141, type: 3}
-  - {fileID: 21300000, guid: 381940cc8d74c1c43a065d8b095c6c06, type: 3}
-  skillIconsIncludeLabels: 1
+  - {fileID: 21300000, guid: c6f9c3b0ec35097458d1a4a0448f1a64, type: 3}
+  - {fileID: 21300000, guid: 05d0bbcd69c7f9a44b6e6187f3378e09, type: 3}
+  - {fileID: 21300000, guid: c906e5aca5f75fc4e934d62607278e61, type: 3}
+  - {fileID: 21300000, guid: 090382f4eca1b8240a50cb72e54e6d06, type: 3}
+  skillIconsCooldown: []
+  skillIconsIncludeLabels: 0
   skillNames:
   - WATER PULSE
   - WATER BUBBLE
   - WATER ARMOR
   - TIDAL RETURN
-  skillGlyphs:
-  - {fileID: 21300000, guid: 6e18a4deb877feb41bdda7f1dd036d1b, type: 3}
-  - {fileID: -261099966661931101, guid: 76a679f20099d4c4286bbcab15435cbe, type: 3}
-  - {fileID: 555181032169125558, guid: 2d1d7deb8c7f93b4d944eef1cc301b44, type: 3}
-  - {fileID: -5834244925104062782, guid: 3bbd74e06f86e044a86882c20e6b9d9b, type: 3}
+  skillGlyphs: []

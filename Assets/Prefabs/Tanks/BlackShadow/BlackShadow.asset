@@ -45,23 +45,15 @@ MonoBehaviour:
     OptionSkill1: 0
     OptionSkill2: 0
   skillIcons:
-  - {fileID: 21300000, guid: 88e7edbe211bfa649aaa1bc5f3a1131c, type: 3}
-  - {fileID: 21300000, guid: 52cf8e7ad803e46478440778801c2298, type: 3}
-  - {fileID: 21300000, guid: 6af09ed469316974eaeb8a647f789502, type: 3}
-  - {fileID: 21300000, guid: aa842751fec45c24580ce8d671a2ad08, type: 3}
-  skillIconsCooldown:
-  - {fileID: 21300000, guid: b7aa7ecacb1f0ab428e35c840ef89169, type: 3}
-  - {fileID: 21300000, guid: 90abf48afac43b34a9e9cbc7cbbde823, type: 3}
-  - {fileID: 21300000, guid: fa42e711e9094664a8a2b7cd4dce0fd9, type: 3}
-  - {fileID: 21300000, guid: e00082778c9ecb8479a58951bc6aa38b, type: 3}
-  skillIconsIncludeLabels: 1
+  - {fileID: 21300000, guid: aa82617657f394d499ba63c7e1b0859c, type: 3}
+  - {fileID: 21300000, guid: 6b5b5fe89a2f76e46bbd320c6cd2ceeb, type: 3}
+  - {fileID: 21300000, guid: ec69cee60ed94234c93fb14c9cbb03d5, type: 3}
+  - {fileID: 21300000, guid: 0e3bc16b558f76143a640efb772104ba, type: 3}
+  skillIconsCooldown: []
+  skillIconsIncludeLabels: 0
   skillNames:
   - SHADOW CLAW
   - SHADOW STEP
   - SHADOW PREDATOR
   - SHADOW AMBUSH
-  skillGlyphs:
-  - {fileID: -8980253016933138799, guid: aa82617657f394d499ba63c7e1b0859c, type: 3}
-  - {fileID: -2289595430501896535, guid: 6b5b5fe89a2f76e46bbd320c6cd2ceeb, type: 3}
-  - {fileID: 4002316398255253084, guid: ec69cee60ed94234c93fb14c9cbb03d5, type: 3}
-  - {fileID: 5095682942107577968, guid: 0e3bc16b558f76143a640efb772104ba, type: 3}
+  skillGlyphs: []

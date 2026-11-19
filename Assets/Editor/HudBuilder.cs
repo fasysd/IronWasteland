@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TextCore.LowLevel;
 using UnityEngine.UI;
 using IronWasteland.UI;
 
@@ -23,6 +24,87 @@ public static class HudBuilder
     private const string Deco = ArtRoot + "/Deconstructed_Components";
     private const string GeneratedDir = "Assets/Art/UI/Generated";
 
+    // Font cua HUD: Barlow Condensed Bold (OFL, co dau tieng Viet).
+    // Do tu file thiet ke: "BLACK SHADOW" rong 118px voi chieu cao chu 15px => ty le 7.87;
+    // Barlow Condensed Bold dung ty le 7.87 (Roboto Bold 10.58, Liberation 11.58, Oswald 7.18).
+    // Font mac dinh cua TMP la Liberation Sans nen chu rong, tran ra ngoai khung.
+    private const string HudFontTtf = "Assets/Art/UI/Fonts/BarlowCondensed-Bold.ttf";
+    private const string HudFontAssetPath = "Assets/Art/UI/Fonts/HudFont_BarlowCondensed.asset";
+
+    // Ky tu duoc "nuong" san vao atlas tinh: ASCII + Latin-1 + cac ky tu rieng cua tieng Viet
+    // + vai ky hieu HUD dung (mui ten minimap, gach ngang dai).
+    private const string HudSymbolChars = "↑↓←→—–…•°×";
+
+    private static TMP_FontAsset s_HudFont;
+
+    /// <summary>Bo ky tu co dinh cua HUD (atlas tinh: khong sinh them glyph khi chay).</summary>
+    private static string HudCharacterSet()
+    {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder(400);
+        for (char c = (char)32; c < (char)127; c++) sb.Append(c);
+        for (char c = (char)0x00A0; c <= (char)0x00FF; c++) sb.Append(c);
+        sb.Append("ĂăĐđĨĩŨũƠơƯư");
+        for (char c = (char)0x1EA0; c <= (char)0x1EF9; c++) sb.Append(c);
+        sb.Append(HudSymbolChars);
+        return sb.ToString();
+    }
+
+    /// <summary>Font dung cho toan bo chu tren HUD (tu sinh TMP font asset neu chua co).</summary>
+    private static TMP_FontAsset HudFont
+    {
+        get
+        {
+            if (s_HudFont != null) return s_HudFont;
+
+            s_HudFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(HudFontAssetPath);
+            if (s_HudFont != null) return s_HudFont;
+
+            Font source = AssetDatabase.LoadAssetAtPath<Font>(HudFontTtf);
+            if (source != null)
+            {
+                // Atlas TINH (Static): nuong san du ky tu tieng Viet ngay khi tao, nen file .asset
+                // khong bi Unity sua lai moi lan chay -> commit len git khong sinh diff rac.
+                // Phai tao o che do Dynamic (TMP chi cho them glyph khi con Dynamic) roi
+                // chuyen sang Static truoc khi ghi file.
+                TMP_FontAsset created = TMP_FontAsset.CreateFontAsset(source, 48, 4, GlyphRenderMode.SDFAA,
+                    1024, 1024, AtlasPopulationMode.Dynamic, true);
+                if (created != null)
+                {
+                    string missing;
+                    created.TryAddCharacters(HudCharacterSet(), out missing, false);
+                    if (!string.IsNullOrEmpty(missing))
+                        Debug.LogWarning("[HUD-BUILD] font thieu ky tu: " + missing);
+
+                    created.atlasPopulationMode = AtlasPopulationMode.Static;
+                    created.name = "HudFont_BarlowCondensed";
+
+                    // Barlow khong co mui ten (minimap "N ↑") -> cho muon glyph tu font du phong.
+                    TMP_FontAsset fallback = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(
+                        "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
+                    if (fallback != null)
+                        created.fallbackFontAssetTable = new List<TMP_FontAsset> { fallback };
+                    AssetDatabase.CreateAsset(created, HudFontAssetPath);
+
+                    if (created.atlasTextures != null && created.atlasTextures.Length > 0 && created.atlasTextures[0] != null)
+                        AssetDatabase.AddObjectToAsset(created.atlasTextures[0], HudFontAssetPath);
+                    if (created.material != null)
+                        AssetDatabase.AddObjectToAsset(created.material, HudFontAssetPath);
+
+                    AssetDatabase.SaveAssets();
+                    s_HudFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(HudFontAssetPath);
+                    Debug.Log("[HUD-BUILD] tao font tinh " + HudFontAssetPath + " (" + (created.atlasTextures != null ? created.atlasTextures.Length : 0) + " atlas)");
+                }
+            }
+
+            if (s_HudFont == null)
+            {
+                Debug.LogWarning("[HUD-BUILD] khong tao duoc font " + HudFontTtf + " - dung font mac dinh TMP");
+                s_HudFont = TMP_Settings.defaultFontAsset;
+            }
+            return s_HudFont;
+        }
+    }
+
     private static readonly Color TextMain = new Color32(0xEA, 0xF2, 0xFF, 0xFF);
     private static readonly Color TextMuted = new Color32(0x8F, 0xA6, 0xBF, 0xFF);
     private static readonly Color TextDim = new Color32(0x5C, 0x6E, 0x82, 0xFF);
@@ -32,6 +114,20 @@ public static class HudBuilder
     private static readonly Color Red = new Color32(0xFF, 0x52, 0x52, 0xFF);
     private static readonly Color Cyan = new Color32(0x3B, 0xD6, 0xFF, 0xFF);
     private static readonly Color PanelBg = new Color32(0x0B, 0x11, 0x18, 0xFF);
+
+    // Bang mau lay tu file thiet ke game_ui_layout.svg (xem docs/_svg_probe.txt).
+    private static readonly Color PanelTop = new Color32(0x15, 0x1C, 0x28, 0xFF);
+    private static readonly Color PanelBottom = new Color32(0x08, 0x0D, 0x13, 0xFF);
+    private static readonly Color Line = new Color32(0x29, 0x35, 0x44, 0xFF);
+    private static readonly Color BarTrack = new Color32(0x15, 0x1D, 0x29, 0xFF);
+    private static readonly Color HpRed = new Color32(0xFF, 0x3B, 0x4E, 0xFF);
+    private static readonly Color Cyan2 = new Color32(0x2F, 0xE8, 0xE0, 0xFF);
+    private static readonly Color Orange = new Color32(0xFF, 0x7A, 0x18, 0xFF);
+    private static readonly Color Purple = new Color32(0x8A, 0x4B, 0xF0, 0xFF);
+    private static readonly Color TextHead = new Color32(0xE6, 0xED, 0xF5, 0xFF);
+    private static readonly Color TextSoft = new Color32(0x8A, 0x99, 0xAB, 0xFF);
+    private static readonly Color BossFill = new Color32(0x10, 0x15, 0x1E, 0xFF);
+    private static readonly Color BossText = new Color32(0xFF, 0x8A, 0x80, 0xFF);
 
     private static readonly Vector2 A_TopLeft = new Vector2(0f, 1f);
     private static readonly Vector2 A_TopCenter = new Vector2(0.5f, 1f);
@@ -84,7 +180,7 @@ public static class HudBuilder
         RectTransform pauseButton = BuildPauseButton(root.transform);
 
         BuildSkills(root.transform, out TMP_Text[] skillNames, out TMP_Text[] skillStates,
-            out Image[] skillGlyphs, out Image[] skillDims);
+            out Image[] skillGlyphs, out Image[] skillDims, out Image[] skillCards);
 
         BuildCoop(root.transform);
 
@@ -130,6 +226,7 @@ public static class HudBuilder
         Set(status, "statsText", stats);
         SetArray(status, "skillNameTexts", skillNames);
         SetArray(status, "skillStateTexts", skillStates);
+        SetArray(status, "skillIconImages", skillCards);
         SetArray(status, "skillGlyphImages", skillGlyphs);
         SetArray(status, "skillCooldownOverlays", skillDims);
 
@@ -185,39 +282,38 @@ public static class HudBuilder
         out TMP_Text name, out Image hpFill, out TMP_Text hpText, out Image enFill, out TMP_Text enText,
         out TMP_Text stats)
     {
-        RectTransform panel = Panel("TopLeft", parent, A_TopLeft, new Vector2(26f, -26f), new Vector2(852f, 282f), 0.5f);
-        Img("Plate", panel, Deco + "/02_Panel_Frames_And_Bars/frame_player_vitals_empty.png",
-            Vector2.zero, Vector2.zero, new Vector2(852f, 282f));
+        // Toa do lay dung theo SVG: khung 425.6 x 140.8 tai (51, 48), cat cheo CA HAI goc phai 19 px.
+        Vector2 size = new Vector2(425.6f, 140.8f);
+        RectTransform panel = Panel("TopLeft", parent, A_TopLeft, new Vector2(51f, -48f), size, 1f);
+        Shape("panel_player", panel, size, 19, 0, new Color(Purple.r, Purple.g, Purple.b, 0.501961f), 1.6f, 3);
 
-        portrait = Node("Avatar", panel, 34f, -34f, 176f, 216f);
+        portrait = Node("Avatar", panel, 4f, -12f, 92.7f, 103.1f);
         Image portraitImg = portrait.gameObject.AddComponent<Image>();
         portraitImg.sprite = Load(Deco + "/02_Panel_Frames_And_Bars/avatar_player_black_shadow.png");
-        portraitImg.preserveAspect = true;
+        portraitImg.preserveAspect = false;
         portraitImg.raycastTarget = false;
 
-        name = Txt("TankName", panel, 215f, -36f, 430f, 48f, "BLACK SHADOW", 38f, TextMain, TextAlignmentOptions.Left, FontStyles.Bold);
-        level = Txt("LevelText", panel, 560f, -44f, 260f, 40f, "CẤP 1", 22f, TextMuted, TextAlignmentOptions.Right);
+        name = Txt("TankName", panel, 96f, -14f, 240f, 24f, "BLACK SHADOW", 22f, TextHead,
+            TextAlignmentOptions.Left, FontStyles.Bold);
+        level = Txt("LevelText", panel, 211f, -14f, 190f, 24f, "CẤP 1", 12f, TextSoft, TextAlignmentOptions.Right);
 
-        Txt("HpLabel", panel, 215f, -92f, 240f, 26f, "MÁU", 17f, TextMuted, TextAlignmentOptions.Left);
-        hpText = Txt("HpText", panel, 560f, -84f, 260f, 38f, "0 / 0", 26f, TextMain, TextAlignmentOptions.Right, FontStyles.Bold);
+        Txt("HpLabel", panel, 96f, -44f, 60f, 18f, "MÁU", 11f, TextSoft, TextAlignmentOptions.Left);
+        hpText = Txt("HpText", panel, 176f, -40f, 200f, 20f, "0 / 0", 14f, TextHead,
+            TextAlignmentOptions.Right, FontStyles.Bold);
 
-        Img("HpTrack", panel, Deco + "/02_Panel_Frames_And_Bars/bar_track_health_empty.png",
-            Vector2.zero, Vector2.zero, new Vector2(595f, 30f), offset: new Vector2(215f, -124f));
-        hpFill = Img("HpFill", panel, Deco + "/02_Panel_Frames_And_Bars/bar_fill_player_health_red.png",
-            Vector2.zero, Vector2.zero, new Vector2(595f, 30f), offset: new Vector2(215f, -124f));
-        MakeFilled(hpFill);
+        Bar("HpTrack", panel, 96f, -60f, 308.8f, 15.2f, BarTrack);
+        hpFill = Bar("HpFill", panel, 96f, -60f, 308.8f, 15.2f, HpRed, true);
 
-        Txt("EnLabel", panel, 215f, -172f, 300f, 26f, "NĂNG LƯỢNG", 17f, TextMuted, TextAlignmentOptions.Left);
-        enText = Txt("EnText", panel, 560f, -164f, 260f, 36f, "0 / 0", 24f, Cyan, TextAlignmentOptions.Right, FontStyles.Bold);
+        Txt("EnLabel", panel, 96f, -85f, 90f, 18f, "NĂNG LƯỢNG", 11f, TextSoft, TextAlignmentOptions.Left);
+        enText = Txt("EnText", panel, 176f, -84f, 200f, 20f, "0 / 0", 13f, Cyan2,
+            TextAlignmentOptions.Right, FontStyles.Bold);
 
-        Img("EnTrack", panel, Deco + "/02_Panel_Frames_And_Bars/bar_track_health_empty.png",
-            Vector2.zero, Vector2.zero, new Vector2(595f, 26f), offset: new Vector2(215f, -204f));
-        enFill = Img("EnFill", panel, Deco + "/02_Panel_Frames_And_Bars/bar_fill_player_energy_cyan.png",
-            Vector2.zero, Vector2.zero, new Vector2(595f, 26f), offset: new Vector2(215f, -204f));
-        MakeFilled(enFill);
+        Bar("EnTrack", panel, 96f, -102.4f, 308.8f, 9.6f, BarTrack);
+        enFill = Bar("EnFill", panel, 96f, -102.4f, 308.8f, 9.6f, Cyan2, true);
 
-        stats = Txt("StatsText", panel, 36f, -244f, 780f, 28f, "0 ATK   /   0 DEF   /   TỐC ĐỘ 0", 17f,
-            TextMuted, TextAlignmentOptions.Left);
+        // Dong chi so nho chay suot duoi panel, bat dau tu mep trai (di duoi avatar) nhu SVG.
+        stats = Txt("StatsText", panel, 17f, -117f, 390f, 16f, "0 ATK   /   0 DEF   /   TỐC ĐỘ 0", 9.5f,
+            TextDim, TextAlignmentOptions.Left);
         return panel;
     }
 
@@ -225,62 +321,67 @@ public static class HudBuilder
     private static void BuildStatusStrip(Transform parent, out TMP_Text stageTitle, out TMP_Text waveText,
         out TMP_Text objectiveText, out TMP_Text killsText, out TMP_Text timerText, out TMP_Text gemsText)
     {
-        RectTransform strip = Panel("TopLeftInfo", parent, A_TopLeft, new Vector2(26f, -176f), new Vector2(560f, 116f), 0.5f);
-        Image stripBg = strip.gameObject.AddComponent<Image>();
-        stripBg.sprite = UISprites.Rounded(12);
-        stripBg.type = Image.Type.Sliced;
-        stripBg.color = new Color(0.04f, 0.06f, 0.09f, 0.88f);
-        stripBg.raycastTarget = false;
+        Vector2 size = new Vector2(425.6f, 96f);
+        RectTransform strip = Panel("TopLeftInfo", parent, A_TopLeft, new Vector2(51f, -196f), size, 1f);
+        Shape("panel_status_strip", strip, size, 0, 6, Line, 1f, 0);
 
-        stageTitle = Txt("StageTitle", strip, 22f, -8f, 520f, 36f, "1-1 - Tên ải", 30f, Amber, TextAlignmentOptions.Left, FontStyles.Bold);
-        waveText = Txt("WaveText", strip, 22f, -46f, 240f, 28f, "Đợt 1 / 3", 21f, TextMuted, TextAlignmentOptions.Left);
-        objectiveText = Txt("ObjectiveText", strip, 262f, -46f, 540f, 28f, "Mục tiêu", 21f, TextMain, TextAlignmentOptions.Left);
-        killsText = Txt("KillsText", strip, 22f, -78f, 240f, 28f, "Đã diệt: 0", 20f, TextMuted, TextAlignmentOptions.Left);
-        timerText = Txt("TimerText", strip, 262f, -78f, 160f, 28f, "00:00", 22f, TextMain, TextAlignmentOptions.Left, FontStyles.Bold);
-        gemsText = Txt("GemsText", strip, 430f, -78f, 140f, 28f, "Ngọc: 0", 20f, Amber, TextAlignmentOptions.Right);
+        stageTitle = Txt("StageTitle", strip, 12f, -6f, 300f, 24f, "1-1 - Tên ải", 18f, Amber,
+            TextAlignmentOptions.Left, FontStyles.Bold);
+        timerText = Txt("TimerText", strip, 300f, -6f, 114f, 24f, "00:00", 18f, TextHead,
+            TextAlignmentOptions.Right, FontStyles.Bold);
+        waveText = Txt("WaveText", strip, 12f, -32f, 150f, 20f, "Đợt 1 / 3", 13f, Cyan2, TextAlignmentOptions.Left);
+        objectiveText = Txt("ObjectiveText", strip, 162f, -32f, 252f, 20f, "Mục tiêu", 13f, TextSoft,
+            TextAlignmentOptions.Left);
+        killsText = Txt("KillsText", strip, 12f, -58f, 180f, 20f, "Đã diệt: 0", 12f, TextSoft, TextAlignmentOptions.Left);
+        gemsText = Txt("GemsText", strip, 200f, -58f, 214f, 20f, "Ngọc: 0", 12f, Amber, TextAlignmentOptions.Right);
     }
 
     private static RectTransform BuildBoss(Transform parent, out TMP_Text bossName, out TMP_Text bossHp, out Image bossFill)
     {
-        RectTransform panel = Panel("BossPanel", parent, A_TopCenter, new Vector2(0f, -18f), new Vector2(1364f, 156f), 0.5f);
-        Img("Plate", panel, Deco + "/02_Panel_Frames_And_Bars/frame_boss_health_empty.png",
-            Vector2.zero, Vector2.zero, new Vector2(1364f, 156f));
+        // SVG: khung 681.6 x 77.6 tai (620, 73) — tam man hinh nen neo giua tren.
+        // Nen PHANG #10151E (khong gradient) + vien do mong 0.8, khong cat goc.
+        Vector2 size = new Vector2(681.6f, 77.6f);
+        RectTransform panel = Panel("BossPanel", parent, A_TopCenter, new Vector2(0.8f, -73f), size, 1f);
+        Shape("panel_boss", panel, size, 0, 0, BossFill, BossFill, HpRed, 0.8f, 0);
 
-        Txt("BossTag", panel, 24f, -20f, 150f, 44f, "BOSS:", 30f, Red, TextAlignmentOptions.Left, FontStyles.Bold);
-        bossName = Txt("BossName", panel, 170f, -22f, 830f, 44f, "Tên boss", 30f, TextMain, TextAlignmentOptions.Left, FontStyles.Bold);
-        bossHp = Txt("BossHpText", panel, 1010f, -20f, 330f, 42f, "0 / 0 HP", 26f, TextMain, TextAlignmentOptions.Right, FontStyles.Bold);
+        // Ca hai ve deu mau hong nhat #FF8A80 nhu file thiet ke (khong tach "BOSS:" mau do).
+        Txt("BossTag", panel, 10f, -6f, 60f, 18f, "BOSS:", 13f, BossText, TextAlignmentOptions.Left, FontStyles.Bold);
+        bossName = Txt("BossName", panel, 72f, -6f, 380f, 18f, "Tên boss", 13f, BossText,
+            TextAlignmentOptions.Left, FontStyles.Bold);
+        bossHp = Txt("BossHpText", panel, 431f, -6f, 200f, 18f, "0 / 0 HP", 13f, TextHead,
+            TextAlignmentOptions.Right, FontStyles.Bold);
 
-        bossFill = Img("BossBar", panel, Deco + "/02_Panel_Frames_And_Bars/bar_fill_boss_health_red.png",
-            Vector2.zero, Vector2.zero, new Vector2(1312f, 44f), offset: new Vector2(26f, -92f));
-        MakeFilled(bossFill);
+        Bar("BossTrack", panel, 11.3f, -39.6f, 659f, 22f, new Color32(0x3E, 0x18, 0x21, 0xFF));
+        bossFill = Bar("BossBar", panel, 11.3f, -39.6f, 659f, 22f, HpRed, true);
         return panel;
     }
 
     private static RectTransform BuildMinimap(Transform parent, MinimapUI minimap,
         out Image mapBackground, out Image mapGrid, out Image viewFrame)
     {
-        RectTransform panel = Panel("TopRight", parent, A_TopRight, new Vector2(-26f, -26f), new Vector2(488f, 408f), 0.5f);
-        Img("Plate", panel, Deco + "/03_Minimap_Elements/frame_tactical_minimap_empty.png",
-            Vector2.zero, Vector2.zero, new Vector2(488f, 408f));
+        // SVG: khung 252 x 219.6, cat cheo CA HAI goc phai 21.7, cach le phai 43.9 / le tren 30.4.
+        Vector2 size = new Vector2(252f, 219.6f);
+        RectTransform panel = Panel("TopRight", parent, A_TopRight, new Vector2(-43.9f, -30.4f), size, 1f);
+        Shape("panel_minimap", panel, size, 22, 0, Line, 1.8f, 3);
 
-        Txt("MapTitle", panel, 24f, -16f, 330f, 34f, "BÀN ĐỒ CHIẾN THUẬT", 22f, TextMain, TextAlignmentOptions.Left, FontStyles.Bold);
-        Img("NorthMark", panel, Deco + "/03_Minimap_Elements/minimap_north_indicator.png",
-            Vector2.zero, Vector2.zero, new Vector2(64f, 44f), offset: new Vector2(400f, -12f));
+        Txt("MapTitle", panel, 14f, -21f, 220f, 16f, "BÀN ĐỒ CHIẾN THUẬT", 12f, TextHead,
+            TextAlignmentOptions.Left, FontStyles.Bold);
+        Txt("NorthMark", panel, 195f, -21f, 43f, 16f, "N ↑", 12f, Cyan2, TextAlignmentOptions.Right);
 
-        RectTransform mapView = Node("MapView", panel, 30f, -80f, 428f, 312f);
+        RectTransform mapView = Node("MapView", panel, 24.3f, -52.2f, 223.2f, 155.7f);
         mapView.gameObject.AddComponent<RectMask2D>();
 
         // Nền: lúc dựng tạm dùng ảnh terrain của bộ art, khi chạy MinimapUI thay bằng nền thật của màn.
         mapBackground = Img("StageBackground", mapView, Deco + "/03_Minimap_Elements/minimap_cave_terrain_map.png",
-            Vector2.zero, Vector2.zero, new Vector2(428f, 312f));
+            Vector2.zero, Vector2.zero, new Vector2(223.2f, 155.7f));
 
         // Lưới riêng (bản gốc minimap_radar_grid có vẽ sẵn một khung xanh đứng yên nên không dùng được).
         mapGrid = Img("Grid", mapView, EnsureMinimapGridSprite(),
-            Vector2.zero, Vector2.zero, new Vector2(428f, 312f));
+            Vector2.zero, Vector2.zero, new Vector2(223.2f, 155.7f));
         mapGrid.color = new Color(1f, 1f, 1f, 0.55f);
 
         // Khung xanh = vùng camera đang nhìn, MinimapUI cập nhật theo camera mỗi frame.
-        RectTransform frameRt = Node("ViewFrame", mapView, 0f, 0f, 220f, 124f);
+        RectTransform frameRt = Node("ViewFrame", mapView, 0f, 0f, 120f, 70f);
         viewFrame = frameRt.gameObject.AddComponent<Image>();
         viewFrame.raycastTarget = false;
         viewFrame.type = Image.Type.Sliced;
@@ -345,106 +446,121 @@ public static class HudBuilder
 
     private static RectTransform BuildPauseButton(Transform parent)
     {
-        RectTransform rt = Node("PauseButton", parent, -26f, 178f, 346f, 94f, A_BottomRight, 0.5f);
+        // SVG: nut 173 x 47 (phan phang 149 + mui nhon 24) o goc duoi-phai, cach le phai 3 / le duoi 218.
+        Vector2 size = new Vector2(173f, 47f);
+        RectTransform rt = Node("PauseButton", parent, -3f, 218f, size.x, size.y, A_BottomRight);
+
         Image img = rt.gameObject.AddComponent<Image>();
-        img.sprite = Load(Deco + "/01_HUD_Panels/panel_pause_esc_button.png");
-        img.preserveAspect = true;
+        img.sprite = PanelAsset("panel_esc", 173, 47, 24, 0, PanelTop, PanelBottom, Line, 2f, 3);
         img.raycastTarget = true;
 
         Button button = rt.gameObject.AddComponent<Button>();
         button.targetGraphic = img;
 
-        Txt("Label", rt, 0f, -26f, 346f, 44f, "ESC", 26f, TextMain, TextAlignmentOptions.Center, FontStyles.Bold);
-        Txt("Sub", rt, 0f, -58f, 346f, 30f, "TẠM DỪNG", 16f, TextMuted, TextAlignmentOptions.Center);
+        // Chu mot dong "ESC / TẠM DỪNG", can giua phan phang cua nut nhu SVG.
+        Txt("Label", rt, 0f, -11.5f, 149f, 24f, "ESC / TẠM DỪNG", 14f, TextHead,
+            TextAlignmentOptions.Center, FontStyles.Bold);
         return rt;
     }
 
     private static void BuildSkills(Transform parent, out TMP_Text[] names, out TMP_Text[] states,
-        out Image[] glyphs, out Image[] dims)
+        out Image[] glyphs, out Image[] dims, out Image[] cards)
     {
-        RectTransform panel = Panel("BottomRight", parent, A_BottomRight, new Vector2(-26f, 24f), new Vector2(1050f, 282f), 0.5f);
+        // SVG: 4 the 124.5 x 115.5, buoc 133.5, hang duoi cach day 88 px, le phai 42 px.
+        RectTransform panel = Panel("BottomRight", parent, A_BottomRight, new Vector2(-42f, 88f),
+            new Vector2(525f, 115.5f), 1f);
 
-        TMP_Text title = Txt("Title", panel, 4f, -2f, 500f, 34f, "KỸ NĂNG TRANG BỊ", 24f, TextMain, TextAlignmentOptions.Left, FontStyles.Bold);
-        title.characterSpacing = 4f;
-
-        string[] frames =
-        {
-            ArtRoot + "/Frames/frame_slot_beveled_orange_ready.png",
-            ArtRoot + "/Frames/frame_slot_beveled_cyan_cooldown.png",
-            ArtRoot + "/Frames/frame_slot_beveled_purple_active.png",
-            ArtRoot + "/Frames/frame_slot_beveled_gold_ultimate.png"
-        };
-        string[] badge =
-        {
-            ArtRoot + "/Badges/badge_key_j.png",
-            ArtRoot + "/Badges/badge_key_k.png",
-            ArtRoot + "/Badges/badge_key_l.png",
-            ArtRoot + "/Badges/badge_key_i.png"
-        };
-        Color[] stateColors = { Red, Cyan, new Color(0.72f, 0.55f, 1f), Amber };
+        Color[] borderColors = { Orange, Cyan2, Purple, Purple };
         string[] keys = { "J", "K", "L", "I" };
+        float[] cardX = { 0f, 133.5f, 267f, 400.5f };
+
+        // Tieu de nhom nam NGAY TREN hang the (SVG: chu nho mau xam, cach dinh the 10 px).
+        // y duong = nam phia TREN dinh panel (panel nay neo goc duoi-phai).
+        TMP_Text groupLabel = Txt("GroupLabel", panel, 3f, 25f, 260f, 16f, "KỸ NĂNG TRANG BỊ", 10f, TextSoft,
+            TextAlignmentOptions.Left, FontStyles.Bold);
+        groupLabel.characterSpacing = 1f;
 
         names = new TMP_Text[4];
         states = new TMP_Text[4];
         glyphs = new Image[4];
         dims = new Image[4];
+        cards = new Image[4];
 
         for (int i = 0; i < 4; i++)
         {
-            float x = 2f + i * 262f;
-            RectTransform card = Node("Slot" + i, panel, x, -40f, 250f, 231f);
+            RectTransform card = Node("Slot" + i, panel, cardX[i], 0f, 124.5f, 115.5f);
 
-            Image frame = Img("Frame", card, frames[i], Vector2.zero, Vector2.zero, new Vector2(250f, 231f));
-            frame.raycastTarget = false;
+            // Nen the: cat cheo CA HAI goc phai 18 px, vien mau theo phim (cam / cyan / tim / tim).
+            RectTransform backingRt = Node("Backing", card, 0f, 0f, 124.5f, 115.5f);
+            Image backing = backingRt.gameObject.AddComponent<Image>();
+            backing.sprite = PanelAsset("panel_skill_" + i, 125, 116, 18, 0, PanelTop, PanelBottom,
+                borderColors[i], 1.5f, 3);
+            backing.raycastTarget = false;
 
-            RectTransform glyphRt = Node("Icon" + i, card, 60f, -44f, 130f, 130f);
+            // Art cua ky nang dat trong KHUNG ICON 57x57 (toa do trong SVG), khong phu kin the:
+            // the giu nguyen nen toi + vien mau + hai goc phai cat cheo nhu thiet ke.
+            RectTransform cardRt = Node("Card" + i, card, 33.8f, -12f, 57f, 57f);
+            cards[i] = cardRt.gameObject.AddComponent<Image>();
+            cards[i].preserveAspect = true;
+            cards[i].raycastTarget = false;
+
+            RectTransform glyphRt = Node("Icon" + i, card, 33.8f, -12f, 57f, 57f);
             glyphs[i] = glyphRt.gameObject.AddComponent<Image>();
             glyphs[i].preserveAspect = true;
             glyphs[i].raycastTarget = false;
 
-            Image badgeImg = Img("KeyBadge" + i, card, badge[i], Vector2.zero, Vector2.zero, new Vector2(48f, 48f), offset: new Vector2(8f, -6f));
-            badgeImg.raycastTarget = false;
+            Txt("KeyBadge" + i, card, 6f, -4f, 20f, 18f, keys[i], 12f, borderColors[i],
+                TextAlignmentOptions.Left, FontStyles.Bold);
 
-            names[i] = Txt("Name" + i, card, 0f, -168f, 250f, 30f, "Tên kỹ năng", 22f, TextMain,
+            names[i] = Txt("Name" + i, card, 2f, -78f, 120.5f, 18f, "Tên kỹ năng", 11.5f, TextHead,
                 TextAlignmentOptions.Center, FontStyles.Bold);
-            states[i] = Txt("State" + i, card, 0f, -196f, 250f, 26f, "SẴN SÀNG", 14f, stateColors[i],
+            states[i] = Txt("State" + i, card, 2f, -94f, 120.5f, 16f, "SẴN SÀNG", 8.5f, borderColors[i],
                 TextAlignmentOptions.Center, FontStyles.Bold);
-            states[i].characterSpacing = 2f;
+            states[i].characterSpacing = 1f;
 
-            Image dim = Img("Dim" + i, card, ArtRoot + "/Overlays/overlay_cooldown_dark_dim.png",
-                Vector2.zero, Vector2.zero, new Vector2(250f, 231f));
-            dim.raycastTarget = false;
-            dim.gameObject.SetActive(false);
-            dims[i] = dim;
+            RectTransform dimRt = Node("Dim" + i, card, 2f, -2f, 120.5f, 111.5f);
+            dims[i] = dimRt.gameObject.AddComponent<Image>();
+            dims[i].sprite = Load(ArtRoot + "/Overlays/overlay_cooldown_dark_dim.png");
+            dims[i].raycastTarget = false;
+            dims[i].gameObject.SetActive(false);
         }
     }
 
     private static void BuildCoop(Transform parent)
     {
-        RectTransform panel = Panel("BottomLeft", parent, A_BottomLeft, new Vector2(26f, 24f), new Vector2(852f, 303f), 0.5f);
-        Img("Plate", panel, Deco + "/02_Panel_Frames_And_Bars/frame_coop_teammates_empty.png",
-            Vector2.zero, Vector2.zero, new Vector2(852f, 303f));
+        // SVG: khung 425 x 150.6, cach le trai 51.3 / le duoi 53.1.
+        Vector2 size = new Vector2(425f, 150.6f);
+        RectTransform panel = Panel("BottomLeft", parent, A_BottomLeft, new Vector2(51.3f, 53.1f), size, 1f);
+        Shape("panel_coop", panel, size, 0, 4, Line, 0.6f, 0);
 
-        Txt("Title", panel, 22f, -12f, 520f, 34f, "ĐỒNG ĐỘI CO-OP (PHÒNG 1/4)", 22f, TextMain,
+        Txt("Title", panel, 12f, -10f, 360f, 18f, "ĐỒNG ĐỘI CO-OP (PHÒNG 1/4)", 12f, TextHead,
             TextAlignmentOptions.Left, FontStyles.Bold);
 
-        RectTransform row = Node("TeammateRow", panel, 22f, -62f, 808f, 74f);
+        RectTransform row = Node("TeammateRow", panel, 11.7f, -35.3f, 401.6f, 33.6f);
+        Image rowBg = row.gameObject.AddComponent<Image>();
+        rowBg.sprite = UISprites.Rounded(4);
+        rowBg.type = Image.Type.Sliced;
+        rowBg.color = new Color32(0x1B, 0x1E, 0x26, 0xFF);
+        rowBg.raycastTarget = false;
 
-        TMP_Text mateName = Txt("MateName", row, 8f, -18f, 300f, 32f, "Chưa có đồng đội", 18f, TextMuted,
+        Txt("MateName", row, 10.3f, -8f, 150f, 18f, "Chưa có đồng đội", 11f, TextHead,
             TextAlignmentOptions.Left, FontStyles.Bold);
-        mateName.name = "MateName";
 
-        Img("MateTrack", row, Deco + "/02_Panel_Frames_And_Bars/bar_track_health_empty.png",
-            Vector2.zero, Vector2.zero, new Vector2(330f, 26f), offset: new Vector2(318f, -20f));
-        Image fill = Img("MateFill", row, Deco + "/02_Panel_Frames_And_Bars/bar_fill_teammate_health_green.png",
-            Vector2.zero, Vector2.zero, new Vector2(330f, 26f), offset: new Vector2(318f, -20f));
-        MakeFilled(fill);
+        Bar("MateTrack", row, 127.2f, -11.2f, 188f, 11.2f, new Color32(0x20, 0x24, 0x2B, 0xFF));
+        Image fill = Bar("MateFill", row, 127.2f, -11.2f, 188f, 11.2f, Green, true);
         fill.fillAmount = 0f;
 
-        Txt("MateHp", row, 660f, -16f, 150f, 30f, "0 / 0", 16f, TextMain, TextAlignmentOptions.Right, FontStyles.Bold);
+        Txt("MateHp", row, 300f, -8f, 94f, 18f, "0 / 0", 10f, TextHead, TextAlignmentOptions.Right);
 
-        Txt("EmptySlots", panel, 120f, -196f, 610f, 40f, "[ Slot 2 - 4 Trống ]", 20f, TextDim,
-            TextAlignmentOptions.Center, FontStyles.Bold);
+        RectTransform row2 = Node("TeammateRow2", panel, 12f, -78.8f, 401f, 33f);
+        Image rowBg2 = row2.gameObject.AddComponent<Image>();
+        rowBg2.sprite = PanelAsset("panel_coop_row2", 401, 33, 0, 3, new Color32(0x17, 0x19, 0x20, 0xFF),
+            new Color32(0x17, 0x19, 0x20, 0xFF), new Color32(0x28, 0x2C, 0x35, 0xFF), 0.6f, 0);
+        rowBg2.raycastTarget = false;
+
+        // SVG can giua dong trong "[ Slot 3 & 4 Trống ]" tren ca hang.
+        Txt("Slot2", row2, 0f, -8f, 401f, 18f, "[ Slot 3 & 4 Trống ]", 11f, TextDim,
+            TextAlignmentOptions.Center);
     }
 
     private static GameObject BuildResult(Transform parent, out TMP_Text title, out TMP_Text detail,
@@ -532,6 +648,80 @@ public static class HudBuilder
         return rt;
     }
 
+    /// <summary>
+    /// Nen panel theo bo cuc SVG: gradient doc + vien mo + co the cat cheo mot goc.
+    /// </summary>
+    private static Image Shape(string assetName, RectTransform panel, Vector2 size, int cut, int radius,
+        Color border, float borderWidth, int cutCorner)
+    {
+        return Shape(assetName, panel, size, cut, radius, PanelTop, PanelBottom, border, borderWidth, cutCorner);
+    }
+
+    /// <summary>Nhu tren nhung cho phep doi mau nen (vd. panel boss dung mot mau phang).</summary>
+    private static Image Shape(string assetName, RectTransform panel, Vector2 size, int cut, int radius,
+        Color top, Color bottom, Color border, float borderWidth, int cutCorner)
+    {
+        RectTransform rt = Node("Backing", panel, 0f, 0f, size.x, size.y);
+        Image img = rt.gameObject.AddComponent<Image>();
+        img.sprite = PanelAsset(assetName, Mathf.RoundToInt(size.x), Mathf.RoundToInt(size.y), cut, radius,
+            top, bottom, border, borderWidth, cutCorner);
+        img.raycastTarget = false;
+        return img;
+    }
+
+    /// <summary>
+    /// Sinh nen panel thanh file .png trong Assets/Art/UI/Generated/Panels roi import kieu Sprite.
+    ///
+    /// Vi sao phai lam the: sprite tao bang code luc dung prefab la object tam, KHONG luu duoc
+    /// vao .prefab — khi mo lai game tham chieu thanh null va Image ve ra o vuong trang.
+    /// Chi sprite la asset that moi nam trong prefab.
+    /// </summary>
+    private static Sprite PanelAsset(string assetName, int width, int height, int cut, int radius,
+        Color top, Color bottom, Color border, float borderWidth, int cutCorner)
+    {
+        const string dir = GeneratedDir + "/Panels";
+        if (!System.IO.Directory.Exists(dir)) System.IO.Directory.CreateDirectory(dir);
+
+        string path = dir + "/" + assetName + ".png";
+
+        Sprite runtime = UISprites.PanelShape(width, height, cut, radius, top, bottom, border, borderWidth, cutCorner);
+        if (runtime != null && runtime.texture != null)
+        {
+            System.IO.File.WriteAllBytes(path, runtime.texture.EncodeToPNG());
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+
+            TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer != null)
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                importer.spritePixelsPerUnit = 100f;
+                importer.mipmapEnabled = false;
+                importer.alphaIsTransparency = true;
+                importer.wrapMode = TextureWrapMode.Clamp;
+                importer.filterMode = FilterMode.Bilinear;
+                importer.SaveAndReimport();
+            }
+        }
+
+        Sprite asset = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        if (asset == null) Debug.LogWarning("[HUD-BUILD] khong tao duoc sprite panel: " + path);
+        return asset;
+    }
+
+    /// <summary>Thanh mau phang: sprite vuong de Image.Type.Filled cat dung phan tram.</summary>
+    private static Image Bar(string name, Transform parent, float x, float y, float w, float h, Color color, bool filled = false)
+    {
+        RectTransform rt = Node(name, parent, x, y, w, h);
+        Image img = rt.gameObject.AddComponent<Image>();
+        img.sprite = UISprites.Square();
+        img.type = Image.Type.Simple;
+        img.color = color;
+        img.raycastTarget = false;
+        if (filled) MakeFilled(img);
+        return img;
+    }
+
     /// <summary>Node con trong panel: x,y tính từ góc trên-trái của panel (y âm = đi xuống).</summary>
     private static RectTransform Node(string name, Transform parent, float x, float y, float w, float h,
         Vector2? anchorOverride = null, float scale = 1f)
@@ -598,7 +788,7 @@ public static class HudBuilder
         text.enableWordWrapping = false;
         text.overflowMode = TextOverflowModes.Overflow;
 
-        if (TMP_Settings.defaultFontAsset != null) text.font = TMP_Settings.defaultFontAsset;
+        text.font = HudFont;
         return text;
     }
 

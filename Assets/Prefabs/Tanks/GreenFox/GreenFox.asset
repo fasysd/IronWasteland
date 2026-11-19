@@ -43,23 +43,15 @@ MonoBehaviour:
     OptionSkill1: 0
     OptionSkill2: 0
   skillIcons:
-  - {fileID: 21300000, guid: 2054956dadb828944a8847ebe07b4096, type: 3}
-  - {fileID: 21300000, guid: 130c77c37fe92d94c8798dba50ee6178, type: 3}
-  - {fileID: 21300000, guid: 94eff26d310eb044d9deb32c36a7739e, type: 3}
-  - {fileID: 21300000, guid: c0eeefb35ebf18a4cb0fc6e7731b3283, type: 3}
-  skillIconsCooldown:
-  - {fileID: 21300000, guid: d924b809e72f31d478f7955d8aefec31, type: 3}
-  - {fileID: 21300000, guid: bbb122b1e4d7e73499300271e95c923c, type: 3}
-  - {fileID: 21300000, guid: 084e058a4a2b63c4ab362854ff570297, type: 3}
-  - {fileID: 21300000, guid: 1e3bb7b8e2a177c429fcb67d0cf81e39, type: 3}
-  skillIconsIncludeLabels: 1
+  - {fileID: 21300000, guid: 47e0b7b91afd9b14fa45d093f0054264, type: 3}
+  - {fileID: 21300000, guid: 6158f237d92c4bf4cb3ccaa4020b23ab, type: 3}
+  - {fileID: 21300000, guid: f4dd4013234d5e849aa90be825646cc7, type: 3}
+  - {fileID: 21300000, guid: 664e35bd811355b48aad5f8da90c2e98, type: 3}
+  skillIconsCooldown: []
+  skillIconsIncludeLabels: 0
   skillNames:
   - FOX FANG
   - FOX MARK
   - FOX FIRE
   - FOX STORM
-  skillGlyphs:
-  - {fileID: 21300000, guid: 524d031a1e8f2e241b08a6d53bb63a9c, type: 3}
-  - {fileID: 21300000, guid: 7c020f4c1c2626b498a515ca9dc30c60, type: 3}
-  - {fileID: 21300000, guid: 41d70e80a20c04a4697fbb884d6dc7d8, type: 3}
-  - {fileID: 21300000, guid: 89525c39b94e6684e8912d9ff43c6ca0, type: 3}
+  skillGlyphs: []
