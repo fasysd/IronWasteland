@@ -300,20 +300,125 @@ namespace IronWasteland.Net
                 LobbyCode = lobby.LobbyCode;
                 LobbyId = lobby.Id;
                 IsLobbyHost = false;
-
-                if (lobby.Data != null && lobby.Data.TryGetValue(RelayDataKey, out DataObject data) && data != null)
-                {
-                    return data.Value;
-                }
-
-                LastError = "Phòng không chứa mã Relay.";
-                return null;
+                return ReadRelayCode(lobby);
             }
             catch (Exception exception)
             {
                 LastError = DescribeJoinError(exception);
                 return null;
             }
+        }
+
+        /// <summary>Thông tin tóm tắt một phòng công khai để hiển thị trong danh sách chọn phòng.</summary>
+        public sealed class LobbyRoom
+        {
+            /// <summary>Id lobby (dùng để vào phòng, khác mã phòng ngắn).</summary>
+            public string Id { get; set; }
+
+            /// <summary>Tên phòng do host đặt.</summary>
+            public string Name { get; set; }
+
+            /// <summary>Mã phòng ngắn để đọc cho bạn bè.</summary>
+            public string LobbyCode { get; set; }
+
+            /// <summary>Số người đang ở trong phòng.</summary>
+            public int Players { get; set; }
+
+            /// <summary>Số người tối đa của phòng.</summary>
+            public int MaxPlayers { get; set; }
+
+            /// <summary>Số chỗ còn trống.</summary>
+            public int AvailableSlots { get; set; }
+        }
+
+        /// <summary>
+        /// Truy vấn các phòng công khai còn chỗ (bỏ phòng riêng, phòng đã đủ người và phòng của chính mình).
+        /// Trả null nếu lỗi; đọc <see cref="LastError"/> để hiển thị lý do.
+        /// </summary>
+        public static async Task<List<LobbyRoom>> QueryEligibleRoomsAsync()
+        {
+            if (!await EnsureServicesAsync()) return null;
+
+            try
+            {
+                QueryResponse response = await LobbyService.Instance.QueryLobbiesAsync(new QueryLobbiesOptions { Count = 30 });
+                List<LobbyRoom> rooms = new List<LobbyRoom>();
+                if (response == null || response.Results == null) return rooms;
+
+                for (int i = 0; i < response.Results.Count; i++)
+                {
+                    Lobby lobby = response.Results[i];
+                    if (lobby == null) continue;
+                    if (lobby.IsPrivate) continue;
+                    if (lobby.AvailableSlots <= 0) continue;
+
+                    // Phòng của chính mình (đang là host hoặc đã ở trong) không hiện để khỏi tự vào lại.
+                    if (!string.IsNullOrEmpty(LobbyId) && lobby.Id == LobbyId) continue;
+
+                    rooms.Add(new LobbyRoom
+                    {
+                        Id = lobby.Id,
+                        Name = string.IsNullOrWhiteSpace(lobby.Name) ? "Phòng không tên" : lobby.Name,
+                        LobbyCode = lobby.LobbyCode,
+                        Players = lobby.Players != null ? lobby.Players.Count : 0,
+                        MaxPlayers = lobby.MaxPlayers,
+                        AvailableSlots = lobby.AvailableSlots
+                    });
+                }
+
+                // Phòng đông người xếp trước để dễ chọn phòng đang có người chơi.
+                rooms.Sort((left, right) => right.Players.CompareTo(left.Players));
+                return rooms;
+            }
+            catch (Exception exception)
+            {
+                LastError = "Không lấy được danh sách phòng: " + exception.Message;
+                return null;
+            }
+        }
+
+        /// <summary>Vào phòng theo Id lobby (chọn từ danh sách) rồi trả mã Relay để kết nối transport.</summary>
+        public static async Task<string> JoinLobbyByIdAndGetRelayCodeAsync(string lobbyId)
+        {
+            if (!await EnsureServicesAsync()) return null;
+
+            if (string.IsNullOrWhiteSpace(lobbyId))
+            {
+                LastError = "Phòng trống.";
+                return null;
+            }
+
+            try
+            {
+                Lobby lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId.Trim());
+                if (lobby == null)
+                {
+                    LastError = "Không vào được phòng.";
+                    return null;
+                }
+
+                LobbyCode = lobby.LobbyCode;
+                LobbyId = lobby.Id;
+                IsLobbyHost = false;
+                return ReadRelayCode(lobby);
+            }
+            catch (Exception exception)
+            {
+                LastError = DescribeJoinError(exception);
+                return null;
+            }
+        }
+
+        /// <summary>Đọc mã Relay mà host đã gắn vào dữ liệu lobby (chỉ thành viên phòng đọc được).</summary>
+        private static string ReadRelayCode(Lobby lobby)
+        {
+            if (lobby.Data != null && lobby.Data.TryGetValue(RelayDataKey, out DataObject data) && data != null)
+            {
+                return data.Value;
+            }
+
+            LastError = "Phòng không chứa mã Relay.";
+            return null;
         }
 
         /// <summary>Chuyển lỗi join lobby thành câu tiếng Việt dễ hiểu cho người chơi.</summary>

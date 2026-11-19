@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using IronWasteland.Stages;
 using IronWasteland.Tanks;
 using Unity.Netcode;
@@ -24,6 +25,25 @@ namespace IronWasteland.Net
         private string m_RelayJoinCodeInput = string.Empty;
         private string m_LobbyCodeInput = string.Empty;
         private string m_ProfileInput = "client1";
+
+        /// <summary>Mã người chơi nhập ở màn danh sách phòng (mã phòng hoặc mã Relay).</summary>
+        private string m_JoinCodeInput = string.Empty;
+
+        /// <summary>Danh sách phòng công khai còn chỗ đang hiển thị.</summary>
+        private readonly List<NetRelayService.LobbyRoom> m_Rooms = new List<NetRelayService.LobbyRoom>();
+
+        /// <summary>Màn đang hiển thị trong bảng điều khiển khi chưa vào phòng.</summary>
+        private enum MenuScreen { Connect, Rooms }
+
+        private MenuScreen m_MenuScreen = MenuScreen.Connect;
+
+        /// <summary>Đang tải danh sách phòng từ Lobby (chặn bấm lặp).</summary>
+        private bool m_RoomsBusy;
+
+        /// <summary>Thời điểm truy vấn phòng gần nhất — Lobby giới hạn khoảng 1 truy vấn/giây.</summary>
+        private float m_LastRoomQueryTime;
+
+        private Vector2 m_RoomScroll;
 
         /// <summary>Cách đã dùng để mở phòng gần nhất — cần cho nút "Tạo phòng mới".</summary>
         private enum HostMode { None, Single, Relay, Ip }
@@ -65,7 +85,8 @@ namespace IronWasteland.Net
 
             if (!bootstrap.IsRunning)
             {
-                DrawConnectionMenu();
+                if (m_MenuScreen == MenuScreen.Rooms) DrawRoomBrowser();
+                else DrawConnectionMenu();
             }
             else
             {
@@ -90,6 +111,13 @@ namespace IronWasteland.Net
 
             bool previousEnabled = GUI.enabled;
             GUI.enabled = !busy;
+
+            GUILayout.Label("--- Choi multiplayer ---");
+            if (GUILayout.Button("Tim phong va vao phong (Relay)"))
+            {
+                m_MenuScreen = MenuScreen.Rooms;
+                RefreshRooms();
+            }
 
             GUILayout.Label("--- Test ky nang (bien the Optional) ---");
             if (GUILayout.Button("Optional 1: bien the " + (bootstrap.LocalOptionSkill1 + 1) + "/3 (bam de doi)"))
@@ -448,6 +476,131 @@ namespace IronWasteland.Net
                 string relayCode = await NetRelayService.JoinLobbyAndGetRelayCodeAsync(lobbyCode);
                 if (string.IsNullOrEmpty(relayCode)) return;
 
+                bootstrap.StartClientWithRelay(relayCode);
+            }
+            finally
+            {
+                m_SessionRequestBusy = false;
+            }
+        }
+
+        /// <summary>
+        /// Màn chọn phòng: liệt kê phòng công khai còn chỗ, vào phòng bằng một nút,
+        /// tạo phòng mới, hoặc nhập mã phòng / mã Relay.
+        /// </summary>
+        private void DrawRoomBrowser()
+        {
+            GUILayout.Label("Phong dang mo (Relay)");
+
+            if (bootstrap.IsStartingSession)
+            {
+                GUILayout.Label(string.IsNullOrEmpty(bootstrap.SessionStatus) ? "Dang vao phong…" : bootstrap.SessionStatus);
+            }
+            else if (m_RoomsBusy)
+            {
+                GUILayout.Label("Dang tai danh sach phong…");
+            }
+
+            if (!string.IsNullOrEmpty(NetRelayService.LastError)) GUILayout.Label("Loi: " + NetRelayService.LastError);
+
+            bool busy = m_RoomsBusy || m_SessionRequestBusy || bootstrap.IsStartingSession;
+            bool previousEnabled = GUI.enabled;
+            GUI.enabled = !busy;
+
+            if (GUILayout.Button("Tai lai danh sach phong")) RefreshRooms();
+
+            if (m_Rooms.Count == 0)
+            {
+                GUILayout.Label("Chua co phong nao phu hop. Hay tao phong moi hoac bam tai lai.");
+            }
+            else
+            {
+                m_RoomScroll = GUILayout.BeginScrollView(m_RoomScroll, GUILayout.Height(170f));
+                for (int i = 0; i < m_Rooms.Count; i++)
+                {
+                    NetRelayService.LobbyRoom room = m_Rooms[i];
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label($"{room.Name} — {room.Players}/{room.MaxPlayers} nguoi");
+                    if (GUILayout.Button("Vao", GUILayout.Width(64f))) JoinRoomById(room);
+                    GUILayout.EndHorizontal();
+                }
+                GUILayout.EndScrollView();
+            }
+
+            if (GUILayout.Button("Tao phong moi (Relay)"))
+            {
+                m_LastHostMode = HostMode.Relay;
+                PrepareOfflineTank();
+                bootstrap.StartHostWithRelay();
+            }
+
+            GUILayout.Label("--- Vao bang ma ---");
+            m_JoinCodeInput = GUILayout.TextField(m_JoinCodeInput ?? string.Empty);
+            if (GUILayout.Button("Vao phong (ma phong hoac ma Relay)")) JoinByCode(m_JoinCodeInput);
+
+            GUI.enabled = previousEnabled;
+
+            if (GUILayout.Button("Quay lai")) m_MenuScreen = MenuScreen.Connect;
+        }
+
+        /// <summary>Tải lại danh sách phòng còn chỗ; Lobby giới hạn khoảng 1 truy vấn/giây nên có chặn nhịp.</summary>
+        private async void RefreshRooms()
+        {
+            if (m_RoomsBusy) return;
+            if (Time.unscaledTime - m_LastRoomQueryTime < 1f) return;
+
+            m_RoomsBusy = true;
+            m_LastRoomQueryTime = Time.unscaledTime;
+            try
+            {
+                List<NetRelayService.LobbyRoom> rooms = await NetRelayService.QueryEligibleRoomsAsync();
+                if (rooms == null) return;
+
+                m_Rooms.Clear();
+                m_Rooms.AddRange(rooms);
+            }
+            finally
+            {
+                m_RoomsBusy = false;
+            }
+        }
+
+        /// <summary>Vào phòng đang chọn trong danh sách: join lobby lấy mã Relay rồi mới kết nối transport.</summary>
+        private async void JoinRoomById(NetRelayService.LobbyRoom room)
+        {
+            if (room == null || m_SessionRequestBusy) return;
+
+            m_SessionRequestBusy = true;
+            try
+            {
+                string relayCode = await NetRelayService.JoinLobbyByIdAndGetRelayCodeAsync(room.Id);
+                if (string.IsNullOrEmpty(relayCode)) return;
+
+                PrepareOfflineTank();
+                bootstrap.StartClientWithRelay(relayCode);
+            }
+            finally
+            {
+                m_SessionRequestBusy = false;
+            }
+        }
+
+        /// <summary>
+        /// Vào phòng bằng mã người chơi nhập: thử coi là mã phòng (Lobby) trước,
+        /// không thấy phòng thì coi là mã Relay và kết nối trực tiếp.
+        /// </summary>
+        private async void JoinByCode(string code)
+        {
+            if (m_SessionRequestBusy) return;
+            if (string.IsNullOrWhiteSpace(code)) return;
+
+            m_SessionRequestBusy = true;
+            try
+            {
+                string relayCode = await NetRelayService.JoinLobbyAndGetRelayCodeAsync(code);
+                if (string.IsNullOrEmpty(relayCode)) relayCode = code.Trim().ToUpperInvariant();
+
+                PrepareOfflineTank();
                 bootstrap.StartClientWithRelay(relayCode);
             }
             finally
