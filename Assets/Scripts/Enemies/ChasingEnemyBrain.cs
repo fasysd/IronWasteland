@@ -20,8 +20,23 @@ namespace IronWasteland.Enemies
         [Tooltip("Do nhay khi doi huong (cang lon cang quay nhanh).")]
         [SerializeField, Min(0.01f)] private float turnSharpness = 14f;
 
-        [Tooltip("Latinh huong di chuyen khi khong co muc tieu (bat/tat quay mat).")]
-        [SerializeField] private bool faceMoveDirection = true;
+        [Tooltip("He so chia toc do di chuyen (Stats.MoveSpeed / moveSpeedDivisor). Mac dinh 100 de quy doi sang unit/s.")]
+        [SerializeField, Min(1f)] private float moveSpeedDivisor = 100f;
+
+        [Header("Rotation")]
+        [Tooltip("Tu dong xoay theo huong di chuyen.")]
+        [SerializeField] private bool rotateTowardsMovement = true;
+
+        [Tooltip("Goc bu do lech ban dau cua Sprite (do).")]
+        [SerializeField] private float rotationOffset = 0f;
+
+        [Tooltip("Toc do xoay (do/giay). Gia tri <= 0 xoay tuc thoi.")]
+        [SerializeField] private float rotationSpeed = 720f;
+
+        [SerializeField] private Transform rotationPivot;
+
+        [Tooltip("Latinh huong di chuyen khi khong co muc tieu (bat/tat quay mat flipX).")]
+        [SerializeField] private bool faceMoveDirection = false;
 
         private Rigidbody2D m_Body;
         private SpriteRenderer m_Sprite;
@@ -87,7 +102,8 @@ namespace IronWasteland.Enemies
             if (distance <= stopDistance || distance <= 0.0001f) return Vector2.zero;
 
             Vector2 toTarget = (Vector2)target.transform.position - (Vector2)transform.position;
-            return toTarget / distance * Mathf.Max(0f, Stats.MoveSpeed);
+            float divisor = moveSpeedDivisor > 0f ? moveSpeedDivisor : 100f;
+            return toTarget / distance * Mathf.Max(0f, Stats.MoveSpeed / divisor);
         }
 
         protected override void OnBrainTick(float deltaTime)
@@ -109,12 +125,64 @@ namespace IronWasteland.Enemies
             float t = 1f - Mathf.Exp(-turnSharpness * deltaTime);
             m_DesiredVelocity = Vector2.Lerp(m_DesiredVelocity, desired, t);
 
+            if (rotateTowardsMovement && m_DesiredVelocity.sqrMagnitude > 0.001f)
+            {
+                RotateTowardsDirection(m_DesiredVelocity);
+            }
+
             if (faceMoveDirection && Mathf.Abs(m_DesiredVelocity.x) > 0.01f)
             {
                 if (m_Sprite == null && Model != null) m_Sprite = Model.SpriteRenderer;
                 if (m_Sprite != null) m_Sprite.flipX = m_DesiredVelocity.x < 0f;
             }
         }
+
+        #region Rotation
+
+        public void RotateTowardsDirection(Vector2 direction, bool instant = false)
+        {
+            Transform pivot = rotationPivot != null ? rotationPivot : (Model != null ? Model.transform : transform);
+            if (pivot == null) return;
+
+            if (direction.sqrMagnitude < 0.0001f)
+            {
+                RotateToZero(instant);
+                return;
+            }
+
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg + rotationOffset;
+            ApplyRotationAngle(pivot, angle, instant);
+        }
+
+        public void RotateTowardsTarget(Vector2 targetPosition, bool instant = false)
+        {
+            Vector2 dir = targetPosition - (Vector2)transform.position;
+            RotateTowardsDirection(dir, instant);
+        }
+
+        public void RotateToZero(bool instant = false)
+        {
+            Transform pivot = rotationPivot != null ? rotationPivot : (Model != null ? Model.transform : transform);
+            if (pivot == null) return;
+
+            ApplyRotationAngle(pivot, 0f, instant);
+        }
+
+        private void ApplyRotationAngle(Transform pivot, float targetAngle, bool instant)
+        {
+            if (instant || rotationSpeed <= 0f)
+            {
+                pivot.rotation = Quaternion.Euler(0f, 0f, targetAngle);
+            }
+            else
+            {
+                float currentAngle = pivot.eulerAngles.z;
+                float newAngle = Mathf.MoveTowardsAngle(currentAngle, targetAngle, rotationSpeed * Time.deltaTime);
+                pivot.rotation = Quaternion.Euler(0f, 0f, newAngle);
+            }
+        }
+
+        #endregion
 
         private void FixedUpdate()
         {

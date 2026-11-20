@@ -1,0 +1,95 @@
+================================================================================
+=== COMPONENT 2: DEADLAND PHANTOM (BONG MA TU DIA) GAMEPLAY VERIFICATION ===
+================================================================================
+[PASS] Test 1.1: Solo MaxHealth is 2000 HP (GDD Spec)
+[PASS] Test 1.2: Solo CurrentHealth is 2000 HP
+[PASS] Test 1.3: Attack is 120 (GDD Spec)
+[PASS] Test 1.4: Defense is 45 (GDD Spec)
+[PASS] Test 1.5: MoveSpeed is 90 (GDD Spec)
+[PASS] Test 1.6: Boss is recognized as Elite
+[PASS] Test 1.7: Stun immune
+[PASS] Test 1.8: Root immune
+[PASS] Test 1.9: Not immune to Slow
+[PASS] Test 1.10: Co-op MaxHealth is 4000 HP (2x)
+[PASS] Test 1.11: Co-op CurrentHealth is 4000 HP
+[PASS] Test 2.1: SensorArea correctly detects and returns nearest Tank (Tank_Near)
+[PASS] Test 2.2: Boss AI tracks nearest target
+[PASS] Test 2.3: SensorArea correctly excludes designated trapped Tank
+[PASS] Test 3.1: Boss remains active at 9s
+[PASS] Test 3.2: Boss remains active past 10s (no stealth trigger)
+[PASS] Test 3.3: Boss remains active past 16s without stealth
+[PASS] Test 3.6: Boss is dead after lethal damage
+[PASS] Test 3.7: Passive rift does not spawn when Boss is dead
+[PASS] Test 4.1: Exactly 5 rifts active simultaneously
+[PASS] Test 4.2: First rift r1 is at the head of queue
+[PASS] Test 4.3: Active rifts count remains capped at 5
+[PASS] Test 4.4: Oldest rift r1 removed, r2 is now head of FIFO queue
+[PASS] Test 5.1: Tank within 2m takes 150% ATK (180 damage)
+[PASS] Test 5.2: Tank between 2-4m takes 100% ATK (120 damage)
+[PASS] Test 5.3: Tank cannot be hit multiple times by same slash
+[PASS] Test 6.1: TankSlowDebuff reduces MoveSpeed by 20%
+[PASS] Test 6.2: Soul projectile deals 50% ATK (60 damage)
+[PASS] Test 6.3: Soul projectile tracks and inflicts 50% ATK damage
+[PASS] Test 7.1: Rift lifetime is 14s (GDD Spec)
+[PASS] Test 7.2: Rift minion spawn interval is 8s (GDD Spec)
+[PASS] Test 7.3: SpatialRift successfully spawns Chapter 1 minion
+[PASS] Test 7.4: Rift marked as triggered
+[PASS] Test 7.5: Tank absorbs 100% Boss ATK (120 damage)
+[PASS] Test 7.6: Tank is teleported to Boss vicinity (< 2m)
+[PASS] Test 8.1: State transitions to Charging at <= 50% HP
+[PASS] Test 8.2: Charging timer is 2s
+[PASS] Test 8.3: DarkZoneSubArena initialized at (100, 100)
+[PASS] Test 8.4: Transitions to Active after 2s Charging
+[PASS] Test 8.4b: Skill timers immediately ready on Active
+[PASS] Test 8.5: Attack buffed +25% (120 -> 150)
+[PASS] Test 8.6: Defense buffed +200% (45 -> 135)
+[PASS] Test 8.7: Cardinal Shield is activated
+[PASS] Test 8.8: Cardinal Shield = 40% Max HP (800 HP Solo)
+[PASS] Test 8.9: Current Cardinal Shield initialized to 800 HP
+[PASS] Test 8.10: Nearest Tank is trapped in DarkZone
+[PASS] Test 8.11: DeadlandPhantomClone spawned in DarkZone
+[PASS] Test 8.12: Trapped Tank positioned inside DarkZone pocket
+[PASS] Test 8.13: In Solo mode during Burst, Boss does not target trapped Tank
+[PASS] Test 9.1: Initial open direction is East (0°)
+[PASS] Test 9.2: Shot with Attacker at closed West angle is blocked & heals +5% Max Shield (+40 HP)
+[PASS] Test 9.3: Shot with Attacker at open East angle damages Cardinal Shield
+[PASS] Test 9.4: After 3s rotates to South (270°)
+[PASS] Test 9.5: After next 3s rotates to West (180°)
+[PASS] Test 9.6: After next 3s rotates to North (90°)
+[PASS] Test 9.7: DarkZone Clone exists and is active
+[PASS] Test 9.8: Clone has exact same visual appearance (EnemyModel, SpriteSkin, Animator, SpriteRenderer)
+[PASS] Test 9.8b: Clone has BongMaTuDiaVFXController attached
+[PASS] Test 9.9: Hit on Clone at closed South angle deflects and heals shared shield +5% Max Shield (+40 HP)
+[PASS] Test 9.10: Hit on Clone at open North angle damages shared Cardinal Shield
+[PASS] Test 9.11: Clone HP is immortal (does not decrease)
+[PASS] Test 9.12: Clone CastSoulSummon applies slow debuff to trapped Tank
+[PASS] Test 10.1: Breaking shield transitions to RewardPhase
+[PASS] Test 10.2: Static OnEnergyBurstSuccess event fired
+[PASS] Test 10.3: Boss loses 20% Max HP (-400 HP)
+[PASS] Test 10.4: Boss DEF reduced by 90% (100 -> 10)
+[PASS] Test 10.5: DarkZone Sub-Arena cleaned up and released Tank
+[PASS] Test 10.5b: Skill timers immediately ready on RewardPhase
+[PASS] Test 10.6: Timeout transitions to PenaltyPhase
+[PASS] Test 10.7: Map-wide 200% ATK explosion damages all Tanks
+[PASS] Test 10.7b: Boss immediately ready to use skills on PenaltyPhase
+[PASS] Test 10.8: Tank correctly trapped before death test
+[PASS] Test 10.9: Trapped Tank death immediately transitions to PenaltyPhase
+[PASS] Test 10.9b: Skill timers immediately reset to ready on PenaltyPhase
+[PASS] Test 11.1: MoveSpeed divisor is 100 (MoveSpeed / 100 unit/s)
+[PASS] Test 11.2: Moving towards target at (0, 5) rotates boss towards 90 deg
+[PASS] Test 11.3: Rotating towards (-3, 0) faces 180 deg
+[PASS] Test 11.4: RotateToZero resets rotation to 0 deg
+[PASS] Test 11.5: SoulSummonPulseArea applies slow debuff to Tank
+[PASS] Test 11.6: DeadlandSlashHitbox auto-syncs radius from CircleCollider2D
+[PASS] Test 11.7: SpatialRift auto-syncs radius from CircleCollider2D
+[PASS] Test 11.8: EnemySensorArea radius matches CircleCollider2D
+[PASS] Test 12.1: VFX_SpatialRift prefab has no Collider2D or CircleCollider2D
+[PASS] Test 12.2: SpatialRift does not automatically force CircleCollider2D
+[PASS] Test 12.3: DeadlandSlashHitbox does not automatically force CircleCollider2D
+[PASS] Test 12.4: EnemySensorArea does not automatically force Collider2D
+[PASS] Test 12.5: SoulSummonPulseArea does not automatically force CircleCollider2D
+[PASS] Test 12.6: CreateSpatialRift with unassigned prefab returns null and logs warning (no fallback injection)
+[PASS] Test 12.7: CastDeadlandSlash handles unassigned hitbox prefab gracefully with warning
+================================================================================
+SUMMARY: 89/89 tests passed (100.0%).
+================================================================================

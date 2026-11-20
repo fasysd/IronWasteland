@@ -55,6 +55,7 @@ namespace IronWasteland.Enemies
         public event Action<StatusEffect> OnEffectRemovedEvent;
         public event Action OnDeathEvent;
         public static event Action<EnemyBrain> OnAnyEnemyDied;
+        public static void TriggerAnyEnemyDied(EnemyBrain enemy) => OnAnyEnemyDied?.Invoke(enemy);
         #endregion
 
         #region Properties
