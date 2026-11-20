@@ -163,6 +163,32 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             return nearest;
         }
 
+        /// <summary>
+        /// Tìm Tank xa vị trí chỉ định nhất trong vùng cảm biến (hỗ trợ loại trừ Tank bị nhốt trong Sub-Arena).
+        /// Phục vụ chiêu Hỏa Tốc (HoaToc) và phân bổ Tế Đàn Độc theo đặc tả Component 4.
+        /// </summary>
+        public TankBrain GetFurthestTarget(Vector2 fromPosition, TankBrain excludeTank = null)
+        {
+            m_DetectedTanks.RemoveWhere(t => t == null || !t.IsAlive);
+
+            TankBrain furthest = null;
+            float maxSqrDistance = -1f;
+
+            foreach (var tank in m_DetectedTanks)
+            {
+                if (tank == null || !tank.IsAlive || tank == excludeTank) continue;
+
+                float sqrDist = ((Vector2)tank.transform.position - fromPosition).sqrMagnitude;
+                if (sqrDist > maxSqrDistance)
+                {
+                    maxSqrDistance = sqrDist;
+                    furthest = tank;
+                }
+            }
+
+            return furthest;
+        }
+
         private static TankBrain ResolveTank(Collider2D col)
         {
             if (col == null) return null;
