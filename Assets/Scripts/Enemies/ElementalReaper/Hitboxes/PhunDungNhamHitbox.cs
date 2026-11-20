@@ -41,6 +41,18 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
 
         private void Awake()
         {
+            UpdateCollider();
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            UpdateCollider();
+        }
+#endif
+
+        public void UpdateCollider()
+        {
             var box = GetComponent<BoxCollider2D>();
             if (box != null)
             {
@@ -56,6 +68,7 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
             m_BossAttack = bossAttack;
             m_Initialized = true;
             m_Age = 0f;
+            UpdateCollider();
         }
 
         private void Update()

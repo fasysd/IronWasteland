@@ -597,7 +597,9 @@ namespace IronWasteland.Tests
 
                     var trailSprite = trailGo.transform.Find("TrailSprite");
                     Assert(trailSprite != null, "TrailSprite missing");
-                    Assert(Mathf.Approximately(trailSprite.localScale.x, 16f), $"TrailSprite scale.x expected 16m, got {trailSprite.localScale.x}");
+                    var sr = trailSprite.GetComponent<SpriteRenderer>();
+                    float renderedLength = trailSprite.localScale.x * (sr != null && sr.sprite != null ? sr.sprite.bounds.size.x : 1f);
+                    Assert(Mathf.Abs(renderedLength - 16f) < 0.05f, $"TrailSprite rendered length expected 16m, got {renderedLength}");
 
                     var groundFlames = trailGo.transform.Find("GroundFlames");
                     Assert(groundFlames != null, "GroundFlames missing");

@@ -100,12 +100,60 @@ namespace IronWasteland.Enemies.ElementalReaper
         {
             base.Awake();
             m_Rigidbody = GetComponent<Rigidbody2D>();
-            m_Animator = GetComponentInChildren<Animator>();
+            if (rotationPivot == null)
+            {
+                rotationPivot = Model != null ? Model.transform : transform;
+            }
+            if (Model != null && Model.Animator != null)
+            {
+                m_Animator = Model.Animator;
+            }
+            else
+            {
+                m_Animator = GetComponentInChildren<Animator>();
+            }
 
             if (m_Rigidbody != null)
             {
                 m_Rigidbody.bodyType = RigidbodyType2D.Kinematic;
                 m_Rigidbody.gravityScale = 0f;
+            }
+
+            ApplyAltarTint();
+        }
+
+#if UNITY_EDITOR
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+            if (rotationPivot == null)
+            {
+                rotationPivot = Model != null ? Model.transform : transform;
+            }
+            ApplyAltarTint();
+        }
+#endif
+
+        public void ApplyAltarTint()
+        {
+            SpriteRenderer sr = Model != null ? Model.SpriteRenderer : GetComponentInChildren<SpriteRenderer>();
+            if (sr != null)
+            {
+                Color tintColor;
+                switch (element)
+                {
+                    case ElementalType.Water:
+                        tintColor = new Color(0.25f, 0.75f, 1.0f, 1f); // Lam Thủy
+                        break;
+                    case ElementalType.Poison:
+                        tintColor = new Color(0.3f, 1.0f, 0.35f, 1f); // Lục Độc
+                        break;
+                    case ElementalType.Fire:
+                    default:
+                        tintColor = new Color(1.0f, 0.4f, 0.2f, 1f); // Đỏ Cam Hỏa
+                        break;
+                }
+                sr.color = tintColor;
             }
         }
 
@@ -116,6 +164,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             element = cloneElement;
 
             Initialize(cloneStats);
+            ApplyAltarTint();
 
             // Cấu hình hồi chiêu chuẩn theo hệ
             switch (element)
@@ -267,12 +316,16 @@ namespace IronWasteland.Enemies.ElementalReaper
             m_Skill1Timer = skill1Cooldown;
             if (m_TargetTank == null) return;
 
-            RotateTowardsTarget(m_TargetTank.transform.position, instant: true);
+            Vector2 targetPos = m_TargetTank.transform.position;
+            Vector2 dir = (targetPos - (Vector2)transform.position).normalized;
+            RotateTowardsTarget(targetPos, instant: true);
             if (m_Animator != null) m_Animator.SetTrigger("DocQuat");
 
             if (docQuatPrefab != null)
             {
-                GameObject go = Instantiate(docQuatPrefab, transform.position, transform.rotation);
+                float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+                Quaternion rot = Quaternion.Euler(0f, 0f, angle);
+                GameObject go = Instantiate(docQuatPrefab, transform.position, rot);
                 var hitbox = go.GetComponent<DocQuatHitbox>();
                 if (hitbox != null)
                 {

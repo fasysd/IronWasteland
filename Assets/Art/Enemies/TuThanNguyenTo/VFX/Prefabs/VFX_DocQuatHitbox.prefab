@@ -27,7 +27,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.7578125, y: 3.515625, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1445791933049095371}
@@ -5011,23 +5011,19 @@ PolygonCollider2D:
   m_Points:
     m_Paths:
     - - {x: 0, y: 0}
-      - {x: -0.00000017484555, y: -4}
-      - {x: 0.78036094, y: -3.9231412}
-      - {x: 1.5307337, y: -3.695518}
-      - {x: 2.2222807, y: -3.3258786}
-      - {x: 2.828427, y: -2.828427}
-      - {x: 3.3258784, y: -2.222281}
-      - {x: 3.695518, y: -1.5307338}
-      - {x: 3.923141, y: -0.7803613}
-      - {x: 4, y: 0}
-      - {x: 3.923141, y: 0.7803613}
-      - {x: 3.695518, y: 1.5307338}
-      - {x: 3.3258784, y: 2.222281}
-      - {x: 2.828427, y: 2.828427}
-      - {x: 2.2222807, y: 3.3258786}
-      - {x: 1.5307337, y: 3.695518}
-      - {x: 0.78036094, y: 3.9231412}
-      - {x: -0.00000017484555, y: 4}
+      - {x: -0.0000003934025, y: -9}
+      - {x: 2.3293717, y: -8.693333}
+      - {x: 4.4999995, y: -7.794229}
+      - {x: 6.3639607, y: -6.3639607}
+      - {x: 7.794229, y: -4.4999995}
+      - {x: 8.693333, y: -2.3293717}
+      - {x: 9, y: 0}
+      - {x: 8.693333, y: 2.329371}
+      - {x: 7.7942286, y: 4.5000005}
+      - {x: 6.3639607, y: 6.3639607}
+      - {x: 4.5000005, y: 7.7942286}
+      - {x: 2.3293705, y: 8.693333}
+      - {x: -0.0000003934025, y: 9}
   m_UseDelaunayMesh: 1
 --- !u!114 &1597271108460631427
 MonoBehaviour:
@@ -5041,7 +5037,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9822adc39ce05c4db560c68b073b45d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.ElementalReaper.Hitboxes.DocQuatHitbox
-  radius: 4
+  radius: 9
   damageRatio: 1
   slowRatio: 0.2
   slowDuration: 5
@@ -5063,5 +5059,5 @@ MonoBehaviour:
   crescentSprite: {fileID: 7037858010264440888}
   poisonMistParticles: {fileID: 8928500942312570343}
   sparkParticles: {fileID: 0}
-  radius: 4
+  radius: 9
   duration: 0.45

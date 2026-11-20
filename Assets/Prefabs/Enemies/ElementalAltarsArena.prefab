@@ -44,11 +44,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82072eb8eb67aa44686b952a3cb3fb23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.ElementalReaper.ElementalAltarsSubArena
-  altarRadius: 8
+  altarRadius: 10
   tankSpawnOffset: {x: 0, y: -3}
   cloneSpawnOffset: {x: 0, y: 2}
   crystalSpawnInterval: 4
   crystalPrefab: {fileID: 6832236212718609908, guid: a23244007af46d44187fec7cb5cfbc74, type: 3}
+  mainArenaCrystalsPerBatch: 2
+  mainArenaSpawnRadius: 10
   clonePrefab: {fileID: 8614017352149162326, guid: 1df9ac231ba2be54595fa4f9ef438e97, type: 3}
   fireAltar:
     element: 2

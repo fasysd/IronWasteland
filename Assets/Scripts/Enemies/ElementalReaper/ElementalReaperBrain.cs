@@ -91,6 +91,19 @@ namespace IronWasteland.Enemies.ElementalReaper
         [Tooltip("Prefab Sub-Arena Tế Đàn Tam Nguyên (ElementalAltarsArena).")]
         [SerializeField] private GameObject elementalAltarsArenaPrefab;
 
+        [Header("Sub-Arena Altar Coordinates (Inspector Configurable)")]
+        [Tooltip("Tọa độ tâm tế đàn Hỏa")]
+        [SerializeField] private Vector2 fireAltarCenter = new Vector2(150f, 100f);
+
+        [Tooltip("Tọa độ tâm tế đàn Độc")]
+        [SerializeField] private Vector2 poisonAltarCenter = new Vector2(150f, 150f);
+
+        [Tooltip("Tọa độ tâm tế đàn Thủy")]
+        [SerializeField] private Vector2 waterAltarCenter = new Vector2(150f, 200f);
+
+        [Tooltip("Bán kính của mỗi tế đàn")]
+        [SerializeField, Min(4f)] private float altarRadius = 8.0f;
+
         // References
         private ElementalReaperVFXController m_VfxController;
         private EnemySensorArea m_SensorArea;
@@ -130,6 +143,10 @@ namespace IronWasteland.Enemies.ElementalReaper
         public float HoaTocTimer => m_HoaTocTimer;
 
         public GameObject ElementalAltarsArenaPrefab { get => elementalAltarsArenaPrefab; set => elementalAltarsArenaPrefab = value; }
+        public Vector2 FireAltarCenter { get => fireAltarCenter; set => fireAltarCenter = value; }
+        public Vector2 PoisonAltarCenter { get => poisonAltarCenter; set => poisonAltarCenter = value; }
+        public Vector2 WaterAltarCenter { get => waterAltarCenter; set => waterAltarCenter = value; }
+        public float AltarRadius { get => altarRadius; set => altarRadius = value; }
 
         #region Unity Lifecycle & Init
 
@@ -154,24 +171,12 @@ namespace IronWasteland.Enemies.ElementalReaper
             burstDuration = 30.0f;
             rewardPhaseDuration = 10.0f;
             penaltyPhaseDuration = 10.0f;
-
-            burstAttackMultiplier = 1.25f;
-            burstDefenseMultiplier = 2.0f;
-            burstMoveSpeedMultiplier = 1.2f;
         }
 
         public override void Initialize(EnemyStats overrideStats = null)
         {
-            // Chỉ số chuẩn GDD Boss 8: HP 9500, ATK 250, DEF 25, SPD 90
-            EnemyStats defaultStats = new EnemyStats
-            {
-                MaxHealth = 9500f,
-                Attack = 250f,
-                Defense = 25f,
-                MoveSpeed = 90f
-            };
 
-            base.Initialize(overrideStats ?? defaultStats);
+            base.Initialize(overrideStats);
 
             currentElement = ElementalType.Water;
             m_ElementalShiftTimer = elementalShiftInterval;
@@ -368,6 +373,9 @@ namespace IronWasteland.Enemies.ElementalReaper
             m_PhunDungNhamTimer -= deltaTime;
             m_HoaTocTimer -= deltaTime;
 
+            // Nếu đang trong thời gian giãn cách kỹ năng toàn cục (GlobalSkillInterval), không thi triển chiêu mới
+            if (!CanCastAnySkill) return;
+
             // Kiểm tra thi triển kỹ năng
             // Nếu mở khóa vĩnh viễn cả 6 chiêu (sau PenaltyPhase): thi triển bất kỳ chiêu nào hồi xong
             if (m_PermanentAllSkillsUnlocked)
@@ -405,6 +413,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         public void CastThuyTrieu()
         {
             m_ThuyTrieuTimer = thuyTrieuCooldown;
+            TriggerGlobalSkillCooldown();
             if (m_CurrentTarget == null) return;
 
             RotateTowardsTarget(m_CurrentTarget.transform.position, instant: true);
@@ -419,6 +428,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         public void CastThuyLieu()
         {
             m_ThuyLieuTimer = thuyLieuCooldown;
+            TriggerGlobalSkillCooldown();
 
             // Chiêu tự buff: Xoay về góc 0
             RotateToZero(instant: true);
@@ -438,19 +448,23 @@ namespace IronWasteland.Enemies.ElementalReaper
         public void CastDocQuat()
         {
             m_DocQuatTimer = docQuatCooldown;
+            TriggerGlobalSkillCooldown();
             if (m_CurrentTarget == null) return;
 
-            RotateTowardsTarget(m_CurrentTarget.transform.position, instant: true);
+            Vector3 targetPos = m_CurrentTarget.transform.position;
+            Vector3 dir = (targetPos - transform.position).normalized;
+            RotateTowardsTarget(targetPos, instant: true);
 
             if (m_VfxController != null)
             {
-                m_VfxController.PlayDocQuat();
+                m_VfxController.PlayDocQuat(dir);
             }
         }
 
         public void CastLoanChuyen()
         {
             m_LoanChuyenTimer = loanChuyenCooldown;
+            TriggerGlobalSkillCooldown();
 
             // Chọn Tank ngẫu nhiên
             TankBrain target = null;
@@ -475,6 +489,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         public void CastPhunDungNham()
         {
             m_PhunDungNhamTimer = phunDungNhamCooldown;
+            TriggerGlobalSkillCooldown();
             if (m_CurrentTarget == null) return;
 
             RotateTowardsTarget(m_CurrentTarget.transform.position, instant: true);
@@ -489,6 +504,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         public void CastHoaToc()
         {
             m_HoaTocTimer = hoaTocCooldown;
+            TriggerGlobalSkillCooldown();
 
             // Tìm Tank xa nhất
             TankBrain furthestTank = null;
@@ -765,6 +781,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             m_LoanChuyenTimer = 0f;
             m_PhunDungNhamTimer = 0f;
             m_HoaTocTimer = 0f;
+            ResetGlobalSkillCooldown();
         }
 
         private void EnsureSubArena()
@@ -784,6 +801,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             }
             if (m_SubArena != null)
             {
+                m_SubArena.ConfigureAltars(fireAltarCenter, poisonAltarCenter, waterAltarCenter, altarRadius);
                 m_SubArena.InitializeArena(this);
             }
         }
@@ -820,6 +838,8 @@ namespace IronWasteland.Enemies.ElementalReaper
 
             ApplyRotationAngle(pivot, 0f, instant);
         }
+
+        public Transform RotationPivot => GetRotationPivot();
 
         private Transform GetRotationPivot()
         {

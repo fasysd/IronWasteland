@@ -423,20 +423,21 @@ MonoBehaviour:
   model: {fileID: 1805891303938877128}
   displayName: TuThanNguyenTo
   stats:
-    Attack: 10
-    Defense: 0
-    MaxHealth: 100
-    MoveSpeed: 2
+    Attack: 250
+    Defense: 25
+    MaxHealth: 9500
+    MoveSpeed: 90
   currentHealth: 0
   burstHpThreshold: 0.5
   burstChargeTime: 2
   burstDuration: 30
-  rewardPhaseDuration: 8
-  penaltyPhaseDuration: 8
-  burstAttackMultiplier: 1
-  burstDefenseMultiplier: 1
-  burstMoveSpeedMultiplier: 1
-  stopDistance: 2
+  rewardPhaseDuration: 10
+  penaltyPhaseDuration: 10
+  burstAttackMultiplier: 1.25
+  burstDefenseMultiplier: 2
+  burstMoveSpeedMultiplier: 1.2
+  globalSkillInterval: 2
+  stopDistance: 5
   turnSharpness: 14
   moveSpeedDivisor: 100
   rotationOffset: 0
@@ -451,6 +452,10 @@ MonoBehaviour:
   phunDungNhamCooldown: 7
   hoaTocCooldown: 13
   elementalAltarsArenaPrefab: {fileID: 5751113630347497773, guid: f2834e6bed01ef542be9022adc0d3e51, type: 3}
+  fireAltarCenter: {x: 150, y: 100}
+  poisonAltarCenter: {x: 150, y: 150}
+  waterAltarCenter: {x: 150, y: 200}
+  altarRadius: 8
 --- !u!1 &3044959759880063341
 GameObject:
   m_ObjectHideFlags: 0
@@ -1202,7 +1207,7 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.00000007201322}
+  m_Offset: {x: -5, y: 0.00000007201322}
   m_Size: {x: 12, y: 5.26}
   m_Direction: 1
 --- !u!114 &2866841465632675977

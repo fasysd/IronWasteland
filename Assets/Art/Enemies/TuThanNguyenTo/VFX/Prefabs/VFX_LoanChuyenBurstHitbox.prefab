@@ -84,6 +84,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 107a964cff57cc149bb673f98a906976, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.ElementalReaper.Hitboxes.LoanChuyenBurstHitbox
+  shockwaveSprite: {fileID: 927542686602872597}
+  poisonParticles: {fileID: 4980159869991687200}
   radius: 3
   damageRatio: 1
   stunDuration: 2
@@ -128,7 +130,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 6, y: 6, z: 1}
+  m_LocalScale: {x: 2.34375, y: 2.34375, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2893419790465510472}
@@ -944,7 +946,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 2
+      value: 3
       mode: 0
       spread: 0
       speed:

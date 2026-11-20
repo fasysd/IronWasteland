@@ -52,12 +52,42 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
         public bool IsInitialized => m_Initialized;
         public IReadOnlyCollection<TankBrain> DamagedTanks => m_DamagedTanks;
 
+        private void Awake()
+        {
+            UpdateCollider();
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            UpdateCollider();
+        }
+#endif
+
+        public void UpdateCollider()
+        {
+            var poly = GetComponent<PolygonCollider2D>();
+            if (poly == null) return;
+
+            poly.isTrigger = true;
+            int count = 13;
+            Vector2[] points = new Vector2[count + 1];
+            points[0] = Vector2.zero;
+            for (int i = 0; i < count; i++)
+            {
+                float a = Mathf.Lerp(-Mathf.PI * 0.5f, Mathf.PI * 0.5f, (float)i / (count - 1));
+                points[i + 1] = new Vector2(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius);
+            }
+            poly.points = points;
+        }
+
         public void Initialize(EnemyBrain owner, float bossAttack)
         {
             m_Owner = owner;
             m_BossAttack = bossAttack;
             m_Initialized = true;
             m_Age = 0f;
+            UpdateCollider();
         }
 
         private void Update()

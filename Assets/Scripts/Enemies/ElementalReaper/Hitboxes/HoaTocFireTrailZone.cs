@@ -50,8 +50,18 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
             if (m_BoxCollider != null)
             {
                 m_BoxCollider.isTrigger = true;
+                UpdateDimensions(m_BoxCollider.size.x, trailWidth);
             }
         }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (m_BoxCollider == null) m_BoxCollider = GetComponent<BoxCollider2D>();
+            float len = m_BoxCollider != null ? m_BoxCollider.size.x : 4f;
+            UpdateDimensions(len, trailWidth);
+        }
+#endif
 
         public void SetupTrail(Vector2 startPoint, Vector2 endPoint, EnemyBrain owner, float bossAttack)
         {
@@ -69,23 +79,35 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
             float angle = Mathf.Atan2(diff.y, diff.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.Euler(0f, 0f, angle);
 
+            UpdateDimensions(length, trailWidth);
+        }
+
+        public void UpdateDimensions(float length, float width)
+        {
+            float actualLength = Mathf.Max(0.5f, length);
             if (m_BoxCollider == null) m_BoxCollider = GetComponent<BoxCollider2D>();
             if (m_BoxCollider != null)
             {
-                m_BoxCollider.size = new Vector2(Mathf.Max(0.5f, length), trailWidth);
+                m_BoxCollider.size = new Vector2(actualLength, width);
                 m_BoxCollider.offset = Vector2.zero;
             }
 
-            // Đồng bộ kích thước hình ảnh vệt lửa dung nham và vùng hạt lửa theo chiều dài quãng đường lướt
-            if (trailSprite != null)
+            // Đồng bộ kích thước hiển thị sprite vệt lửa theo tỷ lệ chính xác của texture bounds
+            if (trailSprite != null && trailSprite.sprite != null)
             {
-                trailSprite.transform.localScale = new Vector3(Mathf.Max(0.5f, length), trailWidth, 1f);
+                Vector2 spriteBounds = trailSprite.sprite.bounds.size;
+                float sx = spriteBounds.x > 0.01f ? (actualLength / spriteBounds.x) : actualLength;
+                float sy = spriteBounds.y > 0.01f ? (width / spriteBounds.y) : width;
+                trailSprite.transform.localScale = new Vector3(sx, sy, 1f);
             }
+
             if (groundFlamesParticles != null)
             {
                 var shape = groundFlamesParticles.shape;
                 shape.shapeType = ParticleSystemShapeType.Box;
-                shape.scale = new Vector3(Mathf.Max(0.5f, length), trailWidth, 0.1f);
+                shape.scale = new Vector3(actualLength, width, 0.1f);
+                var emission = groundFlamesParticles.emission;
+                emission.rateOverTime = Mathf.Max(10f, actualLength * 5f);
             }
         }
 

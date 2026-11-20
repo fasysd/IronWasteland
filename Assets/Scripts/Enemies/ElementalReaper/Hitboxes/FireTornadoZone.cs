@@ -42,6 +42,18 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
 
         private void Awake()
         {
+            UpdateCollider();
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            UpdateCollider();
+        }
+#endif
+
+        public void UpdateCollider()
+        {
             var col = GetComponent<CircleCollider2D>();
             if (col != null)
             {
@@ -57,6 +69,7 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
             m_Initialized = true;
             m_Age = 0f;
             m_NextTickTime = 0f; // Tick ngay lập tức khi spawn
+            UpdateCollider();
         }
 
         private void Update()

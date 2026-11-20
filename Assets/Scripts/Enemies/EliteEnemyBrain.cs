@@ -66,10 +66,16 @@ namespace IronWasteland.Enemies
         [Tooltip("Hệ số tốc độ di chuyển nhân thêm trong phase Bùng nổ (1 = không đổi, 1.2 = +20%).")]
         [SerializeField] protected float burstMoveSpeedMultiplier = 1f;
 
+        [Header("Skill Interval (Giãn Cách Dùng Kỹ Năng)")]
+        [Tooltip("Thời gian giãn cách tối thiểu giữa 2 lần thi triển kỹ năng liên tiếp (giây). Mặc định 2s.")]
+        [SerializeField, Min(0f)] protected float globalSkillInterval = 2.0f;
+
         // Runtime State
         private EliteBurstState m_BurstState = EliteBurstState.Inactive;
         private float m_BurstTimer;
         private bool m_BurstTriggered;
+
+        private float m_GlobalSkillCooldownTimer;
 
         private EnemyStats m_PreBurstStats;
         private bool m_BurstStatsApplied;
@@ -103,6 +109,43 @@ namespace IronWasteland.Enemies
         public float BreakWindowRemaining => m_BurstTimer;
         public bool IsBreakWindowOpen => m_BurstState == EliteBurstState.Active;
 
+        public float GlobalSkillInterval
+        {
+            get => globalSkillInterval;
+            set => globalSkillInterval = Mathf.Max(0f, value);
+        }
+
+        public float GlobalSkillCooldownTimer => m_GlobalSkillCooldownTimer;
+        public bool CanCastAnySkill => m_GlobalSkillCooldownTimer <= 0f;
+
+        /// <summary>
+        /// Kích hoạt giãn cách kỹ năng toàn cục (global skill interval).
+        /// </summary>
+        public void TriggerGlobalSkillCooldown(float overrideInterval = -1f)
+        {
+            float interval = overrideInterval >= 0f ? overrideInterval : globalSkillInterval;
+            m_GlobalSkillCooldownTimer = Mathf.Max(m_GlobalSkillCooldownTimer, interval);
+        }
+
+        /// <summary>
+        /// Đặt lại giãn cách kỹ năng toàn cục về 0 (sẵn sàng thi triển).
+        /// </summary>
+        public void ResetGlobalSkillCooldown()
+        {
+            m_GlobalSkillCooldownTimer = 0f;
+        }
+
+        /// <summary>
+        /// Cập nhật bộ đếm giãn cách kỹ năng toàn cục theo deltaTime.
+        /// </summary>
+        protected void UpdateGlobalSkillCooldown(float deltaTime)
+        {
+            if (m_GlobalSkillCooldownTimer > 0f)
+            {
+                m_GlobalSkillCooldownTimer = Mathf.Max(0f, m_GlobalSkillCooldownTimer - deltaTime);
+            }
+        }
+
         /// <summary>
         /// Kẻ địch Tinh anh luôn được nhận diện là Elite cho các kỹ năng rẽ nhánh hành vi.
         /// </summary>
@@ -121,6 +164,7 @@ namespace IronWasteland.Enemies
             m_BurstTriggered = false;
             m_BurstState = EliteBurstState.Inactive;
             m_BurstTimer = 0f;
+            m_GlobalSkillCooldownTimer = 0f;
             RevertBurstStatModifiers();
         }
 
@@ -343,7 +387,13 @@ namespace IronWasteland.Enemies
                     break;
             }
 
+            UpdateGlobalSkillCooldown(deltaTime);
             OnEliteTick(deltaTime);
+        }
+
+        public void ManualTick(float deltaTime)
+        {
+            OnBrainTick(deltaTime);
         }
 
         protected override void OnDeath()

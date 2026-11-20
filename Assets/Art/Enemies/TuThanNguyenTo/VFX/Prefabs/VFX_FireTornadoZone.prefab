@@ -27,7 +27,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 4, y: 4, z: 1}
+  m_LocalScale: {x: 0.78125, y: 0.78125, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6169677332674230151}
@@ -195,6 +195,7 @@ MonoBehaviour:
   tornadoSprite: {fileID: 5858605824778944595}
   vortexParticles: {fileID: 2814049430824904674}
   emberParticles: {fileID: 0}
+  radius: 2
   rotationSpeed: 720
   duration: 1.5
 --- !u!1 &5877086299602726816

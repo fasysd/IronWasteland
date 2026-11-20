@@ -181,9 +181,9 @@ namespace IronWasteland.Enemies.ElementalReaper
         #region VFX 4: Độc Quật (DocQuat)
 
         /// <summary>
-        /// Kích hoạt vung Độc Quật bán nguyệt 180° bán kính 4m quét vùng trước mặt Boss.
+        /// Kích hoạt vung Độc Quật bán nguyệt 180° bán kính 4m quét vùng theo hướng chỉ định hoặc trước mặt Boss.
         /// </summary>
-        public DocQuatHitbox PlayDocQuat(Action onComplete = null)
+        public DocQuatHitbox PlayDocQuat(Vector3? targetDirection = null, Action onComplete = null)
         {
             if (m_Animator != null) m_Animator.SetTrigger("DocQuat");
 
@@ -193,7 +193,19 @@ namespace IronWasteland.Enemies.ElementalReaper
                 return null;
             }
 
-            GameObject go = Instantiate(docQuatHitboxPrefab, transform.position, transform.rotation);
+            Vector3 spawnPos = transform.position;
+            Quaternion rot = transform.rotation;
+            if (targetDirection.HasValue && targetDirection.Value.sqrMagnitude > 0.001f)
+            {
+                float angle = Mathf.Atan2(targetDirection.Value.y, targetDirection.Value.x) * Mathf.Rad2Deg;
+                rot = Quaternion.Euler(0f, 0f, angle);
+            }
+            else if (m_OwnerBrain is ElementalReaperBrain reaperBrain && reaperBrain.RotationPivot != null)
+            {
+                rot = reaperBrain.RotationPivot.rotation;
+            }
+
+            GameObject go = Instantiate(docQuatHitboxPrefab, spawnPos, rot);
             DocQuatHitbox hitbox = go.GetComponent<DocQuatHitbox>();
             if (hitbox != null)
             {

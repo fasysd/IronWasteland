@@ -49,11 +49,17 @@ namespace IronWasteland.Enemies.ElementalReaper
         [SerializeField] private Vector2 cloneSpawnOffset = new Vector2(0f, 2f);
 
         [Header("Crystals System")]
-        [Tooltip("Chu kỳ sinh tinh thể nguyên tố trong tế đàn (giây). GDD: 4s.")]
+        [Tooltip("Chu kỳ sinh tinh thể nguyên tố trong tế đàn và ngoài sân (giây). GDD: 4s.")]
         [SerializeField, Min(1f)] private float crystalSpawnInterval = 4.0f;
 
         [Tooltip("Prefab Tinh thể nguyên tố (ElementalCrystal).")]
         [SerializeField] private GameObject crystalPrefab;
+
+        [Tooltip("Số lượng tinh thể sinh trên sân chính (ngoài tế đàn) mỗi chu kỳ.")]
+        [SerializeField, Min(1)] private int mainArenaCrystalsPerBatch = 2;
+
+        [Tooltip("Bán kính vùng sinh tinh thể trên sân chính quanh Boss.")]
+        [SerializeField, Min(2f)] private float mainArenaSpawnRadius = 10.0f;
 
         [Header("Clone Prefab")]
         [Tooltip("Prefab Bản sao Tử Thần Nguyên Tố (ElementalReaperClone).")]
@@ -97,14 +103,31 @@ namespace IronWasteland.Enemies.ElementalReaper
 
         private void Awake()
         {
-            m_AllAltars.Clear();
-            m_AllAltars.Add(fireAltar);
-            m_AllAltars.Add(poisonAltar);
-            m_AllAltars.Add(waterAltar);
+            EnsureAltarsList();
+        }
+
+        private void EnsureAltarsList()
+        {
+            if (m_AllAltars.Count == 0)
+            {
+                m_AllAltars.Add(fireAltar);
+                m_AllAltars.Add(poisonAltar);
+                m_AllAltars.Add(waterAltar);
+            }
+        }
+
+        public void ConfigureAltars(Vector2 fireCenter, Vector2 poisonCenter, Vector2 waterCenter, float radius)
+        {
+            EnsureAltarsList();
+            fireAltar.center = fireCenter;
+            poisonAltar.center = poisonCenter;
+            waterAltar.center = waterCenter;
+            altarRadius = radius;
         }
 
         public void InitializeArena(ElementalReaperBrain boss)
         {
+            EnsureAltarsList();
             m_Boss = boss;
             m_CrystalTimer = 0f;
             m_IsActive = true;
@@ -171,6 +194,10 @@ namespace IronWasteland.Enemies.ElementalReaper
                     waterAltar.isActive = false;
                 }
             }
+
+            // Sinh ngay đợt tinh thể đầu tiên khi bước vào tế đàn để người chơi có thể tương tác ngay
+            m_CrystalTimer = 0f;
+            SpawnCrystalsBatch();
         }
 
         private void SetupAltar(ElementalAltarData altar, TankBrain tank, EnemyStats cloneStats)
@@ -250,10 +277,42 @@ namespace IronWasteland.Enemies.ElementalReaper
             }
         }
 
+        /// <summary>
+        /// Tìm Bản sao còn sống tương ứng theo hệ nguyên tố (hoặc bản sao còn sống bất kỳ nếu không tìm thấy đúng hệ).
+        /// </summary>
+        public ElementalReaperClone GetCloneByElement(ElementalType targetElement)
+        {
+            // 1. Tìm bản sao khớp hệ nguyên tố và còn sống
+            for (int i = 0; i < m_AllAltars.Count; i++)
+            {
+                ElementalAltarData altar = m_AllAltars[i];
+                if (altar.isActive && !altar.isCloneDefeated && altar.clone != null && altar.clone.IsAlive)
+                {
+                    if (altar.element == targetElement)
+                    {
+                        return altar.clone;
+                    }
+                }
+            }
+
+            // 2. Nếu không có bản sao khớp hệ (ví dụ Solo chỉ có Tế đàn Hỏa nhưng nhặt tinh thể Thủy/Độc), trả về bất kỳ bản sao nào còn sống
+            for (int i = 0; i < m_AllAltars.Count; i++)
+            {
+                ElementalAltarData altar = m_AllAltars[i];
+                if (altar.isActive && !altar.isCloneDefeated && altar.clone != null && altar.clone.IsAlive)
+                {
+                    return altar.clone;
+                }
+            }
+
+            return null;
+        }
+
         private void SpawnCrystalsBatch()
         {
             if (crystalPrefab == null) return;
 
+            // 1. Sinh tinh thể tại cả 3 Tế Đàn (không giới hạn hình dạng và hệ nguyên tố)
             for (int i = 0; i < m_AllAltars.Count; i++)
             {
                 ElementalAltarData altar = m_AllAltars[i];
@@ -262,18 +321,43 @@ namespace IronWasteland.Enemies.ElementalReaper
                     continue;
                 }
 
-                // Chọn ngẫu nhiên hình dạng (Tròn / Vuông / Tam Giác)
-                CrystalShape shape = (CrystalShape)UnityEngine.Random.Range(0, 3);
+                // Random hình dạng (Tròn / Vuông / Tam Giác) và random nguyên tố (Thủy / Độc / Hỏa) hoàn toàn độc lập với tế đàn
+                CrystalShape randomShape = (CrystalShape)UnityEngine.Random.Range(0, 3);
+                ElementalType randomElement = (ElementalType)UnityEngine.Random.Range(0, 3);
+                ElementalReaperClone targetClone = GetCloneByElement(randomElement) ?? altar.clone;
+
                 Vector2 randomOffset = UnityEngine.Random.insideUnitCircle * (altarRadius * 0.5f);
                 Vector2 spawnPos = altar.center + randomOffset;
 
-                GameObject crystalGo = Instantiate(crystalPrefab, spawnPos, Quaternion.identity);
-                ElementalCrystal crystal = crystalGo.GetComponent<ElementalCrystal>();
-                if (crystal != null)
+                SpawnSingleCrystal(spawnPos, randomShape, randomElement, targetClone);
+            }
+
+            // 2. Sinh tinh thể ngoài sân chính quanh Boss
+            if (m_Boss != null && mainArenaCrystalsPerBatch > 0)
+            {
+                Vector2 bossPos = m_Boss.transform.position;
+                for (int j = 0; j < mainArenaCrystalsPerBatch; j++)
                 {
-                    crystal.SetupCrystal(shape, altar.element, altar.clone);
-                    m_ActiveCrystals.Add(crystal);
+                    CrystalShape randomShape = (CrystalShape)UnityEngine.Random.Range(0, 3);
+                    ElementalType randomElement = (ElementalType)UnityEngine.Random.Range(0, 3);
+                    ElementalReaperClone targetClone = GetCloneByElement(randomElement);
+
+                    Vector2 randomOffset = UnityEngine.Random.insideUnitCircle * mainArenaSpawnRadius;
+                    Vector2 spawnPos = bossPos + randomOffset;
+
+                    SpawnSingleCrystal(spawnPos, randomShape, randomElement, targetClone);
                 }
+            }
+        }
+
+        private void SpawnSingleCrystal(Vector2 position, CrystalShape shape, ElementalType element, ElementalReaperClone targetClone)
+        {
+            GameObject crystalGo = Instantiate(crystalPrefab, position, Quaternion.identity);
+            ElementalCrystal crystal = crystalGo.GetComponent<ElementalCrystal>();
+            if (crystal != null)
+            {
+                crystal.SetupCrystal(shape, element, targetClone, this);
+                m_ActiveCrystals.Add(crystal);
             }
         }
 

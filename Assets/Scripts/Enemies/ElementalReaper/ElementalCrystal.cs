@@ -51,10 +51,21 @@ namespace IronWasteland.Enemies.ElementalReaper
         [Tooltip("Thời gian tự biến mất của tinh thể nếu không ai nhặt (giây).")]
         [SerializeField, Min(1f)] private float lifetime = 12.0f;
 
+        [Header("Shape Sprites")]
+        [Tooltip("Sprite tinh thể hình Tròn.")]
+        [SerializeField] private Sprite circleSprite;
+
+        [Tooltip("Sprite tinh thể hình Vuông.")]
+        [SerializeField] private Sprite squareSprite;
+
+        [Tooltip("Sprite tinh thể hình Tam Giác.")]
+        [SerializeField] private Sprite triangleSprite;
+
         [Header("Visual Components")]
         [SerializeField] private SpriteRenderer spriteRenderer;
 
         private ElementalReaperClone m_TargetClone;
+        private ElementalAltarsSubArena m_Arena;
         private float m_Age;
         private bool m_Collected;
 
@@ -65,7 +76,12 @@ namespace IronWasteland.Enemies.ElementalReaper
         public float ShieldDuration => shieldDuration;
         public float ArmorPenRatio => armorPenRatio;
         public ElementalReaperClone TargetClone => m_TargetClone;
+        public ElementalAltarsSubArena Arena => m_Arena;
         public bool IsCollected => m_Collected;
+        public SpriteRenderer Renderer => spriteRenderer;
+        public Sprite CircleSprite { get => circleSprite; set => circleSprite = value; }
+        public Sprite SquareSprite { get => squareSprite; set => squareSprite = value; }
+        public Sprite TriangleSprite { get => triangleSprite; set => triangleSprite = value; }
 
         private void Awake()
         {
@@ -78,40 +94,75 @@ namespace IronWasteland.Enemies.ElementalReaper
 
             if (spriteRenderer == null)
             {
-                spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+                spriteRenderer = GetComponent<SpriteRenderer>() ?? GetComponentInChildren<SpriteRenderer>();
             }
+
+            UpdateVisualSpriteAndColor();
         }
 
-        public void SetupCrystal(CrystalShape crystalShape, ElementalType elementType, ElementalReaperClone targetClone)
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (spriteRenderer == null)
+            {
+                spriteRenderer = GetComponent<SpriteRenderer>() ?? GetComponentInChildren<SpriteRenderer>();
+            }
+            UpdateVisualSpriteAndColor();
+        }
+#endif
+
+        public void SetupCrystal(CrystalShape crystalShape, ElementalType elementType, ElementalReaperClone targetClone, ElementalAltarsSubArena arena = null)
         {
             shape = crystalShape;
             element = elementType;
             m_TargetClone = targetClone;
+            m_Arena = arena;
             m_Age = 0f;
             m_Collected = false;
 
-            UpdateVisualColor();
+            UpdateVisualSpriteAndColor();
         }
 
-        private void UpdateVisualColor()
+        public void UpdateVisualSpriteAndColor()
         {
+            if (spriteRenderer == null)
+            {
+                spriteRenderer = GetComponent<SpriteRenderer>() ?? GetComponentInChildren<SpriteRenderer>();
+            }
             if (spriteRenderer == null) return;
 
+            // 1. Gán Sprite theo Hình Dạng
+            switch (shape)
+            {
+                case CrystalShape.Square:
+                    if (squareSprite != null) spriteRenderer.sprite = squareSprite;
+                    break;
+                case CrystalShape.Triangle:
+                    if (triangleSprite != null) spriteRenderer.sprite = triangleSprite;
+                    break;
+                case CrystalShape.Circle:
+                default:
+                    if (circleSprite != null) spriteRenderer.sprite = circleSprite;
+                    break;
+            }
+
+            // 2. Gán Màu theo Hệ Nguyên Tố
             Color c;
             switch (element)
             {
                 case ElementalType.Water:
-                    c = new Color(0f, 0.75f, 1f, 0.95f); // Lam Thủy
+                    c = new Color(0.2f, 0.75f, 1f, 0.95f); // Lam Thủy
                     break;
                 case ElementalType.Poison:
-                    c = new Color(0.3f, 0.85f, 0.2f, 0.95f); // Lục Độc
+                    c = new Color(0.3f, 0.9f, 0.25f, 0.95f); // Lục Độc
                     break;
                 case ElementalType.Fire:
                 default:
-                    c = new Color(1f, 0.3f, 0f, 0.95f); // Đỏ Cam Hỏa
+                    c = new Color(1f, 0.35f, 0.1f, 0.95f); // Đỏ Cam Hỏa
                     break;
             }
             spriteRenderer.color = c;
+            spriteRenderer.sortingOrder = 15;
         }
 
         private void Update()
@@ -139,20 +190,27 @@ namespace IronWasteland.Enemies.ElementalReaper
             if (m_Collected || tank == null) return;
             m_Collected = true;
 
+            // Resolve target clone: nếu targetClone hiện tại null hoặc đã chết, thử tìm lại bản sao cùng hệ từ Arena
+            ElementalReaperClone activeTargetClone = m_TargetClone;
+            if ((activeTargetClone == null || !activeTargetClone.IsAlive) && m_Arena != null)
+            {
+                activeTargetClone = m_Arena.GetCloneByElement(element);
+            }
+
             switch (shape)
             {
                 case CrystalShape.Circle:
-                    if (m_TargetClone != null && m_TargetClone.IsAlive)
+                    if (activeTargetClone != null && activeTargetClone.IsAlive)
                     {
-                        m_TargetClone.ApplyCrowdControl(CrowdControlType.Stun, stunDuration);
+                        activeTargetClone.ApplyCrowdControl(CrowdControlType.Stun, stunDuration);
                     }
                     break;
 
                 case CrystalShape.Square:
-                    if (m_TargetClone != null && m_TargetClone.IsAlive)
+                    if (activeTargetClone != null && activeTargetClone.IsAlive)
                     {
-                        float dmg = m_TargetClone.MaxHealth * damageRatio;
-                        m_TargetClone.TakeDamage(new DamageInfo { RawDamage = dmg, ArmorPenetration = 1.0f, Target = m_TargetClone });
+                        float dmg = activeTargetClone.MaxHealth * damageRatio;
+                        activeTargetClone.TakeDamage(new DamageInfo { RawDamage = dmg, ArmorPenetration = 1.0f, Target = activeTargetClone });
                     }
                     break;
 
