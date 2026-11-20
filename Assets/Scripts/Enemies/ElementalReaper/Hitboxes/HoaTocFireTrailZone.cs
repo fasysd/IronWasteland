@@ -12,7 +12,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(BoxCollider2D))]
-    [RequireComponent(typeof(ColliderOwnerRef))]
     public class HoaTocFireTrailZone : MonoBehaviour
     {
         [Header("Visual Components")]
@@ -61,12 +60,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
             m_Initialized = true;
             m_Age = 0f;
             m_NextTickTime = 0f;
-
-            var ownerRef = GetComponent<ColliderOwnerRef>();
-            if (ownerRef != null && owner != null)
-            {
-                ownerRef.SetOwner(owner);
-            }
 
             Vector2 diff = endPoint - startPoint;
             float length = diff.magnitude;

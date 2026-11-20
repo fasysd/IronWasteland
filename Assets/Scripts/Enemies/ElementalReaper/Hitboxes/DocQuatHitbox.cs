@@ -15,7 +15,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
     /// - Giảm 10% DEF qua Stat Modifier trong 5s.
     /// </summary>
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(ColliderOwnerRef))]
     public class DocQuatHitbox : MonoBehaviour
     {
         [Header("Hitbox Specs")]
@@ -59,12 +58,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
             m_BossAttack = bossAttack;
             m_Initialized = true;
             m_Age = 0f;
-
-            var ownerRef = GetComponent<ColliderOwnerRef>();
-            if (ownerRef != null && owner != null)
-            {
-                ownerRef.SetOwner(owner);
-            }
         }
 
         private void Update()

@@ -13,7 +13,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(CircleCollider2D))]
-    [RequireComponent(typeof(ColliderOwnerRef))]
     public class LoanChuyenBurstHitbox : MonoBehaviour
     {
         [Header("Hitbox Specs")]
@@ -57,12 +56,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
             m_BossAttack = bossAttack;
             m_Initialized = true;
             m_Age = 0f;
-
-            var ownerRef = GetComponent<ColliderOwnerRef>();
-            if (ownerRef != null && owner != null)
-            {
-                ownerRef.SetOwner(owner);
-            }
         }
 
         private void Update()

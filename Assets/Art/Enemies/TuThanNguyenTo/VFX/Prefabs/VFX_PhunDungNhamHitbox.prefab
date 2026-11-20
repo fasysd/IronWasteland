@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3482894178652773081}
   - component: {fileID: 6470836146409652771}
-  - component: {fileID: 8000387931016794180}
   - component: {fileID: 4958864791670734754}
   - component: {fileID: 7771632083500882235}
   m_Layer: 0
@@ -83,19 +82,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 16, y: 1.2}
   m_EdgeRadius: 0
---- !u!114 &8000387931016794180
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4998747149743137043}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
-  owner: {fileID: 0}
 --- !u!114 &4958864791670734754
 MonoBehaviour:
   m_ObjectHideFlags: 0

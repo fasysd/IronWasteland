@@ -14,7 +14,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
     /// - Kết hợp tank.ApplyCrowdControl(CrowdControlType.Knockback, 0.25f, 3.0f).
     /// </summary>
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(ColliderOwnerRef))]
     public class ThuyTrieuHitbox : MonoBehaviour
     {
         [Header("Hitbox Specs")]
@@ -55,12 +54,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
             m_BossAttack = bossAttack;
             m_Initialized = true;
             m_Age = 0f;
-
-            var ownerRef = GetComponent<ColliderOwnerRef>();
-            if (ownerRef != null && owner != null)
-            {
-                ownerRef.SetOwner(owner);
-            }
         }
 
         private void Update()

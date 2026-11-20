@@ -102,7 +102,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6169677332674230151}
   - component: {fileID: 4077365252900282985}
-  - component: {fileID: 1427892582521898703}
   - component: {fileID: 1986743247216101956}
   - component: {fileID: 1322144257814023112}
   m_Layer: 0
@@ -165,19 +164,6 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 2
---- !u!114 &1427892582521898703
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3567202655062707223}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
-  owner: {fileID: 0}
 --- !u!114 &1986743247216101956
 MonoBehaviour:
   m_ObjectHideFlags: 0

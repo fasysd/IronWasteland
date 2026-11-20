@@ -69,7 +69,8 @@ namespace IronWasteland.Tests
                 Assert(dashObj != null, "Child 'HoaTocDashHitbox' missing on TuThanNguyenTo prefab");
                 var col = dashObj.GetComponent<CircleCollider2D>();
                 Assert(col != null && col.isTrigger, "CircleCollider2D (trigger) missing on HoaTocDashHitbox");
-                Assert(dashObj.GetComponent<ColliderOwnerRef>() != null, "ColliderOwnerRef missing on HoaTocDashHitbox");
+                // User constraint: ColliderOwnerRef must NOT be on DashHitbox to prevent false damage targeting
+                Assert(dashObj.GetComponent<ColliderOwnerRef>() == null, "User constraint: ColliderOwnerRef must NOT be on HoaTocDashHitbox");
                 Assert(dashObj.GetComponent<HoaTocDashHitbox>() != null, "HoaTocDashHitbox component missing");
             });
 
@@ -281,7 +282,7 @@ namespace IronWasteland.Tests
                 var thuyTrieu = AssetDatabase.LoadAssetAtPath<GameObject>(VfxFolder + "/VFX_ThuyTrieuHitbox.prefab");
                 var polyTrieu = thuyTrieu.GetComponent<PolygonCollider2D>();
                 Assert(polyTrieu != null && polyTrieu.isTrigger, "ThuyTrieu PolygonCollider2D trigger missing");
-                Assert(thuyTrieu.GetComponent<ColliderOwnerRef>() != null, "ThuyTrieu ColliderOwnerRef missing");
+                Assert(thuyTrieu.GetComponent<ColliderOwnerRef>() == null, "User constraint: VFX hitbox MUST NOT have ColliderOwnerRef");
                 Assert(thuyTrieu.GetComponent<ThuyTrieuHitbox>() != null, "ThuyTrieuHitbox missing");
                 Assert(thuyTrieu.GetComponent<ThuyTrieuVFX>() != null, "ThuyTrieuVFX missing");
 
@@ -289,14 +290,14 @@ namespace IronWasteland.Tests
                 var docQuat = AssetDatabase.LoadAssetAtPath<GameObject>(VfxFolder + "/VFX_DocQuatHitbox.prefab");
                 var polyDoc = docQuat.GetComponent<PolygonCollider2D>();
                 Assert(polyDoc != null && polyDoc.isTrigger, "DocQuat PolygonCollider2D trigger missing");
-                Assert(docQuat.GetComponent<ColliderOwnerRef>() != null, "DocQuat ColliderOwnerRef missing");
+                Assert(docQuat.GetComponent<ColliderOwnerRef>() == null, "User constraint: VFX hitbox MUST NOT have ColliderOwnerRef");
                 Assert(docQuat.GetComponent<DocQuatHitbox>() != null, "DocQuatHitbox missing");
 
                 // LoanChuyen: CircleCollider2D radius 3m trigger
                 var loanChuyen = AssetDatabase.LoadAssetAtPath<GameObject>(VfxFolder + "/VFX_LoanChuyenBurstHitbox.prefab");
                 var circleLoan = loanChuyen.GetComponent<CircleCollider2D>();
                 Assert(circleLoan != null && circleLoan.isTrigger && Mathf.Approximately(circleLoan.radius, 3f), "LoanChuyen CircleCollider2D (radius 3m, trigger) missing");
-                Assert(loanChuyen.GetComponent<ColliderOwnerRef>() != null, "LoanChuyen ColliderOwnerRef missing");
+                Assert(loanChuyen.GetComponent<ColliderOwnerRef>() == null, "User constraint: VFX hitbox MUST NOT have ColliderOwnerRef");
                 Assert(loanChuyen.GetComponent<LoanChuyenBurstHitbox>() != null, "LoanChuyenBurstHitbox missing");
 
                 // PhunDungNham: BoxCollider2D size 16m x 1.2m
@@ -304,7 +305,7 @@ namespace IronWasteland.Tests
                 var boxDungNham = phunDungNham.GetComponent<BoxCollider2D>();
                 Assert(boxDungNham != null && boxDungNham.isTrigger, "PhunDungNham BoxCollider2D trigger missing");
                 Assert(Mathf.Approximately(boxDungNham.size.x, 16f) && Mathf.Approximately(boxDungNham.size.y, 1.2f), "PhunDungNham Box size must be (16, 1.2)");
-                Assert(phunDungNham.GetComponent<ColliderOwnerRef>() != null, "PhunDungNham ColliderOwnerRef missing");
+                Assert(phunDungNham.GetComponent<ColliderOwnerRef>() == null, "User constraint: VFX hitbox MUST NOT have ColliderOwnerRef");
                 Assert(phunDungNham.GetComponent<PhunDungNhamHitbox>() != null, "PhunDungNhamHitbox missing");
                 Assert(phunDungNham.GetComponent<LavaBeamVFX>() != null, "LavaBeamVFX missing");
 
@@ -312,14 +313,14 @@ namespace IronWasteland.Tests
                 var tornado = AssetDatabase.LoadAssetAtPath<GameObject>(VfxFolder + "/VFX_FireTornadoZone.prefab");
                 var circleTornado = tornado.GetComponent<CircleCollider2D>();
                 Assert(circleTornado != null && circleTornado.isTrigger && Mathf.Approximately(circleTornado.radius, 2f), "FireTornado CircleCollider2D (radius 2m, trigger) missing");
-                Assert(tornado.GetComponent<ColliderOwnerRef>() != null, "FireTornado ColliderOwnerRef missing");
+                Assert(tornado.GetComponent<ColliderOwnerRef>() == null, "User constraint: VFX hitbox MUST NOT have ColliderOwnerRef");
                 Assert(tornado.GetComponent<FireTornadoZone>() != null, "FireTornadoZone missing");
 
                 // HoaTocFireTrail: BoxCollider2D trigger
                 var trail = AssetDatabase.LoadAssetAtPath<GameObject>(VfxFolder + "/VFX_HoaTocFireTrailZone.prefab");
                 var boxTrail = trail.GetComponent<BoxCollider2D>();
                 Assert(boxTrail != null && boxTrail.isTrigger, "HoaTocFireTrail BoxCollider2D trigger missing");
-                Assert(trail.GetComponent<ColliderOwnerRef>() != null, "HoaTocFireTrail ColliderOwnerRef missing");
+                Assert(trail.GetComponent<ColliderOwnerRef>() == null, "User constraint: VFX hitbox MUST NOT have ColliderOwnerRef");
                 var trailZone = trail.GetComponent<HoaTocFireTrailZone>();
                 Assert(trailZone != null, "HoaTocFireTrailZone missing");
                 Assert(trail.transform.Find("TrailSprite") != null, "Child 'TrailSprite' missing in HoaTocFireTrailZone");

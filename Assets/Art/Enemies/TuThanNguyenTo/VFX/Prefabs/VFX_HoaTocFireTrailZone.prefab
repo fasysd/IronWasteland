@@ -4846,7 +4846,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4612691674655354719}
   - component: {fileID: 8948066988750709990}
-  - component: {fileID: 3326109069019768094}
   - component: {fileID: 8377350294050180175}
   m_Layer: 0
   m_Name: VFX_HoaTocFireTrailZone
@@ -4918,19 +4917,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 4, y: 2}
   m_EdgeRadius: 0
---- !u!114 &3326109069019768094
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3470967951959175526}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
-  owner: {fileID: 0}
 --- !u!114 &8377350294050180175
 MonoBehaviour:
   m_ObjectHideFlags: 0

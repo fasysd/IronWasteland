@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6108177214952881586}
   - component: {fileID: 2453566361015706437}
-  - component: {fileID: 6806870129609013344}
   - component: {fileID: 4946979553235843084}
   - component: {fileID: 6854840781596709644}
   m_Layer: 0
@@ -98,19 +97,6 @@ PolygonCollider2D:
       - {x: 3.625231, y: 1.6904732}
       - {x: 3.4641016, y: 2}
   m_UseDelaunayMesh: 1
---- !u!114 &6806870129609013344
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4155844852356838372}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
-  owner: {fileID: 0}
 --- !u!114 &4946979553235843084
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -123,7 +109,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2f469ecaa7682a49b2c21073bde6ccf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.ElementalReaper.Hitboxes.ThuyTrieuHitbox
-  radius: 4
+  radius: 7
   coneAngle: 60
   knockbackDistance: 3
   knockbackDuration: 0.25
@@ -144,7 +130,7 @@ MonoBehaviour:
   waveConeSprite: {fileID: 236304485753389720}
   waterSplashParticles: {fileID: 4052403868527182989}
   foamParticles: {fileID: 0}
-  radius: 4
+  radius: 7
   duration: 0.6
 --- !u!1 &4615832334294087347
 GameObject:

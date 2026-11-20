@@ -332,6 +332,7 @@ GameObject:
   - component: {fileID: 8657597288793346402}
   - component: {fileID: 4556977129910709487}
   - component: {fileID: 9152591472947387253}
+  - component: {fileID: 8414142585299926360}
   m_Layer: 7
   m_Name: TuThanNguyenTo
   m_TagString: Untagged
@@ -407,6 +408,49 @@ MonoBehaviour:
   burstChargingAuraPrefab: {fileID: 7417405375529767878, guid: f0f2ec7aa439ca94a8d76f52880310c2, type: 3}
   burstShieldAndCrystalsPrefab: {fileID: 709934015514844354, guid: 6498c279df6c3b44ca9b93b57c8d1720, type: 3}
   hoaTocDashHitbox: {fileID: 5208910457382241842}
+--- !u!114 &8414142585299926360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2997488555990479441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2be8ae347ac657e4dbba6ff3dabab933, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.ElementalReaper.ElementalReaperBrain
+  model: {fileID: 1805891303938877128}
+  displayName: TuThanNguyenTo
+  stats:
+    Attack: 10
+    Defense: 0
+    MaxHealth: 100
+    MoveSpeed: 2
+  currentHealth: 0
+  burstHpThreshold: 0.5
+  burstChargeTime: 2
+  burstDuration: 30
+  rewardPhaseDuration: 8
+  penaltyPhaseDuration: 8
+  burstAttackMultiplier: 1
+  burstDefenseMultiplier: 1
+  burstMoveSpeedMultiplier: 1
+  stopDistance: 2
+  turnSharpness: 14
+  moveSpeedDivisor: 100
+  rotationOffset: 0
+  rotationSpeed: 720
+  rotationPivot: {fileID: 1910718092571899764}
+  elementalShiftInterval: 15
+  currentElement: 0
+  thuyTrieuCooldown: 8
+  thuyLieuCooldown: 14
+  docQuatCooldown: 6
+  loanChuyenCooldown: 12
+  phunDungNhamCooldown: 7
+  hoaTocCooldown: 13
+  elementalAltarsArenaPrefab: {fileID: 5751113630347497773, guid: f2834e6bed01ef542be9022adc0d3e51, type: 3}
 --- !u!1 &3044959759880063341
 GameObject:
   m_ObjectHideFlags: 0
@@ -576,7 +620,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8831934148303922218}
   - component: {fileID: 2787821565701057302}
-  - component: {fileID: 8683807093414302404}
   - component: {fileID: 5208910457382241842}
   m_Layer: 7
   m_Name: HoaTocDashHitbox
@@ -636,19 +679,6 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 1.8
---- !u!114 &8683807093414302404
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5035809036524359004}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
-  owner: {fileID: 0}
 --- !u!114 &5208910457382241842
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -986,7 +1016,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.6, y: 0.6, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1498974699228998841}
@@ -1172,9 +1202,9 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 2.5, y: 3.2}
-  m_Direction: 0
+  m_Offset: {x: 0, y: 0.00000007201322}
+  m_Size: {x: 12, y: 5.26}
+  m_Direction: 1
 --- !u!114 &2866841465632675977
 MonoBehaviour:
   m_ObjectHideFlags: 0

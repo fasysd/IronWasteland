@@ -12,7 +12,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
     /// - Đẩy dạt sang 2 bên 2m theo vector vuông góc của hướng lướt.
     /// </summary>
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(ColliderOwnerRef))]
     public class HoaTocDashHitbox : MonoBehaviour
     {
         [Header("Dash Hitbox Specs")]
@@ -42,12 +41,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
             m_DashDirection = dashDir.normalized;
             m_DamagedTanks.Clear();
             m_Active = true;
-
-            var ownerRef = GetComponent<ColliderOwnerRef>();
-            if (ownerRef != null && owner != null)
-            {
-                ownerRef.SetOwner(owner);
-            }
         }
 
         public void Deactivate()

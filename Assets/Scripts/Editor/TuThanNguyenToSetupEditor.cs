@@ -643,7 +643,6 @@ namespace IronWasteland.Editor
             }
             poly.points = points;
 
-            root.AddComponent<ColliderOwnerRef>();
             var hitbox = root.AddComponent<ThuyTrieuHitbox>();
             var vfx = root.AddComponent<ThuyTrieuVFX>();
 
@@ -724,7 +723,6 @@ namespace IronWasteland.Editor
             }
             poly.points = points;
 
-            root.AddComponent<ColliderOwnerRef>();
             var hitbox = root.AddComponent<DocQuatHitbox>();
             var vfx = root.AddComponent<DocQuatVFX>();
 
@@ -762,7 +760,6 @@ namespace IronWasteland.Editor
             circle.isTrigger = true;
             circle.radius = 3.0f;
 
-            root.AddComponent<ColliderOwnerRef>();
             var hitbox = root.AddComponent<LoanChuyenBurstHitbox>();
 
             var shockwaveObj = new GameObject("Shockwave");
@@ -802,7 +799,6 @@ namespace IronWasteland.Editor
             box.size = new Vector2(16f, 1.2f);
             box.offset = new Vector2(8f, 0f);
 
-            root.AddComponent<ColliderOwnerRef>();
             var hitbox = root.AddComponent<PhunDungNhamHitbox>();
             var vfx = root.AddComponent<LavaBeamVFX>();
 
@@ -842,7 +838,6 @@ namespace IronWasteland.Editor
             col.isTrigger = true;
             col.radius = 2.0f;
 
-            root.AddComponent<ColliderOwnerRef>();
             var zone = root.AddComponent<FireTornadoZone>();
             var vfx = root.AddComponent<FireTornadoVFX>();
 
@@ -881,7 +876,6 @@ namespace IronWasteland.Editor
             box.isTrigger = true;
             box.size = new Vector2(4f, 2f);
 
-            root.AddComponent<ColliderOwnerRef>();
             var zone = root.AddComponent<HoaTocFireTrailZone>();
 
             var spriteObj = new GameObject("TrailSprite");
@@ -1681,7 +1675,6 @@ namespace IronWasteland.Editor
             var dashCol = dashObj.AddComponent<CircleCollider2D>();
             dashCol.isTrigger = true;
             dashCol.radius = 1.8f;
-            dashObj.AddComponent<ColliderOwnerRef>();
             var dashHitbox = dashObj.AddComponent<HoaTocDashHitbox>();
             dashObj.SetActive(false); // Inactive cho tới khi Boss kích hoạt lướt
 

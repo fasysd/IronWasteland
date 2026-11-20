@@ -12,7 +12,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(CircleCollider2D))]
-    [RequireComponent(typeof(ColliderOwnerRef))]
     public class FireTornadoZone : MonoBehaviour
     {
         [Header("Zone Specs")]
@@ -58,12 +57,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
             m_Initialized = true;
             m_Age = 0f;
             m_NextTickTime = 0f; // Tick ngay lập tức khi spawn
-
-            var ownerRef = GetComponent<ColliderOwnerRef>();
-            if (ownerRef != null && owner != null)
-            {
-                ownerRef.SetOwner(owner);
-            }
         }
 
         private void Update()
