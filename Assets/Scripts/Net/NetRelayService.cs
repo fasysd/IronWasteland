@@ -24,6 +24,9 @@ namespace IronWasteland.Net
         /// <summary>Khoá dữ liệu lobby chứa mã Relay.</summary>
         private const string RelayDataKey = "relayJoinCode";
 
+        /// <summary>Khoá dữ liệu lobby chứa mã ải, dùng để lọc phòng theo đúng ải.</summary>
+        private const string StageDataKey = "stageCode";
+
         /// <summary>Unity Services đã init + đăng nhập ẩn danh xong chưa.</summary>
         public static bool ServicesReady { get; private set; }
 
@@ -51,6 +54,12 @@ namespace IronWasteland.Net
 
         /// <summary>Id lobby đang tham gia (rỗng nếu chưa vào phòng nào).</summary>
         public static string LobbyId { get; private set; }
+
+        /// <summary>Mã ải của phòng đang tham gia (rỗng nếu phòng cũ chưa có dữ liệu này).</summary>
+        public static string LobbyStageCode { get; private set; }
+
+        /// <summary>Bắn khi mã phòng hoặc mã ải của phiên hiện tại thay đổi để UI làm mới.</summary>
+        public static event Action LobbyChanged;
 
         /// <summary>True khi máy này là người tạo phòng (chỉ host mới giữ lobby sống bằng heartbeat).</summary>
         public static bool IsLobbyHost { get; private set; }
@@ -189,7 +198,7 @@ namespace IronWasteland.Net
         }
 
         /// <summary>Tạo lobby công khai gắn mã Relay vừa tạo. Host gọi sau khi đã có allocation.</summary>
-        public static async Task<bool> CreateLobbyAsync(string lobbyName)
+        public static async Task<bool> CreateLobbyAsync(string lobbyName, string stageCode = "1-1")
         {
             if (!ServicesReady)
             {
@@ -212,16 +221,21 @@ namespace IronWasteland.Net
                     // rồi mới lấy được dữ liệu (không lộ mã Relay qua danh sách công khai).
                     Data = new Dictionary<string, DataObject>
                     {
-                        { RelayDataKey, new DataObject(DataObject.VisibilityOptions.Member, RelayJoinCode) }
+                        { RelayDataKey, new DataObject(DataObject.VisibilityOptions.Member, RelayJoinCode) },
+                        // Công khai + đánh index S1 để QueryLobbies lọc được theo ải.
+                        { StageDataKey, new DataObject(DataObject.VisibilityOptions.Public, NormalizeStageCode(stageCode), DataObject.IndexOptions.S1) }
                     }
                 };
 
                 string name = string.IsNullOrWhiteSpace(lobbyName) ? "IronWasteland" : lobbyName;
+                name = name + " · " + NormalizeStageCode(stageCode);
                 Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(name, MaxPlayers, options);
                 LobbyCode = lobby.LobbyCode;
                 LobbyId = lobby.Id;
+                LobbyStageCode = NormalizeStageCode(stageCode);
                 IsLobbyHost = true;
                 StartHeartbeat(lobby.Id);
+                NotifyLobbyChanged();
                 return true;
             }
             catch (Exception exception)
@@ -299,7 +313,9 @@ namespace IronWasteland.Net
                 Lobby lobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode.Trim());
                 LobbyCode = lobby.LobbyCode;
                 LobbyId = lobby.Id;
+                LobbyStageCode = ReadStageCode(lobby);
                 IsLobbyHost = false;
+                NotifyLobbyChanged();
                 return ReadRelayCode(lobby);
             }
             catch (Exception exception)
@@ -321,6 +337,9 @@ namespace IronWasteland.Net
             /// <summary>Mã phòng ngắn để đọc cho bạn bè.</summary>
             public string LobbyCode { get; set; }
 
+            /// <summary>Mã ải của phòng (ví dụ 1-2).</summary>
+            public string StageCode { get; set; }
+
             /// <summary>Số người đang ở trong phòng.</summary>
             public int Players { get; set; }
 
@@ -335,13 +354,23 @@ namespace IronWasteland.Net
         /// Truy vấn các phòng công khai còn chỗ (bỏ phòng riêng, phòng đã đủ người và phòng của chính mình).
         /// Trả null nếu lỗi; đọc <see cref="LastError"/> để hiển thị lý do.
         /// </summary>
-        public static async Task<List<LobbyRoom>> QueryEligibleRoomsAsync()
+        public static async Task<List<LobbyRoom>> QueryEligibleRoomsAsync(string stageCode = null)
         {
             if (!await EnsureServicesAsync()) return null;
 
             try
             {
-                QueryResponse response = await LobbyService.Instance.QueryLobbiesAsync(new QueryLobbiesOptions { Count = 30 });
+                QueryLobbiesOptions options = new QueryLobbiesOptions { Count = 30 };
+                string code = string.IsNullOrWhiteSpace(stageCode) ? null : stageCode.Trim();
+                if (code != null)
+                {
+                    options.Filters = new List<QueryFilter>
+                    {
+                        new QueryFilter(QueryFilter.FieldOptions.S1, code, QueryFilter.OpOptions.EQ)
+                    };
+                }
+
+                QueryResponse response = await LobbyService.Instance.QueryLobbiesAsync(options);
                 List<LobbyRoom> rooms = new List<LobbyRoom>();
                 if (response == null || response.Results == null) return rooms;
 
@@ -360,6 +389,7 @@ namespace IronWasteland.Net
                         Id = lobby.Id,
                         Name = string.IsNullOrWhiteSpace(lobby.Name) ? "Phòng không tên" : lobby.Name,
                         LobbyCode = lobby.LobbyCode,
+                        StageCode = ReadStageCode(lobby),
                         Players = lobby.Players != null ? lobby.Players.Count : 0,
                         MaxPlayers = lobby.MaxPlayers,
                         AvailableSlots = lobby.AvailableSlots
@@ -399,7 +429,9 @@ namespace IronWasteland.Net
 
                 LobbyCode = lobby.LobbyCode;
                 LobbyId = lobby.Id;
+                LobbyStageCode = ReadStageCode(lobby);
                 IsLobbyHost = false;
+                NotifyLobbyChanged();
                 return ReadRelayCode(lobby);
             }
             catch (Exception exception)
@@ -407,6 +439,29 @@ namespace IronWasteland.Net
                 LastError = DescribeJoinError(exception);
                 return null;
             }
+        }
+
+        /// <summary>Báo cho UI biết mã phòng hoặc mã ải vừa sẵn sàng.</summary>
+        private static void NotifyLobbyChanged()
+        {
+            LobbyChanged?.Invoke();
+        }
+
+        /// <summary>Chuẩn hoá mã ải trước khi ghi vào dữ liệu lobby.</summary>
+        private static string NormalizeStageCode(string stageCode)
+        {
+            return string.IsNullOrWhiteSpace(stageCode) ? "1-1" : stageCode.Trim();
+        }
+
+        /// <summary>Đọc mã ải công khai của lobby (rỗng nếu phòng cũ chưa có dữ liệu này).</summary>
+        private static string ReadStageCode(Lobby lobby)
+        {
+            if (lobby.Data != null && lobby.Data.TryGetValue(StageDataKey, out DataObject data) && data != null)
+            {
+                return data.Value;
+            }
+
+            return string.Empty;
         }
 
         /// <summary>Đọc mã Relay mà host đã gắn vào dữ liệu lobby (chỉ thành viên phòng đọc được).</summary>
@@ -546,8 +601,10 @@ namespace IronWasteland.Net
             RelayJoinCode = null;
             LobbyCode = null;
             LobbyId = null;
+            LobbyStageCode = null;
             IsLobbyHost = false;
             LastError = null;
+            NotifyLobbyChanged();
         }
 
         /// <summary>

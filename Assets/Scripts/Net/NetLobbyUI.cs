@@ -21,6 +21,13 @@ namespace IronWasteland.Net
         [Tooltip("Bật để hiện bảng điều khiển khi vào Play.")]
         [SerializeField] private bool showPanel = true;
 
+        /// <summary>Bật/tắt bảng IMGUI cũ; lobby mới dùng để nhường chỗ cho giao diện riêng.</summary>
+        public bool PanelVisible
+        {
+            get => showPanel;
+            set => showPanel = value;
+        }
+
         private GameController m_GameController;
         private string m_RelayJoinCodeInput = string.Empty;
         private string m_LobbyCodeInput = string.Empty;

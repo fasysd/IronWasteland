@@ -1,0 +1,41 @@
+Form chung: Tên,tên image,mô tả hiệu quả cung cấp
+-Lõi Động Cơ Trọng Lực Địa Mạch,loi_dong_co_trong_luc_dia_mach,+35% Phòng thủ. 
+Đứng yên sau 1.5s giúp +35% Phòng thủ, hồi 1.5% Giới hạn máu mỗi giây.
+-Lõi Huyết Tinh Sinh Học,loi_huyet_tinh_sinh_hoc,+15% Tấn công, +15% Giới hạn máu. 
+Chuyển 12% sát thương kỹ năng thành máu sửa chữa cho bản thân và 1 xe đồng minh thấp máu nhất trong phạm vi 5m xung quanh
+-Lõi Năng Lượng Thiên Thạch Nổ,loi_nang_luong_thien_thach_no+20% Giới hạn máu, +20% Phòng thủ.
+Mỗi khi mất 15% máu tối đa, giáp phát nổ trong phạm vi bán kính 1.5m gây sát thương bằng 100% Phòng thủ và đẩy lùi địch loại thường xung quanh.
+-Lõi Ma Pháp Hội Tụ Quang Tử,loi_ma_phap_hoi_tu_quang_tu,+18% Tỉ lệ sát thương, +15% Tỉ lệ xuyên giáp. 
+Khi dùng Kỹ năng thường tấn công trúng mục tiêu, nếu khoảng cách tới mục tiêu lớn hơn 7m sẽ tăng 25% Tỉ lệ sát thương trong 1s. Kích hoạt lại hiệu ứng sẽ đặt lại thời gian hồi
+-Động Cơ Xung Kích Tinh Thể Thạch Anh,dong_co_xung_kich_tinh_the_thach_anh,+15% Tấn công, +25% Tỉ lệ xuyên giáp. 
+Bắn liên tiếp vào cùng 1 mục tiêu trong 2s giúp tăng sát thương gây ra(+5% mỗi lần, tối đa +20%). Nếu trúng mục tiêu đó và kích hoạt hiệu ứng sẽ đặt lại thời gian hồi, nếu trúng mục tiêu khác sẽ đặt lại cộng dồn hiệu ứng tăng sát thương và đặt lại thời gian hồi
+-Lõi Ma Pháp Hắc Nguyệt,loi_ma_phap_hac_nguyet,+25% Giới hạn máu. 
+Phát trường bức xạ xung quanh xe trong phạm vi bán kính 2.5m làm kẻ địch bị giảm 20% Tốc độ di chuyển và giảm 15% Tấn công. 
+-Động Cơ Tua-Bin Linh Hỏa,dong_co_tua_bin_linh_hoa,+25% Tốc độ di chuyển, +15% Giới hạn máu. 
+Cứ di chuyển 3m sẽ để lại vùng lửa xanh có bán kính 1.2m tồn tại 3.5s giúp xe đồng minh đi qua +20% Tốc độ di chuyển, kẻ địch di chuyển vào sẽ làm giảm 20% tốc độ.
+-Lõi Ma Trận Cộng Hưởng Mones,loi_ma_tran_cong_huong_mones,+80 Giới hạn năng lượng, +15% Tỉ lệ giảm hồi chiêu. 
+Dùng kỹ năng thường hồi năng lượng sẽ chia sẻ 50% lượng hồi cho đồng minh trong phạm vi 7m ở gần nhất và cho họ +10% Giảm hồi chiêu.
+-Động Cơ Phân Pha Hư Không,dong_co_phan_pha_hu_khong,+25% Tấn công, +15% Tốc độ di chuyển. 
+Sau khi di chuyển một quãng 3m, sẽ nhận 30% Tỉ lệ xuyên giáp và 40% Tỉ lệ sát thương, hiệu quả sẽ biến mất khi gây sát thương.
+-Lõi Nhiệt Hạch Ba Lõi,loi_nhiet_hach_ba_loi+20% Tấn công, +10% Tỉ lệ sát thương. 
+Kỹ năng thường trúng địch gây Thiêu đốt (tối đa 3 cộng dồn) duy trì 3s, thêm công dồn sẽ không đặt lại thời gian duy trì. Hiệu ứng thiêu đốt gây 25% Tấn công/s cho cho mỗi cộng dồn cho mục tiêu. khi bất kỳ kỹ năng nào bắn vào mục tiêu đủ 3 cộng dồn sẽ thêm 25% tăng sát thương trong 3s và xóa mọi cộng dồn Thiêu đốt. 
+-Động Cơ Thủy Lực Ma Pháp Đầm Lầy,dong_co_thuy_luc_ma_phap_dam_lay,+30% Phòng thủ, +10% Tỉ lệ giảm hồi chiêu. 
+Nhận sát thương giúp cộng dồn giảm sát thương (3%/tầng, tối đa 18%); đủ 6 tầng được miễn nhiễm làm chậm và 15% Tỉ lệ giảm hồi chiêu trong 5s, sau khi hết thời gian hiệu lực sẽ xóa hết cộng dồn
+-Động Cơ Tua-Bin Xoáy Nước,dong_co_tua_bin_xoay_nuoc,+15% Tỉ lệ sát thương, +15%Tốc độ. 
+Khi có kẻ địch bị hạ gục địch trong phạm vi 10 mét sẽ hồi 25 Năng lượng và +20% Tốc độ di chuyển trong 2s. Đồng thời nhận 25% Tấn công, hiệu ứng tăng Tấn công có thể cộng dồn tối đa 2 tầng. Khi kích hoạt hiệu ứng sẽ đặt lại thời gian duy trì
+-Lõi Ma Pháp Bào Tử Độc,loi_ma_phap_bao_tu_doc,+50 Giới hạn năng lượng, +15% Tỉ lệ giảm hồi chiêu. 
+Kỹ năng gây sát thương phủ khói độc xung quanh 2.5m trong 3s và làm kẻ địch bị giảm 20% Phòng thủ. Hiệu ứng kích hoạt mỗi 3s một lần.
+-Lõi Tụ Điện Ma Pháp Sấm Sét,loi_tu_dien_ma_phap_sam_set,+20% Tấn công. 
+Mỗi lần thi triển Kỹ năng thường thứ 3 sẽ phóng tia sét chuỗi lan qua 4 kẻ địch đứng gần nhau, gây 65% sát thương Tấn công và làm chậm 20% trong 5s.
+-Lõi Ma Trận Khiên Nhật Thực,loi_ma_tran_khien_nhat_thuc,+20% Giới hạn máu, +60 Giới hạn năng lượng. 
+Mỗi khi dùng kỹ năng tiêu hao năng lượng, nhận lá chắn hấp thụ sát thương bằng 12% máu tối đa trong 6s (hồi 6s) 
+-Lõi Động Cơ Tái Sinh Chữ Thập,loi_dong_co_tai_sinh_chu_thap,+30% Giới hạn máu. 
+Tự sửa chữa 1.5% máu tối đa mỗi giây; khi máu dưới 40%, tốc độ sửa chữa tăng gấp đôi (3%/s) và +25% phòng thủ.
+-Lõi Thủy Tinh Trị Liệu,loi_thuy_tinh_tri_lieu,+15% Giới hạn máu, +20% Tỉ lệ giảm hồi chiêu.
+Khi hồi máu sẽ tạo khiên bằng 50% lượng hồi phục nhận, tồn tại trong 5s. Khi nhận hồi phục trong thời gian có khiên sẽ tăng lượng khiên hiện tại bằng 50% lượng hồi phục đó và đặt lại thời gian tồn tại giáp. Giá trị khiên tối đa bằng 30% Giới hạn máu.
+-Lõi Liên Kết Song Tinh Nguyên Tố,loi_lien_ket_song_tinh_nguyen_to,+15% Giới hạn máu, +25% Phòng thủ. 
+Nối cáp với 1 xe đồng minh thấp máu nhất ở gần, chuyển 20% sát thương nhận vào của đồng minh sang cho bản thân. Sát thương chuyển này sẽ trừ trực tiếp vào máu. Khi không có đồng minh xung quanh để nối cáp, sẽ nhận 50% Phòng thủ.
+-Lõi Động Cơ Lưỡng Cực THE2FACE,loi_dong_co_luong_cuc_the2face,+15% Tấn công, +15% Tỉ lệ giảm hồi chiêu. 
+Gây sát thương khiến địch nhận giảm 10% phòng thủ trong 4s; Hồi máu/tạo giáp giúp xe đồng minh +15% Tấn công trong 4s. Cả hai hiệu ứng cộng dồn tối đa 2 tầng, mỗi tâng có thời gian duy trì độc lập.
+-Lõi Siêu Cơ Giáp Thống Lĩnh D1ONK,loi_dong_co_giap_thong_linh_d1onk,+50% Tấn công, 50% Giới hạn máu, 50% Phòng thủ, 15% Tỉ lệ sát thương, +30% Tỉ lệ xuyên giáp. 
+Khi nhận phần thưởng từ kẻ địch Tinh anh, sẽ hồi 50% Giới hạn năng lượng, +30 Tỉ lệ giảm hồi chiêu và +30% Tỉ lệ sát thương trong 10s.

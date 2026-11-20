@@ -293,6 +293,40 @@ namespace IronWasteland.Net
             Broadcast();
         }
 
+        /// <summary>Host chọn màn theo mã ải (ví dụ "1-2"). Trả false nếu ải chưa có StageDefinition.</summary>
+        public bool SelectStageByCode(string stageCode)
+        {
+            if (!IsServer || Phase != MatchPhase.Lobby || string.IsNullOrWhiteSpace(stageCode)) return false;
+
+            for (int i = 0; i < StageCount; i++)
+            {
+                if (stageOptions[i] != null && string.Equals(stageOptions[i].StageCode, stageCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    SetStage(i);
+                    return true;
+                }
+            }
+
+            Debug.LogWarning("[MatchFlow] Không tìm thấy StageDefinition cho ải " + stageCode);
+            return false;
+        }
+
+        /// <summary>Tra tên ải theo mã (ví dụ "1-2") mà không đổi màn đang chọn. Trả chuỗi rỗng nếu không tìm thấy.</summary>
+        public string GetStageNameByCode(string stageCode)
+        {
+            if (string.IsNullOrWhiteSpace(stageCode)) return string.Empty;
+
+            for (int i = 0; i < StageCount; i++)
+            {
+                if (stageOptions[i] != null && string.Equals(stageOptions[i].StageCode, stageCode.Trim(), StringComparison.OrdinalIgnoreCase))
+                {
+                    return stageOptions[i].StageName;
+                }
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>Host xoay vòng màn đang chọn.</summary>
         public void CycleStage()
         {

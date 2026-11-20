@@ -6,7 +6,25 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 01cadaffda718704a9576da787dcb22b
+  - enabled: 1
+    path: Assets/Scenes/StageSelect.unity
+    guid: c02cae285b1615b46af9a77fc9eff1d2
+  - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/Scenes/Garage.unity
+    guid: b2b25e1f659e4d247a8b60f17db82fc0
+  - enabled: 1
+    path: Assets/Scenes/SkillPicker.unity
+    guid: 12370c42fc712ef459b5164cc72f4039
+  - enabled: 1
+    path: Assets/Scenes/Setting.unity
+    guid: db276692bd2339945b368f389488ff14
+  - enabled: 1
+    path: Assets/Scenes/GarageAccessory.unity
+    guid: 6131b411d4a36594a92b5eb2c8cd8668
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
