@@ -7,7 +7,7 @@ namespace IronWasteland.Enemies.Test
 {
     /// <summary>
     /// Bia tap ban / Target Dummy ke dich TINH ANH (Elite/Boss) dung de kiem thu:
-    /// - Co che "Bung no nang luong" (Mach nang luong, pha thanh cong, pha that bai).
+    /// - Co che "Bung no nang luong" (State Machine: Normal -> Charging -> Active -> Reward / Penalty).
     /// - Su kien OnEnergyBurstSuccess de kiem thu Phu kien 20 (D1ONK).
     /// - Mien nhiem khong che cung (Root/Stun).
     /// - He thong sat thuong, giap, xuyen giap va log chi tiet.
@@ -106,6 +106,7 @@ namespace IronWasteland.Enemies.Test
 
         protected override void OnDeath()
         {
+            base.OnDeath();
             Debug.Log($"<color=red>[ELITE: {name}] Đã bị tiêu diệt!</color>");
             if (autoReviveOnDeath && gameObject.activeInHierarchy)
             {
@@ -143,9 +144,15 @@ namespace IronWasteland.Enemies.Test
                 float reducedByArmor = Mathf.Max(0f, info.RawDamage - info.FinalDamage);
 
                 string attackerName = info.Attacker != null ? info.Attacker.name : "None";
-                string burstStatus = IsBreakWindowOpen
-                    ? $"<color=yellow>ĐANG MỞ ({BrokenCoreCount}/{EnergyCoreCount} mạch - Còn {BreakWindowRemaining:F1}s)</color>"
-                    : (AllCoresBroken ? "<color=green>ĐÃ PHÁ TOÀN BỘ (DEF GIẢM)</color>" : "Đang đóng");
+                string burstStatus = BurstState switch
+                {
+                    EliteBurstState.Charging => $"<color=yellow>ĐANG VẬN SỨC ({BurstTimer:F1}s)</color>",
+                    EliteBurstState.Active => $"<color=orange>ĐANG BÙNG NỔ (Còn {BurstTimer:F1}s)</color>",
+                    EliteBurstState.RewardPhase => $"<color=green>THƯỞNG ({BurstTimer:F1}s)</color>",
+                    EliteBurstState.PenaltyPhase => $"<color=red>PHẠT ({BurstTimer:F1}s)</color>",
+                    EliteBurstState.Finished => "<color=grey>KẾT THÚC</color>",
+                    _ => "Chưa kích hoạt"
+                };
 
                 string log =
                     $"<b><color=#FF5500>[Elite Damage Log: {name}]</color></b>\n" +
@@ -164,6 +171,25 @@ namespace IronWasteland.Enemies.Test
                 Debug.Log(log);
             }
         }
+
+        #region Burst Hooks Implementation
+
+        protected override void OnBurstStart()
+        {
+            Debug.Log($"<color=orange>[ELITE: {name}] OnBurstStart: Bắt đầu giai đoạn Bùng nổ năng lượng!</color>");
+        }
+
+        protected override void OnBurstSuccess()
+        {
+            Debug.Log($"<color=green>[ELITE: {name}] OnBurstSuccess: Phá cơ chế Bùng nổ thành công! Nhận trạng thái Thưởng.</color>");
+        }
+
+        protected override void OnBurstFail()
+        {
+            Debug.Log($"<color=red>[ELITE: {name}] OnBurstFail: Hết giờ hoặc thất bại cơ chế! Nhận trạng thái Phạt.</color>");
+        }
+
+        #endregion
 
         #region Context Menu Actions - General
 
@@ -232,7 +258,7 @@ namespace IronWasteland.Enemies.Test
         {
             Initialize(Stats);
             RestoreFullHealth();
-            ResetCoresManual();
+            ResetBurstManual();
             Debug.Log($"<color=green>[ELITE: {name}] Đã hồi sinh với đầy đủ máu ({CurrentHealth:F1}/{MaxHealth:F1})!</color>");
         }
 
@@ -247,50 +273,35 @@ namespace IronWasteland.Enemies.Test
 
         #region Context Menu Actions - Elite Specific (Energy Burst)
 
-        [ContextMenu("ELITE: 1. Kích hoạt Bùng nổ năng lượng (Mở mạch)")]
+        [ContextMenu("ELITE: 1. Kích hoạt Bùng nổ năng lượng")]
         public void TestTriggerEnergyBurst()
         {
             TriggerEnergyBurstManual();
-            Debug.Log($"<color=cyan>[ELITE: {name}] Đã kích hoạt Bùng nổ năng lượng! Mạch mở: {BrokenCoreCount}/{EnergyCoreCount}. Thời gian: {BreakWindowRemaining:F1}s.</color>");
+            Debug.Log($"<color=cyan>[ELITE: {name}] Đã kích hoạt Bùng nổ năng lượng! Trạng thái: {BurstState}, Thời gian: {BurstTimer:F1}s.</color>");
         }
 
-        [ContextMenu("ELITE: 2. Phá thành công Bùng nổ năng lượng (Tất cả mạch)")]
+        [ContextMenu("ELITE: 2. Phá thành công Bùng nổ năng lượng (Thưởng)")]
         public void TestForceBurstSuccess()
         {
             ForceBurstSuccess();
-            Debug.Log($"<color=green>[ELITE: {name}] Phá thành công toàn bộ mạch! Sự kiện OnEnergyBurstSuccess đã phát ra. Phòng thủ giảm {DefenseBreakBonus * 100}% trong {DefenseBreakDuration}s.</color>");
+            Debug.Log($"<color=green>[ELITE: {name}] Phá thành công Bùng nổ! Sự kiện OnEnergyBurstSuccess đã phát ra. Trạng thái: {BurstState}.</color>");
         }
 
-        [ContextMenu("ELITE: 3. Phá thất bại Bùng nổ năng lượng (Hết giờ)")]
+        [ContextMenu("ELITE: 3. Phá thất bại Bùng nổ năng lượng (Phạt)")]
         public void TestForceBurstFailure()
         {
             ForceBurstFailure();
-            Debug.Log($"<color=red>[ELITE: {name}] Phá thất bại Bùng nổ năng lượng! Boss tung kỹ năng hủy diệt.</color>");
+            Debug.Log($"<color=red>[ELITE: {name}] Phá thất bại Bùng nổ! Trạng thái: {BurstState}.</color>");
         }
 
-        [ContextMenu("ELITE: 4. Phá hủy 1 mạch năng lượng kế tiếp")]
-        public void BreakNextCore()
+        [ContextMenu("ELITE: 4. Đặt lại trạng thái Bùng nổ năng lượng")]
+        public void TestResetBurst()
         {
-            for (int i = 0; i < Cores.Count; i++)
-            {
-                if (Cores[i].state == EnergyCoreState.Open)
-                {
-                    BreakCore(i);
-                    Debug.Log($"[{name}] Đã phá hủy mạch #{i + 1}! Đã phá: {BrokenCoreCount}/{EnergyCoreCount}.");
-                    return;
-                }
-            }
-            Debug.LogWarning($"[{name}] Không có mạch nào đang Mở để phá! Hãy kích hoạt Bùng nổ năng lượng trước.");
+            ResetBurstManual();
+            Debug.Log($"<color=grey>[ELITE: {name}] Đã đặt lại trạng thái Bùng nổ năng lượng về Inactive.</color>");
         }
 
-        [ContextMenu("ELITE: 5. Đặt lại toàn bộ mạch năng lượng")]
-        public void TestResetCores()
-        {
-            ResetCoresManual();
-            Debug.Log($"[{name}] Đã đặt lại toàn bộ mạch năng lượng về trạng thái Đóng ban đầu.");
-        }
-
-        [ContextMenu("ELITE: 6. Đặt máu về 49% (Kích hoạt tự động)")]
+        [ContextMenu("ELITE: 5. Đặt máu về 49% (Kích hoạt tự động)")]
         public void SetHpTo49Percent()
         {
             if (Stats == null || MaxHealth <= 0f) return;
