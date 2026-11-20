@@ -473,6 +473,12 @@ namespace IronWasteland.Enemies
             float distance = Vector2.Distance(transform.position, m_CurrentTarget.transform.position);
 
             m_SlashTimer += deltaTime;
+            m_SoulSummonTimer += deltaTime;
+            m_RiftTimer += deltaTime;
+
+            // Nếu đang trong thời gian giãn cách kỹ năng toàn cục (GlobalSkillInterval), không thi triển chiêu mới
+            if (!CanCastAnySkill) return;
+
             if (m_SlashTimer >= slashCooldown && distance <= slashRange)
             {
                 m_SlashTimer = 0f;
@@ -480,7 +486,6 @@ namespace IronWasteland.Enemies
                 return;
             }
 
-            m_SoulSummonTimer += deltaTime;
             if (m_SoulSummonTimer >= soulSummonCooldown)
             {
                 m_SoulSummonTimer = 0f;
@@ -488,7 +493,6 @@ namespace IronWasteland.Enemies
                 return;
             }
 
-            m_RiftTimer += deltaTime;
             if (m_RiftTimer >= riftCooldown)
             {
                 m_RiftTimer = 0f;
@@ -518,6 +522,7 @@ namespace IronWasteland.Enemies
                 m_VfxController.PlayDeadlandSlash(transform.position);
             }
 
+            TriggerGlobalSkillCooldown();
             SpawnSlashHitbox();
         }
 
@@ -563,6 +568,8 @@ namespace IronWasteland.Enemies
             {
                 m_VfxController.PlaySoulSummonPulse(transform.position);
             }
+
+            TriggerGlobalSkillCooldown();
 
             // 1. Quét làm chậm Tank trong phạm vi thông qua Trigger
             ApplySoulSummonPulseSlow();
@@ -641,6 +648,7 @@ namespace IronWasteland.Enemies
 
             if (m_Animator != null) m_Animator.SetTrigger("CastRift");
 
+            TriggerGlobalSkillCooldown();
             CreateSpatialRift(spawnPos);
         }
 
@@ -760,6 +768,7 @@ namespace IronWasteland.Enemies
             m_SlashTimer = slashCooldown;
             m_SoulSummonTimer = soulSummonCooldown;
             m_RiftTimer = riftCooldown;
+            ResetGlobalSkillCooldown();
 
             // 1. Tạo Khiên Tứ Hướng
             m_MaxCardinalShield = MaxHealth * cardinalShieldRatio;
@@ -955,6 +964,7 @@ namespace IronWasteland.Enemies
             m_SlashTimer = slashCooldown;
             m_SoulSummonTimer = soulSummonCooldown;
             m_RiftTimer = riftCooldown;
+            ResetGlobalSkillCooldown();
 
             // 1. Boss mất rewardBossHpLossRatio máu tối đa
             float hpLoss = MaxHealth * rewardBossHpLossRatio;
@@ -1022,6 +1032,7 @@ namespace IronWasteland.Enemies
             m_SlashTimer = slashCooldown;
             m_SoulSummonTimer = soulSummonCooldown;
             m_RiftTimer = riftCooldown;
+            ResetGlobalSkillCooldown();
 
             // 1. Nổ trừng phạt toàn map và làm chậm Tank
             float penaltyDamage = Stats.Attack * penaltyDamageMultiplier;
@@ -1113,11 +1124,6 @@ namespace IronWasteland.Enemies
             }
 
             return nearest;
-        }
-
-        public void ManualTick(float deltaTime)
-        {
-            OnBrainTick(deltaTime);
         }
 
         #endregion
