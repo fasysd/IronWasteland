@@ -82,6 +82,7 @@ MonoBehaviour:
   awayFromHomeTimer: 0
   currentTarget: {fileID: 0}
   zoneTemplate: {fileID: 7183921048291048206}
+  chargeColliderRef: {fileID: 0}
   chargeSpeed: 10
   chargeWindup: 0.25
   skillCooldown: 3.5
@@ -380,6 +381,7 @@ GameObject:
   - component: {fileID: 7183921048291048204}
   - component: {fileID: 7183921048291048205}
   - component: {fileID: 7183921048291048206}
+  - component: {fileID: 6457703705825946553}
   m_Layer: 0
   m_Name: SwampZone_QuaiVatDamLay
   m_TagString: Untagged
@@ -510,7 +512,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
-  owner: {fileID: 2227866231023619111}
+  owner: {fileID: 0}
 --- !u!114 &7183921048291048206
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -525,9 +527,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.Normal.SwampZone_QuaiVatDamLay
   swampDuration: 3.5
   slowPercent: 0.5
+  hitCheckDelay: 0.05
   tankLayer:
     serializedVersion: 2
     m_Bits: 64
   spriteRenderer: {fileID: 7183921048291048203}
   activeColor: {r: 0.35, g: 0.45, b: 0.2, a: 0.45}
   warningColor: {r: 0.55, g: 0.25, b: 0.1, a: 0.65}
+--- !u!50 &6457703705825946553
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7183921048291048201}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0

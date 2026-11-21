@@ -88,6 +88,7 @@ MonoBehaviour:
   skillCooldown: 2
   damageMultiplier: 1
   chainJumpDistance: 4
+  maxChainTargets: 2
   chainJumpDelay: 0.08
   beamThickness: 0.2
   beamDuration: 0.25
@@ -555,7 +556,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
-  owner: {fileID: 2837244264739505214}
+  owner: {fileID: 0}
 --- !u!50 &8201000000000000005
 Rigidbody2D:
   serializedVersion: 5

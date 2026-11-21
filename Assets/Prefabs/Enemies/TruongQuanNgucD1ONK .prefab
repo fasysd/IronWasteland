@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6062463094692785
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8372259549850434578}
+  m_Layer: 0
+  m_Name: Sung3Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8372259549850434578
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6062463094692785}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.98283887, w: -0.18446632}
+  m_LocalPosition: {x: -6.039107, y: 3.70362, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &688078831430710648
 GameObject:
   m_ObjectHideFlags: 0
@@ -10,6 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4458729420287961344}
   - component: {fileID: 2367196111061894724}
+  - component: {fileID: 7489078960983779046}
   m_Layer: 0
   m_Name: "S\xFAng 3 n\xF2ng (4)"
   m_TagString: Untagged
@@ -84,7 +116,7 @@ SpriteRenderer:
   m_Sprite: {fileID: -791662927369706882, guid: e4ddd6d3f9f8a20428491479c42049cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
-  m_FlipY: 1
+  m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 2.6106374, y: 1.41}
   m_AdaptiveModeThreshold: 0.5
@@ -92,6 +124,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &7489078960983779046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 688078831430710648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 8372259549850434578}
+  m_BoneTransforms:
+  - {fileID: 8372259549850434578}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
 --- !u!1 &869499108348155922
 GameObject:
   m_ObjectHideFlags: 0
@@ -137,6 +190,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3936469025450250032}
   - component: {fileID: 5903612455793318922}
+  - component: {fileID: 3244697138257110464}
   m_Layer: 0
   m_Name: "Vai tr\xE1i"
   m_TagString: Untagged
@@ -220,6 +274,59 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &3244697138257110464
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1037692073149273340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 7156624858536127156}
+  m_BoneTransforms:
+  - {fileID: 7156624858536127156}
+  m_Bounds:
+    m_Center: {x: -3.819524, y: 1.774456, z: 0}
+    m_Extent: {x: 0.5643413, y: 0.6020296, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
+--- !u!1 &1044357584773860338
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1183296739882168073}
+  m_Layer: 0
+  m_Name: CanhTayTrai
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1183296739882168073
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1044357584773860338}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.9917604, w: 0.12810695}
+  m_LocalPosition: {x: 4.590343, y: 2.484608, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 9223209165335377551}
+  m_Father: {fileID: 2779479616951518964}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 165.28}
 --- !u!1 &1153943669135052507
 GameObject:
   m_ObjectHideFlags: 0
@@ -230,6 +337,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5247022941821319050}
   - component: {fileID: 4798085426417637913}
+  - component: {fileID: 1594487991079559653}
   m_Layer: 0
   m_Name: "S\xFAng 2 n\xF2ng (5)"
   m_TagString: Untagged
@@ -247,7 +355,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 1, w: 0}
   m_LocalPosition: {x: 5.86, y: 2.4, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: -1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7385904494086878519}
@@ -304,7 +412,7 @@ SpriteRenderer:
   m_Sprite: {fileID: 2367899840175745149, guid: e4ddd6d3f9f8a20428491479c42049cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
-  m_FlipY: 1
+  m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 2.0004885, y: 1.27}
   m_AdaptiveModeThreshold: 0.5
@@ -312,6 +420,58 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &1594487991079559653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1153943669135052507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 1633164402314877185}
+  m_BoneTransforms:
+  - {fileID: 1633164402314877185}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
+--- !u!1 &1168950219411864067
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9007640227789708326}
+  m_Layer: 0
+  m_Name: Sung2Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9007640227789708326
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168950219411864067}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.6971131, w: 0.7169612}
+  m_LocalPosition: {x: -2.3674562, y: -5.943612, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1372109747910189885
 GameObject:
   m_ObjectHideFlags: 0
@@ -322,6 +482,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3293181041453855761}
   - component: {fileID: 5372853633551984589}
+  - component: {fileID: 3026781082427500004}
   m_Layer: 0
   m_Name: "Tay ph\u1EA3i"
   m_TagString: Untagged
@@ -395,7 +556,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: 2402069223549281550, guid: e4ddd6d3f9f8a20428491479c42049cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 1
+  m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 3.050745, y: 6.32}
@@ -404,6 +565,124 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &3026781082427500004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1372109747910189885}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 7221273555847109734}
+  m_BoneTransforms:
+  - {fileID: 7221273555847109734}
+  - {fileID: 5233440605852621982}
+  - {fileID: 8044999495540290220}
+  m_Bounds:
+    m_Center: {x: -1.5302494, y: 0.41364312, z: 0}
+    m_Extent: {x: 0.6354449, y: 1.5952356, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
+--- !u!1 &1486127956860685138
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2904188518620868665}
+  m_Layer: 0
+  m_Name: VaiPhai
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2904188518620868665
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1486127956860685138}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.23113526, w: 0.97292167}
+  m_LocalPosition: {x: 3.607326, y: -1.98819, z: 0}
+  m_LocalScale: {x: 1, y: -1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3216348284982236652}
+  m_Father: {fileID: 2779479616951518964}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 62.293}
+--- !u!1 &1765361258811462221
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1059496503400554220}
+  m_Layer: 0
+  m_Name: Sung2Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1059496503400554220
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1765361258811462221}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.54311365, w: 0.8396593}
+  m_LocalPosition: {x: 2.4888928, y: -2.2060843, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2100738459101262163
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5233440605852621982}
+  m_Layer: 0
+  m_Name: CangTayPhai
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5233440605852621982
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100738459101262163}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0, z: 0.18805118, w: 0.98215926}
+  m_LocalPosition: {x: 2.040876, y: 0.00000025884898, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8044999495540290220}
+  m_Father: {fileID: 7221273555847109734}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 21.678}
 --- !u!1 &2285809483918087505
 GameObject:
   m_ObjectHideFlags: 0
@@ -414,6 +693,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1506907853983472710}
   - component: {fileID: 5193584806557402899}
+  - component: {fileID: 4024493304875444505}
   m_Layer: 0
   m_Name: "S\xFAng 2 n\xF2ng (1)"
   m_TagString: Untagged
@@ -496,6 +776,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &4024493304875444505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2285809483918087505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 9007640227789708326}
+  m_BoneTransforms:
+  - {fileID: 9007640227789708326}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
 --- !u!1 &2428652741833619452
 GameObject:
   m_ObjectHideFlags: 0
@@ -506,6 +807,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1723324457733873786}
   - component: {fileID: 3799228761958742418}
+  - component: {fileID: 9001740945809990121}
   m_Layer: 0
   m_Name: "Chi\u1EBFn h\u1EA1m"
   m_TagString: Untagged
@@ -529,6 +831,7 @@ Transform:
   - {fileID: 7385904494086878519}
   - {fileID: 4958503581148547163}
   - {fileID: 5679084389408103477}
+  - {fileID: 8636386958364954292}
   m_Father: {fileID: 1910718092571899764}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &3799228761958742418
@@ -591,6 +894,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &9001740945809990121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2428652741833619452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 8636386958364954292}
+  m_BoneTransforms:
+  - {fileID: 8636386958364954292}
+  m_Bounds:
+    m_Center: {x: -2.4216976, y: -0.4954872, z: 0}
+    m_Extent: {x: 4.894374, y: 4.5689955, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
 --- !u!1 &2466116234544809009
 GameObject:
   m_ObjectHideFlags: 0
@@ -601,6 +925,7 @@ GameObject:
   m_Component:
   - component: {fileID: 645781785163324893}
   - component: {fileID: 6520816771728404668}
+  - component: {fileID: 5646439590633282960}
   m_Layer: 0
   m_Name: "S\xFAng 2 n\xF2ng (4)"
   m_TagString: Untagged
@@ -618,7 +943,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: 0.796002, w: -0.60529405}
   m_LocalPosition: {x: 1.846, y: 7.238, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: -1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7385904494086878519}
@@ -675,7 +1000,7 @@ SpriteRenderer:
   m_Sprite: {fileID: 2367899840175745149, guid: e4ddd6d3f9f8a20428491479c42049cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
-  m_FlipY: 1
+  m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 2.0004885, y: 1.27}
   m_AdaptiveModeThreshold: 0.5
@@ -683,6 +1008,59 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &5646439590633282960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2466116234544809009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 7079272909441941951}
+  m_BoneTransforms:
+  - {fileID: 7079272909441941951}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
+--- !u!1 &2511421344858930253
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7156624858536127156}
+  m_Layer: 0
+  m_Name: VaiTrai
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7156624858536127156
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2511421344858930253}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.31089875, w: 0.9504431}
+  m_LocalPosition: {x: 3.607326, y: 1.9881897, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3312216233941849885}
+  m_Father: {fileID: 2779479616951518964}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2637277925158419508
 GameObject:
   m_ObjectHideFlags: 0
@@ -693,6 +1071,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3690757266949565686}
   - component: {fileID: 7438847843588551228}
+  - component: {fileID: 5786056548909255277}
   m_Layer: 0
   m_Name: "Tay tr\xE1i"
   m_TagString: Untagged
@@ -775,6 +1154,29 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &5786056548909255277
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2637277925158419508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 1183296739882168073}
+  m_BoneTransforms:
+  - {fileID: 1183296739882168073}
+  - {fileID: 9223209165335377551}
+  - {fileID: 1375601637277501381}
+  m_Bounds:
+    m_Center: {x: -3.6907105, y: 0.3740661, z: 0}
+    m_Extent: {x: 0.61721146, y: 1.5885439, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
 --- !u!1 &2683208345566881111
 GameObject:
   m_ObjectHideFlags: 0
@@ -785,6 +1187,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3214801401512290464}
   - component: {fileID: 5202643760321355427}
+  - component: {fileID: 9014790009153192533}
   m_Layer: 0
   m_Name: "Vai m\u1EB7t trong"
   m_TagString: Untagged
@@ -858,7 +1261,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: -7532354565405032535, guid: e4ddd6d3f9f8a20428491479c42049cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 1
+  m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 0.6601612, y: 1.46}
@@ -867,6 +1270,58 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &9014790009153192533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2683208345566881111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 3216348284982236652}
+  m_BoneTransforms:
+  - {fileID: 3216348284982236652}
+  m_Bounds:
+    m_Center: {x: -1.57223, y: 1.9971743, z: 0}
+    m_Extent: {x: 0.16000879, y: 0.35502416, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
+--- !u!1 &2686867429178972056
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7305867240710759730}
+  m_Layer: 0
+  m_Name: Sung3Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7305867240710759730
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2686867429178972056}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.351842, w: -0.9360595}
+  m_LocalPosition: {x: 4.3754196, y: -1.9723577, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2702259676318787256
 GameObject:
   m_ObjectHideFlags: 0
@@ -877,6 +1332,7 @@ GameObject:
   m_Component:
   - component: {fileID: 388087436961558654}
   - component: {fileID: 1915001379945948247}
+  - component: {fileID: 6390414440627155025}
   m_Layer: 0
   m_Name: "S\xFAng 2 n\xF2ng (8)"
   m_TagString: Untagged
@@ -951,7 +1407,7 @@ SpriteRenderer:
   m_Sprite: {fileID: 2367899840175745149, guid: e4ddd6d3f9f8a20428491479c42049cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
-  m_FlipY: 1
+  m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 2.0004885, y: 1.27}
   m_AdaptiveModeThreshold: 0.5
@@ -959,6 +1415,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &6390414440627155025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2702259676318787256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 4239206677362609035}
+  m_BoneTransforms:
+  - {fileID: 4239206677362609035}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
 --- !u!1 &2844021207375579703
 GameObject:
   m_ObjectHideFlags: 0
@@ -969,6 +1446,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1173120362276301979}
   - component: {fileID: 1215714154978031755}
+  - component: {fileID: 5022033428863812157}
   m_Layer: 0
   m_Name: "S\xFAng 2 n\xF2ng (7)"
   m_TagString: Untagged
@@ -1043,7 +1521,7 @@ SpriteRenderer:
   m_Sprite: {fileID: 2367899840175745149, guid: e4ddd6d3f9f8a20428491479c42049cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
-  m_FlipY: 1
+  m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 2.0004885, y: 1.27}
   m_AdaptiveModeThreshold: 0.5
@@ -1051,6 +1529,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &5022033428863812157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2844021207375579703}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 6606730002438699933}
+  m_BoneTransforms:
+  - {fileID: 6606730002438699933}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
 --- !u!1 &2858964946629001201
 GameObject:
   m_ObjectHideFlags: 0
@@ -1061,6 +1560,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2136774199622625407}
   - component: {fileID: 8246157325103806253}
+  - component: {fileID: 2167552918106121514}
   m_Layer: 0
   m_Name: "S\xFAng 2 n\xF2ng (9)"
   m_TagString: Untagged
@@ -1143,6 +1643,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &2167552918106121514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2858964946629001201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 1059496503400554220}
+  m_BoneTransforms:
+  - {fileID: 1059496503400554220}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
 --- !u!1 &2997488555990479441
 GameObject:
   m_ObjectHideFlags: 0
@@ -1154,6 +1675,7 @@ GameObject:
   - component: {fileID: 8657597288793346402}
   - component: {fileID: 4382231180120962163}
   - component: {fileID: 4556977129910709487}
+  - component: {fileID: -3170757082340412462}
   m_Layer: 7
   m_Name: 'TruongQuanNgucD1ONK '
   m_TagString: Untagged
@@ -1186,20 +1708,37 @@ MonoBehaviour:
   m_GameObject: {fileID: 2997488555990479441}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 754e8f47107c4b8bba7de55c9baa4e1a, type: 3}
+  m_Script: {fileID: 11500000, guid: fbc79573f61df7846938022aea8905c6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.EliteEnemyBrain_Test
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.D1onk.D1onkBrain
   model: {fileID: 1805891303938877128}
-  displayName: Enemy Elite
+  displayName: "Tr\u01B0\u1EDFng Qu\u1EA3n Ng\u1EE5c D1ONK"
   stats:
-    Attack: 25
-    Defense: 0.3
-    MaxHealth: 300
-    MoveSpeed: 1.5
+    Attack: 1
+    Defense: 60
+    MaxHealth: 500
+    MoveSpeed: 70
   currentHealth: 0
-  energyCoreCount: 3
-  breakWindowDuration: 10
-  defenseBreakBonus: 0.5
+  burstHpThreshold: 0.9
+  burstChargeTime: 2
+  burstDuration: 40
+  rewardPhaseDuration: 10
+  penaltyPhaseDuration: 5
+  burstAttackMultiplier: 1.3
+  burstDefenseMultiplier: 2
+  burstMoveSpeedMultiplier: 1
+  globalSkillInterval: 2
+  stopDistance: 7
+  moveSpeedDivisor: 100
+  rotationSpeed: 360
+  rotationOffset: 0
+  rotationPivot: {fileID: 1910718092571899764}
+  trungPhatCooldown: 999
+  lazeNguyenToCooldown: 999
+  toaNhietDienRongCooldown: 999
+  vienBinhTinhLinhCooldown: 1
+  subArenaPrefab: {fileID: 1971750688958054942, guid: e652e3fa50282d44cb7fdf4800a623b5, type: 3}
+  cockpitCenter: {x: 200, y: 100}
 --- !u!50 &4556977129910709487
 Rigidbody2D:
   serializedVersion: 5
@@ -1227,6 +1766,58 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &-3170757082340412462
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2997488555990479441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e750951f0ca4ea04ca22e58ff8b3567f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.D1onk.D1onkVFXController
+  missileProjectilePrefab: {fileID: 4902270035738657672, guid: f690ee2de1216064d86d8ea90e95ebe6, type: 3}
+  muzzleFlashPrefab: {fileID: 2878022181906116093, guid: 31bfdd5bad2682e45bbed44146228267, type: 3}
+  explosionVFXPrefab: {fileID: 246905549649215118, guid: f11ccd6ead6e5444086d25825c6c850f, type: 3}
+  trungPhatLightningPrefab: {fileID: 8983056598318181901, guid: feedbade1b441ec44a96c326ffc50a51, type: 3}
+  lazeNguyenToPrefab: {fileID: 5649345031416540328, guid: 116d32094028f2342a90cbe9ddb4d18b, type: 3}
+  toaNhietDienRongPrefab: {fileID: 1009528961256101684, guid: 511c700caee212442a4eecd024fc7bd2, type: 3}
+  vienBinhSummonVFXPrefab: {fileID: 5266869162677690209, guid: 5106e63399b83ab4896d06d6a51be188, type: 3}
+  chargingAuraPrefab: {fileID: 8264617363939735276, guid: 614a9f552da9d1a48a8be1bb7b1c3643, type: 3}
+  stunVFXPrefab: {fileID: 7899954895171703830, guid: a3c73039c590e0848af53ade79ebb117, type: 3}
+  gunBarrels:
+  - {fileID: 1506907853983472710}
+  - {fileID: 5247022941821319050}
+  - {fileID: 726535954830083125}
+  - {fileID: 1142465931593349569}
+  - {fileID: 5063579698964528700}
+  - {fileID: 645781785163324893}
+  - {fileID: 1173120362276301979}
+  - {fileID: 2136774199622625407}
+  - {fileID: 388087436961558654}
+  - {fileID: 6373643835781506617}
+  - {fileID: 208648543860293977}
+  - {fileID: 3228531477012374835}
+  - {fileID: 1374683669053584825}
+  - {fileID: 4458729420287961344}
+  gunMuzzleOffset: 0.8
+  laserEmitterPoint: {fileID: 5679084389408103477}
+  headPoint: {fileID: 7327099591763506754}
+  normalEnemyPrefabs:
+  - {fileID: 1031078827579660911, guid: 97e171ca3a01b3d40a49e4a3727b3bae, type: 3}
+  - {fileID: 1206802647992198267, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
+  - {fileID: 8529011875415925671, guid: dd03dff10e04c7847a6ca5bc5d1dae1d, type: 3}
+  - {fileID: 8718103148031551493, guid: 68e51485bfa081c4c8cd7ac60d5639cb, type: 3}
+  - {fileID: 5180357702814489762, guid: 77900bee80658ae47b33d0cbc8e38e67, type: 3}
+  - {fileID: 1219376077449480298, guid: 9217f7f00f5831a4980db46f30f162e8, type: 3}
+  - {fileID: 2217499507354383179, guid: 56632388536e92747835f0a208002653, type: 3}
+  - {fileID: 6100468257158417488, guid: b6ed689b45e5ea9459d4f520cf9423c8, type: 3}
+  - {fileID: 773281319276612513, guid: dc8cd304e186d3d4cb5b4ae517da1477, type: 3}
+  - {fileID: 46436049341597291, guid: fa914b93d15fd4d41920d832034cf707, type: 3}
+  - {fileID: 7692010306268881268, guid: 3d7a3d53f4ad62449ad228d3ead96c34, type: 3}
+  - {fileID: 2191416951487824985, guid: dd67fd1da0bc9f34eb67cc48121a0809, type: 3}
 --- !u!1 &3072718851655084315
 GameObject:
   m_ObjectHideFlags: 0
@@ -1237,6 +1828,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5679084389408103477}
   - component: {fileID: 5324356297728578817}
+  - component: {fileID: 6871091900092650472}
   m_Layer: 0
   m_Name: "Th\xE2n"
   m_TagString: Untagged
@@ -1324,6 +1916,58 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &6871091900092650472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3072718851655084315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 2779479616951518964}
+  m_BoneTransforms:
+  - {fileID: 2779479616951518964}
+  m_Bounds:
+    m_Center: {x: -2.3974576, y: 0.67958033, z: 0}
+    m_Extent: {x: 1.0571886, y: 1.6156244, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
+--- !u!1 &3164695958484719157
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1564578740605140763}
+  m_Layer: 0
+  m_Name: Sung2Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1564578740605140763
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3164695958484719157}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.7169612, w: 0.6971131}
+  m_LocalPosition: {x: -0.83932155, y: 5.4347563, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3248567673606584645
 GameObject:
   m_ObjectHideFlags: 0
@@ -1334,6 +1978,7 @@ GameObject:
   m_Component:
   - component: {fileID: 726535954830083125}
   - component: {fileID: 322854748861360757}
+  - component: {fileID: 4266638935019901663}
   m_Layer: 0
   m_Name: "S\xFAng 2 n\xF2ng (2)"
   m_TagString: Untagged
@@ -1416,6 +2061,60 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &4266638935019901663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3248567673606584645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 1120316157839125501}
+  m_BoneTransforms:
+  - {fileID: 1120316157839125501}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
+--- !u!1 &3392732240679095314
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8636386958364954292}
+  m_Layer: 0
+  m_Name: ChienHam
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8636386958364954292
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3392732240679095314}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.70342827, w: 0.71076626}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2779479616951518964}
+  - {fileID: 5172608517420479245}
+  m_Father: {fileID: 1723324457733873786}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -89.405}
 --- !u!1 &3599815131229047488
 GameObject:
   m_ObjectHideFlags: 0
@@ -1426,6 +2125,7 @@ GameObject:
   m_Component:
   - component: {fileID: 208648543860293977}
   - component: {fileID: 6501023756142652132}
+  - component: {fileID: 8791596349459769445}
   m_Layer: 0
   m_Name: "S\xFAng 3 n\xF2ng (1)"
   m_TagString: Untagged
@@ -1508,6 +2208,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &8791596349459769445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3599815131229047488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 7305867240710759730}
+  m_BoneTransforms:
+  - {fileID: 7305867240710759730}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
 --- !u!1 &3642180215958913127
 GameObject:
   m_ObjectHideFlags: 0
@@ -1518,6 +2239,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1142465931593349569}
   - component: {fileID: 6521862685316649025}
+  - component: {fileID: 7644196411886998476}
   m_Layer: 0
   m_Name: "S\xFAng 2 n\xF2ng (6)"
   m_TagString: Untagged
@@ -1535,7 +2257,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 1, w: 0}
   m_LocalPosition: {x: 5.48, y: 0.8, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: -1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7385904494086878519}
@@ -1592,7 +2314,7 @@ SpriteRenderer:
   m_Sprite: {fileID: 2367899840175745149, guid: e4ddd6d3f9f8a20428491479c42049cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
-  m_FlipY: 1
+  m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 2.0004885, y: 1.27}
   m_AdaptiveModeThreshold: 0.5
@@ -1600,6 +2322,120 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &7644196411886998476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3642180215958913127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 1564578740605140763}
+  m_BoneTransforms:
+  - {fileID: 1564578740605140763}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
+--- !u!1 &3745249443524186958
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4239206677362609035}
+  m_Layer: 0
+  m_Name: Sung2Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4239206677362609035
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3745249443524186958}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.64150524, w: -0.7671186}
+  m_LocalPosition: {x: 3.3479595, y: 4.0190887, z: 0}
+  m_LocalScale: {x: 1, y: -1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4092050521422197104
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6600470905395460218}
+  m_Layer: 0
+  m_Name: Sung2Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6600470905395460218
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4092050521422197104}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.6197221, w: 0.7848214}
+  m_LocalPosition: {x: 3.4086726, y: -4.091794, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4244120248849203726
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1120316157839125501}
+  m_Layer: 0
+  m_Name: Sung2Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1120316157839125501
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4244120248849203726}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.6971131, w: 0.7169612}
+  m_LocalPosition: {x: -0.7262914, y: -5.563226, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4295516769549467801
 GameObject:
   m_ObjectHideFlags: 0
@@ -1610,6 +2446,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7327099591763506754}
   - component: {fileID: 5644708727974635509}
+  - component: {fileID: 2811965072093901893}
   m_Layer: 0
   m_Name: "\u0110\u1EA7u"
   m_TagString: Untagged
@@ -1692,6 +2529,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &2811965072093901893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4295516769549467801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 3673982604741073211}
+  m_BoneTransforms:
+  - {fileID: 3673982604741073211}
+  m_Bounds:
+    m_Center: {x: -2.4114351, y: 2.2488227, z: 0}
+    m_Extent: {x: 0.38475764, y: 0.4955448, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
 --- !u!1 &4413981502620148831
 GameObject:
   m_ObjectHideFlags: 0
@@ -1743,6 +2601,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5063579698964528700}
   - component: {fileID: 2396401745601038750}
+  - component: {fileID: 4739824314863300439}
   m_Layer: 0
   m_Name: "S\xFAng 2 n\xF2ng (3)"
   m_TagString: Untagged
@@ -1825,6 +2684,228 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &4739824314863300439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4678171859902034845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 6300287611368341154}
+  m_BoneTransforms:
+  - {fileID: 6300287611368341154}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
+--- !u!1 &4832232351869026688
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3312216233941849885}
+  m_Layer: 0
+  m_Name: VaiTraiTrong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3312216233941849885
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4832232351869026688}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.29191646, w: 0.9564438}
+  m_LocalPosition: {x: 0.540874, y: -0.83093476, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7156624858536127156}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5291343433703145207
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6300287611368341154}
+  m_Layer: 0
+  m_Name: Sung2Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6300287611368341154
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5291343433703145207}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.98887575, w: -0.1487441}
+  m_LocalPosition: {x: -7.306896, y: -1.8087873, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5294771194916560317
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7221273555847109734}
+  m_Layer: 0
+  m_Name: CanhTayPhai
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7221273555847109734
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5294771194916560317}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.9927644, w: -0.12007914}
+  m_LocalPosition: {x: 4.6605825, y: -2.4897923, z: 0}
+  m_LocalScale: {x: 1, y: -1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5233440605852621982}
+  m_Father: {fileID: 2779479616951518964}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 193.793}
+--- !u!1 &5604636380497488245
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 673940244629429212}
+  m_Layer: 0
+  m_Name: Sung3Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &673940244629429212
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5604636380497488245}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.99058133, w: 0.13692589}
+  m_LocalPosition: {x: -5.8921194, y: -3.8674452, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5816236972780097061
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5172608517420479245}
+  m_Layer: 0
+  m_Name: Sung
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5172608517420479245
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5816236972780097061}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 9007640227789708326}
+  - {fileID: 1633164402314877185}
+  - {fileID: 1120316157839125501}
+  - {fileID: 1564578740605140763}
+  - {fileID: 6300287611368341154}
+  - {fileID: 7079272909441941951}
+  - {fileID: 6606730002438699933}
+  - {fileID: 1059496503400554220}
+  - {fileID: 4239206677362609035}
+  - {fileID: 6600470905395460218}
+  - {fileID: 7305867240710759730}
+  - {fileID: 4959858111588244209}
+  - {fileID: 673940244629429212}
+  - {fileID: 8372259549850434578}
+  m_Father: {fileID: 8636386958364954292}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6285615263258953521
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3673982604741073211}
+  m_Layer: 0
+  m_Name: Dau
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3673982604741073211
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6285615263258953521}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.008545837, w: 0.99996346}
+  m_LocalPosition: {x: 4.857281, y: 0.03633707, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2779479616951518964}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6339197080236632731
 GameObject:
   m_ObjectHideFlags: 0
@@ -1835,6 +2916,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1374683669053584825}
   - component: {fileID: 7011269010378363076}
+  - component: {fileID: 919273531814843157}
   m_Layer: 0
   m_Name: "S\xFAng 3 n\xF2ng (3)"
   m_TagString: Untagged
@@ -1917,6 +2999,63 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &919273531814843157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6339197080236632731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 673940244629429212}
+  m_BoneTransforms:
+  - {fileID: 673940244629429212}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
+--- !u!1 &6342880620624639647
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2779479616951518964}
+  m_Layer: 0
+  m_Name: Than
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2779479616951518964
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6342880620624639647}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.99998283, w: 0.005872071}
+  m_LocalPosition: {x: 0.17456388, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3673982604741073211}
+  - {fileID: 7156624858536127156}
+  - {fileID: 2904188518620868665}
+  - {fileID: 1183296739882168073}
+  - {fileID: 7221273555847109734}
+  m_Father: {fileID: 8636386958364954292}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6495381941891674594
 GameObject:
   m_ObjectHideFlags: 0
@@ -1927,6 +3066,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6373643835781506617}
   - component: {fileID: 5735620374359299047}
+  - component: {fileID: 6213770728971430550}
   m_Layer: 0
   m_Name: "S\xFAng 2 n\xF2ng (10)"
   m_TagString: Untagged
@@ -2009,6 +3149,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &6213770728971430550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6495381941891674594}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 6600470905395460218}
+  m_BoneTransforms:
+  - {fileID: 6600470905395460218}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
 --- !u!1 &6705348418146725362
 GameObject:
   m_ObjectHideFlags: 0
@@ -2019,6 +3180,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4400086078547674338}
   - component: {fileID: 6966342323532184053}
+  - component: {fileID: 3588163143778676738}
   m_Layer: 0
   m_Name: "Vai ph\u1EA3i"
   m_TagString: Untagged
@@ -2093,7 +3255,7 @@ SpriteRenderer:
   m_MaskInteraction: 0
   m_Sprite: {fileID: 2764202593636303827, guid: e4ddd6d3f9f8a20428491479c42049cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 1
+  m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 2.310564, y: 2.45}
@@ -2102,6 +3264,58 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &3588163143778676738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6705348418146725362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 2904188518620868665}
+  m_BoneTransforms:
+  - {fileID: 2904188518620868665}
+  m_Bounds:
+    m_Center: {x: -1.5895239, y: 1.774456, z: 0}
+    m_Extent: {x: 0.5643414, y: 0.6020296, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
+--- !u!1 &6779043162591768245
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1633164402314877185}
+  m_Layer: 0
+  m_Name: Sung2Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1633164402314877185
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6779043162591768245}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.7169612, w: 0.6971131}
+  m_LocalPosition: {x: -2.3981225, y: 5.8064537, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7069054400110709074
 GameObject:
   m_ObjectHideFlags: 0
@@ -2112,6 +3326,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8145970145452934237}
   - component: {fileID: 1629781267388081845}
+  - component: {fileID: 4486094402184069318}
   m_Layer: 0
   m_Name: "Vai m\u1EB7t trong"
   m_TagString: Untagged
@@ -2194,6 +3409,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &4486094402184069318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7069054400110709074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 3312216233941849885}
+  m_BoneTransforms:
+  - {fileID: 3312216233941849885}
+  m_Bounds:
+    m_Center: {x: -3.2302299, y: 1.9971743, z: 0}
+    m_Extent: {x: 0.16000879, y: 0.35502416, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
 --- !u!1 &7222167333438530557
 GameObject:
   m_ObjectHideFlags: 0
@@ -2204,6 +3440,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3228531477012374835}
   - component: {fileID: 8045181396972890264}
+  - component: {fileID: 4748968162217402513}
   m_Layer: 0
   m_Name: "S\xFAng 3 n\xF2ng (2)"
   m_TagString: Untagged
@@ -2278,7 +3515,7 @@ SpriteRenderer:
   m_Sprite: {fileID: -791662927369706882, guid: e4ddd6d3f9f8a20428491479c42049cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
-  m_FlipY: 1
+  m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 2.6106374, y: 1.41}
   m_AdaptiveModeThreshold: 0.5
@@ -2286,6 +3523,59 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &4748968162217402513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7222167333438530557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c008f954fe54a8bb972de1018a2cb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.2D.Animation.Runtime::UnityEngine.U2D.Animation.SpriteSkin
+  m_RootBone: {fileID: 4959858111588244209}
+  m_BoneTransforms:
+  - {fileID: 4959858111588244209}
+  m_Bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  m_AlwaysUpdate: 1
+  m_AutoRebind: 0
+  m_BoundsMode: 0
+--- !u!1 &7521613797070161088
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9223209165335377551}
+  m_Layer: 0
+  m_Name: CangTayTrai
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9223209165335377551
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7521613797070161088}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0.18083322, w: 0.9835138}
+  m_LocalPosition: {x: 2.040876, y: 0.00000025884898, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1375601637277501381}
+  m_Father: {fileID: 1183296739882168073}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7581365742607466364
 GameObject:
   m_ObjectHideFlags: 0
@@ -2298,6 +3588,7 @@ GameObject:
   - component: {fileID: 2866841465632675977}
   - component: {fileID: 1805891303938877128}
   - component: {fileID: 8926035466498118720}
+  - component: {fileID: -9059951459100230671}
   m_Layer: 7
   m_Name: EnemyModel
   m_TagString: Untagged
@@ -2346,9 +3637,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c8844ea6213030498913f116120d1cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.EnemyModel
-  spriteRenderer: {fileID: 0}
+  spriteRenderer: {fileID: 3799228761958742418}
   bodyCollider: {fileID: 0}
   ownerRef: {fileID: 2866841465632675977}
+  animator: {fileID: -9059951459100230671}
   owner: {fileID: 0}
 --- !u!70 &8926035466498118720
 CapsuleCollider2D:
@@ -2384,6 +3676,214 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -1.8712683}
+  m_Offset: {x: 0, y: 0}
   m_Size: {x: 12.11, y: 18.442892}
   m_Direction: 0
+--- !u!95 &-9059951459100230671
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7581365742607466364}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 458bb6d944e638c4a88b6bacf1427c51, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!1 &8025514959290932739
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8044999495540290220}
+  m_Layer: 0
+  m_Name: BanTayPhai
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8044999495540290220
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8025514959290932739}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.11906192, w: 0.9928869}
+  m_LocalPosition: {x: 2.1311405, y: 0.00000017164191, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5233440605852621982}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 13.676}
+--- !u!1 &8234367917172681593
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4959858111588244209}
+  m_Layer: 0
+  m_Name: Sung3Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4959858111588244209
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8234367917172681593}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.30635965, w: 0.95191586}
+  m_LocalPosition: {x: 4.386779, y: 2.0295174, z: 0}
+  m_LocalScale: {x: 1, y: -1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8949179522076372554
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6606730002438699933}
+  m_Layer: 0
+  m_Name: Sung2Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6606730002438699933
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8949179522076372554}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0.26935488, w: -0.96304107}
+  m_LocalPosition: {x: 2.4089196, y: 2.116191, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 31.252}
+--- !u!1 &9076249680571147973
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1375601637277501381}
+  m_Layer: 0
+  m_Name: BanTayTrai
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1375601637277501381
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9076249680571147973}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0.00000008103147, w: 1}
+  m_LocalPosition: {x: 2.1311405, y: 0.00000017164191, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9223209165335377551}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &9093653954110140448
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7079272909441941951}
+  m_Layer: 0
+  m_Name: Sung2Nong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7079272909441941951
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9093653954110140448}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.9926609, w: 0.12093113}
+  m_LocalPosition: {x: -7.23172, y: 1.7660708, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5172608517420479245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &9156707366596101054
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3216348284982236652}
+  m_Layer: 0
+  m_Name: VaiPhaiTrong
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3216348284982236652
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9156707366596101054}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -0, z: -0.29482117, w: 0.9555525}
+  m_LocalPosition: {x: 0.5275929, y: -0.834203, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2904188518620868665}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -34.294}
