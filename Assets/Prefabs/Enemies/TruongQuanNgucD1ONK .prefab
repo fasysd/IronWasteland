@@ -1675,7 +1675,6 @@ GameObject:
   - component: {fileID: 8657597288793346402}
   - component: {fileID: 4382231180120962163}
   - component: {fileID: 4556977129910709487}
-  - component: {fileID: -6994016655488740223}
   - component: {fileID: -3170757082340412462}
   m_Layer: 7
   m_Name: 'TruongQuanNgucD1ONK '
@@ -1709,26 +1708,38 @@ MonoBehaviour:
   m_GameObject: {fileID: 2997488555990479441}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 754e8f47107c4b8bba7de55c9baa4e1a, type: 3}
+  m_Script: {fileID: 11500000, guid: fbc79573f61df7846938022aea8905c6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.EliteEnemyBrain_Test
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.D1onk.D1onkBrain
   model: {fileID: 1805891303938877128}
-  displayName: Enemy Elite
+  displayName: "Tr\u01B0\u1EDFng Qu\u1EA3n Ng\u1EE5c D1ONK"
   stats:
-    Attack: 25
-    Defense: 0.3
-    MaxHealth: 300
-    MoveSpeed: 1.5
+    Attack: 500
+    Defense: 60
+    MaxHealth: 27000
+    MoveSpeed: 70
   currentHealth: 0
-  burstHpThreshold: 0.5
+  burstHpThreshold: 0.6
   burstChargeTime: 2
-  burstDuration: 30
-  rewardPhaseDuration: 8
-  penaltyPhaseDuration: 8
-  burstAttackMultiplier: 1
-  burstDefenseMultiplier: 1
+  burstDuration: 40
+  rewardPhaseDuration: 10
+  penaltyPhaseDuration: 5
+  burstAttackMultiplier: 1.3
+  burstDefenseMultiplier: 2
   burstMoveSpeedMultiplier: 1
   globalSkillInterval: 2
+  stopDistance: 3.5
+  moveSpeedDivisor: 100
+  rotationSpeed: 360
+  rotationPivot: {fileID: 1910718092571899764}
+  trungPhatCooldown: 8
+  lazeNguyenToCooldown: 12
+  toaNhietDienRongCooldown: 15
+  vienBinhTinhLinhCooldown: 20
+  subArenaPrefab: {fileID: 0}
+  cockpitCenter: {x: 200, y: 100}
+  tankClonePrefab: {fileID: 0}
+  miniClonePrefab: {fileID: 0}
 --- !u!50 &4556977129910709487
 Rigidbody2D:
   serializedVersion: 5
@@ -1756,55 +1767,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &-6994016655488740223
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2997488555990479441}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8fe6ed9b447402943947417e83c2125b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.D1onk.D1onkProceduralAnimator
-  animator: {fileID: -9059951459100230671}
-  than: {fileID: 5679084389408103477}
-  dau: {fileID: 7327099591763506754}
-  vaiTrai: {fileID: 3936469025450250032}
-  vaiPhai: {fileID: 4400086078547674338}
-  vaiMatTrongTrai: {fileID: 8145970145452934237}
-  vaiMatTrongPhai: {fileID: 3214801401512290464}
-  tayTrai: {fileID: 3690757266949565686}
-  tayPhai: {fileID: 3293181041453855761}
-  chienHam: {fileID: 1723324457733873786}
-  sung2NongParent: {fileID: 7385904494086878519}
-  sung3NongParent: {fileID: 4958503581148547163}
-  allGuns:
-  - {fileID: 1506907853983472710}
-  - {fileID: 5247022941821319050}
-  - {fileID: 726535954830083125}
-  - {fileID: 1142465931593349569}
-  - {fileID: 5063579698964528700}
-  - {fileID: 645781785163324893}
-  - {fileID: 1173120362276301979}
-  - {fileID: 2136774199622625407}
-  - {fileID: 388087436961558654}
-  - {fileID: 6373643835781506617}
-  - {fileID: 208648543860293977}
-  - {fileID: 3228531477012374835}
-  - {fileID: 1374683669053584825}
-  - {fileID: 4458729420287961344}
-  boneRoot: {fileID: 8636386958364954292}
-  boneThan: {fileID: 2779479616951518964}
-  boneDau: {fileID: 3673982604741073211}
-  boneVaiTrai: {fileID: 7156624858536127156}
-  boneVaiPhai: {fileID: 2904188518620868665}
-  boneTayTrai: {fileID: 1183296739882168073}
-  boneTayPhai: {fileID: 7221273555847109734}
-  transitionDuration: 0.15
-  editorPreview: 0
-  editorPreviewState: 0
 --- !u!114 &-3170757082340412462
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1817,7 +1779,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e750951f0ca4ea04ca22e58ff8b3567f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.D1onk.D1onkVFXController
-  proceduralAnimator: {fileID: -6994016655488740223}
   missileProjectilePrefab: {fileID: 4902270035738657672, guid: f690ee2de1216064d86d8ea90e95ebe6, type: 3}
   muzzleFlashPrefab: {fileID: 2878022181906116093, guid: 31bfdd5bad2682e45bbed44146228267, type: 3}
   explosionVFXPrefab: {fileID: 246905549649215118, guid: f11ccd6ead6e5444086d25825c6c850f, type: 3}

@@ -324,7 +324,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.D1onk.VFX.D1onkMissileProjectile
   flySpeed: 12
   acceleration: 6
-  turnSpeed: 60
+  turnSpeed: 210
   maxLifetime: 5
   hitRadius: 0.8
   missileSprite: {fileID: 679322241362730908}

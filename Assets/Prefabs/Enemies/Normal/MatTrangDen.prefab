@@ -299,7 +299,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
-  owner: {fileID: 8420907976510360087}
+  owner: {fileID: 0}
 --- !u!114 &6164576974939704005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -463,6 +463,7 @@ MonoBehaviour:
   currentTarget: {fileID: 0}
   skill: {fileID: 6164576974939704005}
   skillCooldown: 2
+  radiationTriggerRange: 2.5
   currentCooldownTimer: 0
   isCastingSkill: 0
 --- !u!50 &8430088118289894666
