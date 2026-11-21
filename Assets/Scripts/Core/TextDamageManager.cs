@@ -56,6 +56,9 @@ namespace IronWasteland
         [Tooltip("Do day vien chu TextDamage (0 = khong co vien, gia tri thuong dung 0.1 - 0.5).")]
         [SerializeField, Range(0f, 1f)] private float outlineThickness = 0.2f;
 
+        [Tooltip("Sorting Layer cho số sát thương; đặt trên layer sprite của boss/enemy để không bị che.")]
+        [SerializeField] private string sortingLayerName = "Enemy";
+
         [Tooltip("Sort order de TextDamage hien tren sprite (URP 2D).")]
         [SerializeField] private int sortingOrder = 500;
 
@@ -257,6 +260,7 @@ namespace IronWasteland
                     item.Go);
             }
 
+            item.Renderer.sortingLayerID = SortingLayer.NameToID(sortingLayerName);
             item.Renderer.sortingOrder = sortingOrder;
 
             // Reset visual tai moc 0 cua lifetime (color + scale theo curve).

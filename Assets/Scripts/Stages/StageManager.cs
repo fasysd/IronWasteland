@@ -35,6 +35,9 @@ namespace IronWasteland.Stages
         [Tooltip("Tam vung spawn quai (world space).")]
         [SerializeField] private Vector2 arenaCenter = Vector2.zero;
 
+        /// <summary>Tâm vùng spawn quái / tâm sân đấu (world space).</summary>
+        public Vector2 ArenaCenter => arenaCenter;
+
         [Tooltip("Ban kinh nho nhat quanh tam de dat quai.")]
         [SerializeField, Min(0f)] private float spawnRadiusMin = 11f;
 
