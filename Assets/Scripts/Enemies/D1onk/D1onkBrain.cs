@@ -48,14 +48,20 @@ namespace IronWasteland.Enemies.D1onk
     public class D1onkBrain : EliteEnemyBrain
     {
         [Header("Movement & Facing")]
-        [Tooltip("Khoảng cách dừng tiếp cận Tank mục tiêu (m).")]
+        [Tooltip("Khoảng cách tiếp cận Tank mục tiêu (m). D1onk luôn di chuyển ngẫu nhiên sao cho giữ ít nhất một mục tiêu trong phạm vi này.")]
         [SerializeField, Min(0f)] private float stopDistance = 3.5f;
+
+        [Tooltip("Khoảng thời gian đổi hướng di chuyển ngẫu nhiên (giây).")]
+        [SerializeField, Min(0.2f)] private float wanderChangeInterval = 2.0f;
 
         [Tooltip("Hệ số chia tốc độ di chuyển (MoveSpeed / 100). Mặc định 100.")]
         [SerializeField, Min(1f)] private float moveSpeedDivisor = 100f;
 
         [Tooltip("Tốc độ xoay (độ/giây).")]
         [SerializeField] private float rotationSpeed = 360f;
+
+        [Tooltip("Góc lệch xoay (độ) khi xoay hướng mặt mục tiêu.")]
+        [SerializeField] private float rotationOffset = 0f;
 
         [Tooltip("Transform mục tiêu xoay pivot. Mặc định tự lấy Model hoặc GameObject.")]
         [SerializeField] private Transform rotationPivot;
@@ -80,12 +86,6 @@ namespace IronWasteland.Enemies.D1onk
         [Tooltip("Tọa độ buồng lái lõi pháo hạm trên Scene.")]
         [SerializeField] private Vector2 cockpitCenter = new Vector2(200f, 100f);
 
-        [Tooltip("Prefab Bản sao Tank ngoài sân (D1onkTankClone).")]
-        [SerializeField] private GameObject tankClonePrefab;
-
-        [Tooltip("Prefab Bản sao Mini triệu hồi (D1onkMiniClone).")]
-        [SerializeField] private GameObject miniClonePrefab;
-
         // References
         private Animator m_Animator;
         private D1onkVFXController m_VfxController;
@@ -100,13 +100,17 @@ namespace IronWasteland.Enemies.D1onk
         // Sub-Arena & Outside Challenges
         private D1onkMothershipSubArena m_SubArena;
         private D1onkCoopChallenges m_CoopChallenges;
-        private readonly List<D1onkTankClone> m_ActiveTankClones = new List<D1onkTankClone>();
-        private readonly List<D1onkMiniClone> m_ActiveMiniClones = new List<D1onkMiniClone>();
+
+        // Runtime Movement & Wander
+        private Vector2 m_WanderDirection = Vector2.zero;
+        private float m_WanderChangeTimer;
 
         // Debuff / Buff timers & storage for Reward / Debuff phases
         private float m_BossDebuffTimer;
         private bool m_IsBossDebuffed;
         private float m_BossStunTimer;
+        private float m_PreDebuffAttack;
+        private float m_PreDebuffDefense;
         private float m_OutsideEnergyBuffTimer;
         private bool m_IsOutsideEnergyBuffActive;
         private readonly List<TankBrain> m_RewardInsideTanks = new List<TankBrain>();
@@ -127,11 +131,30 @@ namespace IronWasteland.Enemies.D1onk
         private static readonly int HashDie = Animator.StringToHash("Die");
         private static readonly int HashPhaoHamDaNong = Animator.StringToHash("PhaoHamDaNong");
 
+        public float RotationOffset
+        {
+            get => rotationOffset;
+            set => rotationOffset = value;
+        }
+
+        public float StopDistance
+        {
+            get => stopDistance;
+            set => stopDistance = value;
+        }
+
+        public float WanderChangeInterval
+        {
+            get => wanderChangeInterval;
+            set => wanderChangeInterval = value;
+        }
+
+        public Vector2 WanderDirection => m_WanderDirection;
+
         public D1onkVFXController VFXController => m_VfxController;
-        public D1onkMothershipSubArena SubArena => m_SubArena;
-        public D1onkCoopChallenges CoopChallenges => m_CoopChallenges;
-        public IReadOnlyList<D1onkTankClone> ActiveTankClones => m_ActiveTankClones;
-        public IReadOnlyList<D1onkMiniClone> ActiveMiniClones => m_ActiveMiniClones;
+        public D1onkMothershipSubArena SubArena { get => m_SubArena; set => m_SubArena = value; }
+        public GameObject SubArenaPrefab { get => subArenaPrefab; set => subArenaPrefab = value; }
+        public D1onkCoopChallenges CoopChallenges { get => m_CoopChallenges; set => m_CoopChallenges = value; }
 
         public float TrungPhatTimer => m_TrungPhatTimer;
         public float LazeTimer => m_LazeTimer;
@@ -143,6 +166,43 @@ namespace IronWasteland.Enemies.D1onk
 
         public float BurstAttackMultiplier => burstAttackMultiplier;
         public float BurstDefenseMultiplier => burstDefenseMultiplier;
+
+        public D1onkBrain()
+        {
+            // Thiết lập giá trị khởi tạo mặc định theo GDD (có thể tự do điều chỉnh trong Inspector)
+            burstHpThreshold = 0.6f;
+            burstChargeTime = 2.0f;
+            burstDuration = 40.0f;
+            rewardPhaseDuration = 10.0f;
+            penaltyPhaseDuration = 5.0f;
+            globalSkillInterval = 2.0f;
+            burstAttackMultiplier = 1.30f;
+            burstDefenseMultiplier = 2.00f;
+        }
+
+#if UNITY_EDITOR
+        private void Reset()
+        {
+            // Reset về giá trị mặc định khi nhấn Reset trong Unity Inspector
+            burstHpThreshold = 0.6f;
+            burstChargeTime = 2.0f;
+            burstDuration = 40.0f;
+            rewardPhaseDuration = 10.0f;
+            penaltyPhaseDuration = 5.0f;
+            globalSkillInterval = 2.0f;
+            burstAttackMultiplier = 1.30f;
+            burstDefenseMultiplier = 2.00f;
+        }
+#endif
+
+        public void SetBurstHpThreshold(float value) => burstHpThreshold = value;
+        public void SetBurstDuration(float value) => burstDuration = value;
+        public void SetBurstChargeTime(float value) => burstChargeTime = value;
+        public void SetRewardPhaseDuration(float value) => rewardPhaseDuration = value;
+        public void SetPenaltyPhaseDuration(float value) => penaltyPhaseDuration = value;
+        public void SetGlobalSkillInterval(float value) => globalSkillInterval = value;
+        public void SetBurstAttackMultiplier(float value) => burstAttackMultiplier = value;
+        public void SetBurstDefenseMultiplier(float value) => burstDefenseMultiplier = value;
 
         protected override void Awake()
         {
@@ -161,30 +221,26 @@ namespace IronWasteland.Enemies.D1onk
             {
                 rotationPivot = Model != null ? Model.transform : transform;
             }
-
-            // Cấu hình chuẩn GDD
-            burstHpThreshold = 0.6f;
-            burstChargeTime = 2.0f;
-            burstDuration = 40.0f;
-            rewardPhaseDuration = 10.0f;
-            penaltyPhaseDuration = 5.0f;
-            globalSkillInterval = 2.0f;
         }
 
         public override void Initialize(EnemyStats overrideStats = null)
         {
-            // Kiểm tra số lượng Tank để tự động nhận diện Solo hay Co-op
+            // Kiểm tra số lượng Tank để tự động nhận diện Solo hay Co-op nếu stats chưa được cấu hình
             var tanks = UnityEngine.Object.FindObjectsByType<TankBrain>(FindObjectsSortMode.None);
             bool isCoop = tanks != null && tanks.Length >= 2;
 
-            base.Initialize(overrideStats);
+            if (overrideStats == null && (Stats == null || (Stats.Attack == 10f && Stats.MaxHealth == 100f && Stats.Defense == 0f && Stats.MoveSpeed == 2f)))
+            {
+                overrideStats = new EnemyStats
+                {
+                    MaxHealth = isCoop ? 54000f : 27000f,
+                    Attack = 500f,
+                    Defense = 60f,
+                    MoveSpeed = 70f
+                };
+            }
 
-            burstHpThreshold = 0.6f;
-            burstChargeTime = 2.0f;
-            burstDuration = 40.0f;
-            rewardPhaseDuration = 10.0f;
-            penaltyPhaseDuration = 5.0f;
-            globalSkillInterval = 2.0f;
+            base.Initialize(overrideStats);
 
             m_PassiveMissileTimer = 0f;
             m_TrungPhatTimer = 0f;
@@ -197,13 +253,14 @@ namespace IronWasteland.Enemies.D1onk
             m_BossStunTimer = 0f;
             m_OutsideEnergyBuffTimer = 0f;
             m_IsOutsideEnergyBuffActive = false;
+
+            m_WanderDirection = Vector2.zero;
+            m_WanderChangeTimer = 0f;
         }
 
         public override void SetCoopMode(bool isCoop)
         {
-            if (Stats == null) return;
-            Stats.MaxHealth = isCoop ? 54000f : 27000f;
-            Heal(MaxHealth);
+            base.SetCoopMode(isCoop);
         }
 
         #region Animation Helpers
@@ -245,11 +302,26 @@ namespace IronWasteland.Enemies.D1onk
                 return;
             }
 
-            // Nếu đang trong Energy Burst (Charging hoặc Active) thì dừng di chuyển thường
+            // Nếu đang trong Energy Burst (Charging: đứng yên tích tụ; Active: nếu có Tank bên ngoài thì vẫn thi triển kỹ năng bình thường)
             if (IsBurstInProgress)
             {
-                SetAnimatorMoveSpeed(0f);
-                return;
+                if (BurstState == EliteBurstState.Charging)
+                {
+                    SetAnimatorMoveSpeed(0f);
+                    return;
+                }
+
+                if (BurstState == EliteBurstState.Active)
+                {
+                    TankBrain outsideTank = FindClosestTank();
+                    if (outsideTank == null)
+                    {
+                        // Không có Tank bên ngoài (ví dụ Solo mode), dừng tấn công bên ngoài
+                        SetAnimatorMoveSpeed(0f);
+                        return;
+                    }
+                    // Nếu có Tank bên ngoài -> tiếp tục chạy logic combat bên dưới bình thường!
+                }
             }
 
             // Cập nhật bộ đếm hồi chiêu kỹ năng
@@ -273,21 +345,29 @@ namespace IronWasteland.Enemies.D1onk
                 Vector2 toTarget = (Vector2)closestTank.transform.position - (Vector2)transform.position;
                 float dist = toTarget.magnitude;
 
-                if (dist > stopDistance && CanMove)
+                if (dist > 0.01f)
+                {
+                    RotateFacing(toTarget.normalized, deltaTime);
+                }
+
+                if (CanMove)
                 {
                     float currentSpeed = (Stats != null ? Stats.MoveSpeed : 70f) / moveSpeedDivisor;
-                    Vector2 moveDir = toTarget.normalized;
-                    transform.position += (Vector3)(moveDir * (currentSpeed * deltaTime));
-                    SetAnimatorMoveSpeed(currentSpeed);
-                    RotateFacing(moveDir, deltaTime);
+                    Vector2 moveDir = GetWanderMoveDirection(closestTank, currentSpeed, deltaTime);
+
+                    if (moveDir.sqrMagnitude > 0.001f)
+                    {
+                        transform.position += (Vector3)(moveDir * (currentSpeed * deltaTime));
+                        SetAnimatorMoveSpeed(currentSpeed);
+                    }
+                    else
+                    {
+                        SetAnimatorMoveSpeed(0f);
+                    }
                 }
                 else
                 {
                     SetAnimatorMoveSpeed(0f);
-                    if (dist > 0.1f)
-                    {
-                        RotateFacing(toTarget.normalized, deltaTime);
-                    }
                 }
 
                 // Thi triển kỹ năng nếu đủ điều kiện (gated bởi CanCastAnySkill / globalSkillInterval)
@@ -305,7 +385,7 @@ namespace IronWasteland.Enemies.D1onk
         private void RotateFacing(Vector2 dir, float dt)
         {
             if (rotationPivot == null || dir.sqrMagnitude < 0.001f) return;
-            float targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            float targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg + rotationOffset;
             if (rotationSpeed <= 0f)
             {
                 rotationPivot.rotation = Quaternion.Euler(0f, 0f, targetAngle);
@@ -316,6 +396,85 @@ namespace IronWasteland.Enemies.D1onk
                 float newAngle = Mathf.MoveTowardsAngle(currentAngle, targetAngle, rotationSpeed * dt);
                 rotationPivot.rotation = Quaternion.Euler(0f, 0f, newAngle);
             }
+        }
+
+        private Vector2 GetWanderMoveDirection(TankBrain closestTank, float currentSpeed, float deltaTime)
+        {
+            if (closestTank == null) return Vector2.zero;
+
+            Vector2 currentPos = transform.position;
+            bool hasTargetInRange = IsAnyTargetWithinDistance(currentPos, stopDistance);
+
+            // Nếu hiện tại chưa có mục tiêu nào trong tầm StopDistance -> Di chuyển thẳng về mục tiêu gần nhất
+            if (!hasTargetInRange)
+            {
+                Vector2 toClosest = ((Vector2)closestTank.transform.position - currentPos).normalized;
+                m_WanderDirection = toClosest;
+                m_WanderChangeTimer = wanderChangeInterval;
+                return toClosest;
+            }
+
+            // Đã có ít nhất một mục tiêu trong phạm vi StopDistance:
+            // Cập nhật bộ đếm đổi hướng ngẫu nhiên
+            m_WanderChangeTimer -= deltaTime;
+            if (m_WanderChangeTimer <= 0f || m_WanderDirection.sqrMagnitude < 0.001f)
+            {
+                PickRandomWanderDirection(closestTank);
+            }
+
+            // Kiểm tra xem hướng di chuyển hiện tại có giữ cho D1onk ở trong StopDistance của ít nhất một mục tiêu không
+            float step = currentSpeed * deltaTime;
+            Vector2 candidatePos = currentPos + m_WanderDirection * step;
+
+            if (IsAnyTargetWithinDistance(candidatePos, stopDistance))
+            {
+                return m_WanderDirection;
+            }
+
+            // Nếu tiếp tục đi theo hướng này sẽ vượt quá StopDistance của toàn bộ mục tiêu:
+            // Đổi hướng quay trở lại vùng an toàn (hướng về phía Tank)
+            PickRandomWanderDirection(closestTank, forceTowardsTarget: true);
+            return m_WanderDirection;
+        }
+
+        private void PickRandomWanderDirection(TankBrain target, bool forceTowardsTarget = false)
+        {
+            m_WanderChangeTimer = UnityEngine.Random.Range(wanderChangeInterval * 0.75f, wanderChangeInterval * 1.25f);
+
+            if (forceTowardsTarget && target != null)
+            {
+                Vector2 toTarget = ((Vector2)target.transform.position - (Vector2)transform.position).normalized;
+                float baseAngle = Mathf.Atan2(toTarget.y, toTarget.x);
+                // Chọn góc lệch ngẫu nhiên trong khoảng [-60 độ, +60 độ] hướng về phía mục tiêu
+                float offsetAngle = UnityEngine.Random.Range(-60f, 60f) * Mathf.Deg2Rad;
+                float finalAngle = baseAngle + offsetAngle;
+                m_WanderDirection = new Vector2(Mathf.Cos(finalAngle), Mathf.Sin(finalAngle)).normalized;
+            }
+            else
+            {
+                // Chọn một góc ngẫu nhiên 360 độ
+                float randomAngle = UnityEngine.Random.Range(0f, 360f) * Mathf.Deg2Rad;
+                m_WanderDirection = new Vector2(Mathf.Cos(randomAngle), Mathf.Sin(randomAngle)).normalized;
+            }
+        }
+
+        private bool IsAnyTargetWithinDistance(Vector2 pos, float maxDist)
+        {
+            var tanks = UnityEngine.Object.FindObjectsByType<TankBrain>(FindObjectsSortMode.None);
+            if (tanks == null || tanks.Length == 0) return false;
+
+            for (int i = 0; i < tanks.Length; i++)
+            {
+                TankBrain t = tanks[i];
+                if (IsTankEligibleForOutsideBoss(t))
+                {
+                    if (Vector2.Distance(pos, t.transform.position) <= maxDist)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         #endregion
@@ -506,7 +665,7 @@ namespace IronWasteland.Enemies.D1onk
 
         /// <summary>
         /// Kỹ năng 4: Viện Binh Tinh Linh (VienBinhTinhLinh):
-        /// - Triệu hồi 1-3 bản sao thu nhỏ (20% chỉ số Boss gốc).
+        /// - Triệu hồi quái thường từ danh sách quái thường của game.
         /// - Kích hoạt bị động: Tạo 5 đạn truy đuổi.
         /// </summary>
         public void CastVienBinhTinhLinh(int count = -1)
@@ -515,36 +674,17 @@ namespace IronWasteland.Enemies.D1onk
             TriggerGlobalSkillCooldown(globalSkillInterval);
             TriggerAnimator(HashVienBinhTinhLinh);
 
-            if (count < 1) count = UnityEngine.Random.Range(1, 4);
-            count = Mathf.Clamp(count, 1, 3);
+            if (count < 1) count = UnityEngine.Random.Range(3, 6);
+            count = Mathf.Clamp(count, 1, 5);
 
-            for (int i = 0; i < count; i++)
+            if (m_VfxController != null)
             {
-                float a = (i * (360f / count) + UnityEngine.Random.Range(-20f, 20f)) * Mathf.Deg2Rad;
-                Vector3 spawnPos = transform.position + new Vector3(Mathf.Cos(a) * 4f, Mathf.Sin(a) * 4f, 0f);
-
-                GameObject go = null;
-                D1onkMiniClone clone = null;
-
-                if (miniClonePrefab != null)
-                {
-                    go = Instantiate(miniClonePrefab, spawnPos, Quaternion.identity);
-                    clone = go.GetComponent<D1onkMiniClone>();
-                }
-                else
-                {
-                    go = new GameObject($"D1onkMiniClone_{m_ActiveMiniClones.Count + 1}");
-                    clone = go.AddComponent<D1onkMiniClone>();
-                }
-
-                if (clone != null)
-                {
-                    clone.InitializeClone(this, spawnPos);
-                    m_ActiveMiniClones.Add(clone);
-                }
+                m_VfxController.SummonReinforcements(count);
             }
-
-            m_VfxController?.SummonReinforcements(count);
+            else
+            {
+                Debug.LogWarning("[D1onkBrain] VFXController chưa được gán, không thể triệu hồi quái viện binh!", this);
+            }
 
             // Bị động: Tạo 5 đạn truy đuổi
             FirePassiveMissiles(5);
@@ -582,31 +722,50 @@ namespace IronWasteland.Enemies.D1onk
                 }
             }
 
-            bool isCoop = aliveTanks.Count >= 2;
+            int totalTanks = aliveTanks.Count;
+            bool isCoop = totalTanks >= 2;
 
-            // 4. Khởi tạo Sub-Arena buồng lái
+            Vector2 effectiveCockpitCenter = cockpitCenter;
+
+            // 5. Khởi tạo Sub-Arena buồng lái từ Prefab
             if (m_SubArena == null)
             {
+#if UNITY_EDITOR
+                if (subArenaPrefab == null)
+                {
+                    subArenaPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/D1onk/D1onkMothershipSubArena.prefab");
+                }
+#endif
                 if (subArenaPrefab != null)
                 {
-                    GameObject saObj = Instantiate(subArenaPrefab, cockpitCenter, Quaternion.identity);
+                    GameObject saObj = Instantiate(subArenaPrefab, effectiveCockpitCenter, Quaternion.identity);
                     m_SubArena = saObj.GetComponent<D1onkMothershipSubArena>();
+                    m_CoopChallenges = saObj.GetComponent<D1onkCoopChallenges>();
                 }
                 else
                 {
-                    GameObject saObj = new GameObject("D1onkMothershipSubArena");
-                    m_SubArena = saObj.AddComponent<D1onkMothershipSubArena>();
+                    Debug.LogError("[D1onkBrain] subArenaPrefab chưa được gán trong Inspector! Vui lòng gán Prefab D1onkMothershipSubArena.", this);
+                    return;
                 }
             }
 
-            // 5. Khởi tạo Outside Challenges Manager cho Co-op
-            if (isCoop && m_CoopChallenges == null)
+            // 6. Khởi tạo Challenges Manager
+            if (m_CoopChallenges == null && m_SubArena != null)
             {
-                GameObject ccObj = new GameObject("D1onkCoopChallenges");
-                m_CoopChallenges = ccObj.AddComponent<D1onkCoopChallenges>();
+                m_CoopChallenges = m_SubArena.GetComponentInChildren<D1onkCoopChallenges>();
             }
 
-            m_SubArena.InitializeArena(this, m_CoopChallenges, isCoop, cockpitCenter);
+            if (m_CoopChallenges == null)
+            {
+                Debug.LogError("[D1onkBrain] Không tìm thấy D1onkCoopChallenges trên D1onkMothershipSubArena!", this);
+                return;
+            }
+
+            // Trong chế độ solo, thử thách thực hiện ở BÊN TRONG Pháo Hạm thay vì bên ngoài như chế độ COOP
+            Vector2 challengeCenter = isCoop ? (Vector2)transform.position : effectiveCockpitCenter;
+            m_CoopChallenges.Initialize(this, challengeCenter, isSolo: !isCoop);
+
+            m_SubArena.InitializeArena(this, m_CoopChallenges, isCoop, effectiveCockpitCenter);
 
             if (m_VfxController != null && m_VfxController.NormalEnemyPrefabs != null)
             {
@@ -617,73 +776,32 @@ namespace IronWasteland.Enemies.D1onk
                 }
             }
 
-            // 6. Phân bổ Tank vào buồng lái
+            // 7. Kéo một nửa Tank gần nhất vào BÊN TRONG Pháo Hạm (ưu tiên số lượng lớn ở bên ngoài)
             aliveTanks.Sort((a, b) =>
                 Vector2.Distance(transform.position, a.transform.position).CompareTo(
                 Vector2.Distance(transform.position, b.transform.position)));
 
+            int insideCount = (totalTanks <= 1) ? totalTanks : (totalTanks / 2);
+
             m_RewardInsideTanks.Clear();
             m_RewardOutsideTanks.Clear();
-            m_ActiveTankClones.Clear();
 
-            if (!isCoop)
+            for (int i = 0; i < totalTanks; i++)
             {
-                // Solo: 1 Tank được kéo vào trong buồng lái
-                if (aliveTanks.Count > 0)
+                if (i < insideCount)
                 {
-                    TankBrain soloTank = aliveTanks[0];
-                    m_SubArena.TrapTank(soloTank);
-                    m_RewardInsideTanks.Add(soloTank);
+                    m_SubArena.TrapTank(aliveTanks[i]);
+                    m_RewardInsideTanks.Add(aliveTanks[i]);
                 }
-            }
-            else
-            {
-                // Co-op: Kéo 2 Tank gần nhất vào buồng lái
-                TankBrain tank1 = aliveTanks[0];
-                TankBrain tank2 = aliveTanks[1];
-
-                m_SubArena.TrapTank(tank1);
-                m_SubArena.TrapTank(tank2);
-                m_RewardInsideTanks.Add(tank1);
-                m_RewardInsideTanks.Add(tank2);
-
-                // Các Tank còn lại ở ngoài
-                for (int i = 2; i < aliveTanks.Count; i++)
+                else
                 {
                     m_RewardOutsideTanks.Add(aliveTanks[i]);
                 }
-
-                // Sinh bản sao của 2 Tank bị kéo vào trong để chiến đấu bên ngoài
-                SpawnTankCloneOutside(tank1, transform.position + new Vector3(-3f, 2f, 0f));
-                SpawnTankCloneOutside(tank2, transform.position + new Vector3(3f, 2f, 0f));
-
-                m_CoopChallenges.Initialize(this, m_ActiveTankClones);
-            }
-        }
-
-        private void SpawnTankCloneOutside(TankBrain originalTank, Vector3 spawnPos)
-        {
-            if (originalTank == null) return;
-
-            GameObject go = null;
-            D1onkTankClone clone = null;
-
-            if (tankClonePrefab != null)
-            {
-                go = Instantiate(tankClonePrefab, spawnPos, Quaternion.identity);
-                clone = go.GetComponent<D1onkTankClone>();
-            }
-            else
-            {
-                go = new GameObject($"TankClone_{originalTank.name}");
-                clone = go.AddComponent<D1onkTankClone>();
             }
 
-            if (clone != null)
-            {
-                clone.InitializeTankClone(originalTank, spawnPos);
-                m_ActiveTankClones.Add(clone);
-            }
+            // 8. Xóa tạo 2 Clone khi vào Bùng nổ năng lượng, thay vào đó là sử dụng 2 lần kỹ năng Viên binh tinh linh để triệu hồi quái thường
+            CastVienBinhTinhLinh();
+            CastVienBinhTinhLinh();
         }
 
         protected override void OnBurstTick(float deltaTime)
@@ -725,20 +843,20 @@ namespace IronWasteland.Enemies.D1onk
                 m_CoopChallenges = null;
             }
 
-            CleanupTankClones();
-
             // 2. Phạt Boss: Trừ 30% Max HP
             float hpLoss = MaxHealth * 0.30f;
             TakeDamage(new DamageInfo(this, this, hpLoss, 1.0f, transform.position, isDirectToHealth: true));
 
-            // Hoàn trả Burst Stat Modifiers trước để đưa Attack & Defense về chỉ số gốc (500 ATK, 60 DEF)
+            // Hoàn trả Burst Stat Modifiers trước để đưa Attack & Defense về chỉ số trước Burst
             RevertBurstStatModifiers();
 
-            // Giảm 50% ATK & DEF trong 10s (500 -> 250, 60 -> 30)
+            // Giảm 50% ATK & DEF trong 10s (theo chỉ số gốc hiện tại)
             if (Stats != null)
             {
-                Stats.Attack = 250f;
-                Stats.Defense = 30f;
+                m_PreDebuffAttack = Stats.Attack;
+                m_PreDebuffDefense = Stats.Defense;
+                Stats.Attack *= 0.5f;
+                Stats.Defense *= 0.5f;
             }
             m_BossDebuffTimer = 10.0f;
             m_IsBossDebuffed = true;
@@ -814,8 +932,6 @@ namespace IronWasteland.Enemies.D1onk
                 m_CoopChallenges = null;
             }
 
-            CleanupTankClones();
-
             // 2. Diễn hoạt xả đại pháo hủy diệt (hàng trăm đạn pháo / toàn bộ nòng súng)
             TriggerAnimator(HashPhaoHamDaNong);
             if (m_VfxController != null)
@@ -855,8 +971,8 @@ namespace IronWasteland.Enemies.D1onk
                     m_IsBossDebuffed = false;
                     if (Stats != null)
                     {
-                        Stats.Attack = 500f;
-                        Stats.Defense = 60f;
+                        Stats.Attack = m_PreDebuffAttack;
+                        Stats.Defense = m_PreDebuffDefense;
                     }
                 }
             }
@@ -880,22 +996,26 @@ namespace IronWasteland.Enemies.D1onk
             }
         }
 
-        private void CleanupTankClones()
-        {
-            for (int i = 0; i < m_ActiveTankClones.Count; i++)
-            {
-                if (m_ActiveTankClones[i] != null)
-                {
-                    if (Application.isPlaying) Destroy(m_ActiveTankClones[i].gameObject);
-                    else DestroyImmediate(m_ActiveTankClones[i].gameObject);
-                }
-            }
-            m_ActiveTankClones.Clear();
-        }
-
         #endregion
 
         #region Helpers & Targeting
+
+        private bool IsTankEligibleForOutsideBoss(TankBrain t)
+        {
+            if (t == null || !t.IsAlive) return false;
+            if (IsBurstInProgress && BurstState == EliteBurstState.Active)
+            {
+                if (m_SubArena != null && m_SubArena.IsTankTrapped(t))
+                {
+                    return false;
+                }
+                if (t.transform.position.x >= 150f)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         private TankBrain FindClosestTank()
         {
@@ -906,7 +1026,7 @@ namespace IronWasteland.Enemies.D1onk
             for (int i = 0; i < tanks.Length; i++)
             {
                 TankBrain t = tanks[i];
-                if (t != null && t.IsAlive)
+                if (IsTankEligibleForOutsideBoss(t))
                 {
                     float d = Vector2.Distance(transform.position, t.transform.position);
                     if (d < minDist)
@@ -925,7 +1045,7 @@ namespace IronWasteland.Enemies.D1onk
             var tanks = new List<TankBrain>();
             for (int i = 0; i < allTanks.Length; i++)
             {
-                if (allTanks[i] != null && allTanks[i].IsAlive) tanks.Add(allTanks[i]);
+                if (IsTankEligibleForOutsideBoss(allTanks[i])) tanks.Add(allTanks[i]);
             }
 
             if (tanks.Count == 0) return (null, null);
@@ -966,7 +1086,7 @@ namespace IronWasteland.Enemies.D1onk
             var list = new List<TankBrain>();
             for (int i = 0; i < tanks.Length; i++)
             {
-                if (tanks[i] != null && tanks[i].IsAlive)
+                if (IsTankEligibleForOutsideBoss(tanks[i]))
                 {
                     list.Add(tanks[i]);
                 }
@@ -1031,7 +1151,6 @@ namespace IronWasteland.Enemies.D1onk
                 else DestroyImmediate(m_CoopChallenges.gameObject);
                 m_CoopChallenges = null;
             }
-            CleanupTankClones();
             base.OnDeath();
             TriggerAnimator(HashDie);
             m_VfxController?.PlayDie();

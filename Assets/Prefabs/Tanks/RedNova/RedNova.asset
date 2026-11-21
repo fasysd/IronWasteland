@@ -26,11 +26,11 @@ MonoBehaviour:
     MoveSpeed: 100
     CooldownReduction: 0
   baseStatsLevel90:
-    Attack: 95
+    Attack: 999
     Defense: 15
     DamageRate: 0.15
     ArmorPenetration: 0.25
-    MaxHealth: 3200
+    MaxHealth: 9999999
     MaxEnergy: 300
     MoveSpeed: 500
     CooldownReduction: 0

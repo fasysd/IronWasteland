@@ -26,20 +26,73 @@ namespace IronWasteland.Enemies.D1onk
     public class D1onkCoopChallenges : MonoBehaviour
     {
         [Header("Outside Challenge Prefabs")]
-        [Tooltip("Prefab Tinh Linh Sấm Sét (NormalEnemy_TinhLinhSamSetNho).")]
+
+        [Tooltip("Prefab Tinh Linh Sấm Sét (thử thách Trắng).")]
         [SerializeField] private GameObject tinhLinhSamSetPrefab;
 
-        [Tooltip("Prefab Ký Sinh Thiên Thạch (NormalEnemy_KySinhThienThach).")]
-        [SerializeField] private GameObject kySinhThienThachPrefab;
+        [Tooltip("Prefab Cột phát điện (thử thách Đỏ).")]
+        [SerializeField] private GameObject electricTransmitterPrefab;
+
+        [Tooltip("Prefab Cột thu điện (thử thách Đỏ).")]
+        [SerializeField] private GameObject electricReceiverPrefab;
+
+        [Tooltip("Prefab tia điện giữa cột phát và cột thu (thử thách Đỏ).")]
+        [SerializeField] private GameObject electricBeamPrefab;
 
         [Tooltip("Danh sách pool quái thường từ VFX Controller.")]
         [SerializeField] private GameObject[] normalEnemyPrefabs;
 
+        [Header("White Challenge Configuration")]
+        [Tooltip("Số lượng Tinh Linh Sấm Sét (thử thách Trắng).")]
+        [SerializeField] private int enemyCount = 10;
+
+        [Tooltip("Bán kính vòng tròn triệu hồi Tinh Linh Sấm Sét ở chế độ Co-op (m). Mặc định 5.0m.")]
+        [SerializeField, Min(1f)] private float whiteSpawnRadiusCoop = 5.0f;
+
+        [Tooltip("Bán kính vòng tròn triệu hồi Tinh Linh Sấm Sét ở chế độ Solo (m). Mặc định 3.5m.")]
+        [SerializeField, Min(1f)] private float whiteSpawnRadiusSolo = 3.5f;
+
+        [Header("Red Challenge Configuration (Điện Năng)")]
+        [Tooltip("Khoảng cách từ tâm đến mỗi cột điện trong chế độ Co-op (Khoảng cách giữa 2 cột điện = 2 * khoảng cách này). Mặc định 6.0m (khoảng cách 12m).")]
+        [SerializeField, Min(1f)] private float redPillarDistanceCoop = 6.0f;
+
+        [Tooltip("Khoảng cách từ tâm đến mỗi cột điện trong chế độ Solo (Khoảng cách giữa 2 cột điện = 2 * khoảng cách này). Mặc định 4.5m (khoảng cách 9m).")]
+        [SerializeField, Min(1f)] private float redPillarDistanceSolo = 4.5f;
+
+        [Tooltip("Thời gian duy trì thử thách truyền điện (giây). Mặc định 10s.")]
+        [SerializeField, Min(1f)] private float redChallengeDuration = 10.0f;
+
+        [Tooltip("Tần suất truyền điện giữa cột phát và thu (giây). Mặc định 0.5s.")]
+        [SerializeField, Min(0.05f)] private float redTransmissionInterval = 0.5f;
+
+        [Tooltip("Ngưỡng điểm điện năng tối đa của cột thu để hoàn thành thử thách (Điểm < ngưỡng này sau khi hết giờ -> Thành công). Mặc định 5 điểm.")]
+        [SerializeField, Min(1)] private int redMaxAllowedPoints = 5;
+
+        [Tooltip("Tỷ lệ sát thương theo ATK Boss gây lên Tank đứng chặn tia điện mỗi nhịp truyền (0.2 = 20%).")]
+        [SerializeField, Range(0.01f, 1f)] private float redBlockDamageRatio = 0.20f;
+
+        [Tooltip("Bán kính quét / phát hiện Tank đứng chặn đường điện (m). Mặc định 1.2m.")]
+        [SerializeField, Min(0.1f)] private float redBlockDetectionRadius = 1.2f;
+
+        [Tooltip("Độ dày của tia điện khi truyền bình thường.")]
+        [SerializeField, Min(0.01f)] private float beamNormalThickness = 0.35f;
+
+        [Tooltip("Độ dày của tia điện khi bị Tank chặn ngắt.")]
+        [SerializeField, Min(0.01f)] private float beamBlockedThickness = 0.20f;
+
+        [Tooltip("Màu tia điện khi truyền bình thường.")]
+        [SerializeField] private Color beamNormalColor = new Color(0.2f, 0.85f, 1f, 0.95f);
+
+        [Tooltip("Màu tia điện khi bị chặn.")]
+        [SerializeField] private Color beamBlockedColor = new Color(1f, 0.3f, 0.2f, 0.85f);
+
         private D1onkBrain m_Boss;
-        private List<D1onkTankClone> m_OutsideTankClones = new List<D1onkTankClone>();
 
         private int m_CompletedChallengesCount = 0;
         private readonly HashSet<D1onkPillarColor> m_CompletedColors = new HashSet<D1onkPillarColor>();
+
+        private bool m_IsSolo;
+        private Vector2 m_ChallengeCenter;
 
         // White Challenge Runtime
         private bool m_WhiteActive;
@@ -54,6 +107,8 @@ namespace IronWasteland.Enemies.D1onk
         private Vector2 m_RedReceiverPos;
         private bool m_RedResolved;
         private readonly List<GameObject> m_RedObjects = new List<GameObject>();
+        private GameObject m_RedBeamObject;
+        private SpriteRenderer m_RedBeamRenderer;
 
         // Yellow Challenge Runtime
         private bool m_YellowActive;
@@ -69,6 +124,28 @@ namespace IronWasteland.Enemies.D1onk
         private float m_BlueTimer;
         private bool m_BlueResolved;
 
+        public GameObject TinhLinhSamSetPrefab { get => tinhLinhSamSetPrefab; set => tinhLinhSamSetPrefab = value; }
+        public GameObject ElectricTransmitterPrefab { get => electricTransmitterPrefab; set => electricTransmitterPrefab = value; }
+        public GameObject ElectricReceiverPrefab { get => electricReceiverPrefab; set => electricReceiverPrefab = value; }
+        public GameObject ElectricBeamPrefab { get => electricBeamPrefab; set => electricBeamPrefab = value; }
+
+        public int EnemyCount { get => enemyCount; set => enemyCount = value; }
+        public float WhiteSpawnRadiusCoop { get => whiteSpawnRadiusCoop; set => whiteSpawnRadiusCoop = value; }
+        public float WhiteSpawnRadiusSolo { get => whiteSpawnRadiusSolo; set => whiteSpawnRadiusSolo = value; }
+        public float RedPillarDistanceCoop { get => redPillarDistanceCoop; set => redPillarDistanceCoop = value; }
+        public float RedPillarDistanceSolo { get => redPillarDistanceSolo; set => redPillarDistanceSolo = value; }
+        public float RedChallengeDuration { get => redChallengeDuration; set => redChallengeDuration = value; }
+        public float RedTransmissionInterval { get => redTransmissionInterval; set => redTransmissionInterval = value; }
+        public int RedMaxAllowedPoints { get => redMaxAllowedPoints; set => redMaxAllowedPoints = value; }
+        public float RedBlockDamageRatio { get => redBlockDamageRatio; set => redBlockDamageRatio = value; }
+        public float RedBlockDetectionRadius { get => redBlockDetectionRadius; set => redBlockDetectionRadius = value; }
+        public float BeamNormalThickness { get => beamNormalThickness; set => beamNormalThickness = value; }
+        public float BeamBlockedThickness { get => beamBlockedThickness; set => beamBlockedThickness = value; }
+        public Color BeamNormalColor { get => beamNormalColor; set => beamNormalColor = value; }
+        public Color BeamBlockedColor { get => beamBlockedColor; set => beamBlockedColor = value; }
+
+        public bool IsSolo => m_IsSolo;
+        public Vector2 ChallengeCenter => m_ChallengeCenter;
         public int CompletedChallengesCount => m_CompletedChallengesCount;
         public bool IsWhiteCompleted => m_CompletedColors.Contains(D1onkPillarColor.White);
         public bool IsRedCompleted => m_CompletedColors.Contains(D1onkPillarColor.Red);
@@ -83,12 +160,20 @@ namespace IronWasteland.Enemies.D1onk
         public IReadOnlyList<EnemyBrain> WhiteMinions => m_WhiteMinions;
 
         public event Action<D1onkPillarColor> OnChallengeCompleted;
+        public event Action OnTwoChallengesCompleted;
         public event Action OnThreeChallengesCompleted;
 
-        public void Initialize(D1onkBrain boss, List<D1onkTankClone> tankClones)
+        public void SetChallengeCenter(Vector2 center)
+        {
+            m_ChallengeCenter = center;
+        }
+
+        public void Initialize(D1onkBrain boss, Vector2 defaultCenter, bool isSolo = false)
         {
             m_Boss = boss;
-            m_OutsideTankClones = tankClones ?? new List<D1onkTankClone>();
+            m_IsSolo = isSolo;
+            m_ChallengeCenter = defaultCenter;
+
             m_CompletedChallengesCount = 0;
             m_CompletedColors.Clear();
 
@@ -102,9 +187,10 @@ namespace IronWasteland.Enemies.D1onk
             m_BlueResolved = false;
         }
 
-        public void RegisterTankClones(List<D1onkTankClone> clones)
+        public void Initialize(D1onkBrain boss)
         {
-            m_OutsideTankClones = clones ?? new List<D1onkTankClone>();
+            Vector2 defaultCenter = boss != null ? (Vector2)boss.transform.position : Vector2.zero;
+            Initialize(boss, defaultCenter, isSolo: false);
         }
 
         public void SetNormalEnemyPrefabs(GameObject[] prefabs)
@@ -138,12 +224,6 @@ namespace IronWasteland.Enemies.D1onk
                 case D1onkPillarColor.Red:
                     StartRedChallenge();
                     break;
-                case D1onkPillarColor.Yellow:
-                    StartYellowChallenge();
-                    break;
-                case D1onkPillarColor.Blue:
-                    StartBlueChallenge();
-                    break;
             }
         }
 
@@ -155,59 +235,35 @@ namespace IronWasteland.Enemies.D1onk
             m_WhiteActive = true;
             m_WhiteMinions.Clear();
 
+#if UNITY_EDITOR
+            if (tinhLinhSamSetPrefab == null)
+            {
+                tinhLinhSamSetPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/Normal/TinhLinhSamSetNho.prefab");
+            }
+#endif
             if (tinhLinhSamSetPrefab == null)
             {
                 tinhLinhSamSetPrefab = FindNormalPrefab("TinhLinhSamSet");
             }
 
-            Vector2 center = m_Boss != null ? (Vector2)m_Boss.transform.position : Vector2.zero;
-
-            for (int i = 0; i < 10; i++)
+            if (tinhLinhSamSetPrefab == null)
             {
-                float angle = (i * 36f) * Mathf.Deg2Rad;
-                Vector2 spawnPos = center + new Vector2(Mathf.Cos(angle) * 5f, Mathf.Sin(angle) * 5f);
+                Debug.LogError("[D1onkCoopChallenges] Không tìm thấy Prefab TinhLinhSamSetNho cho thử thách Trắng!", this);
+                return;
+            }
 
-                EnemyBrain minion = null;
-                if (tinhLinhSamSetPrefab != null)
-                {
-                    GameObject go = Instantiate(tinhLinhSamSetPrefab, spawnPos, Quaternion.identity);
-                    minion = go.GetComponent<EnemyBrain>();
-                }
-                else
-                {
-                    // Fallback tạo lightweight minion cho unit test nếu không gắn prefab
-                    GameObject go = new GameObject($"TinhLinhSamSet_{i + 1}");
-                    go.transform.position = spawnPos;
-                    minion = go.AddComponent<LightweightTestMinion>();
-                    minion.Initialize(new EnemyStats { MaxHealth = 100f, Attack = 20f });
-                }
+            Vector2 center = m_ChallengeCenter != Vector2.zero ? m_ChallengeCenter : (m_Boss != null ? (Vector2)m_Boss.transform.position : Vector2.zero);
 
+            for (int i = 0; i < enemyCount; i++)
+            {
+                float angle = (i * (360f / Mathf.Max(1, enemyCount))) * Mathf.Deg2Rad;
+                float radius = m_IsSolo ? whiteSpawnRadiusSolo : whiteSpawnRadiusCoop;
+                Vector2 spawnPos = center + new Vector2(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius);
+
+                GameObject go = Instantiate(tinhLinhSamSetPrefab, spawnPos, Quaternion.identity);
+                EnemyBrain minion = go.GetComponent<EnemyBrain>();
                 if (minion != null)
                 {
-                    minion.gameObject.layer = 7;
-                    var col = minion.GetComponent<CircleCollider2D>();
-                    if (col == null)
-                    {
-                        col = minion.gameObject.AddComponent<CircleCollider2D>();
-                        col.radius = 0.5f;
-                    }
-                    var owner = minion.GetComponent<ColliderOwnerRef>();
-                    if (owner == null)
-                    {
-                        owner = minion.gameObject.AddComponent<ColliderOwnerRef>();
-                    }
-                    owner.SetOwner(minion.gameObject);
-
-                    var sr = minion.GetComponent<SpriteRenderer>();
-                    if (sr == null)
-                    {
-                        sr = minion.gameObject.AddComponent<SpriteRenderer>();
-                        sr.sprite = SpriteFactory.Circle;
-                        sr.color = new Color(0.9f, 0.95f, 1f, 0.9f);
-                        sr.transform.localScale = Vector3.one * 0.8f;
-                        sr.sortingOrder = 5;
-                    }
-
                     m_WhiteMinions.Add(minion);
                     minion.OnDeathEvent += () => CheckWhiteChallengeProgress();
                 }
@@ -247,30 +303,58 @@ namespace IronWasteland.Enemies.D1onk
             m_RedEnergyPoints = 0;
             m_RedResolved = false;
 
-            Vector2 center = m_Boss != null ? (Vector2)m_Boss.transform.position : Vector2.zero;
-            m_RedTransmitterPos = center + new Vector2(-6f, 0f);
-            m_RedReceiverPos = center + new Vector2(6f, 0f);
+#if UNITY_EDITOR
+            if (electricTransmitterPrefab == null)
+            {
+                electricTransmitterPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/D1onk/D1onkElectricPillar_Transmitter.prefab");
+            }
+            if (electricReceiverPrefab == null)
+            {
+                electricReceiverPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/D1onk/D1onkElectricPillar_Receiver.prefab");
+            }
+            if (electricBeamPrefab == null)
+            {
+                electricBeamPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/D1onk/D1onkElectricPillar_Beam.prefab");
+            }
+#endif
+            if (electricTransmitterPrefab == null || electricReceiverPrefab == null)
+            {
+                Debug.LogError("[D1onkCoopChallenges] electricTransmitterPrefab hoặc electricReceiverPrefab chưa được cấu hình!", this);
+                return;
+            }
+
+            Vector2 center = m_ChallengeCenter != Vector2.zero ? m_ChallengeCenter : (m_Boss != null ? (Vector2)m_Boss.transform.position : Vector2.zero);
+            float spread = m_IsSolo ? redPillarDistanceSolo : redPillarDistanceCoop;
+            m_RedTransmitterPos = center + new Vector2(-spread, 0f);
+            m_RedReceiverPos = center + new Vector2(spread, 0f);
 
             CleanupRedVisuals();
-            GameObject tx = new GameObject("RedElectric_Transmitter");
-            tx.transform.position = m_RedTransmitterPos;
-            tx.transform.SetParent(transform);
-            var txSr = tx.AddComponent<SpriteRenderer>();
-            txSr.sprite = SpriteFactory.Circle;
-            txSr.color = new Color(1f, 0.2f, 0.2f, 1f);
-            txSr.transform.localScale = Vector3.one * 1.2f;
-            txSr.sortingOrder = 6;
+            GameObject tx = Instantiate(electricTransmitterPrefab, m_RedTransmitterPos, Quaternion.identity, transform);
             m_RedObjects.Add(tx);
 
-            GameObject rx = new GameObject("RedElectric_Receiver");
-            rx.transform.position = m_RedReceiverPos;
-            rx.transform.SetParent(transform);
-            var rxSr = rx.AddComponent<SpriteRenderer>();
-            rxSr.sprite = SpriteFactory.Circle;
-            rxSr.color = new Color(0.8f, 0.1f, 0.3f, 1f);
-            rxSr.transform.localScale = Vector3.one * 1.2f;
-            rxSr.sortingOrder = 6;
+            GameObject rx = Instantiate(electricReceiverPrefab, m_RedReceiverPos, Quaternion.identity, transform);
             m_RedObjects.Add(rx);
+
+            // Bổ sung tia điện kết nối giữa cột phát và cột thu
+            if (electricBeamPrefab != null)
+            {
+                m_RedBeamObject = Instantiate(electricBeamPrefab, transform);
+            }
+            else
+            {
+                m_RedBeamObject = new GameObject("RedElectric_Beam");
+                m_RedBeamObject.transform.SetParent(transform);
+                var sr = m_RedBeamObject.AddComponent<SpriteRenderer>();
+                sr.color = beamNormalColor;
+                sr.sortingOrder = 7;
+            }
+
+            if (m_RedBeamObject != null)
+            {
+                m_RedBeamRenderer = m_RedBeamObject.GetComponent<SpriteRenderer>();
+                m_RedObjects.Add(m_RedBeamObject);
+                UpdateRedBeam(false, m_RedReceiverPos);
+            }
         }
 
         private void CleanupRedVisuals()
@@ -284,6 +368,76 @@ namespace IronWasteland.Enemies.D1onk
                 }
             }
             m_RedObjects.Clear();
+            m_RedBeamObject = null;
+            m_RedBeamRenderer = null;
+        }
+
+        private void UpdateRedBeam(bool isBlocked, Vector2 endPos)
+        {
+            if (m_RedBeamObject == null) return;
+
+            Vector2 startPos = m_RedTransmitterPos;
+            Vector2 dir = endPos - startPos;
+            float dist = dir.magnitude;
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+            m_RedBeamObject.transform.position = (startPos + endPos) * 0.5f;
+            m_RedBeamObject.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+            m_RedBeamObject.transform.localScale = new Vector3(dist, isBlocked ? beamBlockedThickness : beamNormalThickness, 1f);
+
+            if (m_RedBeamRenderer != null)
+            {
+                m_RedBeamRenderer.color = isBlocked ? beamBlockedColor : beamNormalColor;
+            }
+        }
+
+        private TankBrain DetectBlockingTank(out Vector2 blockPoint)
+        {
+            blockPoint = m_RedReceiverPos;
+
+            // 1. Dùng Physics2D LinecastAll phát hiện collider có ColliderOwnerRef.Owner là TankBrain
+            RaycastHit2D[] hits = Physics2D.LinecastAll(m_RedTransmitterPos, m_RedReceiverPos);
+            for (int i = 0; i < hits.Length; i++)
+            {
+                var hit = hits[i];
+                if (hit.collider == null) continue;
+
+                var ownerRef = hit.collider.GetComponent<ColliderOwnerRef>() ?? hit.collider.GetComponentInParent<ColliderOwnerRef>();
+                if (ownerRef != null && ownerRef.Owner is TankBrain tank && tank.IsAlive)
+                {
+                    bool isEligible = m_IsSolo || tank.transform.position.x < 150f;
+                    if (isEligible)
+                    {
+                        blockPoint = hit.point;
+                        return tank;
+                    }
+                }
+            }
+
+            // 2. Fallback cho môi trường test khi không chạy physics loop liên tục
+            var allTanks = UnityEngine.Object.FindObjectsByType<TankBrain>(FindObjectsSortMode.None);
+            for (int i = 0; i < allTanks.Length; i++)
+            {
+                TankBrain tank = allTanks[i];
+                if (tank != null && tank.IsAlive)
+                {
+                    bool isEligible = m_IsSolo || tank.transform.position.x < 150f;
+                    if (isEligible)
+                    {
+                        var ownerRef = tank.GetComponentInChildren<ColliderOwnerRef>();
+                        if (ownerRef != null && ownerRef.Owner is TankBrain)
+                        {
+                            if (IsPointNearSegment(tank.transform.position, m_RedTransmitterPos, m_RedReceiverPos, redBlockDetectionRadius))
+                            {
+                                blockPoint = tank.transform.position;
+                                return tank;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         public void ManualTickRed(float dt)
@@ -293,256 +447,52 @@ namespace IronWasteland.Enemies.D1onk
             m_RedTimer += dt;
             m_RedTickTimer += dt;
 
-            while (m_RedTickTimer >= 0.5f)
+            // Cập nhật hiển thị tia điện liên tục theo vị trí Tank chặn
+            TankBrain currentBlocker = DetectBlockingTank(out Vector2 currentBlockPoint);
+            bool isBlockedNow = (currentBlocker != null);
+            UpdateRedBeam(isBlockedNow, isBlockedNow ? currentBlockPoint : m_RedReceiverPos);
+
+            while (m_RedTickTimer >= redTransmissionInterval)
             {
-                m_RedTickTimer -= 0.5f;
-                TickRedTransmission();
+                m_RedTickTimer -= redTransmissionInterval;
+                TickRedTransmission(currentBlocker);
             }
 
-            if (m_RedTimer >= 10f)
+            if (m_RedTimer >= redChallengeDuration)
             {
                 m_RedResolved = true;
                 m_RedActive = false;
+                CleanupRedVisuals();
 
                 // Nếu trong 10s thu điện chưa tích được 5 điểm -> Hoàn thành
-                if (m_RedEnergyPoints < 5)
+                if (m_RedEnergyPoints < redMaxAllowedPoints)
                 {
                     MarkChallengeComplete(D1onkPillarColor.Red);
                 }
                 else
                 {
-                    Debug.Log($"[D1onkCoopChallenges] Thử thách Cột Đỏ thất bại! Thu điện đã tích {m_RedEnergyPoints} điểm.");
+                    Debug.Log($"[D1onkCoopChallenges] Thử thách Cột Đỏ thất bại! Thu điện đã tích {m_RedEnergyPoints} điểm (ngưỡng < {redMaxAllowedPoints}).");
                 }
             }
         }
 
-        private void TickRedTransmission()
+        private void TickRedTransmission(TankBrain blockingTank)
         {
-            bool isBlocked = false;
-
-            // Kiểm tra Tank có đứng chặn đường truyền giữa Transmitter và Receiver không
-            var allTanks = UnityEngine.Object.FindObjectsByType<TankBrain>(FindObjectsSortMode.None);
-            float bossAtk = (m_Boss != null && m_Boss.Stats != null) ? m_Boss.Stats.Attack : 500f;
-            float blockDamage = bossAtk * 0.2f;
-
-            for (int i = 0; i < allTanks.Length; i++)
+            if (blockingTank != null)
             {
-                TankBrain tank = allTanks[i];
-                if (tank != null && tank.IsAlive)
-                {
-                    // Chỉ xét Tank ngoài sân (không phải tank bị giam trong Sub-Arena x > 150)
-                    if (tank.transform.position.x < 150f && IsPointNearSegment(tank.transform.position, m_RedTransmitterPos, m_RedReceiverPos, 1.2f))
-                    {
-                        isBlocked = true;
-                        DamageInfo blockDmg = new DamageInfo(m_Boss, tank, blockDamage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
-                        tank.TakeDamage(blockDmg);
-                        TextDamageManager.Instance?.Show(blockDmg.FinalDamage, tank.transform.position);
-                    }
-                }
+                // Tank chặn đường điện -> nhận sát thương bằng 20% Tấn công mỗi 0.5s và đường điện bị ngắt
+                float bossAtk = (m_Boss != null && m_Boss.Stats != null) ? m_Boss.Stats.Attack : 500f;
+                float blockDamage = bossAtk * redBlockDamageRatio;
+                DamageInfo blockDmg = new DamageInfo(m_Boss, blockingTank, blockDamage, 0f, blockingTank.transform.position, sourceType: DamageSourceType.EnemyAttack);
+                blockingTank.TakeDamage(blockDmg);
+                TextDamageManager.Instance?.Show(blockDmg.FinalDamage, blockingTank.transform.position);
+
+                // Đường điện bị tạm ngắt -> không tích lũy điện
             }
-
-            // Kiểm tra vật cản hoặc tường (loại trừ chính Boss và các collider thuộc Boss)
-            if (!isBlocked)
+            else
             {
-                RaycastHit2D hit = Physics2D.Linecast(m_RedTransmitterPos, m_RedReceiverPos);
-                if (hit.collider != null && !hit.collider.isTrigger)
-                {
-                    bool isBossCollider = (m_Boss != null && (hit.collider.gameObject == m_Boss.gameObject || hit.collider.transform.IsChildOf(m_Boss.transform)));
-                    if (!isBossCollider)
-                    {
-                        isBlocked = true;
-                    }
-                }
-            }
-
-            if (!isBlocked)
-            {
+                // Không bị chặn -> tích lũy 1 điểm điện năng
                 m_RedEnergyPoints++;
-            }
-        }
-
-        #endregion
-
-        #region 3. Yellow Challenge (2 Ký Sinh Thiên Thạch nổ phá 2 cột điện trong 10s)
-
-        private void StartYellowChallenge()
-        {
-            if (m_YellowActive || IsYellowCompleted) return;
-            m_YellowActive = true;
-            m_YellowTimer = 0f;
-            m_YellowPillarsRemaining = 2;
-            m_YellowResolved = false;
-            m_YellowPillarPositions.Clear();
-            m_YellowParasites.Clear();
-            CleanupYellowPillars();
-
-            if (kySinhThienThachPrefab == null)
-            {
-                kySinhThienThachPrefab = FindNormalPrefab("KySinhThienThach");
-            }
-
-            Vector2 center = m_Boss != null ? (Vector2)m_Boss.transform.position : Vector2.zero;
-            m_YellowPillarPositions.Add(center + new Vector2(-4f, 3f));
-            m_YellowPillarPositions.Add(center + new Vector2(4f, 3f));
-
-            for (int i = 0; i < m_YellowPillarPositions.Count; i++)
-            {
-                GameObject yp = new GameObject($"YellowElectricPillar_{i + 1}");
-                yp.transform.position = m_YellowPillarPositions[i];
-                yp.transform.SetParent(transform);
-
-                yp.layer = 7; // Enemy
-                var col = yp.AddComponent<CircleCollider2D>();
-                col.radius = 0.8f;
-                col.isTrigger = true;
-
-                var sr = yp.AddComponent<SpriteRenderer>();
-                sr.sprite = SpriteFactory.Circle;
-                sr.color = new Color(1f, 0.9f, 0.1f, 1f);
-                sr.transform.localScale = Vector3.one * 1.5f;
-                sr.sortingOrder = 5;
-
-                m_YellowPillarObjects.Add(yp);
-            }
-
-            // Spawn 2 Ký sinh thiên thạch
-            for (int i = 0; i < 2; i++)
-            {
-                Vector2 spawnPos = center + new Vector2(i == 0 ? -4f : 4f, 5f);
-                if (kySinhThienThachPrefab != null)
-                {
-                    GameObject go = Instantiate(kySinhThienThachPrefab, spawnPos, Quaternion.identity);
-                    var parasite = go.GetComponent<NormalEnemy_KySinhThienThach>();
-                    if (parasite != null) m_YellowParasites.Add(parasite);
-                }
-            }
-        }
-
-        public void DestroyYellowElectricPillar(int index)
-        {
-            if (!m_YellowActive || m_YellowResolved) return;
-
-            if (m_YellowPillarObjects.Count > 0)
-            {
-                int targetIdx = Mathf.Clamp(index, 0, m_YellowPillarObjects.Count - 1);
-                var obj = m_YellowPillarObjects[targetIdx];
-                m_YellowPillarObjects.RemoveAt(targetIdx);
-                if (obj != null)
-                {
-                    if (Application.isPlaying) Destroy(obj);
-                    else DestroyImmediate(obj);
-                }
-            }
-
-            m_YellowPillarsRemaining = Mathf.Max(0, m_YellowPillarsRemaining - 1);
-            if (m_YellowPillarsRemaining == 0 && m_YellowTimer <= 10f)
-            {
-                m_YellowResolved = true;
-                m_YellowActive = false;
-                MarkChallengeComplete(D1onkPillarColor.Yellow);
-            }
-        }
-
-        private void CleanupYellowPillars()
-        {
-            for (int i = 0; i < m_YellowPillarObjects.Count; i++)
-            {
-                if (m_YellowPillarObjects[i] != null)
-                {
-                    if (Application.isPlaying) Destroy(m_YellowPillarObjects[i]);
-                    else DestroyImmediate(m_YellowPillarObjects[i]);
-                }
-            }
-            m_YellowPillarObjects.Clear();
-        }
-
-        public void ManualTickYellow(float dt)
-        {
-            if (!m_YellowActive || m_YellowResolved) return;
-
-            m_YellowTimer += dt;
-
-            // Kiểm tra Ký sinh thiên thạch phát nổ gần cột điện
-            for (int p = m_YellowParasites.Count - 1; p >= 0; p--)
-            {
-                var parasite = m_YellowParasites[p];
-                if (parasite == null || parasite.HasDetonated || !parasite.IsAlive)
-                {
-                    Vector2 expPos = parasite != null ? (Vector2)parasite.transform.position : Vector2.zero;
-                    if (parasite != null) m_YellowParasites.RemoveAt(p);
-
-                    for (int c = m_YellowPillarPositions.Count - 1; c >= 0; c--)
-                    {
-                        if (Vector2.Distance(expPos, m_YellowPillarPositions[c]) <= 3.5f)
-                        {
-                            m_YellowPillarPositions.RemoveAt(c);
-                            DestroyYellowElectricPillar(c);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (m_YellowTimer >= 10f)
-            {
-                m_YellowResolved = true;
-                m_YellowActive = false;
-                if (m_YellowPillarsRemaining == 0)
-                {
-                    MarkChallengeComplete(D1onkPillarColor.Yellow);
-                }
-            }
-        }
-
-        #endregion
-
-        #region 4. Blue Challenge (Diệt sạch bản sao Tank trong 10s)
-
-        private void StartBlueChallenge()
-        {
-            if (m_BlueActive || IsBlueCompleted) return;
-            m_BlueActive = true;
-            m_BlueTimer = 0f;
-            m_BlueResolved = false;
-
-            CheckBlueProgress();
-        }
-
-        public void ManualTickBlue(float dt)
-        {
-            if (!m_BlueActive || m_BlueResolved) return;
-
-            m_BlueTimer += dt;
-
-            CheckBlueProgress();
-
-            if (m_BlueTimer >= 10f && !m_BlueResolved)
-            {
-                m_BlueResolved = true;
-                m_BlueActive = false;
-                CheckBlueProgress();
-            }
-        }
-
-        private void CheckBlueProgress()
-        {
-            if (!m_BlueActive || m_BlueResolved) return;
-
-            bool allClonesDefeated = true;
-            for (int i = 0; i < m_OutsideTankClones.Count; i++)
-            {
-                if (m_OutsideTankClones[i] != null && !m_OutsideTankClones[i].IsDefeated)
-                {
-                    allClonesDefeated = false;
-                    break;
-                }
-            }
-
-            if (allClonesDefeated)
-            {
-                m_BlueResolved = true;
-                m_BlueActive = false;
-                MarkChallengeComplete(D1onkPillarColor.Blue);
             }
         }
 
@@ -552,8 +502,6 @@ namespace IronWasteland.Enemies.D1onk
         {
             if (m_WhiteActive) CheckWhiteChallengeProgress();
             if (m_RedActive) ManualTickRed(dt);
-            if (m_YellowActive) ManualTickYellow(dt);
-            if (m_BlueActive) ManualTickBlue(dt);
         }
 
         private void MarkChallengeComplete(D1onkPillarColor color)
@@ -563,12 +511,13 @@ namespace IronWasteland.Enemies.D1onk
             m_CompletedColors.Add(color);
             m_CompletedChallengesCount++;
 
-            Debug.Log($"[D1onkCoopChallenges] Thử thách {color} HOÀN THÀNH! ({m_CompletedChallengesCount}/3)");
+            Debug.Log($"[D1onkCoopChallenges] Thử thách {color} HOÀN THÀNH! ({m_CompletedChallengesCount}/2)");
             OnChallengeCompleted?.Invoke(color);
 
-            if (m_CompletedChallengesCount >= 3)
+            if (IsWhiteCompleted && IsRedCompleted)
             {
-                Debug.Log("[D1onkCoopChallenges] ĐÃ HOÀN THÀNH 3 THỬ THÁCH! Kích hoạt xóa khiên Bất Hoại của Trái Tim Boss!");
+                Debug.Log("[D1onkCoopChallenges] ĐÃ HOÀN THÀNH 2 THỬ THÁCH (Trắng & Đỏ)! Kích hoạt xóa khiên Bất Hoại của Trái Tim Boss!");
+                OnTwoChallengesCompleted?.Invoke();
                 OnThreeChallengesCompleted?.Invoke();
             }
         }
@@ -587,7 +536,6 @@ namespace IronWasteland.Enemies.D1onk
         public void Cleanup()
         {
             CleanupRedVisuals();
-            CleanupYellowPillars();
 
             for (int i = 0; i < m_WhiteMinions.Count; i++)
             {

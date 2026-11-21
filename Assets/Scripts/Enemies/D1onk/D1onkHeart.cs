@@ -103,36 +103,34 @@ namespace IronWasteland.Enemies.D1onk
             Initialize(heartStats);
             IsCrowdControlImmune = true;
 
-            // Ràng buộc Collider: Đảm bảo có Collider2D và ColliderOwnerRef riêng, TUYỆT ĐỐI không trỏ về Boss Brain!
-            gameObject.layer = 7; // Layer Enemy
+            // Ràng buộc Collider: Đảm bảo có Collider2D và ColliderOwnerRef riêng trên Prefab, TUYỆT ĐỐI không trỏ về Boss Brain!
+            if (gameObject.layer == 0) gameObject.layer = 7; // Layer Enemy nếu chưa đặt
 
-            var col = GetComponent<CircleCollider2D>();
+            var col = GetComponent<Collider2D>();
             if (col == null)
             {
-                col = gameObject.AddComponent<CircleCollider2D>();
-                col.radius = 1.5f;
+                Debug.LogError($"[D1onkHeart] {gameObject.name} thiếu Collider2D trên Prefab! Vui lòng cấu hình trên Prefab thay vì code.", this);
             }
 
             var ownerRef = GetComponent<ColliderOwnerRef>();
             if (ownerRef == null)
             {
-                ownerRef = gameObject.AddComponent<ColliderOwnerRef>();
+                Debug.LogError($"[D1onkHeart] {gameObject.name} thiếu ColliderOwnerRef trên Prefab! Vui lòng cấu hình trên Prefab thay vì code.", this);
             }
-            ownerRef.SetOwner(this.gameObject);
+            else
+            {
+                ownerRef.SetOwner(this);
+            }
 
             var sr = GetComponent<SpriteRenderer>();
             if (sr == null)
             {
-                sr = gameObject.AddComponent<SpriteRenderer>();
-                sr.sprite = SpriteFactory.Circle;
-                sr.color = new Color(0.95f, 0.15f, 0.35f, 0.95f);
-                sr.transform.localScale = Vector3.one * 3.0f;
-                sr.sortingOrder = 5;
+                Debug.LogError($"[D1onkHeart] {gameObject.name} thiếu SpriteRenderer trên Prefab! Vui lòng cấu hình SpriteRenderer trên Prefab thay vì code.", this);
             }
         }
 
         /// <summary>
-        /// Xóa bỏ lớp khiên Bất Hoại khi hoàn thành 3 thử thách hoặc phá 3/4 cột.
+        /// Xóa bỏ lớp khiên Bất Hoại khi hoàn thành 2 thử thách hoặc phá 2 cột.
         /// </summary>
         public void RemoveInvincibleShield()
         {

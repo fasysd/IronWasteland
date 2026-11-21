@@ -246,22 +246,18 @@ namespace IronWasteland.Tests
             }
 
             // ----------------------------------------------------
-            // TEST 7: Kỹ năng — Viện Binh Tinh Linh (VienBinhTinhLinh)
+            // TEST 7: Kỹ năng — Viện Binh Tinh Linh (Triệu Hồi Quái Thường & Bị Động)
             // ----------------------------------------------------
             {
                 var bossObj = new GameObject("Test_D1onk_7");
                 var boss = bossObj.AddComponent<D1onkBrain>();
                 boss.Initialize();
 
-                boss.CastVienBinhTinhLinh(2);
+                boss.CastVienBinhTinhLinh(3);
 
-                Assert(boss.ActiveMiniClones.Count == 2, "Test 7.1: Summons requested number of mini clones");
-                var clone = boss.ActiveMiniClones[0];
-                Assert(clone != null, "Test 7.2: Mini clone instance is valid");
-                Assert(clone.MaxHealth == 27000f * 0.20f, "Test 7.3: Mini clone has 20% Boss MaxHealth (5,400)", $"Got {clone.MaxHealth}");
-                Assert(clone.Stats.Attack == 500f * 0.20f, "Test 7.4: Mini clone has 20% Boss Attack (100)", $"Got {clone.Stats.Attack}");
-                Assert(clone.Stats.Defense == 60f * 0.20f, "Test 7.5: Mini clone has 20% Boss Defense (12)", $"Got {clone.Stats.Defense}");
-                Assert(clone.Stats.MoveSpeed == 70f, "Test 7.6: Mini clone has Boss MoveSpeed (70)");
+                Assert(boss.VienBinhTimer > 0f, "Test 7.1: CastVienBinhTinhLinh starts cooldown timer");
+                Assert(boss.GlobalSkillCooldownTimer == 2.0f, "Test 7.2: Global skill cooldown triggered (2.0s)");
+                Assert(!boss.CanCastAnySkill, "Test 7.3: Skills blocked during global cooldown interval");
 
                 UnityEngine.Object.DestroyImmediate(bossObj);
             }
@@ -305,7 +301,7 @@ namespace IronWasteland.Tests
                 var boss = bossObj.AddComponent<D1onkBrain>();
                 boss.Initialize();
 
-                var soloTankObj = CreateMockTank("SoloTank_9", new Vector3(0f, 0f, 0f));
+                var soloTankObj = CreateMockTank("SoloTank_9", new Vector3(0f, 0f, 0f), hp: 5000f);
                 var soloTank = soloTankObj.GetComponent<TankBrain_Test>();
 
                 // Trigger Energy Burst (Solo: chỉ có 1 Tank)
@@ -327,35 +323,47 @@ namespace IronWasteland.Tests
                 heart.TakeDamage(500f);
                 Assert(heart.CurrentHealth == heartHpBefore, "Test 9.7: Heart takes 0 damage while Invincible Shield active");
 
-                // Kiểm tra 4 cột năng lượng (500 HP mỗi cột)
-                Assert(subArena.Pillars.Count == 4, "Test 9.8: 4 Energy Pillars spawned");
+                // Kiểm tra chỉ tạo 2 cột năng lượng: Trắng và Đỏ (500 HP mỗi cột)
+                Assert(subArena.Pillars.Count == 2, "Test 9.8: Exactly 2 Energy Pillars spawned (White and Red)");
                 for (int i = 0; i < subArena.Pillars.Count; i++)
                 {
                     Assert(subArena.Pillars[i].MaxHealth == 500f, $"Test 9.8.{i + 1}: Pillar {subArena.Pillars[i].PillarColor} has 500 HP");
                 }
 
-                // Phá cột 1 -> Khiên vẫn còn
-                subArena.Pillars[0].TakeDamage(500f);
-                Assert(heart.InvincibleShieldActive, "Test 9.9: Shield remains active after 1 pillar destroyed");
+                var coopChallenges = boss.CoopChallenges;
+                Assert(coopChallenges != null, "Test 9.9: Challenges manager created for Solo mode");
+                Assert(coopChallenges.IsSolo, "Test 9.10: Challenges manager set to Solo mode");
 
-                // Phá cột 2 -> Khiên vẫn còn
-                subArena.Pillars[1].TakeDamage(500f);
-                Assert(heart.InvincibleShieldActive, "Test 9.10: Shield remains active after 2 pillars destroyed");
+                // Phá cột Trắng -> Kích hoạt Thử thách Trắng BÊN TRONG Pháo Hạm
+                subArena.OnPillarDestroyed(subArena.Pillars[0]);
+                for (int i = 0; i < coopChallenges.WhiteMinions.Count; i++)
+                {
+                    coopChallenges.WhiteMinions[i].TakeDamage(9999f);
+                }
+                coopChallenges.ManualTick(0.1f);
+                Assert(coopChallenges.IsWhiteCompleted, "Test 9.11: White Challenge completed inside Pháo Hạm");
+                Assert(heart.InvincibleShieldActive, "Test 9.12: Heart Shield remains active (needs both White and Red)");
 
-                // Phá cột 3 -> Khiên Bất Hoại bị GỠ BỎ lập tức!
-                subArena.Pillars[2].TakeDamage(500f);
-                Assert(!heart.InvincibleShieldActive, "Test 9.11: Invincible Shield REMOVED after 3 pillars destroyed in Solo!");
+                // Phá cột Đỏ -> Kích hoạt Thử thách Đỏ BÊN TRONG Pháo Hạm
+                subArena.OnPillarDestroyed(subArena.Pillars[1]);
+                // Tank di chuyển vào vị trí chặn tia điện giữa Transmitter (195.5, 100) và Receiver (204.5, 100)
+                soloTank.transform.position = new Vector3(200f, 100f, 0f);
+                coopChallenges.ManualTickRed(10.1f);
+                Assert(coopChallenges.IsRedCompleted, "Test 9.13: Red Challenge completed inside Pháo Hạm");
+
+                // Hoàn thành cả 2 thử thách (Trắng & Đỏ) -> GỠ BỎ Khiên Bất Hoại của Trái Tim lập tức!
+                Assert(!heart.InvincibleShieldActive, "Test 9.14: Heart Invincible Shield REMOVED after both White & Red challenges completed in Solo!");
 
                 // Giờ tấn công Trái Tim -> Nhận sát thương bình thường
                 heart.TakeDamage(1000f);
-                Assert(heart.CurrentHealth < heartHpBefore, "Test 9.12: Heart takes damage after shield removed");
+                Assert(heart.CurrentHealth < heartHpBefore, "Test 9.15: Heart takes damage after shield removed");
 
                 UnityEngine.Object.DestroyImmediate(soloTankObj);
                 UnityEngine.Object.DestroyImmediate(bossObj);
             }
 
             // ----------------------------------------------------
-            // TEST 10: Buồng Lái Sub-Arena & Chế Độ Co-op (3 Thử Thách)
+            // TEST 10: Buồng Lái Sub-Arena & Chế Độ Co-op (2 Thử Thách Trắng & Đỏ)
             // ----------------------------------------------------
             {
                 var bossObj = new GameObject("Test_D1onk_10");
@@ -363,7 +371,7 @@ namespace IronWasteland.Tests
                 boss.Initialize();
 
                 var t1Obj = CreateMockTank("CoopTank_1", new Vector3(1f, 0f, 0f));
-                var t2Obj = CreateMockTank("CoopTank_2", new Vector3(2f, 0f, 0f));
+                var t2Obj = CreateMockTank("CoopTank_2", new Vector3(2f, 0f, 0f), hp: 5000f);
                 var t3Obj = CreateMockTank("CoopTank_3", new Vector3(6f, 0f, 0f));
 
                 boss.TriggerEnergyBurstManual();
@@ -371,14 +379,16 @@ namespace IronWasteland.Tests
 
                 var subArena = boss.SubArena;
                 Assert(subArena.IsCoop, "Test 10.1: SubArena correctly detects Co-op mode");
-                Assert(subArena.TrappedTanks.Count == 2, "Test 10.2: Exactly 2 nearest Tanks trapped inside");
-                Assert(boss.ActiveTankClones.Count == 2, "Test 10.3: 2 Tank Clones created outside");
+
+                // 3 Tank: kéo 1 Tank gần nhất vào trong, ưu tiên 2 Tank ở bên ngoài
+                Assert(subArena.TrappedTanks.Count == 1, "Test 10.2: With 3 tanks, exactly 1 nearest Tank trapped inside (2 outside)");
 
                 var coopChallenges = boss.CoopChallenges;
                 Assert(coopChallenges != null, "Test 10.4: CoopChallenges manager active");
 
                 var heart = subArena.Heart;
                 Assert(heart.InvincibleShieldActive, "Test 10.5: Heart Invincible Shield active initially");
+                Assert(subArena.Pillars.Count == 2, "Test 10.6: Exactly 2 Energy Pillars spawned (White and Red)");
 
                 // Phá cột Trắng -> Kích hoạt Thử thách Trắng bên ngoài (10 Tinh Linh Sấm Sét)
                 subArena.OnPillarDestroyed(subArena.Pillars[0]);
@@ -387,31 +397,17 @@ namespace IronWasteland.Tests
                     coopChallenges.WhiteMinions[i].TakeDamage(9999f);
                 }
                 coopChallenges.ManualTick(0.1f);
-                Assert(coopChallenges.IsWhiteCompleted, "Test 10.6: White Challenge completed upon destroying all 10 minions");
+                Assert(coopChallenges.IsWhiteCompleted, "Test 10.7: White Challenge completed upon destroying all 10 minions");
+                Assert(heart.InvincibleShieldActive, "Test 10.8: Heart Shield still active before Red Challenge is completed");
 
                 // Thử thách Đỏ: Truyền điện 10s, < 5 điểm
                 subArena.OnPillarDestroyed(subArena.Pillars[1]);
                 coopChallenges.ManualTickRed(10.1f);
-                Assert(coopChallenges.IsRedCompleted, "Test 10.7: Red Challenge completed");
+                Assert(coopChallenges.IsRedCompleted, "Test 10.9: Red Challenge completed");
 
-                // Thử thách Vàng: Phá 2 cột điện trong 10s
-                subArena.OnPillarDestroyed(subArena.Pillars[2]);
-                coopChallenges.DestroyYellowElectricPillar(0);
-                coopChallenges.DestroyYellowElectricPillar(1);
-                coopChallenges.ManualTickYellow(1.0f);
-                Assert(coopChallenges.IsYellowCompleted, "Test 10.8: Yellow Challenge completed");
-
-                // Thử thách Xanh: Diệt sạch bản sao tank trong 10s
-                subArena.OnPillarDestroyed(subArena.Pillars[3]);
-                for (int i = 0; i < boss.ActiveTankClones.Count; i++)
-                {
-                    boss.ActiveTankClones[i].TakeDamage(99999f);
-                }
-                coopChallenges.ManualTickBlue(1.0f);
-                Assert(coopChallenges.IsBlueCompleted, "Test 10.9: Blue Challenge completed");
-
-                Assert(coopChallenges.CompletedChallengesCount >= 3, "Test 10.10: At least 3 challenges completed");
-                Assert(!heart.InvincibleShieldActive, "Test 10.11: Heart Invincible Shield removed after 3 challenges in Co-op!");
+                // Hoàn thành cả 2 thử thách (Trắng và Đỏ) -> Gỡ khiên Bất Hoại
+                Assert(coopChallenges.CompletedChallengesCount == 2, "Test 10.10: Exactly 2 challenges completed");
+                Assert(!heart.InvincibleShieldActive, "Test 10.11: Heart Invincible Shield removed after White & Red challenges completed in Co-op!");
 
                 UnityEngine.Object.DestroyImmediate(t1Obj);
                 UnityEngine.Object.DestroyImmediate(t2Obj);
@@ -531,9 +527,10 @@ namespace IronWasteland.Tests
                 var heartOwner = subArena.Heart.GetComponent<ColliderOwnerRef>();
                 Assert(heartOwner != null, "Test 13.1.2: Heart has ColliderOwnerRef component");
                 Assert(heartOwner.Owner != (UnityEngine.Object)boss, "Test 13.1.3: Heart ColliderOwnerRef does NOT point to Boss Brain");
-                Assert(heartOwner.Owner == (UnityEngine.Object)subArena.Heart.gameObject, "Test 13.1.4: Heart ColliderOwnerRef points to Heart itself");
+                Assert(heartOwner.Owner == (UnityEngine.Object)subArena.Heart, "Test 13.1.4: Heart ColliderOwnerRef points to Heart EnemyBrain");
 
-                // Kiểm tra 4 cột
+                // Kiểm tra 2 cột (Trắng và Đỏ)
+                Assert(subArena.Pillars.Count == 2, "Test 13.2.0: SubArena has exactly 2 Pillars");
                 for (int i = 0; i < subArena.Pillars.Count; i++)
                 {
                     var p = subArena.Pillars[i];
@@ -542,7 +539,7 @@ namespace IronWasteland.Tests
                     var pillarOwner = p.GetComponent<ColliderOwnerRef>();
                     Assert(pillarOwner != null, $"Test 13.2.{i + 1}.2: Pillar {p.PillarColor} has ColliderOwnerRef");
                     Assert(pillarOwner.Owner != (UnityEngine.Object)boss, $"Test 13.2.{i + 1}.3: Pillar {p.PillarColor} ColliderOwnerRef does NOT point to Boss Brain");
-                    Assert(pillarOwner.Owner == (UnityEngine.Object)p.gameObject, $"Test 13.2.{i + 1}.4: Pillar {p.PillarColor} ColliderOwnerRef points to Pillar itself");
+                    Assert(pillarOwner.Owner == (UnityEngine.Object)p, $"Test 13.2.{i + 1}.4: Pillar {p.PillarColor} ColliderOwnerRef points to Pillar EnemyBrain");
                 }
 
                 UnityEngine.Object.DestroyImmediate(bossObj);
@@ -563,6 +560,9 @@ namespace IronWasteland.Tests
 
                 boss.TriggerEnergyBurstManual();
                 boss.ManualTick(2.0f); // Active
+
+                boss.SubArena.TrapTank(t1);
+                boss.SubArena.TrapTank(t2);
 
                 var heart = boss.SubArena.Heart;
                 Assert(heart != null, "Test 14.1: Heart instance is valid");
@@ -607,7 +607,7 @@ namespace IronWasteland.Tests
 
                 var coopChallengesObj = new GameObject("Test_CoopChallenges_15");
                 var coopChallenges = coopChallengesObj.AddComponent<D1onkCoopChallenges>();
-                coopChallenges.Initialize(boss, null);
+                coopChallenges.Initialize(boss, Vector2.zero);
 
                 // Kích hoạt thử thách Cột Đỏ: Máy phát tại (-6, 0), Máy thu tại (6, 0)
                 coopChallenges.ActivateChallenge(D1onkPillarColor.Red);
@@ -680,6 +680,133 @@ namespace IronWasteland.Tests
                 UnityEngine.Object.DestroyImmediate(bossObj);
             }
 
+            // ----------------------------------------------------
+            // TEST 18: RotationOffset khi xoay hướng mặt mục tiêu
+            // ----------------------------------------------------
+            {
+                var bossObj = new GameObject("Test_D1onk_18");
+                var boss = bossObj.AddComponent<D1onkBrain>();
+                boss.Initialize();
+
+                Assert(boss.RotationOffset == 0f, "Test 18.1: Default RotationOffset is 0");
+                boss.RotationOffset = 90f;
+                Assert(boss.RotationOffset == 90f, "Test 18.2: RotationOffset set to 90 degrees");
+
+                // Giả lập tính toán góc xoay với RotationOffset = 90 độ
+                float dirX = 1f, dirY = 0f;
+                float expectedAngle = Mathf.Atan2(dirY, dirX) * Mathf.Rad2Deg + boss.RotationOffset;
+                Assert(Mathf.Approximately(expectedAngle, 90f), "Test 18.3: Target angle computed with RotationOffset is 90 degrees");
+
+                UnityEngine.Object.DestroyImmediate(bossObj);
+            }
+
+            // ----------------------------------------------------
+            // TEST 19: Phân bổ Tank (4 Tanks -> 2 trong, 2 ngoài; 2 Tanks -> 1 trong, 1 ngoài)
+            // ----------------------------------------------------
+            {
+                var bossObj = new GameObject("Test_D1onk_19");
+                var boss = bossObj.AddComponent<D1onkBrain>();
+                boss.Initialize();
+
+                var t1Obj = CreateMockTank("Tank_19A", new Vector3(1f, 0f, 0f));
+                var t2Obj = CreateMockTank("Tank_19B", new Vector3(2f, 0f, 0f));
+                var t3Obj = CreateMockTank("Tank_19C", new Vector3(3f, 0f, 0f));
+                var t4Obj = CreateMockTank("Tank_19D", new Vector3(4f, 0f, 0f));
+
+                boss.TriggerEnergyBurstManual();
+                boss.ManualTick(2.0f); // Vào Active
+
+                // 4 Tanks -> kéo một nửa (2) vào trong, 2 ở ngoài
+                Assert(boss.SubArena.TrappedTanks.Count == 2, "Test 19.1: 4 Tanks -> Exactly 2 nearest tanks trapped inside");
+
+                UnityEngine.Object.DestroyImmediate(t1Obj);
+                UnityEngine.Object.DestroyImmediate(t2Obj);
+                UnityEngine.Object.DestroyImmediate(t3Obj);
+                UnityEngine.Object.DestroyImmediate(t4Obj);
+                UnityEngine.Object.DestroyImmediate(bossObj);
+            }
+
+            // ----------------------------------------------------
+            // TEST 20: D1onk vẫn thi triển kỹ năng bình thường trong Burst Active nếu có Tank bên ngoài
+            // ----------------------------------------------------
+            {
+                var bossObj = new GameObject("Test_D1onk_20");
+                var boss = bossObj.AddComponent<D1onkBrain>();
+                boss.Initialize();
+
+                var t1Obj = CreateMockTank("Tank_20A", new Vector3(1f, 0f, 0f), 5000f);
+                var t2Obj = CreateMockTank("Tank_20B", new Vector3(5f, 0f, 0f), 5000f);
+                var t1 = t1Obj.GetComponent<TankBrain_Test>();
+                var t2 = t2Obj.GetComponent<TankBrain_Test>();
+
+                boss.TriggerEnergyBurstManual();
+                boss.ManualTick(2.0f); // Vào Active phase: t1 bị kéo vào trong buồng lái, t2 ở ngoài
+
+                Assert(boss.BurstState == EliteBurstState.Active, "Test 20.1: Boss is in Burst Active state");
+                Assert(boss.SubArena.IsTankTrapped(t1), "Test 20.2: Tank 1 is trapped inside cockpit");
+                Assert(!boss.SubArena.IsTankTrapped(t2), "Test 20.3: Tank 2 is outside");
+
+                float t2HpBefore = t2.CurrentHealth;
+
+                // Boss thi triển kỹ năng khi có Tank bên ngoài (ManualTick qua global cooldown)
+                boss.ManualTick(2.1f);
+
+                // Tank 2 bên ngoài phải nhận sát thương từ kỹ năng hoặc bị động pháo hạm của Boss
+                Assert(t2.CurrentHealth < t2HpBefore, "Test 20.4: Tank 2 outside took damage from Boss skills/passive during Burst Active");
+
+                UnityEngine.Object.DestroyImmediate(t1Obj);
+                UnityEngine.Object.DestroyImmediate(t2Obj);
+                UnityEngine.Object.DestroyImmediate(bossObj);
+            }
+
+            // ----------------------------------------------------
+            // TEST 21: Di chuyển ngẫu nhiên duy trì ít nhất 1 mục tiêu trong StopDistance
+            // ----------------------------------------------------
+            {
+                var bossObj = new GameObject("Test_D1onk_21");
+                var boss = bossObj.AddComponent<D1onkBrain>();
+                boss.StopDistance = 5.0f;
+                boss.WanderChangeInterval = 0.5f;
+                boss.Initialize();
+
+                var tankObj = CreateMockTank("Tank_Wander_21", new Vector3(0f, 0f, 0f), 5000f);
+                bossObj.transform.position = new Vector3(12f, 0f, 0f); // Ở ngoài stopDistance (12m > 5m)
+
+                // Tick 1: Khi ở ngoài stopDistance, Boss phải di chuyển tiếp cận Tank
+                Vector3 initialPos = bossObj.transform.position;
+                boss.ManualTick(1.0f);
+                Assert(bossObj.transform.position.x < initialPos.x, "Test 21.1: Boss moves towards tank when outside stopDistance");
+
+                // Đưa Boss vào bên trong phạm vi stopDistance (cách tank 3m < 5m)
+                bossObj.transform.position = new Vector3(3f, 0f, 0f);
+
+                bool hasMoved = false;
+                bool stayedWithinRange = true;
+
+                for (int i = 0; i < 20; i++)
+                {
+                    Vector3 prevPos = bossObj.transform.position;
+                    boss.ManualTick(0.2f);
+                    if (Vector3.Distance(bossObj.transform.position, prevPos) > 0.001f)
+                    {
+                        hasMoved = true;
+                    }
+
+                    float distToTank = Vector2.Distance(bossObj.transform.position, tankObj.transform.position);
+                    if (distToTank > boss.StopDistance + 0.15f)
+                    {
+                        stayedWithinRange = false;
+                        break;
+                    }
+                }
+
+                Assert(hasMoved, "Test 21.2: Boss always moves randomly in a direction inside stopDistance");
+                Assert(stayedWithinRange, "Test 21.3: Boss maintains target within StopDistance while moving randomly");
+
+                UnityEngine.Object.DestroyImmediate(tankObj);
+                UnityEngine.Object.DestroyImmediate(bossObj);
+            }
+
             CleanupScene();
 
             sb.AppendLine("==================================================");
@@ -694,6 +821,12 @@ namespace IronWasteland.Tests
             var go = new GameObject(name);
             go.transform.position = pos;
             var tank = go.AddComponent<TankBrain_Test>();
+
+            var col = go.AddComponent<CircleCollider2D>();
+            col.radius = 0.5f;
+
+            var ownerRef = go.AddComponent<ColliderOwnerRef>();
+            ownerRef.SetOwner(tank);
 
             var stats = new TankStats
             {

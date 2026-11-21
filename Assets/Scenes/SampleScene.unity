@@ -1242,6 +1242,26 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 4.0190887
       objectReference: {fileID: 0}
+    - target: {fileID: 4382231180120962163, guid: 2c24284711f47d543a1f6fa76876b229, type: 3}
+      propertyPath: stopDistance
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 4382231180120962163, guid: 2c24284711f47d543a1f6fa76876b229, type: 3}
+      propertyPath: burstDuration
+      value: 9999
+      objectReference: {fileID: 0}
+    - target: {fileID: 4382231180120962163, guid: 2c24284711f47d543a1f6fa76876b229, type: 3}
+      propertyPath: rotationOffset
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 4382231180120962163, guid: 2c24284711f47d543a1f6fa76876b229, type: 3}
+      propertyPath: stats.MaxHealth
+      value: 5000
+      objectReference: {fileID: 0}
+    - target: {fileID: 4382231180120962163, guid: 2c24284711f47d543a1f6fa76876b229, type: 3}
+      propertyPath: vienBinhTinhLinhCooldown
+      value: 12
+      objectReference: {fileID: 0}
     - target: {fileID: 4959858111588244209, guid: 2c24284711f47d543a1f6fa76876b229, type: 3}
       propertyPath: m_LocalPosition.x
       value: 4.386779

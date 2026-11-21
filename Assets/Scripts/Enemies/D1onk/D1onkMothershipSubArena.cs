@@ -24,24 +24,58 @@ namespace IronWasteland.Enemies.D1onk
     [DisallowMultipleComponent]
     public class D1onkMothershipSubArena : MonoBehaviour
     {
-        [Header("Arena Bounds & Offsets")]
+        [Header("Arena Bounds & Configuration")]
         [Tooltip("Tọa độ trung tâm buồng lái lõi pháo hạm.")]
         [SerializeField] private Vector2 arenaCenter = new Vector2(200f, 100f);
 
         [Tooltip("Bán kính sàn đấu buồng lái (m).")]
         [SerializeField, Min(5f)] private float arenaRadius = 14f;
 
-        [Tooltip("Khoảng cách đặt 4 cột năng lượng từ tâm buồng lái (m).")]
-        [SerializeField, Min(2f)] private float pillarOffsetDistance = 7f;
+        [Tooltip("Độ đệm an toàn ranh giới buồng lái khi cản Tank (m).")]
+        [SerializeField, Min(0f)] private float boundaryMargin = 0.5f;
 
-        [Header("Prefabs (Optional)")]
+        [Header("Energy Pillars Configuration")]
+        [Tooltip("Khoảng cách ngang (X) đặt các cột năng lượng từ tâm buồng lái (m).")]
+        [SerializeField, Min(1f)] private float pillarOffsetDistance = 7f;
+
+        [Tooltip("Tỷ lệ khoảng cách dọc (Y) của cột so với khoảng cách ngang (mặc định 0.5 = pillarOffsetDistance * 0.5).")]
+        [SerializeField] private float pillarVerticalOffsetRatio = 0.5f;
+
+        [Tooltip("Lượng máu tối đa của mỗi Cột năng lượng khi khởi tạo.")]
+        [SerializeField, Min(1f)] private float pillarHealth = 500f;
+
+        [Header("Boss Heart Configuration")]
+        [Tooltip("Tỷ lệ máu của Trái Tim Boss so với máu tối đa của Boss gốc (0.1 = 10%).")]
+        [SerializeField, Range(0.01f, 1f)] private float heartHealthRatio = 0.10f;
+
+        [Header("Monster Spawn Settings")]
+        [Tooltip("Tần suất xuất hiện quái vật thường ngẫu nhiên bên trong buồng lái (giây). Mặc định 5s.")]
+        [SerializeField, Min(0.5f)] private float normalEnemySpawnInterval = 5.0f;
+
+        [Tooltip("Tỷ lệ bán kính buồng lái dùng để tạo ngẫu nhiên vị trí quái xuất hiện (0.6 = 60% arenaRadius).")]
+        [SerializeField, Range(0.1f, 1f)] private float monsterSpawnRadiusFactor = 0.6f;
+
+        [Header("Tank Trapping Spacing")]
+        [Tooltip("Khoảng cách sắp xếp vị trí các Tank khi bị kéo vào buồng lái (X: độ lệch sang 2 bên, Y: khoảng cách giữa các hàng).")]
+        [SerializeField] private Vector2 tankTrappedSpacing = new Vector2(2.5f, 2.0f);
+
+        [Tooltip("Độ lệch Y ban đầu tính từ tâm buồng lái khi đặt Tank bị giam.")]
+        [SerializeField] private float tankTrappedBaseYOffset = -3.5f;
+
+        [Header("Prefabs")]
         [Tooltip("Prefab Trái Tim Boss (D1onkHeart).")]
         [SerializeField] private GameObject heartPrefab;
 
-        [Tooltip("Prefab Cột Năng Lượng (D1onkEnergyPillar).")]
+        [Tooltip("Prefab Cột Trắng (D1onkEnergyPillar).")]
+        [SerializeField] private GameObject whitePillarPrefab;
+
+        [Tooltip("Prefab Cột Đỏ (D1onkEnergyPillar).")]
+        [SerializeField] private GameObject redPillarPrefab;
+
+        [Tooltip("Prefab Cột Năng Lượng dự phòng.")]
         [SerializeField] private GameObject pillarPrefab;
 
-        [Tooltip("Danh sách Prefab quái thường để triệu hồi ngẫu nhiên mỗi 5s.")]
+        [Tooltip("Danh sách Prefab quái thường để triệu hồi ngẫu nhiên.")]
         [SerializeField] private GameObject[] normalEnemyPrefabs;
 
         private D1onkBrain m_Boss;
@@ -59,9 +93,24 @@ namespace IronWasteland.Enemies.D1onk
         private float m_MonsterSpawnTimer;
         private bool m_IsArenaActive;
 
+        public GameObject HeartPrefab { get => heartPrefab; set => heartPrefab = value; }
+        public GameObject WhitePillarPrefab { get => whitePillarPrefab; set => whitePillarPrefab = value; }
+        public GameObject RedPillarPrefab { get => redPillarPrefab; set => redPillarPrefab = value; }
+        public GameObject PillarPrefab { get => pillarPrefab; set => pillarPrefab = value; }
+
         public Vector2 ArenaCenter => arenaCenter;
         public float ArenaRadius => arenaRadius;
+        public float BoundaryMargin { get => boundaryMargin; set => boundaryMargin = value; }
+        public float PillarOffsetDistance { get => pillarOffsetDistance; set => pillarOffsetDistance = value; }
+        public float PillarVerticalOffsetRatio { get => pillarVerticalOffsetRatio; set => pillarVerticalOffsetRatio = value; }
+        public float PillarHealth { get => pillarHealth; set => pillarHealth = value; }
+        public float HeartHealthRatio { get => heartHealthRatio; set => heartHealthRatio = value; }
+        public float NormalEnemySpawnInterval { get => normalEnemySpawnInterval; set => normalEnemySpawnInterval = value; }
+        public float MonsterSpawnRadiusFactor { get => monsterSpawnRadiusFactor; set => monsterSpawnRadiusFactor = value; }
+        public Vector2 TankTrappedSpacing { get => tankTrappedSpacing; set => tankTrappedSpacing = value; }
+        public float TankTrappedBaseYOffset { get => tankTrappedBaseYOffset; set => tankTrappedBaseYOffset = value; }
         public IReadOnlyList<TankBrain> TrappedTanks => m_TrappedTanks;
+        public bool IsTankTrapped(TankBrain tank) => tank != null && m_TrappedTanks.Contains(tank);
         public D1onkHeart Heart => m_Heart;
         public IReadOnlyList<D1onkEnergyPillar> Pillars => m_Pillars;
         public int DestroyedPillarsCount => m_DestroyedPillars.Count;
@@ -97,7 +146,8 @@ namespace IronWasteland.Enemies.D1onk
 
             if (m_CoopChallenges != null)
             {
-                m_CoopChallenges.OnThreeChallengesCompleted += HandleThreeCoopChallengesCompleted;
+                m_CoopChallenges.OnTwoChallengesCompleted += HandleTwoChallengesCompleted;
+                m_CoopChallenges.OnThreeChallengesCompleted += HandleTwoChallengesCompleted;
             }
 
             BuildVisualFloor();
@@ -107,39 +157,38 @@ namespace IronWasteland.Enemies.D1onk
 
         private void BuildVisualFloor()
         {
-            GameObject floorGo = new GameObject("D1onkMothership_Floor");
-            floorGo.transform.SetParent(transform);
-            floorGo.transform.localPosition = Vector3.zero;
-
-            SpriteRenderer sr = floorGo.AddComponent<SpriteRenderer>();
-            sr.sprite = SpriteFactory.SoftCircle;
-            sr.color = new Color(0.12f, 0.08f, 0.22f, 0.95f); // Tím kim loại pháo hạm
-            sr.transform.localScale = Vector3.one * (arenaRadius * 2f);
-            sr.sortingOrder = -10;
+            // Floor đã được cấu hình trên Prefab con hoặc sàn arena
+            Transform existingFloor = transform.Find("D1onkMothership_Floor");
+            if (existingFloor != null) return;
         }
 
         private void SpawnHeart()
         {
             float bossHp = m_Boss != null ? m_Boss.MaxHealth : (m_IsCoop ? 54000f : 27000f);
-            float heartHp = bossHp * 0.10f; // 10% Max HP của Boss
+            float heartHp = bossHp * heartHealthRatio; // Mặc định 10% Max HP của Boss
 
-            GameObject heartObj = null;
-            if (heartPrefab != null)
+#if UNITY_EDITOR
+            if (heartPrefab == null)
             {
-                heartObj = Instantiate(heartPrefab, arenaCenter, Quaternion.identity, transform);
-                m_Heart = heartObj.GetComponent<D1onkHeart>();
+                heartPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/D1onk/D1onkHeart.prefab");
             }
-            else
+#endif
+
+            if (heartPrefab == null)
             {
-                heartObj = new GameObject("D1onkHeart");
-                heartObj.transform.position = arenaCenter;
-                heartObj.transform.SetParent(transform);
-                m_Heart = heartObj.AddComponent<D1onkHeart>();
+                Debug.LogError("[D1onkMothershipSubArena] heartPrefab chưa được gán trong Inspector! Vui lòng gán Prefab D1onkHeart.", this);
+                return;
             }
 
+            GameObject heartObj = Instantiate(heartPrefab, arenaCenter, Quaternion.identity, transform);
+            m_Heart = heartObj.GetComponent<D1onkHeart>();
             if (m_Heart != null)
             {
                 m_Heart.InitializeHeart(m_Boss, this, heartHp);
+            }
+            else
+            {
+                Debug.LogError("[D1onkMothershipSubArena] heartPrefab không chứa component D1onkHeart!", this);
             }
         }
 
@@ -147,13 +196,23 @@ namespace IronWasteland.Enemies.D1onk
         {
             m_Pillars.Clear();
 
-            // 4 Cột ở 4 góc: Trắng (Top-Left), Đỏ (Top-Right), Vàng (Bottom-Left), Xanh (Bottom-Right)
+#if UNITY_EDITOR
+            if (whitePillarPrefab == null)
+            {
+                whitePillarPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/D1onk/D1onkEnergyPillar_White.prefab");
+            }
+            if (redPillarPrefab == null)
+            {
+                redPillarPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/D1onk/D1onkEnergyPillar_Red.prefab");
+            }
+#endif
+
+            // Chỉ tạo 2 Cột: Trắng (White) và Đỏ (Red)
+            float verticalOffset = pillarOffsetDistance * pillarVerticalOffsetRatio;
             var configs = new[]
             {
-                new { color = D1onkPillarColor.White, offset = new Vector2(-pillarOffsetDistance, pillarOffsetDistance) },
-                new { color = D1onkPillarColor.Red, offset = new Vector2(pillarOffsetDistance, pillarOffsetDistance) },
-                new { color = D1onkPillarColor.Yellow, offset = new Vector2(-pillarOffsetDistance, -pillarOffsetDistance) },
-                new { color = D1onkPillarColor.Blue, offset = new Vector2(pillarOffsetDistance, -pillarOffsetDistance) }
+                new { color = D1onkPillarColor.White, offset = new Vector2(-pillarOffsetDistance, verticalOffset), prefab = whitePillarPrefab != null ? whitePillarPrefab : pillarPrefab },
+                new { color = D1onkPillarColor.Red, offset = new Vector2(pillarOffsetDistance, verticalOffset), prefab = redPillarPrefab != null ? redPillarPrefab : pillarPrefab }
             };
 
             for (int i = 0; i < configs.Length; i++)
@@ -161,26 +220,22 @@ namespace IronWasteland.Enemies.D1onk
                 var cfg = configs[i];
                 Vector2 spawnPos = arenaCenter + cfg.offset;
 
-                GameObject pillarObj = null;
-                D1onkEnergyPillar pillar = null;
-
-                if (pillarPrefab != null)
+                if (cfg.prefab == null)
                 {
-                    pillarObj = Instantiate(pillarPrefab, spawnPos, Quaternion.identity, transform);
-                    pillar = pillarObj.GetComponent<D1onkEnergyPillar>();
+                    Debug.LogError($"[D1onkMothershipSubArena] Prefab cho cột {cfg.color} chưa được gán trong Inspector!", this);
+                    continue;
+                }
+
+                GameObject pillarObj = Instantiate(cfg.prefab, spawnPos, Quaternion.identity, transform);
+                D1onkEnergyPillar pillar = pillarObj.GetComponent<D1onkEnergyPillar>();
+                if (pillar != null)
+                {
+                    pillar.InitializePillar(cfg.color, this, pillarHealth);
+                    m_Pillars.Add(pillar);
                 }
                 else
                 {
-                    pillarObj = new GameObject($"EnergyPillar_{cfg.color}");
-                    pillarObj.transform.position = spawnPos;
-                    pillarObj.transform.SetParent(transform);
-                    pillar = pillarObj.AddComponent<D1onkEnergyPillar>();
-                }
-
-                if (pillar != null)
-                {
-                    pillar.InitializePillar(cfg.color, this, 500f);
-                    m_Pillars.Add(pillar);
+                    Debug.LogError($"[D1onkMothershipSubArena] Prefab cho cột {cfg.color} không chứa component D1onkEnergyPillar!", this);
                 }
             }
         }
@@ -199,10 +254,11 @@ namespace IronWasteland.Enemies.D1onk
                 m_TrappedTanks.Add(tank);
             }
 
-            // Đặt vị trí bên trong buồng lái
+            // Đặt vị trí bên trong buồng lái theo cấu hình spacing
             int idx = m_TrappedTanks.IndexOf(tank);
-            Vector2 offset = idx == 0 ? new Vector2(-2.5f, -3.5f) : new Vector2(2.5f, -3.5f);
-            tank.transform.position = arenaCenter + offset;
+            float xOffset = (idx % 2 == 0) ? -tankTrappedSpacing.x : tankTrappedSpacing.x;
+            float yOffset = tankTrappedBaseYOffset - (idx / 2) * tankTrappedSpacing.y;
+            tank.transform.position = arenaCenter + new Vector2(xOffset, yOffset);
         }
 
         public void OnPillarDestroyed(D1onkEnergyPillar pillar)
@@ -210,34 +266,27 @@ namespace IronWasteland.Enemies.D1onk
             if (pillar == null || m_DestroyedPillars.Contains(pillar.PillarColor)) return;
 
             m_DestroyedPillars.Add(pillar.PillarColor);
-            Debug.Log($"[D1onkMothershipSubArena] Cột năng lượng {pillar.PillarColor} bị phá hủy! (Tổng: {m_DestroyedPillars.Count}/4)");
+            Debug.Log($"[D1onkMothershipSubArena] Cột năng lượng {pillar.PillarColor} bị phá hủy! (Tổng: {m_DestroyedPillars.Count}/2)");
 
-            if (!m_IsCoop)
+            // Ở cả 2 chế độ (Solo và Co-op), phá cột kích hoạt thử thách tương ứng (Trắng hoặc Đỏ)
+            if (m_CoopChallenges != null)
             {
-                // CHẾ ĐỘ SOLO: Phá hủy 3 trong 4 Cột Năng Lượng lập tức gỡ Khiên Bất Hoại của Trái Tim
-                if (m_DestroyedPillars.Count >= 3 && m_Heart != null && m_Heart.InvincibleShieldActive)
-                {
-                    Debug.Log("[D1onkMothershipSubArena] Chế độ Solo: Phá hủy 3/4 cột! Gỡ bỏ Khiên Bất Hoại của Trái Tim!");
-                    m_Heart.RemoveInvincibleShield();
-                }
+                m_CoopChallenges.ActivateChallenge(pillar.PillarColor);
             }
-            else
+        }
+
+        private void HandleTwoChallengesCompleted()
+        {
+            if (m_Heart != null && m_Heart.InvincibleShieldActive)
             {
-                // CHẾ ĐỘ CO-OP: Kích hoạt thử thách tương ứng ở BÊN NGOÀI
-                if (m_CoopChallenges != null)
-                {
-                    m_CoopChallenges.ActivateChallenge(pillar.PillarColor);
-                }
+                Debug.Log("[D1onkMothershipSubArena] Hoàn thành 2 thử thách cột Trắng và Đỏ! Gỡ bỏ Khiên Bất Hoại của Trái Tim!");
+                m_Heart.RemoveInvincibleShield();
             }
         }
 
         private void HandleThreeCoopChallengesCompleted()
         {
-            if (m_Heart != null && m_Heart.InvincibleShieldActive)
-            {
-                Debug.Log("[D1onkMothershipSubArena] Chế độ Co-op: 3 thử thách bên ngoài hoàn thành! Gỡ bỏ Khiên Bất Hoại của Trái Tim!");
-                m_Heart.RemoveInvincibleShield();
-            }
+            HandleTwoChallengesCompleted();
         }
 
         public void OnHeartKilled()
@@ -264,7 +313,7 @@ namespace IronWasteland.Enemies.D1onk
                 if (t != null && t.IsAlive)
                 {
                     Vector2 offset = (Vector2)t.transform.position - arenaCenter;
-                    float maxR = Mathf.Max(1f, arenaRadius - 0.5f);
+                    float maxR = Mathf.Max(1f, arenaRadius - boundaryMargin);
                     if (offset.sqrMagnitude > maxR * maxR)
                     {
                         t.transform.position = arenaCenter + offset.normalized * maxR;
@@ -272,9 +321,9 @@ namespace IronWasteland.Enemies.D1onk
                 }
             }
 
-            // Mỗi 5s xuất hiện thêm 1 quái vật thường ngẫu nhiên ở Vùng Đất Nguyên Tố bên trong buồng lái
+            // Xuất hiện thêm 1 quái vật thường ngẫu nhiên ở Vùng Đất Nguyên Tố bên trong buồng lái theo tần suất cấu hình
             m_MonsterSpawnTimer += deltaTime;
-            if (m_MonsterSpawnTimer >= 5.0f)
+            if (m_MonsterSpawnTimer >= normalEnemySpawnInterval)
             {
                 m_MonsterSpawnTimer = 0f;
                 SpawnInsideMonster();
@@ -288,33 +337,24 @@ namespace IronWasteland.Enemies.D1onk
 
         public void SpawnInsideMonster()
         {
-            Vector2 randomOffset = UnityEngine.Random.insideUnitCircle * (arenaRadius * 0.6f);
+            if (normalEnemyPrefabs == null || normalEnemyPrefabs.Length == 0)
+            {
+                return;
+            }
+
+            Vector2 randomOffset = UnityEngine.Random.insideUnitCircle * (arenaRadius * monsterSpawnRadiusFactor);
             Vector2 spawnPos = arenaCenter + randomOffset;
 
-            EnemyBrain monster = null;
-            if (normalEnemyPrefabs != null && normalEnemyPrefabs.Length > 0)
+            int rndIdx = UnityEngine.Random.Range(0, normalEnemyPrefabs.Length);
+            GameObject prefab = normalEnemyPrefabs[rndIdx];
+            if (prefab != null)
             {
-                int rndIdx = UnityEngine.Random.Range(0, normalEnemyPrefabs.Length);
-                GameObject prefab = normalEnemyPrefabs[rndIdx];
-                if (prefab != null)
+                GameObject go = Instantiate(prefab, spawnPos, Quaternion.identity, transform);
+                EnemyBrain monster = go.GetComponent<EnemyBrain>();
+                if (monster != null)
                 {
-                    GameObject go = Instantiate(prefab, spawnPos, Quaternion.identity, transform);
-                    monster = go.GetComponent<EnemyBrain>();
+                    m_SpawnedMinionsInside.Add(monster);
                 }
-            }
-
-            if (monster == null)
-            {
-                GameObject go = new GameObject($"CockpitMinion_{m_SpawnedMinionsInside.Count + 1}");
-                go.transform.position = spawnPos;
-                go.transform.SetParent(transform);
-                monster = go.AddComponent<LightweightTestMinion>();
-                monster.Initialize(new EnemyStats { MaxHealth = 150f, Attack = 25f });
-            }
-
-            if (monster != null)
-            {
-                m_SpawnedMinionsInside.Add(monster);
             }
         }
 
