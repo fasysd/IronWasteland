@@ -486,6 +486,8 @@ namespace IronWasteland.Enemies
 
         private void UpdateLifesteal(float deltaTime)
         {
+            if (m_SelfStunTimer > 0f) return;
+
             m_LifestealTimer += deltaTime;
             if (m_LifestealTimer < lifestealInterval) return;
 

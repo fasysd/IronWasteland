@@ -1,9 +1,19 @@
+using System.Collections.Generic;
 using IronWasteland.Core;
 using IronWasteland.Tanks;
 using UnityEngine;
 
 namespace IronWasteland.Enemies.The2Face
 {
+    /// <summary>
+    /// Chế độ của vùng xoáy TuNhiet.
+    /// </summary>
+    public enum The2FaceVortexMode
+    {
+        Sad,    // Buồn bã: 20% ATK/s, gây debuff Buồn bã (-20% SPD, -10% ATK/DEF) cho Tank trong vùng
+        Anger   // Tức giận: 40% ATK/s, Tank khi bị tấn công đầu tiên bị trừ 20% Max Mana (mỗi Tank chỉ trừ 1 lần cho 1 lần cast)
+    }
+
     /// <summary>
     /// Vùng xoáy năng lượng do TuNhiet của The2Face tạo ra.
     /// Gây sát thương theo thời gian lên toàn bộ Tank đứng trong vùng.
@@ -23,22 +33,55 @@ namespace IronWasteland.Enemies.The2Face
         [SerializeField] private float rotateSpeed = 90f;
 
         private EnemyBrain m_Owner;
+        private The2FaceVortexMode m_Mode;
         private float m_Radius;
         private float m_RemainingTime;
         private float m_DamagePerSecond;
         private float m_TickTimer;
         private Vector3 m_BaseScale;
 
-        /// <summary>Khởi tạo vùng xoáy.</summary>
-        public void Initialize(EnemyBrain owner, float radius, float duration, float damagePerSecondRatio)
+        // Cấu hình hiệu ứng Buồn bã
+        private float m_SadSlowPercent;
+        private float m_SadAttackReduction;
+        private float m_SadDefenseReduction;
+        private float m_SadDuration;
+
+        // Cấu hình hiệu ứng Tức giận
+        private float m_AngerEnergyDrainRatio;
+        private readonly HashSet<TankBrain> m_EnergyDrainedTanks = new HashSet<TankBrain>();
+
+        /// <summary>Chế độ hiện tại của vùng xoáy (Buồn bã hoặc Tức giận).</summary>
+        public The2FaceVortexMode Mode => m_Mode;
+
+        /// <summary>Khởi tạo vùng xoáy với chế độ Buồn bã hoặc Tức giận.</summary>
+        public void Initialize(
+            EnemyBrain owner,
+            The2FaceVortexMode mode,
+            float radius,
+            float duration,
+            float damagePerSecondRatio,
+            float sadSlowPercent = 0.2f,
+            float sadAttackReduction = 0.1f,
+            float sadDefenseReduction = 0.1f,
+            float sadDuration = 5f,
+            float angerEnergyDrainRatio = 0.2f)
         {
             m_Owner = owner;
+            m_Mode = mode;
             m_Radius = Mathf.Max(0.5f, radius);
             m_RemainingTime = Mathf.Max(0.5f, duration);
             m_DamagePerSecond = owner != null && owner.Stats != null
                 ? owner.Stats.Attack * Mathf.Max(0f, damagePerSecondRatio)
                 : 0f;
             m_TickTimer = 0f;
+
+            m_SadSlowPercent = sadSlowPercent;
+            m_SadAttackReduction = sadAttackReduction;
+            m_SadDefenseReduction = sadDefenseReduction;
+            m_SadDuration = sadDuration;
+
+            m_AngerEnergyDrainRatio = angerEnergyDrainRatio;
+            m_EnergyDrainedTanks.Clear();
 
             m_BaseScale = transform.localScale;
             if (zoneRenderer != null && zoneRenderer.sprite != null)
@@ -48,6 +91,16 @@ namespace IronWasteland.Enemies.The2Face
                 float scale = diameter / width;
                 m_BaseScale = new Vector3(scale, scale, 1f);
                 zoneRenderer.transform.localScale = m_BaseScale;
+
+                // Đổi màu trực quan để phân biệt rõ ràng 2 trạng thái
+                if (m_Mode == The2FaceVortexMode.Sad)
+                {
+                    zoneRenderer.color = new Color(0.25f, 0.55f, 1f, 0.55f); // Xanh dương buồn bã
+                }
+                else
+                {
+                    zoneRenderer.color = new Color(1f, 0.28f, 0.12f, 0.6f); // Đỏ cam tức giận
+                }
             }
         }
 
@@ -58,7 +111,8 @@ namespace IronWasteland.Enemies.The2Face
 
             if (zoneRenderer != null)
             {
-                zoneRenderer.transform.Rotate(0f, 0f, rotateSpeed * Time.deltaTime);
+                float speed = m_Mode == The2FaceVortexMode.Anger ? rotateSpeed * 1.5f : rotateSpeed;
+                zoneRenderer.transform.Rotate(0f, 0f, speed * Time.deltaTime);
             }
 
             if (m_TickTimer <= 0f)
@@ -89,6 +143,7 @@ namespace IronWasteland.Enemies.The2Face
                 TankBrain tank = ownerRef?.GetOwner<TankBrain>();
                 if (tank == null || !tank.IsAlive) continue;
 
+                // 1. Gây sát thương
                 DamageInfo info = new DamageInfo(
                     m_Owner,
                     tank,
@@ -101,6 +156,32 @@ namespace IronWasteland.Enemies.The2Face
                     DamageSourceType.EnemyAttack);
                 tank.TakeDamage(info);
                 IronWasteland.TextDamageManager.Instance?.Show(info.FinalDamage, hit.bounds.center);
+
+                // 2. Xử lý hiệu ứng theo trạng thái kỹ năng
+                if (m_Mode == The2FaceVortexMode.Sad)
+                {
+                    // Buồn bã: áp dụng hiệu ứng Buồn bã (-20% SPD, -10% ATK/DEF) lên mọi Tank trong phạm vi
+                    tank.ApplyEffect(new The2FaceSadEffect(
+                        m_SadDuration,
+                        m_SadSlowPercent,
+                        m_SadAttackReduction,
+                        m_SadDefenseReduction));
+                }
+                else if (m_Mode == The2FaceVortexMode.Anger)
+                {
+                    // Tức giận: Tank khi bị tấn công đầu tiên bởi kỹ năng này sẽ bị trừ 20% năng lượng tối đa
+                    // Mỗi Tank chỉ bị trừ 1 lần cho 1 lần cast, các lần tick tiếp theo không bị trừ nữa
+                    if (m_EnergyDrainedTanks.Add(tank))
+                    {
+                        float maxEnergy = tank.Stats != null ? tank.Stats.MaxEnergy : 100f;
+                        float drain = maxEnergy * m_AngerEnergyDrainRatio;
+                        if (drain > 0f)
+                        {
+                            tank.SpendEnergy(drain);
+                            Debug.Log($"[The2Face] Vùng xoáy Tức giận: trừ {drain:0.0} Max Mana của {tank.name} (còn {tank.CurrentEnergy:0.0}).");
+                        }
+                    }
+                }
             }
         }
     }

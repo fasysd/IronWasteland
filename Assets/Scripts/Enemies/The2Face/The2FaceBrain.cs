@@ -64,11 +64,14 @@ namespace IronWasteland.Enemies.The2Face
         [Tooltip("Thời gian tồn tại của vùng xoáy (giây).")]
         [SerializeField, Min(0.5f)] private float vortexDuration = 5f;
 
-        [Tooltip("Tỷ lệ sát thương mỗi giây của vùng xoáy so với ATK Boss (0.2 = 20% ATK/s).")]
-        [SerializeField, Range(0f, 5f)] private float vortexDamageRatio = 0.2f;
+        [Tooltip("Tỷ lệ sát thương mỗi giây của trạng thái Buồn bã so với ATK Boss (0.2 = 20% ATK/s).")]
+        [SerializeField, Range(0f, 5f)] private float vortexSadDamageRatio = 0.2f;
 
-        [Tooltip("Thời gian hiệu ứng Buồn bã (giây).")]
-        [SerializeField, Min(0.5f)] private float sadDuration = 4f;
+        [Tooltip("Tỷ lệ sát thương mỗi giây của trạng thái Tức giận so với ATK Boss (0.4 = 40% ATK/s).")]
+        [SerializeField, Range(0f, 5f)] private float vortexAngerDamageRatio = 0.4f;
+
+        [Tooltip("Thời gian duy trì hiệu ứng Buồn bã (giây).")]
+        [SerializeField, Min(0.5f)] private float sadDuration = 5f;
 
         [Tooltip("Tỷ lệ giảm tốc độ của Buồn bã (0.2 = 20%).")]
         [SerializeField, Range(0f, 1f)] private float sadSlowPercent = 0.2f;
@@ -79,13 +82,7 @@ namespace IronWasteland.Enemies.The2Face
         [Tooltip("Tỷ lệ giảm phòng thủ của Buồn bã (0.1 = 10%).")]
         [SerializeField, Range(0f, 1f)] private float sadDefenseReduction = 0.1f;
 
-        [Tooltip("Thời gian hiệu ứng Tức giận (giây).")]
-        [SerializeField, Min(0.5f)] private float angerDuration = 4f;
-
-        [Tooltip("Tỷ lệ sát thương nhận thêm của Tức giận (0.2 = 20%).")]
-        [SerializeField, Range(0f, 2f)] private float angerDamageBonus = 0.2f;
-
-        [Tooltip("Tỷ lệ năng lượng hiện tại bị rút của Tức giận (0.2 = 20%).")]
+        [Tooltip("Tỷ lệ năng lượng tối đa bị trừ khi bị đòn đánh đầu tiên của Tức giận (0.2 = 20%).")]
         [SerializeField, Range(0f, 1f)] private float angerEnergyDrainRatio = 0.2f;
 
         [Header("CamLang - Câm lặng")]
@@ -522,40 +519,27 @@ namespace IronWasteland.Enemies.The2Face
             if (m_CurrentTarget == null || !m_CurrentTarget.IsAlive) return;
 
             Vector2 targetPosition = m_CurrentTarget.transform.position;
+            The2FaceVortexMode mode = Random.value < 0.5f ? The2FaceVortexMode.Sad : The2FaceVortexMode.Anger;
+            float damageRatio = mode == The2FaceVortexMode.Sad ? vortexSadDamageRatio : vortexAngerDamageRatio;
 
             if (vortexPrefab != null)
             {
                 GameObject instance = Instantiate(vortexPrefab, targetPosition, Quaternion.identity);
                 The2FaceVortexZone zone = instance.GetComponent<The2FaceVortexZone>();
-                zone?.Initialize(this, vortexRadius, vortexDuration, vortexDamageRatio);
-            }
-
-            ApplyRandomDebuff(m_CurrentTarget);
-            Debug.Log("[The2Face] TuNhiet: tạo vùng xoáy tại " + targetPosition + ".");
-        }
-
-        private void ApplyRandomDebuff(TankBrain tank)
-        {
-            if (tank == null || !tank.IsAlive) return;
-
-            if (Random.value < 0.5f)
-            {
-                tank.ApplyEffect(new The2FaceSadEffect(
-                    sadDuration,
+                zone?.Initialize(
+                    this,
+                    mode,
+                    vortexRadius,
+                    vortexDuration,
+                    damageRatio,
                     sadSlowPercent,
                     sadAttackReduction,
-                    sadDefenseReduction));
-                Debug.Log("[The2Face] TuNhiet gán Buồn bã lên " + tank.name + ".");
+                    sadDefenseReduction,
+                    sadDuration,
+                    angerEnergyDrainRatio);
             }
-            else
-            {
-                tank.ApplyEffect(new The2FaceAngerEffect(
-                    angerDuration,
-                    angerDamageBonus,
-                    angerEnergyDrainRatio,
-                    this));
-                Debug.Log("[The2Face] TuNhiet gán Tức giận lên " + tank.name + ".");
-            }
+
+            Debug.Log($"[The2Face] TuNhiet ({mode}): tạo vùng xoáy tại {targetPosition}. Sát thương: {(damageRatio * 100f):0}% ATK/s.");
         }
 
         private void CastCamLang()
@@ -747,7 +731,17 @@ namespace IronWasteland.Enemies.The2Face
             RemoveRewardBuffs();
             ResetSkillLocks();
             SetVisualActive(shieldVisual, false);
-            Debug.Log("[The2Face] Kết thúc giai đoạn bùng nổ.");
+
+            // Khôi phục chỉ số gốc của Boss sau khi kết thúc phase Thưởng/Phạt (8s)
+            if (m_BaseStats != null && Stats != null)
+            {
+                Stats.Attack = m_BaseStats.Attack;
+                Stats.Defense = m_BaseStats.Defense;
+                Stats.MoveSpeed = m_BaseStats.MoveSpeed;
+            }
+            RevertBurstStatModifiers();
+
+            Debug.Log("[The2Face] Kết thúc giai đoạn bùng nổ, khôi phục chỉ số Boss.");
         }
 
         private void SpawnLightPoints()
@@ -818,7 +812,8 @@ namespace IronWasteland.Enemies.The2Face
 
             int alive = CountAliveLights();
             int lit = CountLitLights();
-            bool fullOpen = m_TotalLightPoints > 0 && alive == m_TotalLightPoints && lit == m_TotalLightPoints;
+            // Toàn bộ Điểm Sáng còn sống trên sân đều được bật đồng thời (k = alive)
+            bool fullOpen = alive > 0 && lit == alive;
             int unlocked = fullOpen ? TankBrain.SkillCount : Mathf.Clamp(lit, 0, TankBrain.SkillCount);
 
             if (unlocked == m_UnlockedSlotCount) return;

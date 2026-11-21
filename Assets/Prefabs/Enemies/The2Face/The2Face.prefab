@@ -78,13 +78,12 @@ MonoBehaviour:
   vortexPrefab: {fileID: 7100000000000000011, guid: d2face00000000000000000000000002, type: 3}
   vortexRadius: 3.5
   vortexDuration: 5
-  vortexDamageRatio: 0.2
-  sadDuration: 4
+  vortexSadDamageRatio: 0.2
+  vortexAngerDamageRatio: 0.4
+  sadDuration: 5
   sadSlowPercent: 0.2
   sadAttackReduction: 0.1
   sadDefenseReduction: 0.1
-  angerDuration: 4
-  angerDamageBonus: 0.2
   angerEnergyDrainRatio: 0.2
   camLangCooldown: 7
   camLangSilenceDuration: 5
