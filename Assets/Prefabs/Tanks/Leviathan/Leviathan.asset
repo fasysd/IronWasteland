@@ -42,3 +42,16 @@ MonoBehaviour:
     EquipmentId: 0
     OptionSkill1: 0
     OptionSkill2: 0
+  skillIcons:
+  - {fileID: 21300000, guid: c6f9c3b0ec35097458d1a4a0448f1a64, type: 3}
+  - {fileID: 21300000, guid: 05d0bbcd69c7f9a44b6e6187f3378e09, type: 3}
+  - {fileID: 21300000, guid: c906e5aca5f75fc4e934d62607278e61, type: 3}
+  - {fileID: 21300000, guid: 090382f4eca1b8240a50cb72e54e6d06, type: 3}
+  skillIconsCooldown: []
+  skillIconsIncludeLabels: 0
+  skillNames:
+  - WATER PULSE
+  - WATER BUBBLE
+  - WATER ARMOR
+  - TIDAL RETURN
+  skillGlyphs: []

@@ -39,12 +39,60 @@ namespace IronWasteland.Tanks
         [Tooltip("Context khoi tao cho TankBrain khi CreateTank.")]
         [SerializeField] private TankBrainContext context;
 
+        [Header("UI - Skill Icons")]
+        [Tooltip("Icon 4 ky nang theo dung thu tu slot: 0 = thuong (J), 1 = chuyen biet (K), 2 = tuy chon 1 (L), 3 = tuy chon 2 (I).")]
+        [SerializeField] private Sprite[] skillIcons = new Sprite[0];
+
+        [Tooltip("Anh bien the khi ky nang dang hoi chieu (cung thu tu). Bo trong thi HUD chi lam toi icon thuong.")]
+        [SerializeField] private Sprite[] skillIconsCooldown = new Sprite[0];
+
+        [Tooltip("Bat khi anh icon da co san nhan phim + ten ky nang (bo art Black Shadow); HUD se khong ve them huy hieu phim nua.")]
+        [SerializeField] private bool skillIconsIncludeLabels;
+
+        [Header("UI - Ten + bieu tuong ky nang (HUD moi)")]
+        [Tooltip("Ten 4 ky nang theo dung thu tu slot, hien duoi bieu tuong trong panel KY NANG TRANG BI.")]
+        [SerializeField] private string[] skillNames = new string[0];
+
+        [Tooltip("Bieu tuong trong suot (chi con hinh) de HUD tu ve khung + ten + trang thai ben duoi.")]
+        [SerializeField] private Sprite[] skillGlyphs = new Sprite[0];
+
+        public bool SkillIconsIncludeLabels => skillIconsIncludeLabels;
+
+        /// <summary>Ten ky nang cua slot (rong neu chua khai bao).</summary>
+        public string GetSkillName(int index)
+        {
+            if (skillNames == null || index < 0 || index >= skillNames.Length) return string.Empty;
+            return skillNames[index];
+        }
+
+        /// <summary>Bieu tuong trong suot (khong khung, khong chu) cua slot ky nang.</summary>
+        public Sprite GetSkillGlyph(int index)
+        {
+            if (skillGlyphs == null || index < 0 || index >= skillGlyphs.Length) return null;
+            return skillGlyphs[index];
+        }
+
         public string TankName => tankName;
         public string Description => description;
         public TankStats BaseStatsLevel1 => baseStatsLevel1;
         public TankStats BaseStatsLevel90 => baseStatsLevel90;
         public TankBrain TankPrefab => tankPrefab;
         public EquipmentDatabase EquipmentDatabase => equipmentDatabase;
+        public int SkillIconCount => skillIcons != null ? skillIcons.Length : 0;
+
+        /// <summary>Icon "san sang" cua slot ky nang (null neu chua gan).</summary>
+        public Sprite GetSkillIcon(int index)
+        {
+            if (skillIcons == null || index < 0 || index >= skillIcons.Length) return null;
+            return skillIcons[index];
+        }
+
+        /// <summary>Icon "dang hoi chieu" cua slot ky nang (null neu chua gan).</summary>
+        public Sprite GetSkillIconCooldown(int index)
+        {
+            if (skillIconsCooldown == null || index < 0 || index >= skillIconsCooldown.Length) return null;
+            return skillIconsCooldown[index];
+        }
 
         /// <summary>
         /// Tao Tank moi voi context chi dinh.

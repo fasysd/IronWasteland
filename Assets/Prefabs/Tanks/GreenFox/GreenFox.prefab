@@ -315,8 +315,9 @@ GameObject:
   - component: {fileID: 7816667685359004795}
   - component: {fileID: 1101782968644142678}
   - component: {fileID: 6076806454786303137}
+  - component: {fileID: 8191639864841455963}
   m_Layer: 6
-  m_Name: 'GreenFox '
+  m_Name: GreenFox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -707,6 +708,25 @@ MonoBehaviour:
   buffPulseSpeed: 4
   buffMinAlpha: 0.18
   buffMaxAlpha: 0.45
+--- !u!114 &8191639864841455963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3291204043161688967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d918426d8e0fd04680e5e33350ebfb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Audio.TankSfxHooks
+  brain: {fileID: 0}
+  playSkillCast: 1
+  playHit: 1
+  playDeath: 1
+  playHeal: 1
+  playShield: 1
+  hitCooldown: 0.08
 --- !u!1 &4416177109912046103
 GameObject:
   m_ObjectHideFlags: 0

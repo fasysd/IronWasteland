@@ -62,6 +62,11 @@ namespace IronWasteland.Enemies.Navigation
                     s_Instance = FindAnyObjectByType<PathfindingGrid2D>();
                     if (s_Instance == null)
                     {
+                        // Ngoai che do choi (vd. luc dong scene / thoat play mode) thi KHONG tu tao:
+                        // tao trong luc teardown se de lai object mo coi va Unity bao
+                        // "Some objects were not cleaned up when closing the scene".
+                        if (!Application.isPlaying) return null;
+
                         GameObject go = new GameObject("[PathfindingGrid2D]");
                         s_Instance = go.AddComponent<PathfindingGrid2D>();
                     }

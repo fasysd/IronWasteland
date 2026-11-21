@@ -33,7 +33,7 @@ MonoBehaviour:
     ArmorPenetration: 0
     MaxHealth: 6500
     MaxEnergy: 300
-    MoveSpeed: 500
+    MoveSpeed: 100
     CooldownReduction: 0.2
   tankPrefab: {fileID: 2337791876944670423, guid: 71be0061614f89346b73238783ed38d6, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
@@ -42,3 +42,16 @@ MonoBehaviour:
     EquipmentId: -1
     OptionSkill1: 0
     OptionSkill2: 0
+  skillIcons:
+  - {fileID: 21300000, guid: 3a48c8e8133746b419afc82a441c4c68, type: 3}
+  - {fileID: 21300000, guid: 45827ee3f0878ce42b7e595699d73104, type: 3}
+  - {fileID: 21300000, guid: 1624d5b6bf8292045ab631a10987ed59, type: 3}
+  - {fileID: 21300000, guid: 8d7ae579b5306a54ea7a5fcc1759100b, type: 3}
+  skillIconsCooldown: []
+  skillIconsIncludeLabels: 0
+  skillNames:
+  - EARTH BREAK
+  - EARTH WALL
+  - EARTH PRISON
+  - EARTHQUAKE
+  skillGlyphs: []

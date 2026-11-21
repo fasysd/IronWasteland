@@ -690,9 +690,9 @@ Các phụ kiện số 2, 18 dùng đúng chặng **chuyển hướng sát thư�
 | # | Vấn đề | Kết luận |
 |---|---|---|
 | 1 | Công thức Def kẻ địch trong Word thiếu `(1 - …)` | **Code đúng**; sửa lại dòng công thức trong Word (xem ghi chú §4.2) |
-| 2 | Tốc độ: GDD thang 100, runtime đơn vị/giây | Cần chốt hệ số quy đổi trước khi nhập liệu |
+| 2 | Tốc độ: GDD thang 100, runtime đơn vị/giây | **ĐÃ CHỐT trong code (16/11/2026):** asset lưu **số thô theo thang GDD** (100/110/130), runtime tự chia 100 — `TankBrain.cs:918 float speed = m_FinalStats.MoveSpeed / 100f;`, quái cũng `Stats.MoveSpeed / 100f`. Nghĩa là **100 = 1,0 u/s**. Nhập liệu dùng đúng số trong GDD, **không tự quy đổi** |
 | 3 | `DamageMultiplier` (×1.89) trong asset cũ vs `DamageRate` (+15%) | Quy đổi `DamageRate = Multiplier − 1`; copy thô sẽ sai 10× |
 | 4 | §5.6 GDD ghi ngọc Ch1 10–30 / Ch2 35–80, lệch bảng ải | **Bảng ải là chuẩn** (20/30/40/60 · 50/60/70/90/120) |
 | 5 | §5.6 ghi rơi phụ kiện 25–50%, bảng ải ghi 20% | **Bảng ải là chuẩn** (20%/món, đảm bảo 1 món) |
 | 6 | Final boss ghi "ẢI 2-15" | Sai chính tả, phải là **2-5** |
-| 7 | 6 asset `Assets/Prefabs/Tanks/*/*.asset` | Chưa migrate sang `baseStatsLevel1/90`, vẫn là số placeholder chung (10/100/50/10/3 → 180/1400/680/35.6/7.45), **khác hoàn toàn** §10.1 |
+| 7 | 6 asset `Assets/Prefabs/Tanks/*/*.asset` | **ĐÃ MIGRATE XONG (16/11/2026)** sang `baseStatsLevel1/90`, ATK/HP/EN/DEF khớp §10.1 ở cả cấp 1 và cấp 90 (đã kiểm bằng `GetStatsForLevel`). Đã sửa thêm `WallTitan` cấp 90 `MoveSpeed` 500 → **100** (GDD ghi 100) |

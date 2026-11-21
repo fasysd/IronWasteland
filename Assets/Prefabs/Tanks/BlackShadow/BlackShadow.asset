@@ -44,3 +44,16 @@ MonoBehaviour:
     EquipmentId: 0
     OptionSkill1: 0
     OptionSkill2: 0
+  skillIcons:
+  - {fileID: 21300000, guid: aa82617657f394d499ba63c7e1b0859c, type: 3}
+  - {fileID: 21300000, guid: 6b5b5fe89a2f76e46bbd320c6cd2ceeb, type: 3}
+  - {fileID: 21300000, guid: ec69cee60ed94234c93fb14c9cbb03d5, type: 3}
+  - {fileID: 21300000, guid: 0e3bc16b558f76143a640efb772104ba, type: 3}
+  skillIconsCooldown: []
+  skillIconsIncludeLabels: 0
+  skillNames:
+  - SHADOW CLAW
+  - SHADOW STEP
+  - SHADOW PREDATOR
+  - SHADOW AMBUSH
+  skillGlyphs: []

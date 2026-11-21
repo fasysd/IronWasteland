@@ -37,3 +37,21 @@ MonoBehaviour:
     CooldownReduction: 0.3
   tankPrefab: {fileID: 2337791876944670423, guid: 95ecc0b7748deb645871624e4527b5b1, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
+  context:
+    Level: 0
+    EquipmentId: 0
+    OptionSkill1: 0
+    OptionSkill2: 0
+  skillIcons:
+  - {fileID: 21300000, guid: e91a973237a7191489217b27f6250853, type: 3}
+  - {fileID: 21300000, guid: c261a492b77e19d4998ab35f791962f8, type: 3}
+  - {fileID: 21300000, guid: f818e14da148fdd4ca5dd2db59295249, type: 3}
+  - {fileID: 21300000, guid: 475b7d7372932d74caca7a0317fe4d3b, type: 3}
+  skillIconsCooldown: []
+  skillIconsIncludeLabels: 0
+  skillNames:
+  - HEALING WATER
+  - BUBBLE SHIELD
+  - WATER WAVE
+  - WATER RETURN
+  skillGlyphs: []

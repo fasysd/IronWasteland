@@ -475,6 +475,7 @@ GameObject:
   - component: {fileID: 7437220667687193557}
   - component: {fileID: 3165650506765612665}
   - component: {fileID: 7955696052223430288}
+  - component: {fileID: 8022973141876364485}
   m_Layer: 6
   m_Name: BlackShadow
   m_TagString: Untagged
@@ -828,6 +829,25 @@ MonoBehaviour:
   buffPulseSpeed: 4
   buffMinAlpha: 0.18
   buffMaxAlpha: 0.45
+--- !u!114 &8022973141876364485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2007533005529995649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d918426d8e0fd04680e5e33350ebfb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Audio.TankSfxHooks
+  brain: {fileID: 0}
+  playSkillCast: 1
+  playHit: 1
+  playDeath: 1
+  playHeal: 1
+  playShield: 1
+  hitCooldown: 0.08
 --- !u!1 &2109673423802838541
 GameObject:
   m_ObjectHideFlags: 0

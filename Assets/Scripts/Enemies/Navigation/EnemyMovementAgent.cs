@@ -192,7 +192,13 @@ namespace IronWasteland.Enemies.Navigation
 
         private void OnDisable()
         {
-            PathfindingGrid2D.Instance?.UnregisterEnemy(m_CurrentGridCoord);
+            // Dung HasInstance: luc dong scene, Instance se tu tao lai object luoi va de lai
+            // mot [PathfindingGrid2D] mo coi (Unity bao "objects were not cleaned up").
+            if (PathfindingGrid2D.HasInstance)
+            {
+                PathfindingGrid2D.Instance.UnregisterEnemy(m_CurrentGridCoord);
+            }
+
             m_CurrentGridCoord = new Vector2Int(-1, -1);
         }
 

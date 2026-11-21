@@ -421,6 +421,7 @@ GameObject:
   - component: {fileID: 10722945893117939}
   - component: {fileID: 6202641103523975840}
   - component: {fileID: 5484769612129924768}
+  - component: {fileID: 5962067136331049482}
   m_Layer: 7
   m_Name: XaThuTinhThe
   m_TagString: Untagged
@@ -467,7 +468,7 @@ MonoBehaviour:
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
-  radiusC: 12
+  radiusC: 60
   radiusA: 8
   radiusB: 10
   returnHomeDelayX: 3
@@ -632,6 +633,23 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &5962067136331049482
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7692010306268881268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15107778ff79d5c44b22417178402d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Audio.EnemySfxHooks
+  brain: {fileID: 0}
+  playHit: 1
+  playDeath: 1
+  playCrowdControl: 1
+  hitCooldown: 0.1
 --- !u!1 &8258930589063095120
 GameObject:
   m_ObjectHideFlags: 0

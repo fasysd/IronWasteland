@@ -139,6 +139,7 @@ GameObject:
   - component: {fileID: 5134242082769203881}
   - component: {fileID: 8570592542421611460}
   - component: {fileID: 7047541010389829407}
+  - component: {fileID: 6604098853002438381}
   m_Layer: 7
   m_Name: TinhLinhNghiaDia
   m_TagString: Untagged
@@ -344,6 +345,23 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &6604098853002438381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 773281319276612513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15107778ff79d5c44b22417178402d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Audio.EnemySfxHooks
+  brain: {fileID: 0}
+  playHit: 1
+  playDeath: 1
+  playCrowdControl: 1
+  hitCooldown: 0.1
 --- !u!1 &4479114263302588524
 GameObject:
   m_ObjectHideFlags: 0
