@@ -282,7 +282,7 @@ namespace IronWasteland.Net
         }
 
         /// <summary>Mở phòng qua Relay của Unity Services: tạo allocation, gắn transport rồi StartHost.</summary>
-        public async void StartHostWithRelay(string region = null)
+        public async void StartHostWithRelay(string region = null, string stageCode = "1-1")
         {
             if (networkManager == null || networkManager.IsListening) return;
             if (IsStartingSession)
@@ -322,7 +322,7 @@ namespace IronWasteland.Net
                 return;
             }
 
-            bool lobbyCreated = await NetRelayService.CreateLobbyAsync("IronWasteland");
+            bool lobbyCreated = await NetRelayService.CreateLobbyAsync("IronWasteland", stageCode);
             Debug.Log($"[NetBootstrap] Relay code={NetRelayService.RelayJoinCode} lobby={lobbyCreated} lobbyCode={NetRelayService.LobbyCode} err={NetRelayService.LastError}");
             }
             finally
