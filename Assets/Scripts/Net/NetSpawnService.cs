@@ -24,7 +24,19 @@ namespace IronWasteland.Net
         [Tooltip("Gốc toạ độ để xếp xe của 4 người chơi.")]
         [SerializeField] private Vector3 spawnOrigin = Vector3.zero;
 
+        public static NetSpawnService Instance { get; private set; }
+
         private readonly Dictionary<ulong, TankBrain> m_Spawned = new Dictionary<ulong, TankBrain>();
+
+        private void Awake()
+        {
+            Instance = this;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
 
         /// <summary>Danh sách xe đã spawn trên host, dùng để gửi snapshot hiệu ứng cho người mới.</summary>
         public IReadOnlyDictionary<ulong, TankBrain> SpawnedTanks => m_Spawned;
@@ -111,7 +123,9 @@ namespace IronWasteland.Net
                 return null;
             }
 
-            Vector3 position = spawnOrigin + new Vector3(spawnSpacing * clientId, 0f, 0f);
+            GameController gc = FindAnyObjectByType<GameController>();
+            Vector3 origin = gc != null ? (Vector3)gc.SpawnPosition : spawnOrigin;
+            Vector3 position = origin + new Vector3(spawnSpacing * clientId, 0f, 0f);
             TankBrain brain = Instantiate(definition.TankPrefab, position, Quaternion.identity);
             NetworkObject networkObject = brain.GetComponent<NetworkObject>();
             if (networkObject == null)

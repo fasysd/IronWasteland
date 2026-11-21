@@ -53,6 +53,9 @@ namespace IronWasteland.Tanks
         /// <summary>Cấp của xe đang chơi (1..90), HUD hiện cạnh tên xe.</summary>
         public int PlayerLevel => playerLevel;
 
+        /// <summary>Vị trí khởi tạo xe trong màn.</summary>
+        public Vector2 SpawnPosition => spawnPosition;
+
         /// <summary>Gán xe do mạng spawn cho controller này (dùng khi online).</summary>
         public void BindTank(TankBrain tank)
         {
@@ -88,7 +91,7 @@ namespace IronWasteland.Tanks
             if (targetCamera == null) targetCamera = Camera.main;
 
             // Chế độ online: host spawn xe qua mạng, GameController chỉ nhận bind sau đó.
-            if (!createLocalTankOnAwake) return;
+            if (!createLocalTankOnAwake || TankBrain.NetworkSessionActive) return;
 
             // Xây TankBrainContext từ fields hiện có (level, equipmentId, optionSkills).
             var context = new TankBrainContext

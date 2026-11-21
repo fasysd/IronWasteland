@@ -108,8 +108,28 @@ namespace IronWasteland.Net
 
         private bool m_HadRemoteClient;
 
+        public static NetBootstrap Instance { get; private set; }
+
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                if (!Instance.IsRunning)
+                {
+                    Destroy(Instance.gameObject);
+                    Instance = this;
+                }
+                else
+                {
+                    Destroy(gameObject);
+                    return;
+                }
+            }
+
+            Instance = this;
+            transform.SetParent(null);
+            DontDestroyOnLoad(gameObject);
+
             if (networkManager == null) networkManager = GetComponent<NetworkManager>();
             if (spawnService == null) spawnService = GetComponent<NetSpawnService>();
 
@@ -136,6 +156,7 @@ namespace IronWasteland.Net
 
         private void OnDestroy()
         {
+            if (Instance == this) Instance = null;
             if (networkManager == null) return;
 
             networkManager.ConnectionApprovalCallback -= HandleConnectionApproval;

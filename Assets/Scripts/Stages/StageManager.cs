@@ -47,8 +47,17 @@ namespace IronWasteland.Stages
         [Tooltip("Tu dong bat dau ai khi scene chay.")]
         [SerializeField] private bool autoStart = true;
 
+        [Tooltip("Che do Co-op: nhan doi mau quai theo thiet ke.")]
+        [SerializeField] private bool coopMode = false;
+
         [Tooltip("Log tien trinh ra Console.")]
         [SerializeField] private bool logEvents = true;
+
+        public bool CoopMode
+        {
+            get => coopMode;
+            set => coopMode = value;
+        }
 
         public event Action<int, StageDefinition.Wave> WaveStarted;
         public event Action<int> KillsChanged;
@@ -302,6 +311,10 @@ namespace IronWasteland.Stages
             // Chi so: lay tu prefab roi nhan he so cai dat cua dot (quai cuong hoa toc do...).
             EnemyStats stats = spawn.Enemy.Stats != null ? spawn.Enemy.Stats.Clone() : new EnemyStats();
             stats.MoveSpeed *= Mathf.Max(0.01f, spawn.SpeedMultiplier);
+            if (coopMode || TankBrain.NetworkSessionActive || IronWasteland.UI.CoopEntry.IsCoop)
+            {
+                stats.MaxHealth *= 2f;
+            }
 
             EnemyBrain enemy;
             bool networked = TankBrain.NetworkSessionActive;

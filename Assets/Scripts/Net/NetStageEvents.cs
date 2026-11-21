@@ -98,6 +98,27 @@ namespace IronWasteland.Net
             }
         }
 
+        /// <summary>Host gửi trạng thái ải hiện tại cho toàn bộ client từ StageDirector.</summary>
+        public void Broadcast(StageDirector director, byte state)
+        {
+            if (director == null) return;
+
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsServer) return;
+
+            CustomMessagingManager messaging = manager.CustomMessagingManager;
+            if (messaging == null) return;
+
+            using FastBufferWriter writer = new FastBufferWriter(16, Allocator.Temp);
+            writer.WriteValueSafe(state);
+            writer.WriteValueSafe(director.Kills);
+            writer.WriteValueSafe(0);
+            writer.WriteValueSafe(director.Elapsed);
+            messaging.SendNamedMessageToAll(MessageName, writer);
+
+            ApplyState(state, director.Kills, 0, director.Elapsed);
+        }
+
         /// <summary>Host gửi trạng thái ải hiện tại cho toàn bộ client.</summary>
         public void Broadcast(StageManager stage, byte state)
         {
@@ -161,6 +182,20 @@ namespace IronWasteland.Net
             reader.ReadValueSafe(out float elapsed);
 
             ApplyState(state, kills, target, elapsed);
+
+            StageDirector director = FindAnyObjectByType<StageDirector>();
+            if (director != null)
+            {
+                director.SetKills(kills);
+                if (state == StateCleared && director.State == StageRunState.Running)
+                {
+                    director.ForceClear();
+                }
+                else if (state == StateFailed && director.State == StageRunState.Running)
+                {
+                    director.ForceFail("Thất bại");
+                }
+            }
 
             if (state == StateRunning || state == StateIdle) return; // gói nhịp / gói xoá cache không log
 

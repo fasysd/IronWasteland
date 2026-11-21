@@ -2543,7 +2543,7 @@ MonoBehaviour:
     Reward: "+15 Ng\u1ECDc Ma Ph\xE1p"
     DropRate: "T\u1EF7 l\u1EC7 r\u01A1i Ph\u1EE5 ki\u1EC7n: 35%"
     Unlocked: 1
-    Definition: {fileID: 11400000, guid: 1aefe880f3676d14aa84e51355095e75, type: 2}
+    Definition: {fileID: 11400000, guid: 4d91715cdf7e58e409a054b7d2fbd00f, type: 2}
   - Code: 1-2
     Name: "HANG \u0110\xC1 GAI"
     Tag: "SINH T\u1ED2N"
@@ -2554,7 +2554,7 @@ MonoBehaviour:
     Reward: "+15 Ng\u1ECDc Ma Ph\xE1p"
     DropRate: "T\u1EF7 l\u1EC7 r\u01A1i Ph\u1EE5 ki\u1EC7n: 35%"
     Unlocked: 1
-    Definition: {fileID: 11400000, guid: 8f0e1526e2e9a5345b5e0b43aa69259a, type: 2}
+    Definition: {fileID: 11400000, guid: a89170b0c191d714cbc50e78dc8df934, type: 2}
   - Code: 1-3
     Name: "M\u1ECE \u0110\xC1 S\u1EA4M"
     Tag: "SINH T\u1ED2N"
@@ -2563,7 +2563,7 @@ MonoBehaviour:
     Reward: "+20 Ng\u1ECDc Ma Ph\xE1p"
     DropRate: "T\u1EF7 l\u1EC7 r\u01A1i Ph\u1EE5 ki\u1EC7n: 40%"
     Unlocked: 0
-    Definition: {fileID: 0}
+    Definition: {fileID: 11400000, guid: 1f156f2f96c14dc4b9d31248104891e5, type: 2}
   - Code: 1-4
     Name: "L\xD5I T\xC0N T\xCDCH"
     Tag: BOSS
@@ -2573,7 +2573,7 @@ MonoBehaviour:
     Reward: "+40 Ng\u1ECDc Ma Ph\xE1p"
     DropRate: "T\u1EF7 l\u1EC7 r\u01A1i Ph\u1EE5 ki\u1EC7n: 60%"
     Unlocked: 0
-    Definition: {fileID: 0}
+    Definition: {fileID: 11400000, guid: 06b7c289db26a1247ae2dceafb36d311, type: 2}
   - Code: 2-1
     Name: "X\u01AF\u1EDENG B\u1EE4I \u0110\u1ED8C"
     Tag: "SINH T\u1ED2N"
@@ -2582,7 +2582,7 @@ MonoBehaviour:
     Reward: "+25 Ng\u1ECDc Ma Ph\xE1p"
     DropRate: "T\u1EF7 l\u1EC7 r\u01A1i Ph\u1EE5 ki\u1EC7n: 45%"
     Unlocked: 0
-    Definition: {fileID: 0}
+    Definition: {fileID: 11400000, guid: 2d314f12736358045af8be118ce4cfda, type: 2}
   - Code: 2-2
     Name: "THUNG L\u0168NG TRO"
     Tag: "SINH T\u1ED2N"
@@ -2591,7 +2591,7 @@ MonoBehaviour:
     Reward: "+25 Ng\u1ECDc Ma Ph\xE1p"
     DropRate: "T\u1EF7 l\u1EC7 r\u01A1i Ph\u1EE5 ki\u1EC7n: 45%"
     Unlocked: 0
-    Definition: {fileID: 0}
+    Definition: {fileID: 11400000, guid: 2af5cb3db57d4484e951135f96518f82, type: 2}
   - Code: 2-3
     Name: "\u0110\u1EA6M L\u1EA6Y XANH"
     Tag: "SINH T\u1ED2N"
@@ -2600,7 +2600,7 @@ MonoBehaviour:
     Reward: "+30 Ng\u1ECDc Ma Ph\xE1p"
     DropRate: "T\u1EF7 l\u1EC7 r\u01A1i Ph\u1EE5 ki\u1EC7n: 50%"
     Unlocked: 0
-    Definition: {fileID: 0}
+    Definition: {fileID: 11400000, guid: 2da7627d6ddb4af49a44e5a3986d3a2f, type: 2}
   - Code: 2-4
     Name: "C\u1ED4NG TH\xC9P G\u1EC8"
     Tag: "SINH T\u1ED2N"
@@ -2609,7 +2609,7 @@ MonoBehaviour:
     Reward: "+30 Ng\u1ECDc Ma Ph\xE1p"
     DropRate: "T\u1EF7 l\u1EC7 r\u01A1i Ph\u1EE5 ki\u1EC7n: 50%"
     Unlocked: 0
-    Definition: {fileID: 0}
+    Definition: {fileID: 11400000, guid: b02ea0345aa959848b54512c3cddf200, type: 2}
   - Code: 2-5
     Name: "TR\xC1I TIM L\xD2 PH\u1EA2N \u1EE8NG"
     Tag: BOSS
@@ -2619,7 +2619,7 @@ MonoBehaviour:
     Reward: "+60 Ng\u1ECDc Ma Ph\xE1p"
     DropRate: "T\u1EF7 l\u1EC7 r\u01A1i Ph\u1EE5 ki\u1EC7n: 75%"
     Unlocked: 0
-    Definition: {fileID: 0}
+    Definition: {fileID: 11400000, guid: 26b57bab665633744a1cf3e3522f1747, type: 2}
   m_DefaultStageIndex: 1
   m_CardRects:
   - serializedVersion: 2

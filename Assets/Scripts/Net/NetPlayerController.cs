@@ -241,6 +241,9 @@ namespace IronWasteland.Net
         {
             NetCameraFollow follow = FindAnyObjectByType<NetCameraFollow>();
             if (follow != null) follow.SetTarget(transform);
+
+            IronWasteland.Core.CameraFollow2D cameraFollow = FindAnyObjectByType<IronWasteland.Core.CameraFollow2D>();
+            if (cameraFollow != null) cameraFollow.Target = transform;
         }
 
         /// <summary>

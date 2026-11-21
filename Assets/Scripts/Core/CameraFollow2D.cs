@@ -114,6 +114,12 @@ namespace IronWasteland.Core
 
         private void ResolveTarget()
         {
+            if (TankBrain.NetworkSessionActive && Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.LocalClient?.PlayerObject != null)
+            {
+                target = Unity.Netcode.NetworkManager.Singleton.LocalClient.PlayerObject.transform;
+                return;
+            }
+
             if (m_GameController == null) m_GameController = FindAnyObjectByType<GameController>();
             if (m_GameController != null && m_GameController.PlayerTank != null)
             {

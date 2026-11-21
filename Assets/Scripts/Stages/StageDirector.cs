@@ -80,6 +80,16 @@ namespace IronWasteland.Stages
         /// <summary>Thua man, kem ly do.</summary>
         public event Action<StageDirector, string> StageFailed;
 
+        public bool CoopMode
+        {
+            get => coopMode;
+            set
+            {
+                coopMode = value;
+                if (spawner != null) spawner.CoopMode = coopMode;
+            }
+        }
+
         public StageDefinition Definition => definition;
         public StageRunState State => m_State;
         public float Elapsed => m_Elapsed;
@@ -98,7 +108,7 @@ namespace IronWasteland.Stages
 
         private void Start()
         {
-            if (autoStart) Begin();
+            if (autoStart && !TankBrain.NetworkSessionActive) Begin();
         }
 
         private void OnDestroy()
@@ -133,11 +143,21 @@ namespace IronWasteland.Stages
                 return;
             }
 
+            // Nếu người chơi vào từ màn chọn chế độ thì đồng bộ CoopMode theo CoopEntry
+            if (IronWasteland.UI.CoopEntry.IsCoop || TankBrain.NetworkSessionActive)
+            {
+                coopMode = true;
+            }
+
             m_State = StageRunState.Running;
             m_Elapsed = 0f;
             m_Kills = 0;
             m_FiredWaves.Clear();
             m_Objectives.Clear();
+
+            BuildObjectives();
+            KillCountChanged?.Invoke(0);
+            StageStarted?.Invoke(this);
 
             if (spawner == null) spawner = FindAnyObjectByType<EnemySpawner>();
             if (spawner != null)
@@ -151,26 +171,45 @@ namespace IronWasteland.Stages
                 Debug.LogWarning("[StageDirector] Khong co EnemySpawner, man se khong co quai.", this);
             }
 
-            if (gameController == null) gameController = FindAnyObjectByType<GameController>();
-            m_Player = gameController != null ? gameController.PlayerTank : null;
-            if (failOnPlayerDeath && m_Player != null)
+            // Client trong phiên mạng không tự sinh quái hay tính thắng/thua, chỉ đồng bộ hiển thị từ host.
+            if (TankBrain.NetworkSessionActive && !Unity.Netcode.NetworkManager.Singleton.IsServer)
+            {
+                return;
+            }
+
+            if (failOnPlayerDeath)
             {
                 UnhookPlayer();
                 m_PlayerDeathHandler = OnPlayerDied;
-                m_Player.OnDeathEvent += m_PlayerDeathHandler;
+                if (TankBrain.NetworkSessionActive)
+                {
+                    TankBrain[] allTanks = FindObjectsByType<TankBrain>(FindObjectsInactive.Exclude);
+                    for (int i = 0; i < allTanks.Length; i++)
+                    {
+                        if (allTanks[i] != null && allTanks[i].GetComponent<IronWasteland.Net.NetPlayerController>() != null)
+                        {
+                            allTanks[i].OnDeathEvent += m_PlayerDeathHandler;
+                        }
+                    }
+                }
+                else
+                {
+                    if (gameController == null) gameController = FindAnyObjectByType<GameController>();
+                    m_Player = gameController != null ? gameController.PlayerTank : null;
+                    if (m_Player != null)
+                    {
+                        m_Player.OnDeathEvent += m_PlayerDeathHandler;
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[StageDirector] Khong tim thay tank nguoi choi (GameController.PlayerTank = null).", this);
+                    }
+                }
             }
-            else if (failOnPlayerDeath)
-            {
-                Debug.LogWarning("[StageDirector] Khong tim thay tank nguoi choi (GameController.PlayerTank = null).", this);
-            }
-
-            BuildObjectives();
-            KillCountChanged?.Invoke(0);
-            StageStarted?.Invoke(this);
 
             if (logEvents)
             {
-                Debug.Log($"[StageDirector] Bat dau ai {definition.StageCode} - {definition.StageName} | {m_Objectives.Count} dieu kien, {TotalWaves} dot quai");
+                Debug.Log($"[StageDirector] Bat dau ai {definition.StageCode} - {definition.StageName} | {m_Objectives.Count} dieu kien, {TotalWaves} dot quai (CoopMode: {coopMode})");
             }
         }
 
@@ -186,7 +225,35 @@ namespace IronWasteland.Stages
         private void Update()
         {
             if (m_State != StageRunState.Running) return;
+
+            // Client trong phiên mạng chỉ tick thời gian và điều kiện hiển thị HUD, không kích wave hay tự xử lý kết quả.
+            if (TankBrain.NetworkSessionActive && !Unity.Netcode.NetworkManager.Singleton.IsServer)
+            {
+                m_Elapsed += Time.deltaTime;
+                for (int i = 0; i < m_Objectives.Count; i++) m_Objectives[i].Tick(Time.deltaTime);
+                return;
+            }
+
             Tick(Time.deltaTime);
+        }
+
+        /// <summary>Cập nhật số mạng hạ từ host xuống client.</summary>
+        public void SetKills(int kills)
+        {
+            m_Kills = kills;
+            KillCountChanged?.Invoke(m_Kills);
+        }
+
+        /// <summary>Client ép kết thúc thắng từ sự kiện mạng.</summary>
+        public void ForceClear()
+        {
+            Clear();
+        }
+
+        /// <summary>Client ép kết thúc thua từ sự kiện mạng.</summary>
+        public void ForceFail(string reason)
+        {
+            Fail(reason);
         }
 
         /// <summary>
@@ -409,14 +476,39 @@ namespace IronWasteland.Stages
         private void OnPlayerDied()
         {
             if (!failOnPlayerDeath) return;
-            Fail("Tank của người chơi bị phá huỷ");
+
+            if (coopMode || TankBrain.NetworkSessionActive)
+            {
+                TankBrain[] allTanks = FindObjectsByType<TankBrain>(FindObjectsInactive.Exclude);
+                for (int i = 0; i < allTanks.Length; i++)
+                {
+                    if (allTanks[i] != null && allTanks[i].IsAlive && allTanks[i].GetComponent<IronWasteland.Net.NetPlayerController>() != null)
+                    {
+                        return; // Vẫn còn đồng đội sống
+                    }
+                }
+            }
+
+            Fail("Toàn bộ xe của người chơi bị phá huỷ");
         }
 
         private void UnhookPlayer()
         {
-            if (m_Player != null && m_PlayerDeathHandler != null)
+            if (m_PlayerDeathHandler != null)
             {
-                m_Player.OnDeathEvent -= m_PlayerDeathHandler;
+                if (m_Player != null)
+                {
+                    m_Player.OnDeathEvent -= m_PlayerDeathHandler;
+                }
+
+                TankBrain[] allTanks = FindObjectsByType<TankBrain>(FindObjectsInactive.Exclude);
+                for (int i = 0; i < allTanks.Length; i++)
+                {
+                    if (allTanks[i] != null)
+                    {
+                        allTanks[i].OnDeathEvent -= m_PlayerDeathHandler;
+                    }
+                }
             }
             m_PlayerDeathHandler = null;
         }

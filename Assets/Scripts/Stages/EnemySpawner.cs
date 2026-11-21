@@ -93,23 +93,40 @@ namespace IronWasteland.Stages
                 return null;
             }
 
-            EnemyBrain enemy = TakeFromPool(prefab);
-            if (enemy == null)
+            // Client trong phiên mạng không tự spawn quái; host spawn qua NGO.
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive && !Unity.Netcode.NetworkManager.Singleton.IsServer)
             {
-                enemy = Instantiate(prefab, position, Quaternion.identity, container);
-                enemy.name = prefab.name + "_spawned";
+                return null;
             }
-
-            enemy.transform.SetPositionAndRotation(position, Quaternion.identity);
-            if (!enemy.gameObject.activeSelf) enemy.gameObject.SetActive(true);
 
             // BAY QUAN TRONG: phai Clone() chi so truoc khi chinh.
             // Dung chung instance se lam HP/ATK bi nhan don qua tung lan spawn.
             EnemyStats stats = prefab.Stats != null ? prefab.Stats.Clone() : new EnemyStats();
             stats.MoveSpeed *= Mathf.Max(0.01f, speedMultiplier);
-            if (coopMode) stats.MaxHealth *= 2f;
+            if (coopMode || IronWasteland.Tanks.TankBrain.NetworkSessionActive || IronWasteland.UI.CoopEntry.IsCoop)
+            {
+                stats.MaxHealth *= 2f;
+            }
 
-            enemy.Initialize(stats);
+            EnemyBrain enemy;
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive && IronWasteland.Net.NetSpawnService.Instance != null)
+            {
+                enemy = IronWasteland.Net.NetSpawnService.Instance.SpawnEnemy(prefab, position, stats);
+                if (enemy == null) return null;
+            }
+            else
+            {
+                enemy = TakeFromPool(prefab);
+                if (enemy == null)
+                {
+                    enemy = Instantiate(prefab, position, Quaternion.identity, container);
+                    enemy.name = prefab.name + "_spawned";
+                }
+
+                enemy.transform.SetPositionAndRotation(position, Quaternion.identity);
+                if (!enemy.gameObject.activeSelf) enemy.gameObject.SetActive(true);
+                enemy.Initialize(stats);
+            }
 
             m_SourcePrefabs[enemy] = prefab;
             TrackDeath(enemy);
@@ -194,6 +211,16 @@ namespace IronWasteland.Stages
         {
             m_Active.Remove(enemy);
             UntrackDeath(enemy);
+
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+            {
+                m_SourcePrefabs.Remove(enemy);
+                if (enemy != null)
+                {
+                    IronWasteland.Net.NetEntity.Despawn(enemy.gameObject);
+                }
+                return;
+            }
 
             if (enemy == null)
             {

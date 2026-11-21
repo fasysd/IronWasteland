@@ -444,12 +444,27 @@ namespace IronWasteland.UI
         private void OnRetryClicked()
         {
             Time.timeScale = 1f;
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+            {
+                IronWasteland.Net.MatchFlow flow = FindAnyObjectByType<IronWasteland.Net.MatchFlow>();
+                if (flow != null && Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsServer)
+                {
+                    flow.Replay();
+                    return;
+                }
+            }
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
         private void OnSelectClicked()
         {
             Time.timeScale = 1f;
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+            {
+                IronWasteland.Net.NetBootstrap bootstrap = FindAnyObjectByType<IronWasteland.Net.NetBootstrap>();
+                if (bootstrap != null) bootstrap.Shutdown();
+                else Unity.Netcode.NetworkManager.Singleton?.Shutdown();
+            }
             SceneManager.LoadScene("StageSelect");
         }
 

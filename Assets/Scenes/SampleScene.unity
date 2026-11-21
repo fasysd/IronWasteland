@@ -16419,8 +16419,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.MatchFlow
   bootstrap: {fileID: 1596902866}
   stageOptions:
-  - {fileID: 11400000, guid: 1aefe880f3676d14aa84e51355095e75, type: 2}
-  - {fileID: 11400000, guid: 8f0e1526e2e9a5345b5e0b43aa69259a, type: 2}
+  - {fileID: 11400000, guid: 4d91715cdf7e58e409a054b7d2fbd00f, type: 2}
+  - {fileID: 11400000, guid: a89170b0c191d714cbc50e78dc8df934, type: 2}
+  - {fileID: 11400000, guid: 1f156f2f96c14dc4b9d31248104891e5, type: 2}
+  - {fileID: 11400000, guid: 06b7c289db26a1247ae2dceafb36d311, type: 2}
+  - {fileID: 11400000, guid: 2d314f12736358045af8be118ce4cfda, type: 2}
+  - {fileID: 11400000, guid: 2af5cb3db57d4484e951135f96518f82, type: 2}
+  - {fileID: 11400000, guid: 2da7627d6ddb4af49a44e5a3986d3a2f, type: 2}
+  - {fileID: 11400000, guid: b02ea0345aa959848b54512c3cddf200, type: 2}
+  - {fileID: 11400000, guid: 26b57bab665633744a1cf3e3522f1747, type: 2}
 --- !u!114 &1596902878
 MonoBehaviour:
   m_ObjectHideFlags: 0

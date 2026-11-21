@@ -1,19 +1,19 @@
 {
   "packages": {
     "com.IvanMurzak.McpPlugin": {
-      "version": "8.7.0",
+      "version": "8.12.0",
       "dlls": [
         "McpPlugin.dll"
       ]
     },
     "com.IvanMurzak.McpPlugin.Common": {
-      "version": "8.7.0",
+      "version": "8.12.0",
       "dlls": [
         "McpPlugin.Common.dll"
       ]
     },
     "com.IvanMurzak.ReflectorNet": {
-      "version": "5.4.1",
+      "version": "5.5.0",
       "dlls": [
         "ReflectorNet.dll"
       ]
@@ -254,6 +254,14 @@
       "version": "4.5.4",
       "dlls": [
         "System.Threading.Tasks.Extensions.dll"
+      ]
+    },
+    "com.IvanMurzak.Rql": {
+      "version": "0.1.1",
+      "dlls": [
+        "Rql.Contracts.dll",
+        "Rql.Execution.dll",
+        "Rql.Parser.dll"
       ]
     }
   }

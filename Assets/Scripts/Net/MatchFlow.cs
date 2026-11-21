@@ -64,6 +64,9 @@ namespace IronWasteland.Net
         private bool m_Registered;
         private bool m_HostHooked;
         private bool m_StageHooked;
+        private bool m_SceneEventHooked;
+        private string m_PendingTargetScene;
+        private StageDirector m_Director;
 
         /// <summary>Giai đoạn hiện tại của phiên.</summary>
         public MatchPhase Phase { get; private set; } = MatchPhase.Lobby;
@@ -106,6 +109,7 @@ namespace IronWasteland.Net
             {
                 if (m_Registered) Unregister();
                 if (m_HostHooked) UnhookHost();
+                UnhookSceneManager();
                 return;
             }
 
@@ -119,7 +123,11 @@ namespace IronWasteland.Net
                 m_Registered = true;
             }
 
-            if (IsServer && !m_HostHooked) HookHost();
+            if (IsServer && !m_HostHooked)
+            {
+                HookHost();
+                HookSceneManager();
+            }
         }
 
         private void OnDestroy()
@@ -127,6 +135,36 @@ namespace IronWasteland.Net
             Unregister();
             UnhookHost();
             UnhookStage();
+            UnhookDirector();
+            UnhookSceneManager();
+        }
+
+        private void HookSceneManager()
+        {
+            if (m_SceneEventHooked || Manager == null || Manager.SceneManager == null) return;
+            Manager.SceneManager.OnSceneEvent += HandleSceneEvent;
+            m_SceneEventHooked = true;
+        }
+
+        private void UnhookSceneManager()
+        {
+            if (!m_SceneEventHooked || Manager == null || Manager.SceneManager == null) return;
+            Manager.SceneManager.OnSceneEvent -= HandleSceneEvent;
+            m_SceneEventHooked = false;
+        }
+
+        private void HandleSceneEvent(SceneEvent sceneEvent)
+        {
+            if (!IsServer) return;
+
+            if (sceneEvent.SceneEventType == SceneEventType.LoadEventCompleted)
+            {
+                if (!string.IsNullOrEmpty(m_PendingTargetScene) && sceneEvent.SceneName == m_PendingTargetScene)
+                {
+                    m_PendingTargetScene = null;
+                    OnStageSceneLoaded();
+                }
+            }
         }
 
         /// <summary>
@@ -348,17 +386,25 @@ namespace IronWasteland.Net
 
             bootstrap?.DespawnAllTanks();
             bootstrap?.Stage?.ResetToIdle();
+            UnhookDirector();
             ResetStageEventsState();
 
             for (int i = 0; i < m_PlayerCount; i++) m_Ready[i] = false;
             m_Ready[0] = true; // host luôn sẵn sàng
             Phase = MatchPhase.Lobby;
             Broadcast();
+
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "SampleScene" && Application.CanStreamedLevelBeLoaded("SampleScene"))
+            {
+                Manager.SceneManager.LoadScene("SampleScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
+            }
         }
 
         /// <summary>Đóng phòng ở phía máy này.</summary>
         public void Leave()
         {
+            UnhookDirector();
+            UnhookSceneManager();
             bootstrap?.Shutdown();
             ResetLocal();
             Changed?.Invoke();
@@ -373,10 +419,38 @@ namespace IronWasteland.Net
                 return;
             }
 
-            bootstrap?.Stage?.SetDefinition(stage);
-            bootstrap?.Stage?.ResetToIdle();
+            string sceneName = StageProgress.SceneNameFor(stage.StageCode);
+            if (IsServer && !string.IsNullOrEmpty(sceneName) && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != sceneName && Application.CanStreamedLevelBeLoaded(sceneName))
+            {
+                m_PendingTargetScene = sceneName;
+                HookSceneManager();
+                Debug.Log($"[MatchFlow] Chuyển cả phòng sang scene '{sceneName}' cho màn {stage.StageCode}...");
+                Manager.SceneManager.LoadScene(sceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+                return;
+            }
+
+            OnStageSceneLoaded();
+        }
+
+        private void OnStageSceneLoaded()
+        {
+            StageDefinition stage = SelectedStage;
             ResetStageEventsState();
-            HookStage();
+
+            if (bootstrap?.Stage != null)
+            {
+                bootstrap.Stage.CoopMode = (Mode == MatchMode.Coop);
+                if (stage != null) bootstrap.Stage.SetDefinition(stage);
+                bootstrap.Stage.ResetToIdle();
+                HookStage();
+            }
+
+            StageDirector director = FindAnyObjectByType<StageDirector>();
+            if (director != null)
+            {
+                director.CoopMode = (Mode == MatchMode.Coop);
+                HookDirector(director);
+            }
 
             for (int i = 0; i < m_PlayerCount; i++)
             {
@@ -386,8 +460,54 @@ namespace IronWasteland.Net
             Phase = MatchPhase.Playing;
             Broadcast();
 
-            bootstrap?.Stage?.StartStage();
-            Debug.Log($"[MatchFlow] Vào trận màn {stage.StageCode} - {stage.StageName} ({Mode}, {m_PlayerCount} người).");
+            if (director != null)
+            {
+                director.Begin();
+                NetStageEvents.Instance?.Broadcast(director, NetStageEvents.StateStarted);
+            }
+            else if (bootstrap?.Stage != null)
+            {
+                bootstrap.Stage.StartStage();
+            }
+
+            Debug.Log($"[MatchFlow] Đã vào trận màn {(stage != null ? stage.StageCode : "N/A")} ({Mode}, {m_PlayerCount} người).");
+        }
+
+        private void HookDirector(StageDirector director)
+        {
+            UnhookDirector();
+            m_Director = director;
+            if (m_Director != null)
+            {
+                m_Director.StageCleared += HandleDirectorCleared;
+                m_Director.StageFailed += HandleDirectorFailed;
+            }
+        }
+
+        private void UnhookDirector()
+        {
+            if (m_Director != null)
+            {
+                m_Director.StageCleared -= HandleDirectorCleared;
+                m_Director.StageFailed -= HandleDirectorFailed;
+                m_Director = null;
+            }
+        }
+
+        private void HandleDirectorCleared(StageDirector d, StageRewardResult reward)
+        {
+            if (!IsServer || Phase != MatchPhase.Playing) return;
+            Phase = MatchPhase.Cleared;
+            Broadcast();
+            NetStageEvents.Instance?.Broadcast(d, NetStageEvents.StateCleared);
+        }
+
+        private void HandleDirectorFailed(StageDirector d, string reason)
+        {
+            if (!IsServer || Phase != MatchPhase.Playing) return;
+            Phase = MatchPhase.Failed;
+            Broadcast();
+            NetStageEvents.Instance?.Broadcast(d, NetStageEvents.StateFailed);
         }
 
         private bool AddOrUpdatePlayer(ulong clientId, byte tankIndex, bool ready, byte option1, byte option2)

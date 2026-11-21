@@ -274,6 +274,15 @@ namespace IronWasteland.UI
             int stage = m_DefaultStageIndex;
             if (m_Stages != null && m_Stages.Length > 0)
             {
+                // Đồng bộ trạng thái mở khóa với tiến trình người chơi
+                for (int i = 0; i < m_Stages.Length; i++)
+                {
+                    if (m_Stages[i] != null)
+                    {
+                        m_Stages[i].Unlocked = StageProgress.IsUnlocked(m_Stages[i].Code);
+                    }
+                }
+
                 for (int i = 0; i < m_Stages.Length; i++)
                 {
                     if (m_Stages[i] != null && string.Equals(m_Stages[i].Code, CoopEntry.StageCode, StringComparison.OrdinalIgnoreCase))
@@ -444,6 +453,7 @@ namespace IronWasteland.UI
 
             CoopEntry.StageCode = stage.Code;
             CoopEntry.StageName = stage.Name;
+            CoopEntry.SelectedDefinition = stage.Definition;
 
             SetText(m_MissionCode, "ẢI " + stage.Code + " / " + stage.Tag);
             SetText(m_MissionName, stage.Name);
@@ -538,7 +548,18 @@ namespace IronWasteland.UI
         {
             CoopEntry.Mode = MatchMode.Single;
             CoopEntry.OpenLobby = false;
-            LoadScene(m_GameSceneName);
+
+            StageEntry current = (m_Stages != null && SelectedStageIndex >= 0 && SelectedStageIndex < m_Stages.Length)
+                ? m_Stages[SelectedStageIndex]
+                : null;
+
+            string targetScene = current != null ? StageProgress.SceneNameFor(current.Code) : string.Empty;
+            if (string.IsNullOrEmpty(targetScene) || !Application.CanStreamedLevelBeLoaded(targetScene))
+            {
+                targetScene = m_GameSceneName;
+            }
+
+            LoadScene(targetScene);
         }
 
         private static string FormatStats(int[] stats)
