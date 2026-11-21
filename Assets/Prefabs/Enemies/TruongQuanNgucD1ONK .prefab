@@ -1768,6 +1768,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fe6ed9b447402943947417e83c2125b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.D1onk.D1onkProceduralAnimator
+  animator: {fileID: -9059951459100230671}
   than: {fileID: 5679084389408103477}
   dau: {fileID: 7327099591763506754}
   vaiTrai: {fileID: 3936469025450250032}
@@ -1794,50 +1795,13 @@ MonoBehaviour:
   - {fileID: 3228531477012374835}
   - {fileID: 1374683669053584825}
   - {fileID: 4458729420287961344}
-  idleSpeed: 1.8
-  idleThanAmplitude: 1.5
-  idleDauAmplitude: 1
-  idleVaiAmplitude: 1.5
-  idleTayAmplitude: 3.5
-  idleChienHamAmplitude: 0.6
-  moveSpeedMultiplier: 2
-  moveThanAmplitude: 3
-  moveTayAmplitude: 6
-  phaoThanRecoil: 8
-  phaoDauChui: 6
-  phaoTayRecoil: 26
-  phaoTremorFreq: 50
-  phaoTremorAmp: 3.5
-  trungPhatTayVung: 38
-  trungPhatTayDong: 25
-  trungPhatThanGap: 10
-  lazeThanNang: 5
-  lazeTayTraiAngle: 24
-  lazeTayPhaiAngle: 20
-  lazeJitterFreq: 40
-  lazeJitterAmp: 1.5
-  toaNhietThanNgua: 8
-  toaNhietTayDang: 50
-  toaNhietShudderFreq: 45
-  toaNhietShudderAmp: 2.2
-  vienBinhTayPhaiGio: 55
-  vienBinhTayTraiAngle: 30
-  vienBinhDauAngle: 12
-  vienBinhWaveSpeed: 3
-  chargingThanGap: 6
-  chargingDauCui: 8
-  chargingTayThu: 22
-  chargingFreqStart: 12
-  chargingFreqEnd: 35
-  chargingRampTime: 2.5
-  stunThanLech: 10
-  stunDauRu: 20
-  stunTayBuong: 16
-  stunSwaySpeed: 1.5
-  dieThanDo: 15
-  dieDauGuc: 22
-  dieTayRu: 28
-  dieFallDuration: 0.8
+  boneRoot: {fileID: 8636386958364954292}
+  boneThan: {fileID: 2779479616951518964}
+  boneDau: {fileID: 3673982604741073211}
+  boneVaiTrai: {fileID: 7156624858536127156}
+  boneVaiPhai: {fileID: 2904188518620868665}
+  boneTayTrai: {fileID: 1183296739882168073}
+  boneTayPhai: {fileID: 7221273555847109734}
   transitionDuration: 0.15
   editorPreview: 0
   editorPreviewState: 0
@@ -3664,6 +3628,7 @@ GameObject:
   - component: {fileID: 2866841465632675977}
   - component: {fileID: 1805891303938877128}
   - component: {fileID: 8926035466498118720}
+  - component: {fileID: -9059951459100230671}
   m_Layer: 7
   m_Name: EnemyModel
   m_TagString: Untagged
@@ -3715,7 +3680,7 @@ MonoBehaviour:
   spriteRenderer: {fileID: 3799228761958742418}
   bodyCollider: {fileID: 0}
   ownerRef: {fileID: 2866841465632675977}
-  animator: {fileID: 0}
+  animator: {fileID: -9059951459100230671}
   owner: {fileID: 0}
 --- !u!70 &8926035466498118720
 CapsuleCollider2D:
@@ -3754,6 +3719,28 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: -1.8712683}
   m_Size: {x: 12.11, y: 18.442892}
   m_Direction: 0
+--- !u!95 &-9059951459100230671
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7581365742607466364}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 458bb6d944e638c4a88b6bacf1427c51, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &8025514959290932739
 GameObject:
   m_ObjectHideFlags: 0

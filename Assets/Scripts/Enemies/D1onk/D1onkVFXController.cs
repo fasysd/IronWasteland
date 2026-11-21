@@ -26,10 +26,6 @@ namespace IronWasteland.Enemies.D1onk
     [DisallowMultipleComponent]
     public class D1onkVFXController : MonoBehaviour
     {
-        [Header("Procedural Animator")]
-        [Tooltip("Hệ thống diễn hoạt xoay bộ phận quanh trục Z của D1onk.")]
-        [SerializeField] private D1onkProceduralAnimator proceduralAnimator;
-
         [Header("VFX Prefabs")]
         [Tooltip("Prefab tên lửa bắn từ 14 nòng súng.")]
         [SerializeField] private GameObject missileProjectilePrefab;
@@ -82,7 +78,6 @@ namespace IronWasteland.Enemies.D1onk
         private EnemyBrain m_OwnerBrain;
 
         // Public getters for Inspector wiring verification
-        public D1onkProceduralAnimator ProceduralAnimator => proceduralAnimator;
         public GameObject MissileProjectilePrefab => missileProjectilePrefab;
         public GameObject MuzzleFlashPrefab => muzzleFlashPrefab;
         public GameObject ExplosionVFXPrefab => explosionVFXPrefab;
@@ -105,10 +100,6 @@ namespace IronWasteland.Enemies.D1onk
         private void Awake()
         {
             m_OwnerBrain = GetComponent<EnemyBrain>();
-            if (proceduralAnimator == null)
-            {
-                proceduralAnimator = GetComponent<D1onkProceduralAnimator>() ?? GetComponentInChildren<D1onkProceduralAnimator>();
-            }
         }
 
         private void Start()
@@ -122,7 +113,6 @@ namespace IronWasteland.Enemies.D1onk
         /// </summary>
         public void ValidateReferences()
         {
-            if (proceduralAnimator == null) Debug.LogWarning("[D1onkVFXController] Missing reference: 'proceduralAnimator' is not assigned!");
             if (missileProjectilePrefab == null) Debug.LogWarning("[D1onkVFXController] Missing reference: 'missileProjectilePrefab' is not assigned!");
             if (trungPhatLightningPrefab == null) Debug.LogWarning("[D1onkVFXController] Missing reference: 'trungPhatLightningPrefab' is not assigned!");
             if (lazeNguyenToPrefab == null) Debug.LogWarning("[D1onkVFXController] Missing reference: 'lazeNguyenToPrefab' is not assigned!");
@@ -148,11 +138,6 @@ namespace IronWasteland.Enemies.D1onk
         public List<D1onkMissileProjectile> FireMultiBarrelSalvo(Transform target = null, float damage = 25f)
         {
             var spawnedMissiles = new List<D1onkMissileProjectile>();
-
-            if (proceduralAnimator != null)
-            {
-                proceduralAnimator.PlayAnimation(D1onkAnimState.PhaoHamDaNong, 0.7f);
-            }
 
             if (gunBarrels == null || gunBarrels.Length == 0)
             {
@@ -181,11 +166,6 @@ namespace IronWasteland.Enemies.D1onk
             {
                 Debug.LogWarning("[D1onkVFXController] Cannot fire random barrels: gunBarrels list is empty!");
                 return spawnedMissiles;
-            }
-
-            if (proceduralAnimator != null)
-            {
-                proceduralAnimator.PlayAnimation(D1onkAnimState.PhaoHamDaNong, 0.5f);
             }
 
             count = Mathf.Clamp(count, 1, gunBarrels.Length);
@@ -269,11 +249,6 @@ namespace IronWasteland.Enemies.D1onk
         /// </summary>
         public D1onkTrungPhatVFX PlayTrungPhat(Vector3 targetPosition, float damage = 60f, Action onComplete = null)
         {
-            if (proceduralAnimator != null)
-            {
-                proceduralAnimator.PlayAnimation(D1onkAnimState.TrungPhat, 1.6f);
-            }
-
             if (trungPhatLightningPrefab == null)
             {
                 Debug.LogWarning("[D1onkVFXController] trungPhatLightningPrefab is missing!");
@@ -295,11 +270,6 @@ namespace IronWasteland.Enemies.D1onk
         /// </summary>
         public List<D1onkTrungPhatVFX> PlayTrungPhatBarrage(Vector3 center, int count = 3, float radius = 5f, float damage = 50f, Action onComplete = null)
         {
-            if (proceduralAnimator != null)
-            {
-                proceduralAnimator.PlayAnimation(D1onkAnimState.TrungPhat, 2.0f);
-            }
-
             var list = new List<D1onkTrungPhatVFX>();
             if (trungPhatLightningPrefab == null)
             {
@@ -333,11 +303,6 @@ namespace IronWasteland.Enemies.D1onk
         /// </summary>
         public D1onkLazeNguyenToVFX PlayLazeNguyenTo(Vector3 direction, float duration = 2.5f, float damagePerSecond = 50f, Action onComplete = null)
         {
-            if (proceduralAnimator != null)
-            {
-                proceduralAnimator.PlayAnimation(D1onkAnimState.LazeNguyenTo, duration);
-            }
-
             if (lazeNguyenToPrefab == null)
             {
                 Debug.LogWarning("[D1onkVFXController] lazeNguyenToPrefab is missing!");
@@ -375,11 +340,6 @@ namespace IronWasteland.Enemies.D1onk
         /// </summary>
         public D1onkToaNhietDienRongVFX PlayToaNhietDienRong(float damage = 40f, Action onComplete = null)
         {
-            if (proceduralAnimator != null)
-            {
-                proceduralAnimator.PlayAnimation(D1onkAnimState.ToaNhietDienRong, 1.5f);
-            }
-
             if (toaNhietDienRongPrefab == null)
             {
                 Debug.LogWarning("[D1onkVFXController] toaNhietDienRongPrefab is missing!");
@@ -412,11 +372,6 @@ namespace IronWasteland.Enemies.D1onk
                 count = UnityEngine.Random.Range(3, 6);
             }
             count = Mathf.Clamp(count, 3, 5);
-
-            if (proceduralAnimator != null)
-            {
-                proceduralAnimator.PlayAnimation(D1onkAnimState.VienBinhTinhLinh, 1.8f, onComplete);
-            }
 
             var spawnedSummonVFXList = new List<D1onkVienBinhSummonVFX>();
 
@@ -468,11 +423,6 @@ namespace IronWasteland.Enemies.D1onk
         /// </summary>
         public D1onkChargingAuraVFX StartCharging()
         {
-            if (proceduralAnimator != null)
-            {
-                proceduralAnimator.SetState(D1onkAnimState.Charging);
-            }
-
             if (m_ActiveChargingAura == null && chargingAuraPrefab != null)
             {
                 GameObject go = Instantiate(chargingAuraPrefab, transform);
@@ -497,11 +447,6 @@ namespace IronWasteland.Enemies.D1onk
                 m_ActiveChargingAura.Stop();
                 m_ActiveChargingAura = null;
             }
-
-            if (proceduralAnimator != null && proceduralAnimator.CurrentState == D1onkAnimState.Charging)
-            {
-                proceduralAnimator.SetState(D1onkAnimState.Idle);
-            }
         }
 
         #endregion
@@ -514,11 +459,6 @@ namespace IronWasteland.Enemies.D1onk
         /// </summary>
         public D1onkStunVFX PlayStun(float duration = 3f, Action onComplete = null)
         {
-            if (proceduralAnimator != null)
-            {
-                proceduralAnimator.PlayAnimation(D1onkAnimState.Stun, duration);
-            }
-
             if (m_ActiveStunVFX == null && stunVFXPrefab != null)
             {
                 Vector3 headPos = headPoint != null ? headPoint.position : transform.position + new Vector3(0f, 2.5f, 0f);
@@ -552,11 +492,6 @@ namespace IronWasteland.Enemies.D1onk
                 m_ActiveStunVFX.Stop();
                 m_ActiveStunVFX = null;
             }
-
-            if (proceduralAnimator != null && proceduralAnimator.CurrentState == D1onkAnimState.Stun)
-            {
-                proceduralAnimator.SetState(D1onkAnimState.Idle);
-            }
         }
 
         /// <summary>
@@ -564,10 +499,6 @@ namespace IronWasteland.Enemies.D1onk
         /// </summary>
         public void PlayDie()
         {
-            if (proceduralAnimator != null)
-            {
-                proceduralAnimator.SetState(D1onkAnimState.Die);
-            }
         }
 
         private void OnDestroy()
@@ -604,11 +535,6 @@ namespace IronWasteland.Enemies.D1onk
 
         public void AutoWireIfEmpty()
         {
-            if (proceduralAnimator == null)
-            {
-                proceduralAnimator = GetComponent<D1onkProceduralAnimator>() ?? GetComponentInChildren<D1onkProceduralAnimator>();
-            }
-
             Transform root = transform;
             Transform model = root.Find("EnemyModel") ?? root;
             Transform ship = model.Find("Chiến hạm");
