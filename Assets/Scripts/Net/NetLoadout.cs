@@ -42,6 +42,40 @@ namespace IronWasteland.Net
             }
         }
 
+        /// <summary>Ghi trực tiếp vào FastBufferWriter để gửi qua CustomMessagingManager.</summary>
+        public void WriteTo(FastBufferWriter writer)
+        {
+            writer.WriteValueSafe(TankIndex);
+            writer.WriteValueSafe(Level);
+            writer.WriteValueSafe(EquipmentId);
+            writer.WriteValueSafe(OptionSkill1);
+            writer.WriteValueSafe(OptionSkill2);
+        }
+
+        /// <summary>Đọc loadout từ FastBufferReader.</summary>
+        public static bool TryFromReader(FastBufferReader reader, out NetLoadout loadout)
+        {
+            loadout = default;
+            try
+            {
+                reader.ReadValueSafe(out loadout.TankIndex);
+                reader.ReadValueSafe(out loadout.Level);
+                reader.ReadValueSafe(out loadout.EquipmentId);
+                reader.ReadValueSafe(out loadout.OptionSkill1);
+                reader.ReadValueSafe(out loadout.OptionSkill2);
+                loadout.Level = Math.Clamp(loadout.Level, 1, 90);
+                loadout.EquipmentId = Math.Max(-1, loadout.EquipmentId);
+                loadout.OptionSkill1 = Math.Clamp(loadout.OptionSkill1, 0, 2);
+                loadout.OptionSkill2 = Math.Clamp(loadout.OptionSkill2, 0, 2);
+                return true;
+            }
+            catch
+            {
+                loadout = default;
+                return false;
+            }
+        }
+
         /// <summary>Đọc payload do client gửi lên; trả false nếu thiếu dữ liệu hoặc sai định dạng.</summary>
         public static bool TryFromPayload(byte[] payload, out NetLoadout loadout)
         {

@@ -1,4 +1,5 @@
 using IronWasteland.Net;
+using IronWasteland.Save;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -48,10 +49,10 @@ namespace IronWasteland.Tanks
 
         public TankBrain PlayerTank => m_PlayerTank;
         public int SelectedSkillIndex => selectedSkillIndex;
-        public TankDefinition TankDefinition => tankDefinition;
+        public TankDefinition TankDefinition => m_PlayerTank != null && m_PlayerTank.Definition != null ? m_PlayerTank.Definition : tankDefinition;
 
         /// <summary>Cấp của xe đang chơi (1..90), HUD hiện cạnh tên xe.</summary>
-        public int PlayerLevel => playerLevel;
+        public int PlayerLevel => m_PlayerTank != null ? m_PlayerTank.Level : playerLevel;
 
         /// <summary>Vị trí khởi tạo xe trong màn.</summary>
         public Vector2 SpawnPosition => spawnPosition;
@@ -61,6 +62,14 @@ namespace IronWasteland.Tanks
         {
             m_PlayerTank = tank;
             m_NetController = tank != null ? tank.GetComponent<NetPlayerController>() : null;
+            if (tank != null)
+            {
+                if (tank.Definition != null) tankDefinition = tank.Definition;
+                playerLevel = tank.Level;
+                equipmentId = tank.Context.EquipmentId;
+                optionSkill1 = tank.Context.OptionSkill1;
+                optionSkill2 = tank.Context.OptionSkill2;
+            }
         }
 
         /// <summary>Bỏ liên kết với xe hiện tại mà không huỷ đối tượng.</summary>
@@ -92,6 +101,23 @@ namespace IronWasteland.Tanks
 
             // Chế độ online: host spawn xe qua mạng, GameController chỉ nhận bind sau đó.
             if (!createLocalTankOnAwake || TankBrain.NetworkSessionActive) return;
+
+            // Đồng bộ dữ liệu xe từ SaveSystem nếu có
+            if (SaveSystem.Instance != null)
+            {
+                int selectedIndex = SaveSystem.Instance.LastSelectedTankIndex;
+                TankDefinition def = TankRegistry.GetDefinition(selectedIndex);
+                if (def != null)
+                {
+                    tankDefinition = def;
+                }
+
+                int level = SaveSystem.Instance.GetTankLevel(selectedIndex);
+                if (level > 0) playerLevel = level;
+                equipmentId = SaveSystem.Instance.GetEquippedAccessory(selectedIndex);
+                optionSkill1 = SaveSystem.Instance.GetOptionSkill(selectedIndex, 0);
+                optionSkill2 = SaveSystem.Instance.GetOptionSkill(selectedIndex, 1);
+            }
 
             // Xây TankBrainContext từ fields hiện có (level, equipmentId, optionSkills).
             var context = new TankBrainContext

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using IronWasteland.Enemies;
+using IronWasteland.Save;
 using IronWasteland.Stages;
 using IronWasteland.Tanks;
 using Unity.Netcode;
@@ -241,6 +242,35 @@ namespace IronWasteland.Net
         public void SetLocalTankIndex(byte index)
         {
             tankIndex = index;
+            if (SaveSystem.Instance != null)
+            {
+                int savedLevel = SaveSystem.Instance.GetTankLevel(index);
+                if (savedLevel > 0) level = savedLevel;
+                equipmentId = SaveSystem.Instance.GetEquippedAccessory(index);
+                optionSkill1 = SaveSystem.Instance.GetOptionSkill(index, 0);
+                optionSkill2 = SaveSystem.Instance.GetOptionSkill(index, 1);
+            }
+        }
+
+        /// <summary>Cập nhật toàn bộ loadout cho máy cục bộ trước khi vào phòng hoặc đổi xe.</summary>
+        public void SetLocalLoadout(NetLoadout loadout)
+        {
+            tankIndex = loadout.TankIndex;
+            level = Mathf.Clamp(loadout.Level, TankDefinition.MinLevel, TankDefinition.MaxLevel);
+            equipmentId = loadout.EquipmentId;
+            optionSkill1 = Mathf.Clamp(loadout.OptionSkill1, 0, 2);
+            optionSkill2 = Mathf.Clamp(loadout.OptionSkill2, 0, 2);
+
+            if (networkManager != null && networkManager.IsListening)
+            {
+                m_Loadouts[networkManager.LocalClientId] = BuildLocalLoadout();
+            }
+        }
+
+        /// <summary>Gán hoặc cập nhật loadout cho một client cụ thể (do host quản lý).</summary>
+        public void SetClientLoadout(ulong clientId, NetLoadout loadout)
+        {
+            m_Loadouts[clientId] = loadout;
         }
 
         /// <summary>Biến thể Optional Skill 1 mà máy này đang chọn (dùng cho UI test trong lobby).</summary>
@@ -652,15 +682,36 @@ namespace IronWasteland.Net
             }
         }
 
-        private NetLoadout BuildLocalLoadout()
+        public NetLoadout BuildLocalLoadout()
         {
+            int currentTank = tankIndex;
+            int currentLevel = level;
+            int currentEquipment = equipmentId;
+            int opt1 = optionSkill1;
+            int opt2 = optionSkill2;
+
+            if (SaveSystem.Instance != null)
+            {
+                int savedLevel = SaveSystem.Instance.GetTankLevel(currentTank);
+                if (currentLevel <= TankDefinition.MinLevel && savedLevel > 0)
+                {
+                    currentLevel = savedLevel;
+                }
+
+                int savedEquip = SaveSystem.Instance.GetEquippedAccessory(currentTank);
+                if (currentEquipment < 0 && savedEquip >= 0)
+                {
+                    currentEquipment = savedEquip;
+                }
+            }
+
             return new NetLoadout
             {
-                TankIndex = tankIndex,
-                Level = level,
-                EquipmentId = equipmentId,
-                OptionSkill1 = optionSkill1,
-                OptionSkill2 = optionSkill2,
+                TankIndex = (byte)currentTank,
+                Level = Mathf.Clamp(currentLevel, TankDefinition.MinLevel, TankDefinition.MaxLevel),
+                EquipmentId = currentEquipment,
+                OptionSkill1 = Mathf.Clamp(opt1, 0, 2),
+                OptionSkill2 = Mathf.Clamp(opt2, 0, 2),
             };
         }
     }

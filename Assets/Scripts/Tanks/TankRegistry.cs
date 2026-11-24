@@ -50,8 +50,15 @@ namespace IronWasteland.Tanks
 
             if (s_CachedDefinitions[index] == null)
             {
+                if (IronWasteland.Net.NetSpawnService.Instance != null)
+                {
+                    s_CachedDefinitions[index] = IronWasteland.Net.NetSpawnService.Instance.GetDefinition((byte)index);
+                }
 #if UNITY_EDITOR
-                s_CachedDefinitions[index] = UnityEditor.AssetDatabase.LoadAssetAtPath<TankDefinition>(TankAssetPaths[index]);
+                if (s_CachedDefinitions[index] == null)
+                {
+                    s_CachedDefinitions[index] = UnityEditor.AssetDatabase.LoadAssetAtPath<TankDefinition>(TankAssetPaths[index]);
+                }
 #endif
             }
 

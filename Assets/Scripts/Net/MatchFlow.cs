@@ -44,6 +44,7 @@ namespace IronWasteland.Net
         public const byte OpReplay = 3;
         public const byte OpSetOption1 = 4;
         public const byte OpSetOption2 = 5;
+        public const byte OpSetLoadout = 7;
 
         public const int MaxPlayers = 4;
 
@@ -609,6 +610,25 @@ namespace IronWasteland.Net
 
         #region Client requests
 
+        /// <summary>Client xin đổi toàn bộ loadout (xe, cấp, phụ kiện, biến thể kỹ năng) trong lobby.</summary>
+        public void RequestLoadout(NetLoadout loadout)
+        {
+            if (!Listening) return;
+            if (IsServer)
+            {
+                ApplyLoadoutRequest(NetBootstrap.ServerClientId, loadout);
+                return;
+            }
+
+            CustomMessagingManager messaging = Manager != null ? Manager.CustomMessagingManager : null;
+            if (messaging == null) return;
+
+            using FastBufferWriter writer = new FastBufferWriter(18, Allocator.Temp);
+            writer.WriteValueSafe(OpSetLoadout);
+            loadout.WriteTo(writer);
+            messaging.SendNamedMessage(RequestMessage, NetBootstrap.ServerClientId, writer);
+        }
+
         /// <summary>Client xin đổi tank trong lobby.</summary>
         public void RequestTank(byte tankIndex)
         {
@@ -675,6 +695,31 @@ namespace IronWasteland.Net
             messaging.SendNamedMessage(RequestMessage, NetBootstrap.ServerClientId, writer);
         }
 
+        private void ApplyLoadoutRequest(ulong clientId, NetLoadout loadout)
+        {
+            if (!IsServer || Phase != MatchPhase.Lobby) return;
+
+            int count = bootstrap != null && bootstrap.Spawner != null ? bootstrap.Spawner.TankCount : 0;
+            if (count > 0 && loadout.TankIndex >= count) return;
+
+            if (bootstrap != null)
+            {
+                bootstrap.SetClientLoadout(clientId, loadout);
+            }
+
+            for (int i = 0; i < m_PlayerCount; i++)
+            {
+                if (m_ClientIds[i] != clientId) continue;
+                m_TankIndexes[i] = loadout.TankIndex;
+                m_Option1s[i] = (byte)Mathf.Clamp(loadout.OptionSkill1, 0, 2);
+                m_Option2s[i] = (byte)Mathf.Clamp(loadout.OptionSkill2, 0, 2);
+                m_Ready[i] = false;
+                break;
+            }
+
+            Broadcast();
+        }
+
         private void ApplyTankRequest(ulong clientId, byte tankIndex)
         {
             if (!IsServer || Phase != MatchPhase.Lobby) return;
@@ -688,6 +733,13 @@ namespace IronWasteland.Net
                 m_TankIndexes[i] = tankIndex;
                 m_Ready[i] = false;
                 break;
+            }
+
+            if (bootstrap != null)
+            {
+                NetLoadout loadout = bootstrap.GetLoadout(clientId);
+                loadout.TankIndex = tankIndex;
+                bootstrap.SetClientLoadout(clientId, loadout);
             }
 
             Broadcast();
@@ -705,6 +757,14 @@ namespace IronWasteland.Net
                 else m_Option2s[i] = clamped;
                 m_Ready[i] = false;
                 break;
+            }
+
+            if (bootstrap != null)
+            {
+                NetLoadout loadout = bootstrap.GetLoadout(clientId);
+                if (firstOption) loadout.OptionSkill1 = clamped;
+                else loadout.OptionSkill2 = clamped;
+                bootstrap.SetClientLoadout(clientId, loadout);
             }
 
             Broadcast();
@@ -802,6 +862,16 @@ namespace IronWasteland.Net
             try
             {
                 reader.ReadValueSafe(out byte op);
+
+                if (op == OpSetLoadout)
+                {
+                    if (NetLoadout.TryFromReader(reader, out NetLoadout loadout))
+                    {
+                        ApplyLoadoutRequest(senderClientId, loadout);
+                    }
+                    return;
+                }
+
                 reader.ReadValueSafe(out byte value);
 
                 switch (op)

@@ -118,6 +118,7 @@ namespace IronWasteland.Tanks
         {
             if (brain == null) return;
 
+            brain.Definition = this;
             brain.Initialize(context, GetStatsForLevel(context.Level));
 
             // Trang bi 1 phu kien duy nhat theo context.EquipmentId

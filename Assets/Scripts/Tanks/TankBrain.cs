@@ -110,6 +110,8 @@ namespace IronWasteland.Tanks
         #region Properties
         public TankView View => view;
         public TankBrainContext Context => m_context;
+        public int Level => level;
+        public TankDefinition Definition { get; set; }
         public TankStats BaseStats => baseStats;
         public TankStats Stats => m_FinalStats;
         public Vector2 LookTarget => m_LookTarget;

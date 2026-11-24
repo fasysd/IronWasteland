@@ -225,11 +225,22 @@ namespace IronWasteland.Net
 
         private void PrepareLocalLoadout()
         {
-            if (bootstrap == null) return;
+            if (bootstrap == null || SaveSystem.Instance == null) return;
 
             int tank = Mathf.Clamp(SaveSystem.Instance.LastSelectedTankIndex, 0, SkillCatalog.TankCount - 1);
-            bootstrap.SetLocalTankIndex((byte)tank);
-            bootstrap.SetLocalOptionSkills(SaveSystem.Instance.GetOptionSkill(tank, 0), SaveSystem.Instance.GetOptionSkill(tank, 1));
+            int level = Mathf.Max(TankDefinition.MinLevel, SaveSystem.Instance.GetTankLevel(tank));
+            int equip = SaveSystem.Instance.GetEquippedAccessory(tank);
+            int opt1 = SaveSystem.Instance.GetOptionSkill(tank, 0);
+            int opt2 = SaveSystem.Instance.GetOptionSkill(tank, 1);
+
+            bootstrap.SetLocalLoadout(new NetLoadout
+            {
+                TankIndex = (byte)tank,
+                Level = level,
+                EquipmentId = equip,
+                OptionSkill1 = opt1,
+                OptionSkill2 = opt2
+            });
         }
 
         private void PrepareOfflineTank()
@@ -563,13 +574,23 @@ namespace IronWasteland.Net
             }
 
             PrepareLocalLoadout();
-            if (flow != null)
+            if (flow != null && SaveSystem.Instance != null)
             {
                 int tank = Mathf.Clamp(SaveSystem.Instance.LastSelectedTankIndex, 0, SkillCatalog.TankCount - 1);
-                flow.RequestTank((byte)tank);
-                flow.RequestOptionSkills(
-                    (byte)SaveSystem.Instance.GetOptionSkill(tank, 0),
-                    (byte)SaveSystem.Instance.GetOptionSkill(tank, 1));
+                int level = Mathf.Max(TankDefinition.MinLevel, SaveSystem.Instance.GetTankLevel(tank));
+                int equip = SaveSystem.Instance.GetEquippedAccessory(tank);
+                int opt1 = SaveSystem.Instance.GetOptionSkill(tank, 0);
+                int opt2 = SaveSystem.Instance.GetOptionSkill(tank, 1);
+
+                NetLoadout loadout = new NetLoadout
+                {
+                    TankIndex = (byte)tank,
+                    Level = level,
+                    EquipmentId = equip,
+                    OptionSkill1 = opt1,
+                    OptionSkill2 = opt2
+                };
+                flow.RequestLoadout(loadout);
             }
 
             RefreshRoom();
