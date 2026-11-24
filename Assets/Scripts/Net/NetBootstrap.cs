@@ -1,3 +1,4 @@
+using Action = System.Action;
 using System.Collections.Generic;
 using IronWasteland.Enemies;
 using IronWasteland.Save;
@@ -22,6 +23,9 @@ namespace IronWasteland.Net
 
         /// <summary>ID client của host/server trong NGO.</summary>
         public const ulong ServerClientId = 0UL;
+
+        /// <summary>Sự kiện kích hoạt khi client mất kết nối hoặc host đã đóng phòng.</summary>
+        public static event Action HostDisconnected;
 
         [Header("Tham chiếu")]
         [Tooltip("NetworkManager dùng cho phòng chơi; để trống sẽ lấy trên cùng GameObject.")]
@@ -663,8 +667,24 @@ namespace IronWasteland.Net
                 LastDisconnectReason = networkManager.DisconnectReason;
                 ConnectionLost = true;
                 Debug.LogWarning($"[NetBootstrap] Mất kết nối tới host (clientId={clientId}). Lý do: {LastDisconnectReason}.");
+
                 // Host đã đóng phòng: gỡ mình khỏi lobby để lần sau tạo/join phòng mới sạch.
                 NetRelayService.LeaveSession();
+
+                // Nếu đang trong màn chơi thì kích hoạt trận đấu thất bại vì host đã rời phòng.
+                StageDirector director = FindAnyObjectByType<StageDirector>();
+                if (director != null && director.State == StageRunState.Running)
+                {
+                    director.ForceFail("Chủ phòng đã thoát phòng. Trận đấu thất bại.");
+                }
+
+                matchFlow?.OnHostDisconnected();
+                HostDisconnected?.Invoke();
+
+                if (networkManager != null && networkManager.IsListening)
+                {
+                    networkManager.Shutdown();
+                }
                 return;
             }
 
@@ -672,14 +692,6 @@ namespace IronWasteland.Net
             m_ReservedClients.Remove(clientId);
             spawnService?.DespawnPlayerTank(clientId);
             matchFlow?.OnClientLeft(clientId);
-
-            // Host: nếu đã từng có người chơi mà giờ chỉ còn lại mình thì phiên coi như kết thúc.
-            if (m_HadRemoteClient && networkManager != null && networkManager.IsServer &&
-                networkManager.ConnectedClientsIds.Count <= 1)
-            {
-                SessionEnded = true;
-                Debug.LogWarning("[NetBootstrap] Phiên đã kết thúc — chỉ còn host, cần tạo lại phòng.");
-            }
         }
 
         public NetLoadout BuildLocalLoadout()

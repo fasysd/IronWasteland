@@ -141,6 +141,21 @@ namespace IronWasteland.UI
 
         private void OnLeaveClicked()
         {
+            Time.timeScale = 1f;
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+            {
+                IronWasteland.Net.MatchFlow flow = FindAnyObjectByType<IronWasteland.Net.MatchFlow>();
+                if (flow != null)
+                {
+                    flow.Leave();
+                    return;
+                }
+
+                IronWasteland.Net.NetBootstrap bootstrap = FindAnyObjectByType<IronWasteland.Net.NetBootstrap>();
+                if (bootstrap != null) bootstrap.Shutdown();
+                else Unity.Netcode.NetworkManager.Singleton?.Shutdown();
+            }
+
             SceneManager.LoadScene("StageSelect");
         }
 
@@ -415,6 +430,16 @@ namespace IronWasteland.UI
 
             // Thua thi khong co "man tiep theo": an nut do di, chi con "Choi lai" va "Ve man chon".
             if (nextButton != null) nextButton.gameObject.SetActive(false);
+
+            // Nếu trong phiên mạng co-op mà không phải server (client), ẩn nút Chơi lại để client về chọn màn
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+            {
+                bool isServer = Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsServer;
+                if (!isServer && retryButton != null)
+                {
+                    retryButton.gameObject.SetActive(false);
+                }
+            }
         }
 
         private void ShowResult(string title, string detail)
@@ -462,6 +487,13 @@ namespace IronWasteland.UI
             Time.timeScale = 1f;
             if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
             {
+                IronWasteland.Net.MatchFlow flow = FindAnyObjectByType<IronWasteland.Net.MatchFlow>();
+                if (flow != null)
+                {
+                    flow.Leave();
+                    return;
+                }
+
                 IronWasteland.Net.NetBootstrap bootstrap = FindAnyObjectByType<IronWasteland.Net.NetBootstrap>();
                 if (bootstrap != null) bootstrap.Shutdown();
                 else Unity.Netcode.NetworkManager.Singleton?.Shutdown();

@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 15003, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: Windows
+  m_EditorClassIdentifier: UnityEditor.dll::UnityEditor.Build.Profile.BuildProfile
+  m_AssetVersion: 2
+  m_BuildTarget: 19
+  m_Subtarget: 2
+  m_PlatformId: 4e3c793746204150860bf175a9a41a05
+  m_PlatformBuildProfile:
+    rid: 4855463695824191577
+  m_ActivePlatformGuid: 
+  m_AdditionalPlatformBuildSettings: []
+  m_OverrideGlobalSceneList: 1
+  m_Scenes:
+  - m_enabled: 1
+    m_path: Assets/Scenes/CoopLobby.unity
+    m_guid: 8c9cfa26abfee488c85f1582747f6a02
+  - m_enabled: 1
+    m_path: Assets/Scenes/Garage.unity
+    m_guid: b2b25e1f659e4d247a8b60f17db82fc0
+  - m_enabled: 1
+    m_path: Assets/Scenes/GarageAccessory.unity
+    m_guid: 6131b411d4a36594a92b5eb2c8cd8668
+  - m_enabled: 1
+    m_path: Assets/Scenes/MainMenu.unity
+    m_guid: 01cadaffda718704a9576da787dcb22b
+  - m_enabled: 1
+    m_path: Assets/Scenes/Setting.unity
+    m_guid: db276692bd2339945b368f389488ff14
+  - m_enabled: 1
+    m_path: Assets/Scenes/SkillPicker.unity
+    m_guid: 12370c42fc712ef459b5164cc72f4039
+  - m_enabled: 1
+    m_path: Assets/Scenes/Stage_1_1.unity
+    m_guid: 5064fdb839927984b95e804e1d1670a6
+  - m_enabled: 1
+    m_path: Assets/Scenes/Stage_1_2.unity
+    m_guid: 2bdfd8af2168d5344bffa0a36aa71121
+  - m_enabled: 1
+    m_path: Assets/Scenes/Stage_1_3.unity
+    m_guid: ac4f4230fd93c70438919fce8c77d86e
+  - m_enabled: 1
+    m_path: Assets/Scenes/Stage_1_4.unity
+    m_guid: 10b219ca86cc59049bd43c571e73723e
+  - m_enabled: 1
+    m_path: Assets/Scenes/Stage_2_1.unity
+    m_guid: b8e573c4baae89841934a932306c2f26
+  - m_enabled: 1
+    m_path: Assets/Scenes/StageSelect.unity
+    m_guid: c02cae285b1615b46af9a77fc9eff1d2
+  - m_enabled: 1
+    m_path: Assets/Scenes/Stage_2_5.unity
+    m_guid: d2f7d3f5c69bb254eaa6dbb4f07a0751
+  - m_enabled: 1
+    m_path: Assets/Scenes/Stage_2_4.unity
+    m_guid: 479e169a52619b947b7826f8964ffc3c
+  - m_enabled: 1
+    m_path: Assets/Scenes/Stage_2_3.unity
+    m_guid: c43ef5f24be5e7945b86081a101efa65
+  - m_enabled: 1
+    m_path: Assets/Scenes/Stage_2_2.unity
+    m_guid: c3a3f0e6c2c3fd44e8419c8934816200
+  m_HasScriptingDefines: 0
+  m_ScriptingDefines: []
+  m_PlayerSettingsYaml:
+    m_Settings: []
+  requiredComponents: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 4855463695824191577
+      type: {class: WindowsPlatformSettings, ns: UnityEditor.WindowsStandalone, asm: UnityEditor.WindowsStandalone.Extensions}
+      data:
+        m_Development: 0
+        m_ConnectProfiler: 0
+        m_BuildWithDeepProfilingSupport: 0
+        m_BuildWithCodeCoverage: 0
+        m_AllowDebugging: 0
+        m_WaitForManagedDebugger: 0
+        m_ManagedDebuggerFixedPort: 0
+        m_ExplicitNullChecks: 0
+        m_ExplicitDivideByZeroChecks: 0
+        m_ExplicitArrayBoundsChecks: 0
+        m_CompressionType: 0
+        m_InstallInBuildFolder: 0
+        m_InsightsSettingsContainer:
+          m_BuildProfileEngineDiagnosticsState: 2
+        m_AdaptivePerformanceEnabled: 0
+        m_WindowsBuildAndRunDeployTarget: 0
+        m_Architecture: 0
+        m_CreateSolution: 0
+        m_CopyPDBFiles: 0
+        m_WindowsDevicePortalAddress: 
+        m_WindowsDevicePortalUsername: 

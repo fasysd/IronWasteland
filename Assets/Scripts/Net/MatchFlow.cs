@@ -396,20 +396,42 @@ namespace IronWasteland.Net
             Phase = MatchPhase.Lobby;
             Broadcast();
 
-            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "SampleScene" && Application.CanStreamedLevelBeLoaded("SampleScene"))
+            string lobbyScene = Application.CanStreamedLevelBeLoaded("CoopLobby") ? "CoopLobby" : "SampleScene";
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != lobbyScene && Application.CanStreamedLevelBeLoaded(lobbyScene))
             {
-                Manager.SceneManager.LoadScene("SampleScene", UnityEngine.SceneManagement.LoadSceneMode.Single);
+                Manager.SceneManager.LoadScene(lobbyScene, UnityEngine.SceneManagement.LoadSceneMode.Single);
             }
         }
 
         /// <summary>Đóng phòng ở phía máy này.</summary>
         public void Leave()
         {
+            if (IsServer && Phase == MatchPhase.Playing)
+            {
+                Phase = MatchPhase.Failed;
+                StageDirector director = FindAnyObjectByType<StageDirector>();
+                if (director != null)
+                {
+                    director.ForceFail("Chủ phòng đã thoát trận.");
+                    NetStageEvents.Instance?.Broadcast(director, NetStageEvents.StateFailed);
+                }
+            }
+
             UnhookDirector();
             UnhookSceneManager();
             bootstrap?.Shutdown();
             ResetLocal();
             Changed?.Invoke();
+
+            string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (currentScene != "SampleScene" && currentScene != "CoopLobby" && currentScene != "StageSelect" && currentScene != "MainMenu")
+            {
+                Time.timeScale = 1f;
+                if (Application.CanStreamedLevelBeLoaded("StageSelect"))
+                {
+                    UnityEngine.SceneManagement.SceneManager.LoadScene("StageSelect");
+                }
+            }
         }
 
         private void StartMatchInternal()
@@ -596,6 +618,20 @@ namespace IronWasteland.Net
             if (!IsServer) return;
             RemovePlayer(clientId);
             Broadcast();
+        }
+
+        /// <summary>Client xử lý khi host ngắt kết nối hoặc đóng phòng.</summary>
+        public void OnHostDisconnected()
+        {
+            if (Phase == MatchPhase.Playing)
+            {
+                Phase = MatchPhase.Failed;
+            }
+
+            UnhookDirector();
+            UnhookSceneManager();
+            ResetLocal();
+            Changed?.Invoke();
         }
 
         private void ResetLocal()

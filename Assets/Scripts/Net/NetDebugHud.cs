@@ -22,7 +22,7 @@ namespace IronWasteland.Net
         [SerializeField] private Key toggleKey = Key.F3;
 
         [Tooltip("Bắt đầu hiện bảng ngay khi vào Play.")]
-        [SerializeField] private bool visibleOnStart = true;
+        [SerializeField] private bool visibleOnStart = false;
 
         [Header("Tần suất")]
         [Tooltip("Số giây giữa hai lần cập nhật số liệu (giây).")]

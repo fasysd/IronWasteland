@@ -3,6 +3,7 @@ using IronWasteland.Stages;
 using IronWasteland.Tanks;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace IronWasteland.Net
 {
@@ -19,7 +20,10 @@ namespace IronWasteland.Net
         [SerializeField] private MatchFlow flow;
 
         [Tooltip("Bật để hiện bảng điều khiển khi vào Play.")]
-        [SerializeField] private bool showPanel = true;
+        [SerializeField] private bool showPanel = false;
+
+        [Tooltip("Phím bật/tắt bảng điều khiển.")]
+        [SerializeField] private Key toggleKey = Key.F3;
 
         /// <summary>Bật/tắt bảng IMGUI cũ; lobby mới dùng để nhường chỗ cho giao diện riêng.</summary>
         public bool PanelVisible
@@ -64,6 +68,15 @@ namespace IronWasteland.Net
 
             if (flow == null) flow = GetComponent<MatchFlow>();
             if (flow == null) flow = FindAnyObjectByType<MatchFlow>();
+        }
+
+        private void Update()
+        {
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && keyboard[toggleKey].wasPressedThisFrame)
+            {
+                showPanel = !showPanel;
+            }
         }
 
         private void OnGUI()

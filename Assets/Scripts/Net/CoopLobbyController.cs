@@ -94,6 +94,7 @@ namespace IronWasteland.Net
 
             if (flow != null) flow.Changed += OnFlowChanged;
             NetRelayService.LobbyChanged += OnLobbyChanged;
+            NetBootstrap.HostDisconnected += OnHostDisconnected;
 
             SetStageCaption();
 
@@ -123,6 +124,7 @@ namespace IronWasteland.Net
         {
             if (flow != null) flow.Changed -= OnFlowChanged;
             NetRelayService.LobbyChanged -= OnLobbyChanged;
+            NetBootstrap.HostDisconnected -= OnHostDisconnected;
         }
 
         /// <summary>Áp mã ải của phòng vừa tham gia và tra tên ải tương ứng để caption luôn đúng.</summary>
@@ -181,7 +183,7 @@ namespace IronWasteland.Net
             m_GarageLoading = false;
             GarageFlow.OpenedFromLobby = false;
             if (m_Root != null) m_Root.alpha = 0f;
-            if (m_LegacyPanel != null) m_LegacyPanel.PanelVisible = true;
+            if (m_LegacyPanel != null) m_LegacyPanel.PanelVisible = false;
         }
 
         private void StartSingle()
@@ -809,7 +811,18 @@ namespace IronWasteland.Net
         private void LeaveRoom()
         {
             if (flow != null) flow.Leave();
-            HideAll();
+            SetStatus(string.Empty);
+            ShowBrowser();
+        }
+
+        private void OnHostDisconnected()
+        {
+            if (m_Shown && m_RoomView != null && m_RoomView.activeSelf)
+            {
+                ShowBrowser();
+                SetStatus("CHỦ PHÒNG ĐÃ THOÁT PHÒNG");
+                RefreshRooms();
+            }
         }
 
         private void GoBack()
