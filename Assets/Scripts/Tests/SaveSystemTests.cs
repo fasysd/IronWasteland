@@ -41,7 +41,7 @@ namespace IronWasteland.Tests
 
                 Test_DeviceSettings();
                 passed++;
-                Debug.Log("✔ [PASS] 5. Phân tách file device_settings.json & gamedata.json độc lập.");
+                Debug.Log("✔ [PASS] 5. Gộp cài đặt và lưu file gamedata.json duy nhất tại folder [folder chứa game]/save.");
 
                 Debug.Log($"<color=green>====== TẤT CẢ {passed}/{total} BÀI TEST THÀNH CÔNG! ======</color>");
             }
@@ -168,11 +168,9 @@ namespace IronWasteland.Tests
             AssertEqual(90, SaveSystem.Instance.Settings.AnnouncerVolume, "AnnouncerVolume lưu sai");
             AssertEqual(1, SaveSystem.Instance.LastSelectedTankIndex, "LastSelectedTankIndex lưu sai");
 
-            string gamedataPath = Path.Combine(Application.persistentDataPath, "gamedata.json");
-            string deviceSettingsPath = Path.Combine(Application.persistentDataPath, "device_settings.json");
-
-            AssertTrue(File.Exists(gamedataPath), "File gamedata.json phải tồn tại");
-            AssertTrue(File.Exists(deviceSettingsPath), "File device_settings.json phải tồn tại");
+            string saveFilePath = SaveSystem.Instance.SaveFilePath;
+            AssertTrue(File.Exists(saveFilePath), $"File gamedata.json phải tồn tại tại {saveFilePath}");
+            AssertTrue(saveFilePath.EndsWith(Path.Combine("save", "gamedata.json")), "Đường dẫn file save phải nằm trong thư mục save");
         }
     }
 }

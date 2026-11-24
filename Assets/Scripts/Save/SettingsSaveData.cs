@@ -3,8 +3,8 @@ using System;
 namespace IronWasteland.Save
 {
     /// <summary>
-    /// Dữ liệu cài đặt thiết bị lưu riêng tại device_settings.json.
-    /// Không ảnh hưởng đến dữ liệu gameplay chính, mục đích tiện ích trên máy người chơi.
+    /// Dữ liệu cài đặt thiết bị và tùy chọn người chơi, được lưu chung trong gamedata.json.
+    /// Bao gồm cài đặt âm lượng và chỉ số xe được chọn cuối cùng.
     /// </summary>
     [Serializable]
     public class SettingsSaveData

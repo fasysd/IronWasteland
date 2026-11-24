@@ -9,9 +9,8 @@ namespace IronWasteland.Save
     /// <summary>
     /// Hệ thống quản lý lưu trữ JSON trung tâm của game.
     /// Tự động khởi tạo (Lazy Singleton & BeforeSceneLoad) đảm bảo luôn sẵn sàng trong mọi Scene.
-    /// Phân tách 2 file lưu:
-    /// - gamedata.json: Ngọc ma pháp, thông tin xe, phụ kiện sở hữu, tiến trình màn chơi.
-    /// - device_settings.json: Cài đặt âm thanh, xe chọn cuối cùng.
+    /// Toàn bộ dữ liệu được lưu gộp vào file gamedata.json tại folder [folder chứa game]/save.
+    /// Bao gồm: Ngọc ma pháp, thông tin xe, phụ kiện sở hữu, tiến trình màn chơi và cài đặt âm thanh/thiết bị.
     /// </summary>
     [ExecuteAlways]
     [DefaultExecutionOrder(-200)]
@@ -19,7 +18,7 @@ namespace IronWasteland.Save
     public class SaveSystem : MonoBehaviour
     {
         private const string GameDataFileName = "gamedata.json";
-        private const string DeviceSettingsFileName = "device_settings.json";
+        private const string SaveFolderName = "save";
 
         private static SaveSystem s_Instance;
 
@@ -33,12 +32,25 @@ namespace IronWasteland.Save
         }
 
         private string m_GameDataPath;
-        private string m_DeviceSettingsPath;
 
         public GameData Data { get; private set; }
-        public SettingsSaveData Settings { get; private set; }
+        public SettingsSaveData Settings => Data?.Settings;
+
+        public string SaveFilePath => m_GameDataPath;
+        public string SaveDirectory => GetSaveDirectory();
 
         private bool m_Initialized = false;
+
+        /// <summary>
+        /// Đường dẫn thư mục [folder chứa game]/save.
+        /// Trong Editor: [ProjectRoot]/save.
+        /// Trong bản build: [Thư mục chứa file exe]/save.
+        /// </summary>
+        public static string GetSaveDirectory()
+        {
+            string rootDir = Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath;
+            return Path.Combine(rootDir, SaveFolderName);
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void AutoInitialize()
@@ -94,8 +106,19 @@ namespace IronWasteland.Save
 
         private void InitializePaths()
         {
-            m_GameDataPath = Path.Combine(Application.persistentDataPath, GameDataFileName);
-            m_DeviceSettingsPath = Path.Combine(Application.persistentDataPath, DeviceSettingsFileName);
+            string saveDir = GetSaveDirectory();
+            if (!Directory.Exists(saveDir))
+            {
+                try
+                {
+                    Directory.CreateDirectory(saveDir);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"[SaveSystem] Không thể tạo thư mục lưu tại {saveDir}: {e.Message}");
+                }
+            }
+            m_GameDataPath = Path.Combine(saveDir, GameDataFileName);
         }
 
         #region Load & Save
@@ -108,7 +131,6 @@ namespace IronWasteland.Save
             }
 
             LoadGameData();
-            LoadDeviceSettings();
             m_Initialized = true;
         }
 
@@ -130,32 +152,42 @@ namespace IronWasteland.Save
             }
             else
             {
-                Data = CreateDefaultGameData();
+                // Tự động chuyển tiếp từ thư mục persistentDataPath cũ nếu có
+                string legacyPath = Path.Combine(Application.persistentDataPath, GameDataFileName);
+                if (File.Exists(legacyPath))
+                {
+                    try
+                    {
+                        string json = File.ReadAllText(legacyPath);
+                        Data = JsonUtility.FromJson<GameData>(json);
+                        if (Data == null) Data = CreateDefaultGameData();
+
+                        string legacySettings = Path.Combine(Application.persistentDataPath, "device_settings.json");
+                        if (File.Exists(legacySettings))
+                        {
+                            try
+                            {
+                                var oldSettings = JsonUtility.FromJson<SettingsSaveData>(File.ReadAllText(legacySettings));
+                                if (oldSettings != null) Data.Settings = oldSettings;
+                            }
+                            catch {}
+                        }
+
+                        SaveGameData();
+                    }
+                    catch
+                    {
+                        Data = CreateDefaultGameData();
+                    }
+                }
+                else
+                {
+                    Data = CreateDefaultGameData();
+                }
             }
 
             EnsureTanksInitialized();
-        }
-
-        private void LoadDeviceSettings()
-        {
-            if (File.Exists(m_DeviceSettingsPath))
-            {
-                try
-                {
-                    string json = File.ReadAllText(m_DeviceSettingsPath);
-                    Settings = JsonUtility.FromJson<SettingsSaveData>(json);
-                    if (Settings == null) Settings = new SettingsSaveData();
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"[SaveSystem] Lỗi đọc {DeviceSettingsFileName}: {e.Message}. Tạo mặc định.");
-                    Settings = new SettingsSaveData();
-                }
-            }
-            else
-            {
-                Settings = new SettingsSaveData();
-            }
+            if (Data.Settings == null) Data.Settings = new SettingsSaveData();
         }
 
         public void SaveGameData()
@@ -163,6 +195,11 @@ namespace IronWasteland.Save
             if (Data == null) return;
             try
             {
+                string dir = Path.GetDirectoryName(m_GameDataPath);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
                 string json = JsonUtility.ToJson(Data, true);
                 File.WriteAllText(m_GameDataPath, json);
             }
@@ -174,22 +211,12 @@ namespace IronWasteland.Save
 
         public void SaveDeviceSettings()
         {
-            if (Settings == null) return;
-            try
-            {
-                string json = JsonUtility.ToJson(Settings, true);
-                File.WriteAllText(m_DeviceSettingsPath, json);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[SaveSystem] Lỗi ghi {DeviceSettingsFileName}: {e.Message}");
-            }
+            SaveGameData();
         }
 
         public void SaveAll()
         {
             SaveGameData();
-            SaveDeviceSettings();
         }
 
         private void OnApplicationQuit()
@@ -445,22 +472,24 @@ namespace IronWasteland.Save
 
         public void SetSettings(int master, int sfx, int bgm, int announcer)
         {
-            if (Settings == null) Settings = new SettingsSaveData();
-            Settings.MasterVolume = Mathf.Clamp(master, 0, 100);
-            Settings.SfxVolume = Mathf.Clamp(sfx, 0, 100);
-            Settings.BgmVolume = Mathf.Clamp(bgm, 0, 100);
-            Settings.AnnouncerVolume = Mathf.Clamp(announcer, 0, 100);
-            SaveDeviceSettings();
+            if (Data == null) Data = CreateDefaultGameData();
+            if (Data.Settings == null) Data.Settings = new SettingsSaveData();
+            Data.Settings.MasterVolume = Mathf.Clamp(master, 0, 100);
+            Data.Settings.SfxVolume = Mathf.Clamp(sfx, 0, 100);
+            Data.Settings.BgmVolume = Mathf.Clamp(bgm, 0, 100);
+            Data.Settings.AnnouncerVolume = Mathf.Clamp(announcer, 0, 100);
+            SaveGameData();
         }
 
         public int LastSelectedTankIndex
         {
-            get => Settings?.LastSelectedTankIndex ?? 0;
+            get => Data?.Settings?.LastSelectedTankIndex ?? 0;
             set
             {
-                if (Settings == null) Settings = new SettingsSaveData();
-                Settings.LastSelectedTankIndex = Mathf.Clamp(value, 0, 5);
-                SaveDeviceSettings();
+                if (Data == null) Data = CreateDefaultGameData();
+                if (Data.Settings == null) Data.Settings = new SettingsSaveData();
+                Data.Settings.LastSelectedTankIndex = Mathf.Clamp(value, 0, 5);
+                SaveGameData();
             }
         }
 
@@ -493,8 +522,7 @@ namespace IronWasteland.Save
         public void ResetAll()
         {
             Data = CreateDefaultGameData();
-            Settings = new SettingsSaveData();
-            SaveAll();
+            SaveGameData();
         }
 
         private void EnsureTanksInitialized()
@@ -539,7 +567,8 @@ namespace IronWasteland.Save
                     new TankSaveData { TankId = "GreenFox", Level = 0, EquippedAccessoryIndex = -1 }
                 },
                 Accessories = new List<AccessorySaveData>(),
-                StageProgress = new StageProgressSaveData()
+                StageProgress = new StageProgressSaveData(),
+                Settings = new SettingsSaveData()
             };
 
             data.StageProgress.UnlockedStageCodes.Add(StageProgressSaveData.FirstStageCode);
