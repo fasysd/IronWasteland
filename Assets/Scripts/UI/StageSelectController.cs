@@ -1,6 +1,8 @@
 using System;
 using IronWasteland.Net;
+using IronWasteland.Save;
 using IronWasteland.Stages;
+using IronWasteland.Tanks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -265,8 +267,8 @@ namespace IronWasteland.UI
 
             if (m_Tanks != null && m_Tanks.Length > 0)
             {
-                int start = SkillLoadout.LastTankIndex >= 0 && SkillLoadout.LastTankIndex < m_Tanks.Length
-                    ? SkillLoadout.LastTankIndex
+                int start = SaveSystem.Instance.LastSelectedTankIndex >= 0 && SaveSystem.Instance.LastSelectedTankIndex < m_Tanks.Length
+                    ? SaveSystem.Instance.LastSelectedTankIndex
                     : m_DefaultIndex;
                 ApplyTank(start);
             }
@@ -279,7 +281,7 @@ namespace IronWasteland.UI
                 {
                     if (m_Stages[i] != null)
                     {
-                        m_Stages[i].Unlocked = StageProgress.IsUnlocked(m_Stages[i].Code);
+                        m_Stages[i].Unlocked = SaveSystem.Instance.IsStageUnlocked(m_Stages[i].Code);
                     }
                 }
 
@@ -413,27 +415,46 @@ namespace IronWasteland.UI
                 return;
             }
 
+            int level = SaveSystem.Instance.GetTankLevel(SelectedIndex);
+            bool owned = level > 0;
+            TankDefinition def = TankRegistry.GetDefinition(SelectedIndex);
+
             if (m_TankPortrait != null)
             {
                 m_TankPortrait.sprite = tank.Portrait;
                 m_TankPortrait.preserveAspect = true;
             }
 
-            SetText(m_TankName, tank.DisplayName);
-            SetText(m_TankRoleLevel, "CẤP " + Mathf.Max(0, tank.Level).ToString("00") + " / " + tank.Role);
-            SetText(m_TankStats, FormatStats(tank.Stats));
+            SetText(m_TankName, def != null ? def.TankName : tank.DisplayName);
+            SetText(m_TankRoleLevel, owned ? "CẤP " + level.ToString("00") + " / " + tank.Role : "CHƯA SỞ HỮU / " + tank.Role);
+
+            if (def != null && owned)
+            {
+                TankStats stats = def.GetStatsForLevel(level);
+                SetText(m_TankStats, $"{stats.Attack:0} ATK   {stats.MaxHealth:0} HP   {stats.MaxEnergy:0} EN   {stats.MoveSpeed:0} SPD");
+            }
+            else if (!owned)
+            {
+                SetText(m_TankStats, "- ATK   - HP   - EN   - SPD");
+            }
+            else
+            {
+                SetText(m_TankStats, FormatStats(tank.Stats));
+            }
 
             for (int slot = 0; slot < 2; slot++)
             {
-                SetText(GetFrom(m_SkillNames, slot), GetFrom(tank.SkillNames, slot));
-                SetIcon(GetFrom(m_SkillIcons, slot), GetFrom(tank.SkillIcons, slot));
+                string skillName = def != null ? def.GetSkillName(slot) : GetFrom(tank.SkillNames, slot);
+                Sprite skillIcon = def != null ? def.GetSkillIcon(slot) : GetFrom(tank.SkillIcons, slot);
+                SetText(GetFrom(m_SkillNames, slot), skillName);
+                SetIcon(GetFrom(m_SkillIcons, slot), skillIcon);
             }
 
-            // Hai ô cuối đổi theo lựa chọn tùy chọn đang lưu trong PlayerPrefs.
+            // Hai ô cuối đổi theo lựa chọn tùy chọn đang lưu trong SaveSystem.
             for (int tab = 0; tab < SkillCatalog.TabCount; tab++)
             {
                 int slot = tab + 2;
-                int optionIndex = SkillLoadout.Get(SelectedIndex, tab);
+                int optionIndex = SaveSystem.Instance.GetOptionSkill(SelectedIndex, tab);
                 SkillCatalog.Option option = SkillCatalog.Get(SelectedIndex, tab, optionIndex);
                 SetText(GetFrom(m_SkillNames, slot), option.Name);
 
@@ -553,7 +574,7 @@ namespace IronWasteland.UI
                 ? m_Stages[SelectedStageIndex]
                 : null;
 
-            string targetScene = current != null ? StageProgress.SceneNameFor(current.Code) : string.Empty;
+            string targetScene = current != null ? SaveSystem.SceneNameFor(current.Code) : string.Empty;
             if (string.IsNullOrEmpty(targetScene) || !Application.CanStreamedLevelBeLoaded(targetScene))
             {
                 targetScene = m_GameSceneName;

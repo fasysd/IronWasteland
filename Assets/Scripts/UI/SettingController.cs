@@ -1,5 +1,6 @@
 using System;
 using TMPro;
+using IronWasteland.Save;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -7,7 +8,7 @@ using UnityEngine.UI;
 namespace IronWasteland.UI
 {
     /// <summary>
-    /// Điều khiển màn hình Cài đặt hệ thống: bốn thanh âm lượng lưu bằng PlayerPrefs,
+    /// Điều khiển màn hình Cài đặt hệ thống: bốn thanh âm lượng lưu qua SaveSystem (JSON),
     /// vòng âm lượng tổng vẽ bằng texture sinh tại runtime, các nút quay lại / mặc định / áp dụng.
     /// </summary>
     [DisallowMultipleComponent]
@@ -304,23 +305,33 @@ namespace IronWasteland.UI
             RefreshAll();
         }
 
-        /// <summary>Nạp bốn giá trị âm lượng đã lưu, thiếu thì dùng mặc định của thiết kế.</summary>
+        /// <summary>Nạp bốn giá trị âm lượng đã lưu từ SaveSystem, thiếu thì dùng mặc định của thiết kế.</summary>
         private void LoadValues()
         {
-            m_MasterValueNumber = Mathf.Clamp(PlayerPrefs.GetInt(MasterKey, DefaultValues[0]), 0, 100);
-            m_Values[0] = Mathf.Clamp(PlayerPrefs.GetInt(SfxKey, DefaultValues[1]), 0, 100);
-            m_Values[1] = Mathf.Clamp(PlayerPrefs.GetInt(BgmKey, DefaultValues[2]), 0, 100);
-            m_Values[2] = Mathf.Clamp(PlayerPrefs.GetInt(AnnouncerKey, DefaultValues[3]), 0, 100);
+            if (SaveSystem.Instance != null)
+            {
+                var settings = SaveSystem.Instance.Settings;
+                m_MasterValueNumber = Mathf.Clamp(settings.MasterVolume, 0, 100);
+                m_Values[0] = Mathf.Clamp(settings.SfxVolume, 0, 100);
+                m_Values[1] = Mathf.Clamp(settings.BgmVolume, 0, 100);
+                m_Values[2] = Mathf.Clamp(settings.AnnouncerVolume, 0, 100);
+            }
+            else
+            {
+                m_MasterValueNumber = DefaultValues[0];
+                m_Values[0] = DefaultValues[1];
+                m_Values[1] = DefaultValues[2];
+                m_Values[2] = DefaultValues[3];
+            }
             ApplyVolumeToAudio();
         }
 
         private void SaveValues()
         {
-            PlayerPrefs.SetInt(MasterKey, m_MasterValueNumber);
-            PlayerPrefs.SetInt(SfxKey, m_Values[0]);
-            PlayerPrefs.SetInt(BgmKey, m_Values[1]);
-            PlayerPrefs.SetInt(AnnouncerKey, m_Values[2]);
-            PlayerPrefs.Save();
+            if (SaveSystem.Instance != null)
+            {
+                SaveSystem.Instance.SetSettings(m_MasterValueNumber, m_Values[0], m_Values[1], m_Values[2]);
+            }
             ApplyVolumeToAudio();
         }
 

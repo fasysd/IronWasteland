@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using IronWasteland.Save;
 using IronWasteland.Tanks;
 
 namespace IronWasteland.UI
@@ -153,7 +154,7 @@ namespace IronWasteland.UI
                 m_Canvas = GetComponentInParent<Canvas>();
             }
 
-            m_TankIndex = Mathf.Clamp(SkillLoadout.LastTankIndex, 0, SkillCatalog.TankCount - 1);
+            m_TankIndex = Mathf.Clamp(SaveSystem.Instance.LastSelectedTankIndex, 0, SkillCatalog.TankCount - 1);
             int count = m_Catalog != null ? m_Catalog.Count : 0;
             if (count <= 0)
             {
@@ -161,7 +162,7 @@ namespace IronWasteland.UI
                 return;
             }
 
-            m_SavedIndex = Mathf.Clamp(AccessoryLoadout.Get(m_TankIndex), 0, count - 1);
+            m_SavedIndex = SaveSystem.Instance.GetEquippedAccessory(m_TankIndex);
             m_PendingIndex = m_SavedIndex;
             RefreshHeader();
             RefreshCards();
@@ -333,11 +334,16 @@ namespace IronWasteland.UI
                 SetText(card.Role, entry.Role);
                 SetText(card.Stats, BuildStats(entry.Stats));
                 SetText(card.Description, entry.Description);
-                SetText(card.Footer, "TRANG BỊ  ›");
+                int ownedQty = SaveSystem.Instance.GetAccessoryQuantity(i);
+                bool isOwned = ownedQty > 0;
+                string footerText = isOwned ? "TRANG BỊ  ›" : "CHƯA CÓ";
+                SetText(card.Footer, footerText);
+                SetText(card.ChoiceLabel, isOwned ? $"X{ownedQty}" : "CHƯA CÓ");
                 if (card.Icon != null)
                 {
                     card.Icon.sprite = entry.Icon;
                     card.Icon.enabled = entry.Icon != null;
+                    card.Icon.color = isOwned ? Color.white : new Color(1f, 1f, 1f, 0.4f);
                 }
 
                 bool selected = i == m_PendingIndex;
@@ -430,8 +436,14 @@ namespace IronWasteland.UI
                 return;
             }
 
-            AccessoryLoadout.Set(m_TankIndex, m_PendingIndex);
-            SkillLoadout.LastTankIndex = m_TankIndex;
+            if (m_PendingIndex >= 0 && !SaveSystem.Instance.HasAccessory(m_PendingIndex))
+            {
+                Debug.LogWarning($"[GarageAccessoryController] Chưa sở hữu phụ kiện #{m_PendingIndex}. Không thể trang bị.");
+                return;
+            }
+
+            SaveSystem.Instance.SetEquippedAccessory(m_TankIndex, m_PendingIndex);
+            SaveSystem.Instance.LastSelectedTankIndex = m_TankIndex;
             m_SavedIndex = m_PendingIndex;
             Close();
         }

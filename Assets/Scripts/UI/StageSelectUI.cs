@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using TMPro;
+using IronWasteland.Save;
+using IronWasteland.Stages;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using IronWasteland.Stages;
 
 namespace IronWasteland.UI
 {
@@ -72,8 +73,8 @@ namespace IronWasteland.UI
                 titleRect.anchoredPosition = new Vector2(0f, -24f);
                 titleRect.sizeDelta = new Vector2(1700f, 52f);
             }
-            if (gemsText != null)
-                gemsText.text = $"Ngọc: {StageProgress.Gems}";
+            if (gemsText != null && SaveSystem.Instance != null)
+                gemsText.text = $"Ngọc: {SaveSystem.Instance.Gems}";
 
             EnsureContent();
             EnsureBackButton();
@@ -166,8 +167,8 @@ namespace IronWasteland.UI
 
         private void CreateCard(StageDefinition def, int column, float y)
         {
-            bool unlocked = StageProgress.IsUnlocked(def.StageCode);
-            bool cleared = StageProgress.IsCleared(def.StageCode);
+            bool unlocked = SaveSystem.Instance != null && SaveSystem.Instance.IsStageUnlocked(def.StageCode);
+            bool cleared = SaveSystem.Instance != null && SaveSystem.Instance.IsStageCleared(def.StageCode);
             bool isBoss = BossCodes.Contains(def.StageCode) || def.StageCode == FinalBossCode;
 
             var go = new GameObject($"Card_{def.StageCode}", typeof(RectTransform), typeof(Image), typeof(Button));
@@ -334,7 +335,7 @@ namespace IronWasteland.UI
 
         private void OnStageClicked(string stageCode)
         {
-            string sceneName = StageProgress.SceneNameFor(stageCode);
+            string sceneName = SaveSystem.SceneNameFor(stageCode);
             Debug.Log($"[StageSelectUI] Mo man {stageCode} -> scene '{sceneName}'");
 
             if (Application.CanStreamedLevelBeLoaded(sceneName))

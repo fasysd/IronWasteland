@@ -1,4 +1,5 @@
 using TMPro;
+using IronWasteland.Save;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -260,7 +261,7 @@ namespace IronWasteland.UI
                     killsText.text = $"Đã diệt: {director.Kills}";
             }
 
-            if (gemsText != null) gemsText.text = $"Ngọc: {StageProgress.Gems}";
+            if (gemsText != null && SaveSystem.Instance != null) gemsText.text = $"Ngọc: {SaveSystem.Instance.Gems}";
 
             RefreshBossPanel();
         }
@@ -369,7 +370,7 @@ namespace IronWasteland.UI
             string next = def != null ? def.NextStageCode : string.Empty;
 
             // Ghi tien do: cong ngoc + mo khoa man ke.
-            StageProgress.MarkCleared(code, reward.Gems, d.Elapsed, next);
+            if (SaveSystem.Instance != null) SaveSystem.Instance.MarkCleared(code, reward.Gems, d.Elapsed, next);
 
             // Bang ket qua theo wireframe: thoi gian, so quai diet, % mau con lai, ngoc, phu kien.
             string stageName = def != null ? def.StageName : string.Empty;
@@ -384,7 +385,7 @@ namespace IronWasteland.UI
                 $"Thời gian hoàn thành: {FormatTime(d.Elapsed)}\n" +
                 $"Quái đã diệt: {d.Kills}\n" +
                 $"Máu còn lại: {hpPercent:0}%\n\n" +
-                $"Ngọc Ma Pháp: +{reward.Gems}   (tổng {StageProgress.Gems})\n" +
+                $"Ngọc Ma Pháp: +{reward.Gems}   (tổng {(SaveSystem.Instance != null ? SaveSystem.Instance.Gems : 0)})\n" +
                 $"Phụ kiện rơi: {reward.AccessoryCount}");
 
             if (nextButton != null)
@@ -405,7 +406,7 @@ namespace IronWasteland.UI
         private static bool HasPlayableNext(string nextCode)
         {
             if (string.IsNullOrEmpty(nextCode)) return false;
-            return Application.CanStreamedLevelBeLoaded(StageProgress.SceneNameFor(nextCode));
+            return Application.CanStreamedLevelBeLoaded(SaveSystem.SceneNameFor(nextCode));
         }
 
         private void OnStageFailed(StageDirector d, string reason)
@@ -438,7 +439,7 @@ namespace IronWasteland.UI
             }
 
             Time.timeScale = 1f;
-            SceneManager.LoadScene(StageProgress.SceneNameFor(next));
+            SceneManager.LoadScene(SaveSystem.SceneNameFor(next));
         }
 
         private void OnRetryClicked()

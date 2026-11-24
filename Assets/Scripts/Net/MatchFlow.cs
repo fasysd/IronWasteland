@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using IronWasteland.Save;
 using IronWasteland.Stages;
 using Unity.Collections;
 using Unity.Netcode;
@@ -419,7 +420,7 @@ namespace IronWasteland.Net
                 return;
             }
 
-            string sceneName = StageProgress.SceneNameFor(stage.StageCode);
+            string sceneName = SaveSystem.SceneNameFor(stage.StageCode);
             if (IsServer && !string.IsNullOrEmpty(sceneName) && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != sceneName && Application.CanStreamedLevelBeLoaded(sceneName))
             {
                 m_PendingTargetScene = sceneName;

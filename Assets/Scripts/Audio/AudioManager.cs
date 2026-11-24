@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IronWasteland.Save;
 using UnityEngine;
 
 namespace IronWasteland.Audio
@@ -57,6 +58,13 @@ namespace IronWasteland.Audio
 
             BuildVoices();
             if (library == null) library = FindLibraryFromResources();
+
+            // Nap luu am tu SaveSystem neu co
+            if (SaveSystem.Instance != null)
+            {
+                masterVolume = SaveSystem.Instance.Settings.MasterVolume / 100f;
+                sfxVolume = SaveSystem.Instance.Settings.SfxVolume / 100f;
+            }
         }
 
         private void BuildVoices()

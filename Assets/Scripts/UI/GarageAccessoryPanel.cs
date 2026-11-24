@@ -1,3 +1,4 @@
+using IronWasteland.Save;
 using IronWasteland.Tanks;
 using TMPro;
 using UnityEngine;
@@ -46,7 +47,8 @@ namespace IronWasteland.UI
                 return;
             }
 
-            AccessoryCatalog.Entry entry = m_Catalog.Get(AccessoryLoadout.Get(SkillLoadout.LastTankIndex));
+            int equipped = SaveSystem.Instance.GetEquippedAccessory(SaveSystem.Instance.LastSelectedTankIndex);
+            AccessoryCatalog.Entry entry = equipped >= 0 ? m_Catalog.Get(equipped) : null;
             if (entry == null)
             {
                 SetText(m_AccessoryName, "CHƯA TRANG BỊ");

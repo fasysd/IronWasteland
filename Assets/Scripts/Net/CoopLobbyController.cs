@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IronWasteland.Save;
 using IronWasteland.Tanks;
 using IronWasteland.UI;
 using TMPro;
@@ -226,9 +227,9 @@ namespace IronWasteland.Net
         {
             if (bootstrap == null) return;
 
-            int tank = Mathf.Clamp(SkillLoadout.LastTankIndex, 0, SkillCatalog.TankCount - 1);
+            int tank = Mathf.Clamp(SaveSystem.Instance.LastSelectedTankIndex, 0, SkillCatalog.TankCount - 1);
             bootstrap.SetLocalTankIndex((byte)tank);
-            bootstrap.SetLocalOptionSkills(SkillLoadout.Get(tank, 0), SkillLoadout.Get(tank, 1));
+            bootstrap.SetLocalOptionSkills(SaveSystem.Instance.GetOptionSkill(tank, 0), SaveSystem.Instance.GetOptionSkill(tank, 1));
         }
 
         private void PrepareOfflineTank()
@@ -564,11 +565,11 @@ namespace IronWasteland.Net
             PrepareLocalLoadout();
             if (flow != null)
             {
-                int tank = Mathf.Clamp(SkillLoadout.LastTankIndex, 0, SkillCatalog.TankCount - 1);
+                int tank = Mathf.Clamp(SaveSystem.Instance.LastSelectedTankIndex, 0, SkillCatalog.TankCount - 1);
                 flow.RequestTank((byte)tank);
                 flow.RequestOptionSkills(
-                    (byte)SkillLoadout.Get(tank, 0),
-                    (byte)SkillLoadout.Get(tank, 1));
+                    (byte)SaveSystem.Instance.GetOptionSkill(tank, 0),
+                    (byte)SaveSystem.Instance.GetOptionSkill(tank, 1));
             }
 
             RefreshRoom();

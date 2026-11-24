@@ -1,5 +1,8 @@
 using System;
+using System.Linq;
 using TMPro;
+using IronWasteland.Save;
+using IronWasteland.Tanks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -10,59 +13,15 @@ namespace IronWasteland.UI
     /// Điều khiển màn hình Garage (Quản lý xe tăng và phụ kiện).
     /// Người chơi bấm vào thẻ xe trong danh sách bên trái để đổi xe đang chọn:
     /// ảnh trưng bày, cấp độ, kỹ năng và 8 chỉ số bên phải đều cập nhật theo xe đó.
-    /// Toàn bộ số liệu hiện là dữ liệu tạm đặt sẵn trong Inspector, sẽ nối vào
-    /// TankDefinition/EquipmentDatabase sau.
+    /// Dữ liệu xe (cấp độ, kỹ năng tùy chọn, phụ kiện) đọc từ SaveSystem (JSON).
+    /// Chỉ số hiển thị tính từ TankDefinition.GetStatsForLevel(level).
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class GarageController : MonoBehaviour
     {
-        /// <summary>Dữ liệu tạm của một xe hiển thị trong Garage.</summary>
-        [Serializable]
-        public sealed class TankEntry
-        {
-            [Tooltip("Tên xe hiển thị trên thẻ danh sách và ở khu trưng bày.")]
-            public string DisplayName = "BLACK SHADOW";
-
-            [Tooltip("Dòng vai trò nhỏ dưới tên trong danh sách bên trái.")]
-            public string ListRole = "DPS  /  SÁT THỦ";
-
-            [Tooltip("Dòng vai trò dưới tên lớn ở khu trưng bày.")]
-            public string HeroRole = "SÁT THỦ CƠ ĐỘNG";
-
-            [Tooltip("Cấp hiện tại của xe.")]
-            public int Level = 5;
-
-            [Tooltip("Cấp kế tiếp khi nâng cấp.")]
-            public int NextLevel = 6;
-
-            [Tooltip("Số nguyên liệu cần để nâng cấp.")]
-            public int UpgradeCost = 5;
-
-            [Tooltip("8 chỉ số theo thứ tự: ATK, HP, EN, DEF, SPD, CDR, DMG, PEN.")]
-            public int[] Stats = new int[8];
-
-            [Tooltip("Tên 4 ô kỹ năng (theo thứ tự J, K, L, I).")]
-            public string[] SkillNames = new string[4];
-
-            [Tooltip("Mô tả ngắn dưới tên 4 ô kỹ năng.")]
-            public string[] SkillDescriptions = new string[4];
-
-            [Tooltip("Ảnh 4 ô kỹ năng lấy từ Assets/Art/Tank/Sprites, đúng thứ tự 01 đến 04.")]
-            public Sprite[] SkillIcons = new Sprite[4];
-
-            [Tooltip("6 icon kỹ năng tùy chọn: tab 1 ba lựa chọn rồi tab 2 ba lựa chọn.")]
-            public Sprite[] OptionSkillIcons = new Sprite[6];
-
-            [Tooltip("Ảnh xe ghép từ phần thân và nòng súng của prefab.")]
-            public Sprite Hero;
-        }
-
-        [Header("Dữ liệu xe (tạm thời, sẽ nối vào TankDefinition)")]
-        [Tooltip("Danh sách xe hiển thị trong Garage, đúng thứ tự thẻ từ trên xuống.")]
-        [SerializeField] private TankEntry[] m_Tanks = new TankEntry[0];
-
-        [Tooltip("Chỉ số của xe được chọn khi mở màn hình.")]
-        [SerializeField] private int m_DefaultIndex = 2;
+        [Header("Dữ liệu xe (TankDefinition assets)")]
+        [Tooltip("Danh sách TankDefinition hiển thị trong Garage, đúng thứ tự thẻ từ trên xuống.")]
+        [SerializeField] private TankDefinition[] m_TankDefinitions = new TankDefinition[0];
 
         [Header("Tham chiếu giao diện")]
         [Tooltip("Ảnh lớn của xe đang chọn ở khu trưng bày giữa màn hình.")]
@@ -110,6 +69,9 @@ namespace IronWasteland.UI
 
         [Tooltip("Khoảng cách dọc giữa hai thẻ xe liên tiếp.")]
         [SerializeField] private float m_CardPitch = 120f;
+
+        [Tooltip("Vùng bấm nút NÂNG CẤP.")]
+        [SerializeField] private Rect m_UpgradeArea = new Rect(1186f, 690f, 150f, 60f);
 
         [Tooltip("Vùng bấm nút QUAY LẠI ở góc trên trái.")]
         [SerializeField] private Rect m_BackArea = new Rect(72f, 94f, 168f, 50f);
@@ -167,11 +129,19 @@ namespace IronWasteland.UI
                 m_Canvas = GetComponentInParent<Canvas>();
             }
 
-            if (m_Tanks != null && m_Tanks.Length > 0)
+            if ((m_TankDefinitions == null || m_TankDefinitions.Length == 0) && TankRegistry.TankCount > 0)
             {
-                int start = SkillLoadout.LastTankIndex >= 0 && SkillLoadout.LastTankIndex < m_Tanks.Length
-                    ? SkillLoadout.LastTankIndex
-                    : m_DefaultIndex;
+                m_TankDefinitions = new TankDefinition[TankRegistry.TankCount];
+                for (int i = 0; i < TankRegistry.TankCount; i++)
+                {
+                    m_TankDefinitions[i] = TankRegistry.GetDefinition(i);
+                }
+            }
+
+            if (m_TankDefinitions != null && m_TankDefinitions.Length > 0 && SaveSystem.Instance != null)
+            {
+                int start = SaveSystem.Instance.LastSelectedTankIndex;
+                if (start < 0 || start >= m_TankDefinitions.Length) start = 0;
                 Select(start);
             }
         }
@@ -323,9 +293,9 @@ namespace IronWasteland.UI
         /// <summary>Xử lý cú bấm chuột tại một điểm trong hệ toạ độ thiết kế.</summary>
         private void HandleClick(Vector2 designPosition)
         {
-            if (m_Tanks != null)
+            if (m_TankDefinitions != null)
             {
-                for (int i = 0; i < m_Tanks.Length; i++)
+                for (int i = 0; i < m_TankDefinitions.Length; i++)
                 {
                     Rect card = new Rect(m_CardArea.x, m_CardArea.y + m_CardPitch * i, m_CardArea.width, m_CardArea.height);
                     if (card.Contains(designPosition))
@@ -345,6 +315,12 @@ namespace IronWasteland.UI
             if (m_OptionArea2.Contains(designPosition))
             {
                 OpenPicker(1);
+                return;
+            }
+
+            if (m_UpgradeArea.Contains(designPosition))
+            {
+                TryUpgrade();
                 return;
             }
 
@@ -369,15 +345,17 @@ namespace IronWasteland.UI
         /// <summary>Chọn một xe: cập nhật khung ĐANG CHỌN, ảnh trưng bày, tên, cấp, kỹ năng và chỉ số.</summary>
         public void Select(int index)
         {
-            if (m_Tanks == null || m_Tanks.Length == 0)
+            if (m_TankDefinitions == null || m_TankDefinitions.Length == 0 || SaveSystem.Instance == null)
             {
                 return;
             }
 
-            int clamped = Mathf.Clamp(index, 0, m_Tanks.Length - 1);
+            int clamped = Mathf.Clamp(index, 0, m_TankDefinitions.Length - 1);
             m_SelectedIndex = clamped;
-            SkillLoadout.LastTankIndex = clamped;
-            TankEntry entry = m_Tanks[clamped];
+            SaveSystem.Instance.LastSelectedTankIndex = clamped;
+            TankDefinition def = m_TankDefinitions[clamped];
+            int level = SaveSystem.Instance.GetTankLevel(clamped);
+            bool owned = level > 0;
 
             if (m_SelectionFrame != null)
             {
@@ -386,48 +364,61 @@ namespace IronWasteland.UI
                 m_SelectionFrame.anchoredPosition = new Vector2(m_FrameDesignPosition.x, DesignHeight - top - height);
             }
 
-            if (m_HeroImage != null && entry.Hero != null)
+            // Hiển thị tên từ TankDefinition
+            SetText(m_HeroCaption, "CURRENT UNIT  /  " + def.TankName);
+            SetText(m_HeroName, def.TankName);
+            SetText(m_HeroRole, owned ? "ĐÃ SỞ HỮU" : "CHƯA SỞ HỮU");
+
+            if (owned)
             {
-                m_HeroImage.sprite = entry.Hero;
+                SetText(m_HeroLevel, level.ToString("00"));
+                SetText(m_LevelValue, level.ToString("00"));
+                int nextLevel = level + 1;
+                if (nextLevel <= TankDefinition.MaxLevel)
+                {
+                    SetText(m_LevelNext, "+ CẤP " + nextLevel);
+                    int cost = TankUpgradeUtility.GetCostForNextLevel(level);
+                    SetText(m_UpgradeCost, cost.ToString());
+                }
+                else
+                {
+                    SetText(m_LevelNext, "TỐI ĐA");
+                    SetText(m_UpgradeCost, "-");
+                }
+            }
+            else
+            {
+                SetText(m_HeroLevel, "--");
+                SetText(m_LevelValue, "--");
+                SetText(m_LevelNext, "MUA XE");
+                SetText(m_UpgradeCost, "-");
             }
 
-            SetText(m_HeroCaption, "CURRENT UNIT  /  " + entry.DisplayName);
-            SetText(m_HeroName, entry.DisplayName);
-            SetText(m_HeroRole, entry.HeroRole);
-            SetText(m_HeroLevel, entry.Level.ToString("00"));
-            SetText(m_LevelValue, entry.Level.ToString("00"));
-            SetText(m_LevelNext, "+ CẤP " + entry.NextLevel);
-            SetText(m_UpgradeCost, entry.UpgradeCost.ToString());
-
+            // Tên kỹ năng từ TankDefinition
             for (int i = 0; i < m_SkillNames.Length; i++)
             {
-                SetText(m_SkillNames[i], GetFrom(entry.SkillNames, i));
+                SetText(m_SkillNames[i], def.GetSkillName(i));
             }
 
+            // Mô tả kỹ năng (để trống nếu TankDefinition không có)
             for (int i = 0; i < m_SkillDescriptions.Length; i++)
             {
-                SetText(m_SkillDescriptions[i], GetFrom(entry.SkillDescriptions, i));
+                SetText(m_SkillDescriptions[i], string.Empty);
             }
 
+            // Icon kỹ năng từ TankDefinition
             for (int i = 0; i < m_SkillIcons.Length; i++)
             {
-                if (m_SkillIcons[i] == null || entry.SkillIcons == null || i >= entry.SkillIcons.Length)
-                {
-                    continue;
-                }
-
-                Sprite icon = entry.SkillIcons[i];
-                if (icon != null)
-                {
-                    m_SkillIcons[i].sprite = icon;
-                }
+                if (m_SkillIcons[i] == null) continue;
+                Sprite icon = def.GetSkillIcon(i);
+                if (icon != null) m_SkillIcons[i].sprite = icon;
             }
 
-            // Hai ô cuối là kỹ năng tùy chọn: lấy tên và icon theo lựa chọn đang dùng.
+            // Hai ô cuối là kỹ năng tùy chọn: lấy từ SaveSystem.
             for (int tab = 0; tab < SkillCatalog.TabCount; tab++)
             {
                 int slot = tab + 2;
-                int optionIndex = SkillLoadout.Get(clamped, tab);
+                int optionIndex = SaveSystem.Instance.GetOptionSkill(clamped, tab);
                 SkillCatalog.Option option = SkillCatalog.Get(clamped, tab, optionIndex);
                 if (m_SkillNames != null && slot < m_SkillNames.Length)
                 {
@@ -436,17 +427,38 @@ namespace IronWasteland.UI
 
                 if (m_SkillIcons != null && slot < m_SkillIcons.Length && m_SkillIcons[slot] != null)
                 {
-                    int iconIndex = tab * SkillCatalog.OptionCount + optionIndex;
-                    if (entry.OptionSkillIcons != null && iconIndex < entry.OptionSkillIcons.Length && entry.OptionSkillIcons[iconIndex] != null)
-                    {
-                        m_SkillIcons[slot].sprite = entry.OptionSkillIcons[iconIndex];
-                    }
+                    // TankDefinition chi co icon co ban cho 4 slot; su dung icon slot ung dung.
+                    Sprite icon = def.GetSkillIcon(slot);
+                    if (icon != null) m_SkillIcons[slot].sprite = icon;
                 }
             }
 
-            for (int i = 0; i < m_StatValues.Length; i++)
+            // 8 chỉ số từ TankDefinition.GetStatsForLevel
+            if (owned)
             {
-                SetText(m_StatValues[i], entry.Stats != null && i < entry.Stats.Length ? entry.Stats[i].ToString() : "-");
+                TankStats stats = def.GetStatsForLevel(level);
+                float[] values = new float[]
+                {
+                    stats.Attack,
+                    stats.MaxHealth,
+                    stats.MaxEnergy,
+                    stats.Defense,
+                    stats.MoveSpeed,
+                    stats.CooldownReduction,
+                    stats.DamageRate,
+                    stats.ArmorPenetration
+                };
+                for (int i = 0; i < m_StatValues.Length; i++)
+                {
+                    SetText(m_StatValues[i], values[i].ToString("0.#"));
+                }
+            }
+            else
+            {
+                for (int i = 0; i < m_StatValues.Length; i++)
+                {
+                    SetText(m_StatValues[i], "-");
+                }
             }
 
             if (m_AccessoryPanel != null)
@@ -532,7 +544,12 @@ namespace IronWasteland.UI
         /// <summary>Mở màn chọn kỹ năng cho tab tương ứng của xe đang chọn.</summary>
         private void OpenPicker(int tabIndex)
         {
-            SkillLoadout.Request(m_SelectedIndex, tabIndex);
+            if (SaveSystem.Instance != null)
+            {
+                SaveSystem.Instance.PendingTankIndex = m_SelectedIndex;
+                SaveSystem.Instance.PendingTabIndex = tabIndex;
+                SaveSystem.Instance.LastSelectedTankIndex = m_SelectedIndex;
+            }
             if (GarageFlow.OpenedFromLobby)
             {
                 if (SceneManager.GetSceneByName(m_PickerSceneName).isLoaded)
@@ -551,6 +568,16 @@ namespace IronWasteland.UI
             }
 
             LoadScene(m_PickerSceneName);
+        }
+
+        /// <summary>Nâng cấp xe hiện tại nếu đủ ngọc.</summary>
+        public void TryUpgrade()
+        {
+            if (m_SelectedIndex < 0 || SaveSystem.Instance == null) return;
+            if (SaveSystem.Instance.UpgradeTank(m_SelectedIndex))
+            {
+                Select(m_SelectedIndex);
+            }
         }
 
         private void GoBack()

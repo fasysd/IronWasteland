@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using IronWasteland.Save;
+using IronWasteland.Tanks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -154,7 +156,7 @@ namespace IronWasteland.UI
             }
 
             ApplySelection(m_SelectedIndex);
-            ApplyTankPreview(SkillLoadout.LastTankIndex);
+            ApplyTankPreview(SaveSystem.Instance.LastSelectedTankIndex);
         }
 
         private void Start()
@@ -466,11 +468,16 @@ namespace IronWasteland.UI
                 return;
             }
 
-            TankPreview tank = m_Tanks[Mathf.Clamp(index, 0, m_Tanks.Length - 1)];
+            int clamped = Mathf.Clamp(index, 0, m_Tanks.Length - 1);
+            TankPreview tank = m_Tanks[clamped];
             if (tank == null)
             {
                 return;
             }
+
+            int level = SaveSystem.Instance.GetTankLevel(clamped);
+            bool owned = level > 0;
+            TankDefinition def = TankRegistry.GetDefinition(clamped);
 
             if (m_TankPortrait != null)
             {
@@ -480,23 +487,26 @@ namespace IronWasteland.UI
 
             if (m_TankName != null)
             {
-                m_TankName.text = tank.DisplayName;
+                m_TankName.text = def != null ? def.TankName : tank.DisplayName;
             }
 
             if (m_TankRole != null)
             {
-                m_TankRole.text = tank.Role;
+                m_TankRole.text = owned ? tank.Role : "CHƯA SỞ HỮU";
             }
 
             if (m_TankCaption != null)
             {
-                m_TankCaption.text = "CURRENT UNIT // " + tank.DisplayName;
+                m_TankCaption.text = "CURRENT UNIT // " + (def != null ? def.TankName : tank.DisplayName);
             }
 
             if (m_TankLevel != null)
             {
-                m_TankLevel.text = Mathf.Max(0, tank.Level).ToString("00");
+                m_TankLevel.text = owned ? level.ToString("00") : "--";
             }
+
+            // Lấy 4 chỉ số ATK, HP, EN, SPD từ TankDefinition theo level
+            TankStats stats = def != null ? def.GetStatsForLevel(Mathf.Max(1, level)) : null;
 
             for (int i = 0; i < m_TankStatValues.Length; i++)
             {
@@ -505,9 +515,31 @@ namespace IronWasteland.UI
                     continue;
                 }
 
-                int statIndex = MenuStatOrder[i];
-                bool hasStat = tank.Stats != null && statIndex < tank.Stats.Length;
-                m_TankStatValues[i].text = hasStat ? tank.Stats[statIndex].ToString() : "0";
+                if (!owned)
+                {
+                    m_TankStatValues[i].text = "-";
+                    continue;
+                }
+
+                if (stats != null)
+                {
+                    // MenuStatOrder = { 0, 1, 2, 4 } tương ứng: 0:ATK, 1:HP, 2:EN, 4:SPD
+                    float val = 0f;
+                    switch (i)
+                    {
+                        case 0: val = stats.Attack; break;
+                        case 1: val = stats.MaxHealth; break;
+                        case 2: val = stats.MaxEnergy; break;
+                        case 3: val = stats.MoveSpeed; break;
+                    }
+                    m_TankStatValues[i].text = val.ToString("0.#");
+                }
+                else
+                {
+                    int statIndex = MenuStatOrder[i];
+                    bool hasStat = tank.Stats != null && statIndex < tank.Stats.Length;
+                    m_TankStatValues[i].text = hasStat ? tank.Stats[statIndex].ToString() : "0";
+                }
             }
         }
 

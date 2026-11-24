@@ -1,4 +1,5 @@
 using System;
+using IronWasteland.Save;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -125,8 +126,8 @@ namespace IronWasteland.UI
                 m_Canvas = GetComponentInParent<Canvas>();
             }
 
-            SkillLoadout.ConsumeRequest(out m_TankIndex, out m_TabIndex);
-            m_SelectedOption = SkillLoadout.Get(m_TankIndex, m_TabIndex);
+            SaveSystem.Instance.ConsumeSkillPickerRequest(out m_TankIndex, out m_TabIndex);
+            m_SelectedOption = SaveSystem.Instance.GetOptionSkill(m_TankIndex, m_TabIndex);
             RefreshAll();
         }
 
@@ -335,7 +336,7 @@ namespace IronWasteland.UI
         public void SwitchTab(int tabIndex)
         {
             m_TabIndex = Mathf.Clamp(tabIndex, 0, SkillCatalog.TabCount - 1);
-            m_SelectedOption = SkillLoadout.Get(m_TankIndex, m_TabIndex);
+            m_SelectedOption = SaveSystem.Instance.GetOptionSkill(m_TankIndex, m_TabIndex);
             m_HoveredCard = -1;
             RefreshAll();
         }
@@ -344,8 +345,8 @@ namespace IronWasteland.UI
         public void Choose(int optionIndex)
         {
             int option = Mathf.Clamp(optionIndex, 0, SkillCatalog.OptionCount - 1);
-            SkillLoadout.Set(m_TankIndex, m_TabIndex, option);
-            SkillLoadout.LastTankIndex = m_TankIndex;
+            SaveSystem.Instance.SetOptionSkill(m_TankIndex, m_TabIndex, option);
+            SaveSystem.Instance.LastSelectedTankIndex = m_TankIndex;
             if (GarageFlow.OpenedFromLobby)
             {
                 SceneManager.UnloadSceneAsync(gameObject.scene);
@@ -358,7 +359,7 @@ namespace IronWasteland.UI
         /// <summary>Đóng màn chọn kỹ năng mà không đổi lựa chọn.</summary>
         public void Close()
         {
-            SkillLoadout.LastTankIndex = m_TankIndex;
+            SaveSystem.Instance.LastSelectedTankIndex = m_TankIndex;
             if (GarageFlow.OpenedFromLobby)
             {
                 SceneManager.UnloadSceneAsync(gameObject.scene);
