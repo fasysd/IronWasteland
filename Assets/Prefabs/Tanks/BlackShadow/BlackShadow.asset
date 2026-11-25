@@ -12,13 +12,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a7d3e9f1c2b4d6e8f0a1b3c5d7e9f21, type: 3}
   m_Name: BlackShadow
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankDefinition
-  tankName: Black Shadow
+  tankName: BLACK SHADOW
   description: "L\xE0 m\u1ED9t c\u1ED7 xe t\u0103ng ma ph\xE1p \u0111\xE3 t\u1EEBng
     b\u1ECB th\u1EA5t b\u1EA1i trong v\xE0i \u0111\u1EE3t th\u1EED nghi\u1EC7m ch\u1EBF
     t\u1EA1o si\xEAu c\u01A1 khi ma ph\xE1p, nh\u01B0ng trong qu\xE1 tr\xECnh kh\xE1m
     ph\xE1 l\u1EE5c \u0111\u1ECBa \u0111en nh\u1EDD vi\u1EC7c t\xECm th\u1EA5y nh\u1EEFng
     nguy\xEAn li\u1EC7u ph\xF9 h\u1EE3p, chi\u1EBFc xe tank \u0111\xE3 c\xF3 th\u1EC3
     tr\u1EDF l\u1EA1i k\u1EBFt h\u1EE3p v\u1EDBi ma ph\xE1p b\xF3ng t\u1ED1i."
+  rolePrimary: DPS
+  roleSecondary: "S\xC1T TH\u1EE6"
+  unlockStageCode: 
+  rosterIcon: {fileID: 21300000, guid: a74e2ac5d3e404048bc7b52c78bc6c47, type: 3}
+  rosterAccent: {r: 0.5411765, g: 0.29411766, b: 0.9411765, a: 1}
+  portrait: {fileID: 21300000, guid: bcf371bef8be98944ac33f1573dc1a36, type: 3}
+  portraitOffset: {x: 22.9, y: 0}
+  menuPortrait: {fileID: 21300000, guid: d526ead32178ba4428bd9331b77ac8c0, type: 3}
+  skillDescriptions:
+  - "KH\xD4NG T\u1ED0N N\u0102NG L\u01AF\u1EE2NG"
+  - "T\u1ED0N N\u0102NG L\u01AF\u1EE2NG"
+  - "3 L\u1EF0A CH\u1ECCN  \u203A"
+  - "3 L\u1EF0A CH\u1ECCN  \u203A"
+  startingLevel: 90
   baseStatsLevel1:
     Attack: 20
     Defense: 12
@@ -45,10 +59,10 @@ MonoBehaviour:
     OptionSkill1: 0
     OptionSkill2: 0
   skillIcons:
-  - {fileID: 21300000, guid: aa82617657f394d499ba63c7e1b0859c, type: 3}
-  - {fileID: 21300000, guid: 6b5b5fe89a2f76e46bbd320c6cd2ceeb, type: 3}
-  - {fileID: 21300000, guid: ec69cee60ed94234c93fb14c9cbb03d5, type: 3}
-  - {fileID: 21300000, guid: 0e3bc16b558f76143a640efb772104ba, type: 3}
+  - {fileID: 21300000, guid: d1a0cc542883cff4480e011847e53ecf, type: 3}
+  - {fileID: 21300000, guid: 177532285f49db445b7608187af2bcc3, type: 3}
+  - {fileID: 21300000, guid: 3f18cf8beceb92548b06b8264754d795, type: 3}
+  - {fileID: 21300000, guid: aafbfc0b07f1b2441b6f3baffce9a76a, type: 3}
   skillIconsCooldown: []
   skillIconsIncludeLabels: 0
   skillNames:

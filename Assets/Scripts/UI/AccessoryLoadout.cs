@@ -10,11 +10,20 @@ namespace IronWasteland.UI
     {
         private const string KeyPrefix = "iw.loadout.accessory.";
 
-        /// <summary>Lấy chỉ số phụ kiện đã lưu của xe; mặc định là 0.</summary>
+        /// <summary>Giá trị đánh dấu xe đã tháo hết phụ kiện.</summary>
+        public const int None = -1;
+
+        /// <summary>Lấy chỉ số phụ kiện đã lưu của xe; chưa trang bị (hoặc đã tháo) trả về None.</summary>
         public static int Get(int tankIndex)
         {
             int tank = Mathf.Clamp(tankIndex, 0, SkillCatalog.TankCount - 1);
-            return Mathf.Max(0, PlayerPrefs.GetInt(KeyPrefix + tank, 0));
+            return Mathf.Max(None, PlayerPrefs.GetInt(KeyPrefix + tank, None));
+        }
+
+        /// <summary>Xe có đang trang bị phụ kiện nào không.</summary>
+        public static bool Has(int tankIndex)
+        {
+            return Get(tankIndex) != None;
         }
 
         /// <summary>Lưu phụ kiện cho xe. Chỉ số âm bị bỏ qua.</summary>
@@ -30,11 +39,11 @@ namespace IronWasteland.UI
             PlayerPrefs.Save();
         }
 
-        /// <summary>Xoá lựa chọn đã lưu của một xe.</summary>
+        /// <summary>Đánh dấu xe đã tháo phụ kiện; giữ khoá để phân biệt với xe chưa từng chọn.</summary>
         public static void Clear(int tankIndex)
         {
             int tank = Mathf.Clamp(tankIndex, 0, SkillCatalog.TankCount - 1);
-            PlayerPrefs.DeleteKey(KeyPrefix + tank);
+            PlayerPrefs.SetInt(KeyPrefix + tank, None);
             PlayerPrefs.Save();
         }
     }

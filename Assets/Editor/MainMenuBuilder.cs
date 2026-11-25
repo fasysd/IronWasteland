@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using IronWasteland.Tanks;
 using IronWasteland.UI;
 using TMPro;
 using UnityEditor;
@@ -20,6 +22,7 @@ namespace IronWasteland.EditorTools
         private const string FontDir = "Assets/Art/Fonts";
         private const string GeneratedFontDir = "Assets/Art/Fonts/Generated";
         private const string ScenePath = "Assets/Scenes/MainMenu.unity";
+        private const string RosterPath = "Assets/Data/Tanks/TankRoster.asset";
         private const float DesignWidth = 1920f;
         private const float DesignHeight = 1080f;
 
@@ -42,72 +45,12 @@ namespace IronWasteland.EditorTools
             }
         }
 
-        /// <summary>Dữ liệu hiển thị của một xe trong menu, khớp thứ tự với Garage.</summary>
-        private struct TankPreviewSpec
-        {
-            public string SpriteName;
-            public string DisplayName;
-            public string Role;
-            public int Level;
-            public int[] Stats;
-        }
-
-        private static readonly TankPreviewSpec[] TankPreviews =
-        {
-            new TankPreviewSpec
-            {
-                SpriteName = "wall_titan",
-                DisplayName = "WALL TITAN",
-                Role = "TANKER HỖ TRỢ",
-                Level = 1,
-                Stats = new[] { 14, 900, 100, 22, 85, 0, 0, 0 }
-            },
-            new TankPreviewSpec
-            {
-                SpriteName = "red_nova",
-                DisplayName = "RED NOVA",
-                Role = "XẠ THỦ HỎA LỰC",
-                Level = 10,
-                Stats = new[] { 26, 520, 130, 8, 120, 0, 0, 0 }
-            },
-            new TankPreviewSpec
-            {
-                SpriteName = "black_shadow",
-                DisplayName = "BLACK SHADOW",
-                Role = "SÁT THỦ CƠ ĐỘNG",
-                Level = 5,
-                Stats = new[] { 20, 650, 120, 12, 110, 0, 0, 0 }
-            },
-            new TankPreviewSpec
-            {
-                SpriteName = "leviathan",
-                DisplayName = "LEVIATHAN",
-                Role = "TANKER ĐỘI HÌNH",
-                Level = 1,
-                Stats = new[] { 16, 820, 110, 18, 95, 0, 0, 0 }
-            },
-            new TankPreviewSpec
-            {
-                SpriteName = "water_b",
-                DisplayName = "WATER B",
-                Role = "HỖ TRỢ HỒI MÁU",
-                Level = 1,
-                Stats = new[] { 15, 600, 140, 10, 105, 0, 0, 0 }
-            },
-            new TankPreviewSpec
-            {
-                SpriteName = "green_fox",
-                DisplayName = "GREEN FOX",
-                Role = "SÁT THỦ ĐỘC",
-                Level = 1,
-                Stats = new[] { 22, 560, 125, 9, 118, 0, 0, 0 }
-            }
-        };
 
         [MenuItem("Tools/Iron Wasteland/Rebuild Main Menu")]
         public static void Rebuild()
         {
             ConfigureSprites();
+            SeedMenuPortraits();
             TMP_FontAsset anton = EnsureFontAsset(FontDir + "/Anton-400.ttf", GeneratedFontDir + "/AntonMainMenu SDF.asset");
             TMP_FontAsset barlow = EnsureFontAsset(FontDir + "/BarlowCondensed-700.ttf", GeneratedFontDir + "/BarlowCondensed700MainMenu SDF.asset");
             TMP_FontAsset mono = EnsureFontAsset(FontDir + "/ShareTechMono-400.ttf", GeneratedFontDir + "/GarageShareTechMono SDF.asset");
@@ -234,11 +177,17 @@ namespace IronWasteland.EditorTools
             }
 
             TextMeshProUGUI tankLevel = AddText(root, "TextLevel", "05", 1706f, 192.01f, 27.28f, new Color32(0x2F, 0xE8, 0xE0, 0xFF), anton, false, 0f);
+            TextMeshProUGUI tankLevelMax = AddText(root, "TextLevelMax", "/ 90", 1740f, 194.5f, 12.1f, new Color32(0x5A, 0x66, 0x75, 0xFF), barlow, false, 0f);
             TextMeshProUGUI tankName = AddText(root, "TextUnitName", "BLACK SHADOW", 1085f, 762f, 51.9f, Color.white, anton, false, 0.3f);
             tankName.rectTransform.localScale = new Vector3(1.118f, 1f, 1f);
-            TextMeshProUGUI tankRole = AddText(root, "TextTankRole", "SÁT THỦ CƠ ĐỘNG", 1088f, 798f, 17.04f, new Color32(0xC9, 0xA9, 0xFF, 0xFF), barlow, false, 0f);
             TextMeshProUGUI tankCaption = AddText(root, "TextTankCaption", "CURRENT UNIT // BLACK SHADOW", 918f, 177.5f, 13.63f, new Color32(0x3D, 0x4A, 0x59, 0xFF), mono, false, 0f);
-            AddText(root, "TextProgress", "22%", 1754f, 770.71f, 16.72f, new Color32(0xFF, 0xB3, 0x47, 0xFF), barlow, true, 1f);
+
+            RoleTagView[] roleTags = new RoleTagView[2];
+            for (int i = 0; i < roleTags.Length; i++)
+            {
+                roleTags[i] = CreateRoleTag(root, i, barlow);
+            }
+
             TextMeshProUGUI[] tankStats = new TextMeshProUGUI[4];
             tankStats[0] = AddText(root, "TextAtk", "20", 900f, 954.71f, 39.44f, new Color32(0xE6, 0xED, 0xF5, 0xFF), anton, false, 0f);
             tankStats[1] = AddText(root, "TextHp", "650", 1144f, 954.71f, 39.44f, new Color32(0xE6, 0xED, 0xF5, 0xFF), anton, false, 0f);
@@ -251,34 +200,23 @@ namespace IronWasteland.EditorTools
             serialized.FindProperty("m_Background").objectReferenceValue = root.Find("Background") as RectTransform;
             serialized.FindProperty("m_TankPortrait").objectReferenceValue = tankPortrait;
             serialized.FindProperty("m_TankName").objectReferenceValue = tankName;
-            serialized.FindProperty("m_TankRole").objectReferenceValue = tankRole;
             serialized.FindProperty("m_TankCaption").objectReferenceValue = tankCaption;
             serialized.FindProperty("m_TankLevel").objectReferenceValue = tankLevel;
+            serialized.FindProperty("m_TankLevelMax").objectReferenceValue = tankLevelMax;
+            serialized.FindProperty("m_Roster").objectReferenceValue = AssetDatabase.LoadAssetAtPath<TankRoster>(RosterPath);
+
+            SerializedProperty roleTagProperty = serialized.FindProperty("m_RoleTags");
+            roleTagProperty.arraySize = roleTags.Length;
+            for (int i = 0; i < roleTags.Length; i++)
+            {
+                roleTagProperty.GetArrayElementAtIndex(i).objectReferenceValue = roleTags[i];
+            }
 
             SerializedProperty statValuesProperty = serialized.FindProperty("m_TankStatValues");
             statValuesProperty.arraySize = tankStats.Length;
             for (int i = 0; i < tankStats.Length; i++)
             {
                 statValuesProperty.GetArrayElementAtIndex(i).objectReferenceValue = tankStats[i];
-            }
-
-            SerializedProperty tanksProperty = serialized.FindProperty("m_Tanks");
-            tanksProperty.arraySize = TankPreviews.Length;
-            for (int i = 0; i < TankPreviews.Length; i++)
-            {
-                TankPreviewSpec spec = TankPreviews[i];
-                SerializedProperty entry = tanksProperty.GetArrayElementAtIndex(i);
-                entry.FindPropertyRelative("DisplayName").stringValue = spec.DisplayName;
-                entry.FindPropertyRelative("Role").stringValue = spec.Role;
-                entry.FindPropertyRelative("Level").intValue = spec.Level;
-                entry.FindPropertyRelative("Portrait").objectReferenceValue = LoadSprite("tank_hero_" + spec.SpriteName);
-
-                SerializedProperty statsProperty = entry.FindPropertyRelative("Stats");
-                statsProperty.arraySize = spec.Stats.Length;
-                for (int s = 0; s < spec.Stats.Length; s++)
-                {
-                    statsProperty.GetArrayElementAtIndex(s).intValue = spec.Stats[s];
-                }
             }
 
             SerializedProperty itemsProperty = serialized.FindProperty("m_NavItems");
@@ -366,6 +304,136 @@ namespace IronWasteland.EditorTools
             text.raycastTarget = false;
             text.characterSpacing = letterSpacing / fontSize * 100f;
             return text;
+        }
+
+        /// <summary>Dựng sẵn một pill vai trò rỗng ở góc trái dưới khung chân dung, controller chỉ đổ chữ.</summary>
+        private static RoleTagView CreateRoleTag(RectTransform parent, int index, TMP_FontAsset font)
+        {
+            GameObject tagObject = new GameObject("RoleTag" + index, typeof(RectTransform), typeof(RoleTagView));
+            RectTransform tagRect = (RectTransform)tagObject.transform;
+            tagRect.SetParent(parent, false);
+            tagRect.anchorMin = Vector2.zero;
+            tagRect.anchorMax = Vector2.zero;
+            tagRect.pivot = new Vector2(0f, 0f);
+            tagRect.sizeDelta = new Vector2(120f, 28f);
+            tagRect.anchoredPosition = new Vector2(1087f, 235f);
+
+            GameObject backgroundObject = new GameObject("Background", typeof(RectTransform), typeof(Image));
+            RectTransform backgroundRect = (RectTransform)backgroundObject.transform;
+            backgroundRect.SetParent(tagRect, false);
+            backgroundRect.anchorMin = Vector2.zero;
+            backgroundRect.anchorMax = Vector2.one;
+            backgroundRect.offsetMin = Vector2.zero;
+            backgroundRect.offsetMax = Vector2.zero;
+            Image background = backgroundObject.GetComponent<Image>();
+            background.sprite = UISprites.Rounded(8);
+            background.type = Image.Type.Sliced;
+            background.color = new Color32(0x12, 0x18, 0x21, 0xE6);
+            background.raycastTarget = false;
+
+            GameObject borderObject = new GameObject("Border", typeof(RectTransform), typeof(Image));
+            RectTransform borderRect = (RectTransform)borderObject.transform;
+            borderRect.SetParent(tagRect, false);
+            borderRect.anchorMin = Vector2.zero;
+            borderRect.anchorMax = Vector2.one;
+            borderRect.offsetMin = Vector2.zero;
+            borderRect.offsetMax = Vector2.zero;
+            Image border = borderObject.GetComponent<Image>();
+            border.sprite = UISprites.Frame(8, 1);
+            border.type = Image.Type.Sliced;
+            border.color = new Color32(0x5A, 0x66, 0x75, 150);
+            border.raycastTarget = false;
+
+            GameObject labelObject = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+            RectTransform labelRect = (RectTransform)labelObject.transform;
+            labelRect.SetParent(tagRect, false);
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = new Vector2(9f, 0f);
+            labelRect.offsetMax = new Vector2(-9f, 0f);
+            TextMeshProUGUI label = labelObject.GetComponent<TextMeshProUGUI>();
+            label.font = font;
+            label.fontSize = 15f;
+            label.color = new Color32(0xC9, 0xA9, 0xFF, 0xFF);
+            label.alignment = TextAlignmentOptions.Left;
+            label.textWrappingMode = TextWrappingModes.NoWrap;
+            label.overflowMode = TextOverflowModes.Overflow;
+            label.raycastTarget = false;
+            label.text = "DPS";
+
+            RoleTagView view = tagObject.GetComponent<RoleTagView>();
+            SerializedObject serializedView = new SerializedObject(view);
+            serializedView.FindProperty("m_Background").objectReferenceValue = background;
+            serializedView.FindProperty("m_Border").objectReferenceValue = border;
+            serializedView.FindProperty("m_Label").objectReferenceValue = label;
+            serializedView.ApplyModifiedPropertiesWithoutUndo();
+
+            return view;
+        }
+
+        /// <summary>Gán ảnh trưng bày menu cho từng xe trong roster, suy ra tên file từ tên asset.</summary>
+        private static void SeedMenuPortraits()
+        {
+            TankRoster roster = AssetDatabase.LoadAssetAtPath<TankRoster>(RosterPath);
+            if (roster == null)
+            {
+                Debug.LogError("[MainMenuBuilder] Không tìm thấy roster: " + RosterPath);
+                return;
+            }
+
+            IReadOnlyList<TankDefinition> tanks = roster.Tanks;
+            for (int i = 0; i < tanks.Count; i++)
+            {
+                TankDefinition tank = tanks[i];
+                if (tank == null)
+                {
+                    continue;
+                }
+
+                string spriteName = "tank_hero_" + ToSnakeCase(tank.name);
+                Sprite portrait = LoadSprite(spriteName);
+                if (portrait == null)
+                {
+                    continue;
+                }
+
+                SerializedObject serializedTank = new SerializedObject(tank);
+                serializedTank.FindProperty("menuPortrait").objectReferenceValue = portrait;
+                serializedTank.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(tank);
+            }
+
+            AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>Đổi tên asset PascalCase sang snake_case để ghép tên file ảnh.</summary>
+        private static string ToSnakeCase(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return string.Empty;
+            }
+
+            var builder = new System.Text.StringBuilder(value.Length + 8);
+            for (int i = 0; i < value.Length; i++)
+            {
+                char c = value[i];
+                if (char.IsUpper(c))
+                {
+                    if (i > 0)
+                    {
+                        builder.Append('_');
+                    }
+
+                    builder.Append(char.ToLowerInvariant(c));
+                }
+                else
+                {
+                    builder.Append(c);
+                }
+            }
+
+            return builder.ToString();
         }
 
         private static Sprite LoadSprite(string spriteName)

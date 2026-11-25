@@ -12,11 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a7d3e9f1c2b4d6e8f0a1b3c5d7e9f21, type: 3}
   m_Name: WaterB
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankDefinition
-  tankName: Water B
+  tankName: WATER B
   description: "\u0110\u01B0\u1EE3c t\u1EA1o ra trong th\xE0nh ph\u1ED1 ng\u1EA7m,
     sau khi t\xECm ra ng\u01B0\u1EDDi l\xE1i \u0111\u01B0\u1EE3c xe tank ma ph\xE1p,
     c\xE1c th\u1EBF h\u1EC7 ti\u1EBFp theo \u0111\xE3 \u0111\u01B0\u1EE3c t\u1EA1o
     ra trong \u0111\xF3 c\xF3 Water B."
+  rolePrimary: "H\u1ED6 TR\u1EE2"
+  roleSecondary: DPS
+  unlockStageCode: 
+  rosterIcon: {fileID: 21300000, guid: 6ac28143091bf2c4797ff44e311e6ee7, type: 3}
+  rosterAccent: {r: 0.49803922, g: 0.7019608, b: 1, a: 1}
+  portrait: {fileID: 21300000, guid: d4fe685b940a33e458483ae23c7bb563, type: 3}
+  portraitOffset: {x: 0.1, y: 0}
+  menuPortrait: {fileID: 21300000, guid: e03608bc9bc6c0743a8987f70274269b, type: 3}
+  skillDescriptions:
+  - "KH\xD4NG T\u1ED0N N\u0102NG L\u01AF\u1EE2NG"
+  - "T\u1ED0N N\u0102NG L\u01AF\u1EE2NG"
+  - "3 L\u1EF0A CH\u1ECCN  \u203A"
+  - "3 L\u1EF0A CH\u1ECCN  \u203A"
+  startingLevel: 1
   baseStatsLevel1:
     Attack: 15
     Defense: 12
@@ -43,10 +57,10 @@ MonoBehaviour:
     OptionSkill1: 0
     OptionSkill2: 0
   skillIcons:
-  - {fileID: 21300000, guid: e91a973237a7191489217b27f6250853, type: 3}
-  - {fileID: 21300000, guid: c261a492b77e19d4998ab35f791962f8, type: 3}
-  - {fileID: 21300000, guid: f818e14da148fdd4ca5dd2db59295249, type: 3}
-  - {fileID: 21300000, guid: 475b7d7372932d74caca7a0317fe4d3b, type: 3}
+  - {fileID: 21300000, guid: 56d2d6f92e60db940b5e7c5d671c1157, type: 3}
+  - {fileID: 21300000, guid: 34a895eeff88981499dca84b3555f258, type: 3}
+  - {fileID: 21300000, guid: 28a8b18b092f5ef4b9106a55ee1af562, type: 3}
+  - {fileID: 21300000, guid: 6477e73daba16f04caf9770f8c6bef74, type: 3}
   skillIconsCooldown: []
   skillIconsIncludeLabels: 0
   skillNames:

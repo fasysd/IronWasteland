@@ -20,6 +20,37 @@ namespace IronWasteland.Tanks
         [TextArea(2, 4)]
         [SerializeField] private string description;
 
+        [Header("Roster (Garage)")]
+        [Tooltip("Vai trò chính hiển thị dưới tên xe trong Garage (vd TANKER, HỖ TRỢ).")]
+        [SerializeField] private string rolePrimary = string.Empty;
+
+        [Tooltip("Vai trò phụ; để trống nếu xe chỉ có một vai trò.")]
+        [SerializeField] private string roleSecondary = string.Empty;
+
+        [Tooltip("Mã ải cần mở để sử dụng xe (vd 2-5). Để trống nghĩa là mở sẵn từ đầu.")]
+        [SerializeField] private string unlockStageCode = string.Empty;
+
+        [Tooltip("Ảnh đại diện dùng trong danh sách xe của Garage (để trống thì hàng chỉ hiện chữ).")]
+        [SerializeField] private Sprite rosterIcon;
+
+        [Tooltip("Màu chủ đề của xe trong danh sách Garage.")]
+        [SerializeField] private Color rosterAccent = new Color32(0xFF, 0x7A, 0x18, 0xFF);
+
+        [Tooltip("Ảnh chân dung lớn của xe trong khu trưng bày Garage.")]
+        [SerializeField] private Sprite portrait;
+
+        [Tooltip("Độ dời ảnh chân dung trong khung tròn Garage để khối tank cân giữa khung (đơn vị pixel thiết kế, dương = dịch sang phải / lên trên).")]
+        [SerializeField] private Vector2 portraitOffset = Vector2.zero;
+
+        [Tooltip("Ảnh trưng bày của xe ở màn hình chính (khung 518x518, nền trong suốt).")]
+        [SerializeField] private Sprite menuPortrait;
+
+        [Tooltip("Mô tả ngắn 4 kỹ năng, đúng thứ tự slot 1..4.")]
+        [SerializeField] private string[] skillDescriptions = new string[4];
+
+        [Tooltip("Cấp khởi điểm của xe khi người chơi chưa có tiến trình riêng (mặc định 1).")]
+        [SerializeField] private int startingLevel = 1;
+
         [Header("Stats Milestones (Level 1 & 90)")]
         [Tooltip("Chi so co ban tai Cap 1 (Level 1).")]
         [SerializeField] private TankStats baseStatsLevel1 = new TankStats();
@@ -74,6 +105,40 @@ namespace IronWasteland.Tanks
 
         public string TankName => tankName;
         public string Description => description;
+
+        /// <summary>Vai trò chính hiển thị trong danh sách Garage.</summary>
+        public string RolePrimary => rolePrimary;
+
+        /// <summary>Vai trò phụ (rỗng nếu không có).</summary>
+        public string RoleSecondary => roleSecondary;
+
+        /// <summary>Mã ải mở khoá xe (rỗng nếu mở sẵn).</summary>
+        public string UnlockStageCode => unlockStageCode;
+
+        /// <summary>Ảnh đại diện của xe trong danh sách Garage (có thể null).</summary>
+        public Sprite RosterIcon => rosterIcon;
+
+        /// <summary>Màu chủ đề của xe, dùng cho vạch nhấn và thanh cấp trong danh sách Garage.</summary>
+        public Color RosterAccent => rosterAccent;
+
+        /// <summary>Ảnh chân dung lớn của xe ở khu trưng bày Garage (có thể null).</summary>
+        public Sprite Portrait => portrait;
+
+        /// <summary>Độ dời ảnh chân dung để khối tank cân giữa khung tròn (pixel thiết kế).</summary>
+        public Vector2 PortraitOffset => portraitOffset;
+
+        /// <summary>Ảnh trưng bày dùng riêng cho Main Menu.</summary>
+        public Sprite MenuPortrait => menuPortrait;
+
+        /// <summary>Mô tả ngắn của kỹ năng theo slot (rỗng nếu chưa khai báo).</summary>
+        public string GetSkillDescription(int index)
+        {
+            if (skillDescriptions == null || index < 0 || index >= skillDescriptions.Length) return string.Empty;
+            return skillDescriptions[index];
+        }
+
+        /// <summary>Cấp khởi điểm của xe (đã kẹp trong khoảng 1..90).</summary>
+        public int StartingLevel => Mathf.Clamp(startingLevel, MinLevel, MaxLevel);
         public TankStats BaseStatsLevel1 => baseStatsLevel1;
         public TankStats BaseStatsLevel90 => baseStatsLevel90;
         public TankBrain TankPrefab => tankPrefab;

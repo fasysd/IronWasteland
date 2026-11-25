@@ -271,7 +271,8 @@ namespace IronWasteland.EditorTools
             root.offsetMin = Vector2.zero;
             root.offsetMax = Vector2.zero;
 
-            Sprite background = AssetDatabase.LoadAssetAtPath<Sprite>(SpriteDir + "/bg.png");
+            // bg_clean.png = bg.png đã xoá cụm số ngọc nướng sẵn để đổ số động lên trên.
+            Sprite background = AssetDatabase.LoadAssetAtPath<Sprite>(SpriteDir + "/bg_clean.png");
             if (background == null)
             {
                 Debug.LogError("[StageSelectBuilder] Không tải được sprite nền.");
@@ -279,6 +280,10 @@ namespace IronWasteland.EditorTools
             }
 
             AddImage(root, new LayerRect("Background", 0f, 0f, DesignWidth, DesignHeight), background);
+
+            // Số ngọc ma pháp ở header: cụm "125" đã bị xoá khỏi ảnh nền, controller đổ số thật vào đây.
+            TextMeshProUGUI gemCount = AddText(root, "GemCount", "125", 1652f, 121f, 25f, new Color32(0xFF, 0xD7, 0x9A, 0xFF), anton, 90f, false);
+            gemCount.textWrappingMode = TextWrappingModes.NoWrap;
 
             Image portrait = AddImage(root, new LayerRect("TankPortrait", 1310.72f, 745.92f, 81.12f, 81.12f), null);
             portrait.preserveAspect = true;
@@ -401,6 +406,7 @@ namespace IronWasteland.EditorTools
             serialized.FindProperty("m_MissionDescription").objectReferenceValue = missionDescription;
             serialized.FindProperty("m_MissionReward").objectReferenceValue = missionReward;
             serialized.FindProperty("m_MissionDrop").objectReferenceValue = missionDrop;
+            serialized.FindProperty("m_GemCount").objectReferenceValue = gemCount;
             serialized.FindProperty("m_SelectionFrame").objectReferenceValue = selectionFrame.rectTransform;
             serialized.FindProperty("m_Card12Border").objectReferenceValue = card12Border;
             serialized.FindProperty("m_ModeSingleImage").objectReferenceValue = singleImage;

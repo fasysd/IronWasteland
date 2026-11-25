@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fac0cf942aaa3f540886cc9f4ec42b96, type: 3}
+  m_Name: TankRoster
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankRoster
+  tanks:
+  - {fileID: 11400000, guid: 6c45234ae1746fa47a2143507c619a1c, type: 2}
+  - {fileID: 11400000, guid: 50cf10bfd48885b469ef03739b0d162d, type: 2}
+  - {fileID: 11400000, guid: 8f2b6d4a1c3e5f7a9b1d3f5a7c9e1b34, type: 2}
+  - {fileID: 11400000, guid: b46807db6f3524845957eee32a0b24a3, type: 2}
+  - {fileID: 11400000, guid: cd7492e832ea8ad44a7d0a1a553c551f, type: 2}
+  - {fileID: 11400000, guid: da2adcc56c23bf94abe7b8768551c551, type: 2}

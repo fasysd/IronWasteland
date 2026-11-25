@@ -153,6 +153,14 @@ namespace IronWasteland.UI
         [Tooltip("Tỷ lệ rơi phụ kiện.")]
         private TextMeshProUGUI m_MissionDrop;
 
+        [Header("Ngọc ma pháp")]
+        [SerializeField]
+        [Tooltip("Số ngọc ma pháp hiển thị ở góc phải header.")]
+        private TextMeshProUGUI m_GemCount;
+
+        /// <summary>Giá trị ngọc đã in lần trước, tránh set text mỗi khung hình.</summary>
+        private int m_GemCache = int.MinValue;
+
         [Header("Ải đang chọn trên bản đồ")]
         [SerializeField]
         [Tooltip("Khung cam bao quanh thẻ ải đang chọn.")]
@@ -274,12 +282,15 @@ namespace IronWasteland.UI
             int stage = m_DefaultStageIndex;
             if (m_Stages != null && m_Stages.Length > 0)
             {
-                // Đồng bộ trạng thái mở khóa với tiến trình người chơi
+                // Trạng thái mở khoá = màn mở sẵn theo thiết kế (cờ Unlocked lưu trong scene)
+                // HOẶC tiến trình người chơi đã mở. Tiến trình chỉ mở thêm chứ không khoá lại
+                // màn mà nhà thiết kế đã cho mở sẵn (1-1, 1-2); nếu ghi đè tuyệt đối thì thẻ
+                // hiện "đã mở khoá" nhưng bấm vào lại không chọn được.
                 for (int i = 0; i < m_Stages.Length; i++)
                 {
                     if (m_Stages[i] != null)
                     {
-                        m_Stages[i].Unlocked = StageProgress.IsUnlocked(m_Stages[i].Code);
+                        m_Stages[i].Unlocked = m_Stages[i].Unlocked || StageProgress.IsUnlocked(m_Stages[i].Code);
                     }
                 }
 
@@ -296,10 +307,13 @@ namespace IronWasteland.UI
             }
 
             ApplyMode(CoopEntry.Mode);
+            RefreshGemCount();
         }
 
         private void Update()
         {
+            RefreshGemCount();
+
             if (m_GuiPointerDown)
             {
                 m_GuiPointerDown = false;
@@ -489,11 +503,33 @@ namespace IronWasteland.UI
                     m_StatusCovers[i].enabled = true;
                 }
 
+                StageEntry entry = m_Stages != null && i < m_Stages.Length ? m_Stages[i] : null;
                 bool selected = SelectedStageIndex == i;
-                string value = selected ? "ĐANG CHỌN" : i == 0 ? "ĐÃ HOÀN THÀNH" : "ĐÃ MỞ KHÓA";
-                Color color = selected ? new Color32(0xFF, 0x9A, 0x3C, 0xFF) : i == 0
-                    ? new Color32(0x2F, 0xE8, 0xE0, 0xFF)
-                    : new Color32(0x6F, 0x7D, 0x8C, 0xFF);
+                bool cleared = entry != null && StageProgress.IsCleared(entry.Code);
+                bool unlocked = entry != null && entry.Unlocked;
+
+                string value;
+                Color color;
+                if (selected)
+                {
+                    value = "ĐANG CHỌN";
+                    color = new Color32(0xFF, 0x9A, 0x3C, 0xFF);
+                }
+                else if (cleared)
+                {
+                    value = "ĐÃ HOÀN THÀNH";
+                    color = new Color32(0x2F, 0xE8, 0xE0, 0xFF);
+                }
+                else if (unlocked)
+                {
+                    value = "ĐÃ MỞ KHÓA";
+                    color = new Color32(0x6F, 0x7D, 0x8C, 0xFF);
+                }
+                else
+                {
+                    value = "CHƯA MỞ KHÓA";
+                    color = new Color32(0x4E, 0x5A, 0x69, 0xFF);
+                }
 
                 TextMeshProUGUI text = m_StatusTexts[i];
                 if (text != null)
@@ -570,6 +606,24 @@ namespace IronWasteland.UI
             }
 
             return stats[0] + " ATK   " + stats[1] + " HP   " + stats[2] + " EN   " + stats[4] + " SPD";
+        }
+
+        /// <summary>Đổ số ngọc ma pháp thật từ tiến trình người chơi vào header.</summary>
+        private void RefreshGemCount()
+        {
+            if (m_GemCount == null)
+            {
+                return;
+            }
+
+            int gems = StageProgress.Gems;
+            if (gems == m_GemCache)
+            {
+                return;
+            }
+
+            m_GemCache = gems;
+            m_GemCount.text = gems.ToString();
         }
 
         private static void SetText(TextMeshProUGUI target, string value)

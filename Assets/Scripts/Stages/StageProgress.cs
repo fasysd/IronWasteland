@@ -53,6 +53,16 @@ namespace IronWasteland.Stages
             PlayerPrefs.Save();
         }
 
+        /// <summary>Trừ ngọc nếu đủ; trả về true khi đã trừ.</summary>
+        public static bool SpendGems(int amount)
+        {
+            if (amount <= 0) return true;
+            if (Gems < amount) return false;
+            PlayerPrefs.SetInt(GemsKey, Gems - amount);
+            PlayerPrefs.Save();
+            return true;
+        }
+
         public static void AddGems(int amount)
         {
             if (amount <= 0) return;

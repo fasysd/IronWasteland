@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using IronWasteland.Tanks;
+using IronWasteland.UiModels;
 
 namespace IronWasteland.UI
 {
@@ -122,6 +123,9 @@ namespace IronWasteland.UI
         [Tooltip("Scene Nhà xe để quay lại khi màn này được chạy riêng lẻ.")]
         [SerializeField] private string m_BackSceneName = "Garage";
 
+        /// <summary>Độ mờ của thẻ khi người chơi không còn bản sao nào.</summary>
+        private const float NotOwnedAlpha = 0.35f;
+
         private Canvas m_Canvas;
         private int m_TankIndex;
         private int m_SavedIndex;
@@ -138,6 +142,8 @@ namespace IronWasteland.UI
         private bool m_GuiPointerDown;
         private bool m_GuiPointerUp;
         private bool m_Pressed;
+        private bool m_Unequipped;
+        private bool m_OpenedFocus;
 
         /// <summary>Chỉ số xe đang chỉnh phụ kiện.</summary>
         public int TankIndex => m_TankIndex;
@@ -161,12 +167,26 @@ namespace IronWasteland.UI
                 return;
             }
 
-            m_SavedIndex = Mathf.Clamp(AccessoryLoadout.Get(m_TankIndex), 0, count - 1);
-            m_PendingIndex = m_SavedIndex;
+            int savedIndex = AccessoryLoadout.Has(m_TankIndex) ? AccessoryLoadout.Get(m_TankIndex) : AccessoryLoadout.None;
+            m_SavedIndex = IsOwned(savedIndex) ? savedIndex : AccessoryLoadout.None;
+            if (m_SavedIndex != savedIndex)
+            {
+                // Save cũ có thể trỏ tới món đã phân rã hoặc ngoài danh mục: coi như chưa trang bị.
+                AccessoryLoadout.Clear(m_TankIndex);
+            }
+
+            // Xe chưa trang bị gì thì focus thẻ đầu tiên còn trong kho; kho rỗng thì không chọn thẻ nào.
+            m_PendingIndex = m_SavedIndex >= 0 ? m_SavedIndex : FirstOwnedIndex();
+            // Thẻ đang trang bị được focus sẵn khi mở màn: cú bấm đầu chỉ chốt focus,
+            // cú bấm thứ hai mới tháo phụ kiện. Khi xe chưa trang bị gì thì không nuốt cú bấm đầu.
+            m_OpenedFocus = m_SavedIndex >= 0;
             RefreshHeader();
             RefreshCards();
             SetScroll(0f, false);
-            EnsureVisible(m_PendingIndex);
+            if (m_PendingIndex >= 0)
+            {
+                EnsureVisible(m_PendingIndex);
+            }
         }
 
         private void Update()
@@ -327,17 +347,34 @@ namespace IronWasteland.UI
                     continue;
                 }
 
+                bool owned = IsOwned(i);
+                float alpha = owned ? 1f : NotOwnedAlpha;
+
                 SetText(card.Number, (i + 1).ToString("00"));
                 SetText(card.Category, entry.Category);
                 SetText(card.Name, entry.DisplayName);
                 SetText(card.Role, entry.Role);
                 SetText(card.Stats, BuildStats(entry.Stats));
                 SetText(card.Description, entry.Description);
+                LayoutCardText(card);
                 SetText(card.Footer, "TRANG BỊ  ›");
+
+                SetAlpha(card.Number, alpha);
+                SetAlpha(card.Category, alpha);
+                SetAlpha(card.Name, alpha);
+                SetAlpha(card.Role, alpha);
+                SetAlpha(card.Stats, alpha);
+                SetAlpha(card.Description, alpha);
+                SetAlpha(card.ChoiceLabel, alpha);
+                SetAlpha(card.Footer, alpha);
+
                 if (card.Icon != null)
                 {
                     card.Icon.sprite = entry.Icon;
                     card.Icon.enabled = entry.Icon != null;
+                    Color iconColor = card.Icon.color;
+                    iconColor.a = alpha;
+                    card.Icon.color = iconColor;
                 }
 
                 bool selected = i == m_PendingIndex;
@@ -348,17 +385,23 @@ namespace IronWasteland.UI
 
                 if (card.SelectedGroup != null)
                 {
-                    card.SelectedGroup.SetActive(selected);
+                    // Nhãn "ĐANG DÙNG" chỉ hiện trên thẻ đang thực sự được trang bị.
+                    card.SelectedGroup.SetActive(i == m_SavedIndex);
                 }
 
                 if (card.ChoiceLabel != null)
                 {
+                    // Thẻ đang trang bị mang nhãn riêng để người chơi biết bấm lần nữa là tháo.
+                    string label = i == m_SavedIndex
+                        ? "ĐANG TRANG BỊ"
+                        : owned ? "LỰA CHỌN" : SalvageQuoteModel.NotOwnedHint;
+                    SetText(card.ChoiceLabel, label);
                     card.ChoiceLabel.gameObject.SetActive(!selected);
                 }
 
                 if (card.Footer != null)
                 {
-                    card.Footer.gameObject.SetActive(!selected);
+                    card.Footer.gameObject.SetActive(!selected && owned);
                 }
 
                 if (card.Hover != null)
@@ -368,6 +411,27 @@ namespace IronWasteland.UI
             }
 
             m_HoveredIndex = -1;
+        }
+
+        /// <summary>Đẩy khối mô tả xuống dưới khối chỉ số theo chiều cao thật của chữ.</summary>
+        private static void LayoutCardText(CardView card)
+        {
+            if (card.Stats == null || card.Description == null)
+            {
+                return;
+            }
+
+            RectTransform statsRect = card.Stats.rectTransform;
+            RectTransform descriptionRect = card.Description.rectTransform;
+
+            card.Stats.ForceMeshUpdate();
+            float statsHeight = Mathf.Max(card.Stats.fontSize * 1.3f, card.Stats.preferredHeight);
+            float descriptionTop = -statsRect.anchoredPosition.y + statsHeight + 10f;
+            float descriptionHeight = Mathf.Max(48f, 566f - descriptionTop);
+
+            card.Description.overflowMode = TextOverflowModes.Ellipsis;
+            descriptionRect.anchoredPosition = new Vector2(descriptionRect.anchoredPosition.x, -descriptionTop);
+            descriptionRect.sizeDelta = new Vector2(descriptionRect.sizeDelta.x, descriptionHeight);
         }
 
         /// <summary>Nối các dòng chỉ số thành một khối chữ nhiều dòng.</summary>
@@ -400,14 +464,49 @@ namespace IronWasteland.UI
         /// <summary>Chọn một thẻ phụ kiện để chờ xác nhận.</summary>
         private void Select(int index)
         {
-            if (m_Catalog == null || index < 0 || index >= m_Catalog.Count || index == m_PendingIndex)
+            if (m_Catalog == null || index < 0 || index >= m_Catalog.Count)
             {
                 return;
             }
 
+            // Món không còn trong kho thì không chọn/trang bị được.
+            if (!IsOwned(index))
+            {
+                return;
+            }
+
+            if (index == m_PendingIndex)
+            {
+                if (m_OpenedFocus)
+                {
+                    m_OpenedFocus = false;
+                    return;
+                }
+
+                // Bấm lần hai vào đúng thẻ đang trang bị thì tháo phụ kiện ra ngay.
+                if (index == m_SavedIndex)
+                {
+                    Unequip();
+                }
+
+                return;
+            }
+
+            m_OpenedFocus = false;
+            m_Unequipped = false;
             m_PendingIndex = index;
             RefreshCards();
             EnsureVisible(m_PendingIndex);
+        }
+
+        /// <summary>Tháo phụ kiện đang trang bị của xe mà không cần bấm xác nhận.</summary>
+        private void Unequip()
+        {
+            AccessoryLoadout.Clear(m_TankIndex);
+            m_SavedIndex = AccessoryLoadout.None;
+            m_PendingIndex = AccessoryLoadout.None;
+            m_Unequipped = true;
+            RefreshCards();
         }
 
         /// <summary>Chọn thẻ kế bên bằng phím mũi tên.</summary>
@@ -418,8 +517,21 @@ namespace IronWasteland.UI
                 return;
             }
 
-            int next = Mathf.Clamp(m_PendingIndex + delta, 0, m_Catalog.Count - 1);
-            Select(next);
+            int count = m_Catalog.Count;
+            for (int step = 1; step <= count; step++)
+            {
+                int next = Mathf.Clamp(m_PendingIndex + delta * step, 0, count - 1);
+                if (next == m_PendingIndex)
+                {
+                    return;
+                }
+
+                if (IsOwned(next))
+                {
+                    Select(next);
+                    return;
+                }
+            }
         }
 
         /// <summary>Lưu lựa chọn rồi đóng màn chọn phụ kiện.</summary>
@@ -430,9 +542,14 @@ namespace IronWasteland.UI
                 return;
             }
 
-            AccessoryLoadout.Set(m_TankIndex, m_PendingIndex);
+            // Sau khi tháo phụ kiện, xác nhận chỉ đóng màn chứ không trang bị lại.
+            if (!m_Unequipped && IsOwned(m_PendingIndex))
+            {
+                AccessoryLoadout.Set(m_TankIndex, m_PendingIndex);
+                m_SavedIndex = m_PendingIndex;
+            }
+
             SkillLoadout.LastTankIndex = m_TankIndex;
-            m_SavedIndex = m_PendingIndex;
             Close();
         }
 
@@ -625,6 +742,43 @@ namespace IronWasteland.UI
             if (target != null)
             {
                 target.text = value;
+            }
+        }
+
+        /// <summary>Phụ kiện có trong danh mục và người chơi còn ít nhất một bản sao.</summary>
+        private bool IsOwned(int index)
+        {
+            if (m_Catalog == null || index < 0 || index >= m_Catalog.Count)
+            {
+                return false;
+            }
+
+            AccessoryCatalog.Entry entry = m_Catalog.Get(index);
+            return entry != null && AccessoryInventory.Get(entry.Key) > 0;
+        }
+
+        /// <summary>Tìm thẻ đầu tiên còn trong kho để focus khi xe chưa trang bị gì.</summary>
+        private int FirstOwnedIndex()
+        {
+            int count = m_Catalog != null ? m_Catalog.Count : 0;
+            for (int i = 0; i < count; i++)
+            {
+                if (IsOwned(i))
+                {
+                    return i;
+                }
+            }
+
+            return AccessoryLoadout.None;
+        }
+
+        private static void SetAlpha(TextMeshProUGUI target, float alpha)
+        {
+            if (target != null)
+            {
+                Color color = target.color;
+                color.a = alpha;
+                target.color = color;
             }
         }
     }
