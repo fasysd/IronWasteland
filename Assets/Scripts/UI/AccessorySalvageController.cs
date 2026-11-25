@@ -385,7 +385,7 @@ namespace IronWasteland.UI
             for (int i = 0; i < m_Catalog.Count; i++)
             {
                 AccessoryCatalog.Entry entry = m_Catalog.Get(i);
-                if (entry != null && SaveSystem.Instance.GetAccessoryQuantity(i) > 0 && !IsEquipped(i))
+                if (entry != null && SaveSystem.Instance.GetAccessoryQuantity(i) > 0)
                 {
                     return i;
                 }
@@ -703,8 +703,14 @@ namespace IronWasteland.UI
                 return;
             }
 
-            SaveSystem.Instance.AddGems(quote.TotalGems);
-            ShowToast("ĐÃ PHÂN RÃ ×" + quote.Quantity + "  ·  +" + quote.TotalGems + " NGỌC");
+            int totalGems = 0;
+            for (int i = 0; i < quote.Quantity; i++)
+            {
+                totalGems += UnityEngine.Random.Range(SalvageQuoteModel.MinGemsPerAccessory, SalvageQuoteModel.MaxGemsPerAccessory + 1);
+            }
+
+            SaveSystem.Instance.AddGems(totalGems);
+            ShowToast("ĐÃ PHÂN RÃ ×" + quote.Quantity + "  ·  +" + totalGems + " NGỌC");
             m_Quantity = 1;
             RefreshGems();
             RefreshCards();

@@ -5207,7 +5207,7 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 7c8ad24eacb6855409bd046f22ffbbab, type: 3}
     - {fileID: 21300000, guid: d4423348712b32c43be42f6fe743809b, type: 3}
     Portrait: {fileID: 21300000, guid: 7088acb490698674cb50f31e833571d2, type: 3}
-  m_DefaultIndex: 2
+  m_DefaultIndex: 0
   m_Stages:
   - Code: 1-1
     Name: "S\u01AF\u01A0NG M\xD9 T\xCDM"
@@ -5219,7 +5219,7 @@ MonoBehaviour:
     Reward: "+15 Ng\u1ECDc Ma Ph\xE1p"
     DropRate: "T\u1EF7 l\u1EC7 r\u01A1i Ph\u1EE5 ki\u1EC7n: 35%"
     Unlocked: 1
-    Definition: {fileID: 11400000, guid: 1aefe880f3676d14aa84e51355095e75, type: 2}
+    Definition: {fileID: 11400000, guid: 4d91715cdf7e58e409a054b7d2fbd00f, type: 2}
   - Code: 1-2
     Name: "HANG \u0110\xC1 GAI"
     Tag: "SINH T\u1ED2N"
@@ -5230,7 +5230,7 @@ MonoBehaviour:
     Reward: "+15 Ng\u1ECDc Ma Ph\xE1p"
     DropRate: "T\u1EF7 l\u1EC7 r\u01A1i Ph\u1EE5 ki\u1EC7n: 35%"
     Unlocked: 1
-    Definition: {fileID: 11400000, guid: 8f0e1526e2e9a5345b5e0b43aa69259a, type: 2}
+    Definition: {fileID: 11400000, guid: a89170b0c191d714cbc50e78dc8df934, type: 2}
   - Code: 1-3
     Name: "M\u1ECE \u0110\xC1 S\u1EA4M"
     Tag: "SINH T\u1ED2N"

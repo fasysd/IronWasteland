@@ -46,6 +46,7 @@ MonoBehaviour:
     Distance: 0
     TargetId: core
   rewardGems: 90
-  rewardAccessoryCount: 0
+  rewardAccessoryCount: 2
   guaranteeAccessories: 0
+  rewardAccessoryPool: 0a0000000b0000000c0000000d0000000e0000000f000000100000001100000012000000
   nextStageCode: 2-5

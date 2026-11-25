@@ -384,8 +384,18 @@ namespace IronWasteland.UI
             string code = def != null ? def.StageCode : string.Empty;
             string next = def != null ? def.NextStageCode : string.Empty;
 
-            // Ghi tien do: cong ngoc + mo khoa man ke.
-            if (SaveSystem.Instance != null) SaveSystem.Instance.MarkCleared(code, reward.Gems, d.Elapsed, next);
+            // Ghi tien do: cong ngoc + phu kien + mo khoa man ke.
+            if (SaveSystem.Instance != null)
+            {
+                SaveSystem.Instance.MarkCleared(code, reward.Gems, d.Elapsed, next);
+                if (reward.DroppedAccessoryIndices != null)
+                {
+                    for (int i = 0; i < reward.DroppedAccessoryIndices.Length; i++)
+                    {
+                        SaveSystem.Instance.AddAccessory(reward.DroppedAccessoryIndices[i], 1);
+                    }
+                }
+            }
 
             // Bang ket qua theo wireframe: thoi gian, so quai diet, % mau con lai, ngoc, phu kien.
             string stageName = def != null ? def.StageName : string.Empty;

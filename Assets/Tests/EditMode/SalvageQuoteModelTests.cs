@@ -11,18 +11,18 @@ namespace IronWasteland.Tests
             SalvageQuote quote = SalvageQuoteModel.Build(owned: 3, salvageValue: 5, requested: 7, isEquipped: false);
 
             Assert.That(quote.Quantity, Is.EqualTo(3));
-            Assert.That(quote.TotalGems, Is.EqualTo(15));
+            Assert.That(quote.TotalGems, Is.EqualTo(3 * SalvageQuoteModel.MinGemsPerAccessory));
             Assert.That(quote.CanSalvage, Is.True);
         }
 
         [Test]
-        public void Phu_kien_dang_trang_bi_thi_khong_phan_ra_duoc()
+        public void Phu_kien_dang_trang_bi_van_phan_ra_duoc_khi_so_luong_du()
         {
             SalvageQuote quote = SalvageQuoteModel.Build(owned: 2, salvageValue: 5, requested: 1, isEquipped: true);
 
-            Assert.That(quote.CanSalvage, Is.False);
-            Assert.That(quote.TotalGems, Is.Zero);
-            Assert.That(quote.Hint, Is.EqualTo(SalvageQuoteModel.EquippedHint));
+            Assert.That(quote.CanSalvage, Is.True);
+            Assert.That(quote.Quantity, Is.EqualTo(1));
+            Assert.That(quote.TotalGems, Is.EqualTo(SalvageQuoteModel.MinGemsPerAccessory));
         }
 
         [Test]
@@ -49,7 +49,7 @@ namespace IronWasteland.Tests
             SalvageQuote quote = SalvageQuoteModel.Build(owned: 500, salvageValue: 2, requested: 999, isEquipped: false);
 
             Assert.That(quote.Quantity, Is.EqualTo(SalvageQuoteModel.MaxQuantity));
-            Assert.That(quote.TotalGems, Is.EqualTo(198));
+            Assert.That(quote.TotalGems, Is.EqualTo(SalvageQuoteModel.MaxQuantity * SalvageQuoteModel.MinGemsPerAccessory));
         }
     }
 }

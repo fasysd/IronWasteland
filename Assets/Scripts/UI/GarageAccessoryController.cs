@@ -500,9 +500,14 @@ namespace IronWasteland.UI
             EnsureVisible(m_PendingIndex);
         }
 
-        /// <summary>Tháo phụ kiện đang trang bị của xe mà không cần bấm xác nhận.</summary>
+        /// <summary>Tháo phụ kiện đang trang bị của xe và trả 1 bản sao về kho.</summary>
         private void Unequip()
         {
+            if (m_SavedIndex >= 0)
+            {
+                SaveSystem.Instance.AddAccessory(m_SavedIndex, 1);
+            }
+
             SaveSystem.Instance.SetEquippedAccessory(m_TankIndex, -1);
             m_SavedIndex = -1;
             m_PendingIndex = -1;
@@ -544,10 +549,22 @@ namespace IronWasteland.UI
             }
 
             // Sau khi tháo phụ kiện, xác nhận chỉ đóng màn chứ không trang bị lại.
-            if (!m_Unequipped && IsOwned(m_PendingIndex))
+            if (!m_Unequipped && m_PendingIndex >= 0 && m_PendingIndex != m_SavedIndex)
             {
-                SaveSystem.Instance.SetEquippedAccessory(m_TankIndex, m_PendingIndex);
-                m_SavedIndex = m_PendingIndex;
+                if (SaveSystem.Instance.GetAccessoryQuantity(m_PendingIndex) >= 1)
+                {
+                    // Nếu Tank đã có phụ kiện cũ thì tháo trả về kho (+1) trước khi trang bị món mới (-1).
+                    if (m_SavedIndex >= 0)
+                    {
+                        SaveSystem.Instance.AddAccessory(m_SavedIndex, 1);
+                    }
+
+                    if (SaveSystem.Instance.ConsumeAccessory(m_PendingIndex, 1))
+                    {
+                        SaveSystem.Instance.SetEquippedAccessory(m_TankIndex, m_PendingIndex);
+                        m_SavedIndex = m_PendingIndex;
+                    }
+                }
             }
 
             SaveSystem.Instance.LastSelectedTankIndex = m_TankIndex;

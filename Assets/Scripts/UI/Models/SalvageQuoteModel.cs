@@ -31,18 +31,16 @@ namespace IronWasteland.UiModels
         /// <summary>Số lượng tối đa cho một lần phân rã.</summary>
         public const int MaxQuantity = 99;
 
+        /// <summary>Số ngọc ngẫu nhiên tối thiểu & tối đa cho mỗi phụ kiện (GDD: 8–12).</summary>
+        public const int MinGemsPerAccessory = 8;
+        public const int MaxGemsPerAccessory = 12;
+
         public static SalvageQuote Build(int owned, int salvageValue, int requested, bool isEquipped)
         {
-            // Không còn bản sao nào thì luôn báo CHƯA SỞ HỮU, kể cả khi save cũ còn trỏ
-            // loadout tới món đó: người chơi cần biết mình không có gì để phân rã.
+            // Toàn bộ phụ kiện có trong kho đều phân rã được nếu số lượng >= 1 (không chặn đang trang bị).
             if (owned <= 0)
             {
                 return new SalvageQuote(0, 0, false, NotOwnedHint);
-            }
-
-            if (isEquipped)
-            {
-                return new SalvageQuote(0, 0, false, EquippedHint);
             }
 
             int max = Math.Min(owned, MaxQuantity);
@@ -52,8 +50,9 @@ namespace IronWasteland.UiModels
                 quantity = max;
             }
 
-            int total = quantity * Math.Max(0, salvageValue);
-            return new SalvageQuote(quantity, total, true, "NHẬN: " + total + " NGỌC");
+            int minTotal = quantity * MinGemsPerAccessory;
+            int maxTotal = quantity * MaxGemsPerAccessory;
+            return new SalvageQuote(quantity, minTotal, true, $"NHẬN: {minTotal}–{maxTotal} NGỌC");
         }
     }
 }

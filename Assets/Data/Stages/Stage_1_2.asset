@@ -73,6 +73,7 @@ MonoBehaviour:
     Distance: 150
     TargetId: 
   rewardGems: 30
-  rewardAccessoryCount: 0
+  rewardAccessoryCount: 1
   guaranteeAccessories: 0
+  rewardAccessoryPool: 030000000400000006000000
   nextStageCode: 1-3

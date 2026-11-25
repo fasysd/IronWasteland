@@ -62,6 +62,7 @@ MonoBehaviour:
     Distance: 30
     TargetId: ram
   rewardGems: 70
-  rewardAccessoryCount: 0
+  rewardAccessoryCount: 1
   guaranteeAccessories: 0
+  rewardAccessoryPool: 100000001100000012000000
   nextStageCode: 2-4

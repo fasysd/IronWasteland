@@ -111,6 +111,9 @@ namespace IronWasteland.Stages
         [Tooltip("Boss man: chac chan du so mon, khong roll 20%.")]
         [SerializeField] private bool guaranteeAccessories = false;
 
+        [Tooltip("Danh sach index phu kien (0..19) co the roi trong man nay theo GDD.")]
+        [SerializeField] private List<int> rewardAccessoryPool = new List<int>();
+
         [Tooltip("Ma ai tiep theo, vi du 1-2 (rong = khong tu chuyen).")]
         [SerializeField] private string nextStageCode = string.Empty;
 
@@ -126,6 +129,7 @@ namespace IronWasteland.Stages
         public int RewardGems => rewardGems;
         public int RewardAccessoryCount => rewardAccessoryCount;
         public bool GuaranteeAccessories => guaranteeAccessories;
+        public IReadOnlyList<int> RewardAccessoryPool => rewardAccessoryPool;
         public string NextStageCode => nextStageCode;
 
         /// <summary>Tong so quai se spawn cua ca ai.</summary>

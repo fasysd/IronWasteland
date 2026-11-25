@@ -25,7 +25,7 @@ MonoBehaviour:
       SpeedMultiplier: 1
       ZoneId: 
   - Label: W2
-    StartTime: 60
+    StartTime: 30
     Spawns:
     - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
       Count: 15
@@ -36,7 +36,7 @@ MonoBehaviour:
       SpeedMultiplier: 1
       ZoneId: 
   - Label: W3
-    StartTime: 120
+    StartTime: 60
     Spawns:
     - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
       Count: 10
@@ -49,6 +49,7 @@ MonoBehaviour:
     Distance: 0
     TargetId: 
   rewardGems: 20
-  rewardAccessoryCount: 0
+  rewardAccessoryCount: 1
   guaranteeAccessories: 0
+  rewardAccessoryPool: 000000000200000005000000
   nextStageCode: 1-2
