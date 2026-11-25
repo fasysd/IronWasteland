@@ -2,6 +2,7 @@ using IronWasteland.Net;
 using IronWasteland.Save;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 namespace IronWasteland.Tanks
@@ -10,8 +11,8 @@ namespace IronWasteland.Tanks
     /// Đọc input của Player, tạo TankBrain từ ScriptableObject và gửi lệnh cho nó.
     /// Điều khiển kỹ năng 3 giai đoạn:
     /// 1. Chọn target / hướng ngắm qua vị trí con trỏ chuột (SetLookTarget).
-    /// 2. Chọn kỹ năng (phím 1, 2, 3, 4). Phím 1 dùng để hủy và quay lại kỹ năng thường.
-    /// 3. Xác nhận thi triển bằng Click chuột trái (gửi lại LookTarget, gọi UseSkill, sau đó reset về kỹ năng thường 0).
+    /// 2. Chọn kỹ năng (phím 1, 2, 3, 4 hoặc J, K, L, I). Phím 1 / J dùng để chọn lại kỹ năng thường (0).
+    /// 3. Xác nhận thi triển bằng Click chuột trái (bỏ qua nếu trỏ trên UI; gửi lại LookTarget, gọi UseSkill / RequestCast, sau đó reset về kỹ năng thường 0).
     /// </summary>
     public class GameController : MonoBehaviour
     {
@@ -62,6 +63,7 @@ namespace IronWasteland.Tanks
         {
             m_PlayerTank = tank;
             m_NetController = tank != null ? tank.GetComponent<NetPlayerController>() : null;
+            selectedSkillIndex = 0;
             if (tank != null)
             {
                 if (tank.Definition != null) tankDefinition = tank.Definition;
@@ -77,6 +79,7 @@ namespace IronWasteland.Tanks
         {
             m_PlayerTank = null;
             m_NetController = null;
+            selectedSkillIndex = 0;
         }
 
         /// <summary>
@@ -171,28 +174,41 @@ namespace IronWasteland.Tanks
                 m_PlayerTank.SetLookTarget(new Vector2(world.x, world.y));
             }
 
-            // --- Giai đoạn 2: Thi triển kỹ năng bằng phím (theo tài liệu thiết kế) ---
-            // J = kỹ năng thường (slot 0 - đánh trúng hồi năng lượng)
-            // K = kỹ năng chuyên biệt (slot 1)
-            // L = kỹ năng tuỳ chọn 1 (slot 2)
-            // I = kỹ năng tuỳ chọn 2 (slot 3)
-            // Chuột chỉ để ngắm, không bắn - đúng danh sách phím trong màn Cài đặt của tài liệu.
+            // --- Giai đoạn 2: Chọn kỹ năng (phím 1/2/3/4 hoặc J/K/L/I) ---
+            // 0 = kỹ năng thường (đánh trúng hồi năng lượng), 1 = chuyên biệt, 2 = tuỳ chọn 1, 3 = tuỳ chọn 2.
             if (keyboard != null)
             {
-                if (keyboard.jKey.wasPressedThisFrame) CastSkill(0);
-                else if (keyboard.kKey.wasPressedThisFrame) CastSkill(1);
-                else if (keyboard.lKey.wasPressedThisFrame) CastSkill(2);
-                else if (keyboard.iKey.wasPressedThisFrame) CastSkill(3);
+                if (keyboard.digit1Key.wasPressedThisFrame || keyboard.jKey.wasPressedThisFrame) SelectSkill(0);
+                else if (keyboard.digit2Key.wasPressedThisFrame || keyboard.kKey.wasPressedThisFrame) SelectSkill(1);
+                else if (keyboard.digit3Key.wasPressedThisFrame || keyboard.lKey.wasPressedThisFrame) SelectSkill(2);
+                else if (keyboard.digit4Key.wasPressedThisFrame || keyboard.iKey.wasPressedThisFrame) SelectSkill(3);
+            }
+
+            // --- Giai đoạn 3: Click chuột trái để thi triển kỹ năng đang chọn, sau đó reset về 0 ---
+            if (mouse != null && mouse.leftButton.wasPressedThisFrame)
+            {
+                if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                    return;
+
+                CastSelectedSkill();
             }
         }
 
+        /// <summary>Lưu chỉ số kỹ năng được chọn để chờ click chuột trái thi triển.</summary>
+        private void SelectSkill(int index)
+        {
+            selectedSkillIndex = Mathf.Clamp(index, 0, TankBrain.SkillCount - 1);
+        }
+
         /// <summary>
-        /// Ngắm lại theo con trỏ chuột rồi thi triển ngay kỹ năng ở slot tương ứng.
-        /// Dùng cho phím J/K/L/I.
+        /// Ngắm lại theo con trỏ chuột, thi triển kỹ năng đang được chọn (offline/host hoặc gửi RPC nếu là client coop),
+        /// rồi chuyển kỹ năng đang chọn về kỹ năng thường (index 0).
         /// </summary>
-        private void CastSkill(int index)
+        private void CastSelectedSkill()
         {
             if (m_PlayerTank == null) return;
+
+            int skillToCast = Mathf.Clamp(selectedSkillIndex, 0, TankBrain.SkillCount - 1);
 
             Vector2 aim = m_PlayerTank.transform.position;
             Mouse mouse = Mouse.current;
@@ -203,18 +219,18 @@ namespace IronWasteland.Tanks
                 m_PlayerTank.SetLookTarget(aim);
             }
 
-            selectedSkillIndex = index;
-
             // Thi triển kỹ năng đã chọn: trong phòng mạng, client phải xin host;
             // host và chế độ offline gọi thẳng.
             if (m_NetController != null && m_NetController.IsSpawned && !m_NetController.IsServer)
             {
-                m_NetController.RequestCast(index, aim);
+                m_NetController.RequestCast(skillToCast, aim);
             }
             else
             {
-                m_PlayerTank.UseSkill(index);
+                m_PlayerTank.UseSkill(skillToCast);
             }
+
+            selectedSkillIndex = 0;
         }
     }
 }
