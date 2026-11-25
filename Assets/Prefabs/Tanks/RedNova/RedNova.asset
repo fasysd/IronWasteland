@@ -18,7 +18,7 @@ MonoBehaviour:
     t\u1EA1o v\u1EDBi s\u1EF1 gi\xFAp \u0111\u1EE1 c\u1EE7a Mones."
   rolePrimary: DPS
   roleSecondary: "H\u1ED6 TR\u1EE2 L\u1EF0C XA"
-  unlockStageCode: 1-4
+  unlockStageCode: 
   rosterIcon: {fileID: 21300000, guid: 7c70e28d1161f7f4bbd32913a675bda4, type: 3}
   rosterAccent: {r: 1, g: 0.3529412, b: 0.23529412, a: 1}
   portrait: {fileID: 21300000, guid: 4c1d75a7c294d5c4a841087a25968052, type: 3}

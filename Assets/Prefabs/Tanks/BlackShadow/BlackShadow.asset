@@ -21,7 +21,7 @@ MonoBehaviour:
     tr\u1EDF l\u1EA1i k\u1EBFt h\u1EE3p v\u1EDBi ma ph\xE1p b\xF3ng t\u1ED1i."
   rolePrimary: DPS
   roleSecondary: "S\xC1T TH\u1EE6"
-  unlockStageCode: 
+  unlockStageCode: 1-2
   rosterIcon: {fileID: 21300000, guid: a74e2ac5d3e404048bc7b52c78bc6c47, type: 3}
   rosterAccent: {r: 0.5411765, g: 0.29411766, b: 0.9411765, a: 1}
   portrait: {fileID: 21300000, guid: bcf371bef8be98944ac33f1573dc1a36, type: 3}

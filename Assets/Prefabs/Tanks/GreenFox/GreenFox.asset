@@ -19,7 +19,7 @@ MonoBehaviour:
     ra trong \u0111\xF3 c\xF3 Green Fox."
   rolePrimary: DPS
   roleSecondary: DPS
-  unlockStageCode: 2-5
+  unlockStageCode: 2-3
   rosterIcon: {fileID: 21300000, guid: a809ecb8b8dd3c64fa6a694091285cca, type: 3}
   rosterAccent: {r: 0.23921569, g: 0.2901961, b: 0.34901962, a: 1}
   portrait: {fileID: 21300000, guid: bf28a72c9210d864fb765674c50acdd4, type: 3}

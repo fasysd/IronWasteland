@@ -279,7 +279,7 @@ namespace IronWasteland.UI
             TankDefinition definition = tanks[index];
             return definition != null
                 && !string.IsNullOrEmpty(definition.UnlockStageCode)
-                && !SaveSystem.Instance.IsStageUnlocked(definition.UnlockStageCode);
+                && !SaveSystem.Instance.IsStageCleared(definition.UnlockStageCode);
         }
 
         /// <summary>Dựng danh sách xe từ TankRoster: mỗi xe một hàng, nội dung tự giãn để cuộn được.</summary>
@@ -305,7 +305,7 @@ namespace IronWasteland.UI
                     definition != null ? definition.UnlockStageCode : string.Empty);
             }
 
-            TankRow[] rows = TankListModel.Build(sources, LevelOf, SaveSystem.Instance.IsStageUnlocked);
+            TankRow[] rows = TankListModel.Build(sources, LevelOf, SaveSystem.Instance.IsStageCleared);
 
             RectTransform templateRect = m_RowTemplate.transform as RectTransform;
             float rowHeight = templateRect != null ? templateRect.rect.height : 108f;
@@ -419,6 +419,10 @@ namespace IronWasteland.UI
 
             IReadOnlyList<TankDefinition> tanks = m_Roster.Tanks;
             int clamped = Mathf.Clamp(index, 0, tanks.Count - 1);
+            if (IsTankLocked(clamped))
+            {
+                return;
+            }
             TankDefinition definition = tanks[clamped];
             if (definition == null)
             {

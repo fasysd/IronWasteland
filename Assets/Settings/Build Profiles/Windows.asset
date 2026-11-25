@@ -26,6 +26,9 @@ MonoBehaviour:
     m_path: Assets/Scenes/CoopLobby.unity
     m_guid: 8c9cfa26abfee488c85f1582747f6a02
   - m_enabled: 1
+    m_path: Assets/Scenes/AccessorySalvage.unity
+    m_guid: 6b5488bcca9eb4b41ab268eeec243f58
+  - m_enabled: 1
     m_path: Assets/Scenes/Garage.unity
     m_guid: b2b25e1f659e4d247a8b60f17db82fc0
   - m_enabled: 1
@@ -49,6 +52,12 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/Scenes/Stage_1_3.unity
     m_guid: ac4f4230fd93c70438919fce8c77d86e
+  - m_enabled: 1
+    m_path: Assets/Scenes/MainScene.unity
+    m_guid: 2cf8a5d01b7e332469b0313584aebb37
+  - m_enabled: 1
+    m_path: Assets/Scenes/SkillArena.unity
+    m_guid: 40a766c93f2ca2d4cb89156bae7eb71f
   - m_enabled: 1
     m_path: Assets/Scenes/Stage_1_4.unity
     m_guid: 10b219ca86cc59049bd43c571e73723e

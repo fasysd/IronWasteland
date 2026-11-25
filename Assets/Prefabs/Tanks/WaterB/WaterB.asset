@@ -19,7 +19,7 @@ MonoBehaviour:
     ra trong \u0111\xF3 c\xF3 Water B."
   rolePrimary: "H\u1ED6 TR\u1EE2"
   roleSecondary: DPS
-  unlockStageCode: 
+  unlockStageCode: 2-1
   rosterIcon: {fileID: 21300000, guid: 6ac28143091bf2c4797ff44e311e6ee7, type: 3}
   rosterAccent: {r: 0.49803922, g: 0.7019608, b: 1, a: 1}
   portrait: {fileID: 21300000, guid: d4fe685b940a33e458483ae23c7bb563, type: 3}
