@@ -72,7 +72,7 @@ namespace IronWasteland.Tanks.WaterB
         /// <summary>Hiện số sát thương: phần khiên hấp thụ nằm cao hơn một chút, phần trừ máu nằm ngay trên xe.</summary>
         private void ShowDamageText(DamageInfo info)
         {
-            if (TextDamageManager.Instance == null) return;
+            if (TextValueManager.Instance == null) return;
 
             Vector3 pos = m_Tank.transform.position;
             float absorbed = info.AbsorbedByShield;
@@ -80,12 +80,10 @@ namespace IronWasteland.Tanks.WaterB
 
             if (healthLoss > 0.01f)
             {
-                CombatFeedback.Show(healthLoss, pos);
             }
 
             if (absorbed > 0.01f)
             {
-                CombatFeedback.Show(absorbed, pos + Vector3.up * 0.6f);
             }
         }
     }

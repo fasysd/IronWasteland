@@ -141,7 +141,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
                 sourceType: DamageSourceType.EnemyAttack);
 
             tank.TakeDamage(info);
-            TextDamageManager.Instance?.Show(info.FinalDamage, tank.transform.position);
 
             // Cơ chế Knockback 3m
             Vector2 origin = m_Owner != null ? (Vector2)m_Owner.transform.position : (Vector2)transform.position;

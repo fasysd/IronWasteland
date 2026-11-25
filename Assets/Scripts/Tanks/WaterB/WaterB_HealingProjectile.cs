@@ -142,7 +142,6 @@ namespace IronWasteland.Tanks.WaterB
                 else
                 {
                     enemy.TakeDamage(m_PowerAmount);
-                    CombatFeedback.Show(m_PowerAmount, hitPos);
                 }
             }
 

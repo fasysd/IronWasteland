@@ -155,7 +155,6 @@ namespace IronWasteland.Enemies.The2Face
                     false,
                     DamageSourceType.EnemyAttack);
                 tank.TakeDamage(info);
-                IronWasteland.TextDamageManager.Instance?.Show(info.FinalDamage, hit.bounds.center);
 
                 // 2. Xử lý hiệu ứng theo trạng thái kỹ năng
                 if (m_Mode == The2FaceVortexMode.Sad)

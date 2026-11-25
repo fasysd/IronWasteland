@@ -887,6 +887,10 @@ namespace IronWasteland.Enemies
                 else
                 {
                     float finalDmg = CombatUtility.ResolveDamage(info.RawDamage, Stats.Defense, info.ArmorPenetration);
+                    if (finalDmg > 0.01f)
+                    {
+                        CombatFeedback.Show(finalDmg, hitPoint, TextValueType.ShieldAbsorb);
+                    }
                     DamageCardinalShield(finalDmg);
                     return;
                 }
@@ -970,7 +974,6 @@ namespace IronWasteland.Enemies
             // 1. Boss mất rewardBossHpLossRatio máu tối đa
             float hpLoss = MaxHealth * rewardBossHpLossRatio;
             TakeDamage(new DamageInfo(null, this, hpLoss, armorPenetration: 100f, isDirectToHealth: true));
-            TextDamageManager.Instance?.Show(hpLoss, transform.position);
 
             // 2. Boss giảm phòng thủ còn rewardBossDefenseMultiplier trong rewardPhaseDuration
             if (Stats != null)
@@ -1053,7 +1056,6 @@ namespace IronWasteland.Enemies
                     sourceType: DamageSourceType.EnemyAttack);
 
                 t.TakeDamage(info);
-                TextDamageManager.Instance?.Show(info.FinalDamage, t.transform.position);
 
                 TankSlowDebuff.Apply(t, penaltySlowRatio, penaltySlowDuration);
             }

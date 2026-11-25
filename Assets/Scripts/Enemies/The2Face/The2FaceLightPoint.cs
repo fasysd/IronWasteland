@@ -161,7 +161,7 @@ namespace IronWasteland.Enemies.The2Face
                 bodyRenderer.color = Color.white;
             }
 
-            IronWasteland.TextDamageManager.Instance?.Show(amount, transform.position);
+            IronWasteland.CombatFeedback.Show(amount, transform.position, IronWasteland.TextValueType.EnemyDamage);
 
             if (m_CurrentHealth <= 0f)
             {

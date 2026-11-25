@@ -234,16 +234,30 @@ namespace IronWasteland.Enemies
 
             if (info.IsDirectToHealth)
             {
+                info.AbsorbedByShield = 0f;
                 currentHealth -= finalDamage;
             }
             else
             {
                 // [3] Xu ly hap thu bang he thong cac lop khien
                 float absorbedShield = ProcessShieldAbsorption(finalDamage);
+                info.AbsorbedByShield = absorbedShield;
                 float damageToHealth = finalDamage - absorbedShield;
 
                 // [4] Tru mau
                 currentHealth -= damageToHealth;
+            }
+
+            Vector3 showPos = info.HitPosition != Vector2.zero ? (Vector3)info.HitPosition : transform.position;
+            float healthDamage = info.HealthDamage;
+            if (healthDamage > 0.01f)
+            {
+                CombatFeedback.Show(healthDamage, showPos, TextValueType.EnemyDamage);
+            }
+
+            if (info.AbsorbedByShield > 0.01f)
+            {
+                CombatFeedback.Show(info.AbsorbedByShield, showPos, TextValueType.ShieldAbsorb);
             }
 
             model?.PlayHit();
@@ -304,9 +318,16 @@ namespace IronWasteland.Enemies
 
         public virtual void Heal(float amount)
         {
-            if (!IsAlive) return;
+            if (!IsAlive || amount <= 0f) return;
             if (!HasGameplayAuthority) return;
+            float prevHealth = currentHealth;
             currentHealth = Mathf.Min(currentHealth + amount, MaxHealth);
+            float actualHealed = currentHealth - prevHealth;
+            if (actualHealed > 0.01f)
+            {
+                CombatFeedback.Show(actualHealed, transform.position, TextValueType.Heal);
+            }
+
             OnHealEvent?.Invoke(amount);
         }
 

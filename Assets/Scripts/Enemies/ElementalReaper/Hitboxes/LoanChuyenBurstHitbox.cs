@@ -151,7 +151,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
                 sourceType: DamageSourceType.EnemyAttack);
 
             tank.TakeDamage(info);
-            TextDamageManager.Instance?.Show(info.FinalDamage, tank.transform.position);
 
             // Choáng 2s
             tank.ApplyCrowdControl(CrowdControlType.Stun, stunDuration);

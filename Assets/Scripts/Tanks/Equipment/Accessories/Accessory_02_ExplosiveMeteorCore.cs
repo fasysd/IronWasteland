@@ -76,7 +76,6 @@ namespace IronWasteland.Tanks.Equipment
                 {
                     DamageInfo info = new DamageInfo(Owner, enemy, rawDamage, Owner.FinalStats.ArmorPenetration, enemy.transform.position, sourceType: DamageSourceType.Accessory);
                     enemy.TakeDamage(info);
-                    TextDamageManager.Instance?.Show(info.FinalDamage, enemy.transform.position);
 
                     // Đẩy lùi quái thường (tinh anh miễn nhiễm khống chế cứng)
                     if (!enemy.IsElite)

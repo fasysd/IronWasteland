@@ -285,7 +285,6 @@ namespace IronWasteland.Tanks.WallTitan
 
             DamageInfo info = new DamageInfo(this, enemy, rawDamage, Stats.ArmorPenetration, hitPosition, sourceType: sourceType);
             enemy.TakeDamage(info);
-            CombatFeedback.Show(info.FinalDamage, hitPosition);
         }
 
         /// <summary>Tìm đồng minh gần nhất có ColliderOwnerRef sở hữu bởi TankBrain quanh điểm chỉ định; không có thì trả về null.</summary>

@@ -212,7 +212,6 @@ namespace IronWasteland.Enemies.DeadlandPhantom
                 sourceType: DamageSourceType.EnemyAttack);
 
             tank.TakeDamage(info);
-            TextDamageManager.Instance?.Show(info.FinalDamage, tank.transform.position);
 
             // 3. Hiệu ứng VFX nổ xoáy khi hút
             if (m_Vfx != null)

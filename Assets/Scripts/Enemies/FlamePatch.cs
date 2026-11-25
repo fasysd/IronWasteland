@@ -108,7 +108,6 @@ namespace IronWasteland.Enemies
                 {
                     DamageInfo info = new DamageInfo(this, tank, m_DamagePerTick, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
                     tank.TakeDamage(info);
-                    CombatFeedback.Show(info.FinalDamage, tank.transform.position);
                 }
 
                 if (m_SlowPercent > 0f && m_SlowDuration > 0f)

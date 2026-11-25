@@ -181,7 +181,6 @@ namespace IronWasteland.Enemies.Normal
                 if (!includeSelf && enemy == this) continue;
 
                 enemy.Heal(healAmount);
-                CombatFeedback.Show(healAmount, enemy.transform.position);
 
                 // GDD: Them 25% Tan cong cua Sao Den trong 3s cho quai vat dong minh
                 float bonusAttack = (Stats != null ? Stats.Attack : 100f) * 0.25f;

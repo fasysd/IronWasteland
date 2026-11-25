@@ -173,7 +173,6 @@ namespace IronWasteland.Tanks.WaterB
             {
                 m_IsSharing = true;
                 other.Heal(sharedAmount);
-                CombatFeedback.Show(sharedAmount, other.transform.position);
             }
             finally
             {

@@ -312,7 +312,6 @@ namespace IronWasteland.Tanks.RedNova
             DamageInfo info = new DamageInfo(this, enemy, rawDamage, Stats.ArmorPenetration, hitPosition, sourceType: sourceType);
             enemy.TakeDamage(info);
 
-            CombatFeedback.Show(info.FinalDamage, hitPosition);
 
             // Overdrive / Execution Core: hiệu ứng mất ngay khi gây sát thương.
             if (consumeNovaRush && m_HasNovaRushEmpoweredShot)

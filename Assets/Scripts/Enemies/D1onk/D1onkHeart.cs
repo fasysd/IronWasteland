@@ -247,7 +247,6 @@ namespace IronWasteland.Enemies.D1onk
                 {
                     DamageInfo info = new DamageInfo(this, target, missileDmg, 0f, target.transform.position, sourceType: DamageSourceType.EnemyAttack);
                     target.TakeDamage(info);
-                    TextDamageManager.Instance?.Show(info.FinalDamage, target.transform.position);
                 }
             }
         }
@@ -270,7 +269,6 @@ namespace IronWasteland.Enemies.D1onk
             {
                 DamageInfo dmg = new DamageInfo(this, nearest, atk * 1.50f, 0f, nearest.transform.position, sourceType: DamageSourceType.EnemyAttack);
                 nearest.TakeDamage(dmg);
-                TextDamageManager.Instance?.Show(dmg.FinalDamage, nearest.transform.position);
 
                 nearest.AddBonusStats("D1onkHeart_TrungPhat_Def", null, new TankStats { Defense = -0.20f });
                 StartCoroutine(RemoveBonusAfterDelay(nearest, "D1onkHeart_TrungPhat_Def", 5.0f));
@@ -327,7 +325,6 @@ namespace IronWasteland.Enemies.D1onk
                 {
                     DamageInfo info = new DamageInfo(this, target, tickDmg, 0f, target.transform.position, sourceType: DamageSourceType.EnemyAttack);
                     target.TakeDamage(info);
-                    TextDamageManager.Instance?.Show(info.FinalDamage, target.transform.position);
                 }
             }
             m_LaserCoroutine = null;
@@ -355,7 +352,6 @@ namespace IronWasteland.Enemies.D1onk
                     float mult = i < multipliers.Length ? multipliers[i] : 1.0f;
                     DamageInfo info = new DamageInfo(this, t, atk * mult, 0f, t.transform.position, sourceType: DamageSourceType.EnemyAttack);
                     t.TakeDamage(info);
-                    TextDamageManager.Instance?.Show(info.FinalDamage, t.transform.position);
                 }
             }
 

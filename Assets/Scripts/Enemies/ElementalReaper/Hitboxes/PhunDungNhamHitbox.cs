@@ -118,7 +118,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
                 sourceType: DamageSourceType.EnemyAttack);
 
             tank.TakeDamage(info);
-            TextDamageManager.Instance?.Show(info.FinalDamage, tank.transform.position);
         }
 
         private static TankBrain ResolveTank(Collider2D col)

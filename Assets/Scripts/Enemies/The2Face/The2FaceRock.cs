@@ -85,7 +85,6 @@ namespace IronWasteland.Enemies.The2Face
                     false,
                     DamageSourceType.EnemyAttack);
                 tank.TakeDamage(info);
-                IronWasteland.TextDamageManager.Instance?.Show(info.FinalDamage, hit.bounds.center);
 
                 if (m_StunDuration > 0f)
                 {

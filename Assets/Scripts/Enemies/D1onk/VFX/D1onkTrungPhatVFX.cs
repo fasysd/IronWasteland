@@ -175,7 +175,6 @@ namespace IronWasteland.Enemies.D1onk.VFX
                 {
                     DamageInfo info = new DamageInfo(m_Owner, tank, m_Damage, 0f, transform.position, sourceType: DamageSourceType.EnemyAttack);
                     tank.TakeDamage(info);
-                    TextDamageManager.Instance?.Show(info.FinalDamage, tank.transform.position);
                 }
             }
         }

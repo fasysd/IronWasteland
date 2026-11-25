@@ -100,7 +100,6 @@ namespace IronWasteland.Tanks.Equipment
             if (target == null || !target.IsAlive) return;
             DamageInfo lightningDmg = new DamageInfo(Owner, target, rawDamage, Owner.FinalStats.ArmorPenetration, target.transform.position, sourceType: DamageSourceType.Accessory);
             target.TakeDamage(lightningDmg);
-            TextDamageManager.Instance?.Show(lightningDmg.FinalDamage, target.transform.position);
 
             target.ApplyCrowdControl(CrowdControlType.Slow, slowDuration, slowPercent);
         }

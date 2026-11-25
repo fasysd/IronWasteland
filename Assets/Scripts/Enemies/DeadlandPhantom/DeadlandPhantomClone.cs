@@ -185,7 +185,10 @@ namespace IronWasteland.Enemies.DeadlandPhantom
                     info.FinalDamage = finalDamage;
 
                     Model?.PlayHit();
-                    TextDamageManager.Instance?.Show(info.FinalDamage, transform.position);
+                    if (finalDamage > 0.01f)
+                    {
+                        CombatFeedback.Show(finalDamage, hitPoint, TextValueType.ShieldAbsorb);
+                    }
 
                     m_Boss.DamageCardinalShield(finalDamage);
                     if (!m_Boss.IsCardinalShieldActive)

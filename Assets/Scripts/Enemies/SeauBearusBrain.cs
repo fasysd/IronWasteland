@@ -514,7 +514,6 @@ namespace IronWasteland.Enemies
 
             target.TakeDamage(info);
             Heal(info.FinalDamage);
-            CombatFeedback.Show(info.FinalDamage, target.transform.position);
             Debug.Log("[SeauBearus] hút máu " + info.FinalDamage.ToString("0.0") + " -> HP " + CurrentHealth.ToString("0.0"));
         }
 
@@ -550,7 +549,6 @@ namespace IronWasteland.Enemies
 
                 DamageInfo info = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
                 tank.TakeDamage(info);
-                CombatFeedback.Show(info.FinalDamage, tank.transform.position);
             }
 
             for (int i = 0; i < trailPatchCount; i++)
@@ -712,7 +710,6 @@ namespace IronWasteland.Enemies
 
                 DamageInfo info = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
                 tank.TakeDamage(info);
-                TextDamageManager.Instance?.Show(info.FinalDamage, tank.transform.position);
             }
         }
 
@@ -820,7 +817,6 @@ namespace IronWasteland.Enemies
 
             DamageInfo reflect = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
             tank.TakeDamage(reflect);
-            TextDamageManager.Instance?.Show(reflect.FinalDamage, tank.transform.position);
         }
 
         #endregion
@@ -1038,7 +1034,6 @@ namespace IronWasteland.Enemies
 
                 DamageInfo info = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
                 tank.TakeDamage(info);
-                TextDamageManager.Instance?.Show(info.FinalDamage, tank.transform.position);
 
                 if (tank.IsAlive)
                 {
@@ -1209,9 +1204,9 @@ namespace IronWasteland.Enemies
             m_RedShieldHp = Mathf.Max(0f, m_RedShieldHp - Mathf.Max(0f, amount));
 
             Vector2 showPosition = redShieldVisual != null ? (Vector2)redShieldVisual.transform.position : (Vector2)transform.position;
-            if (amount > 0f)
+            if (amount > 0.01f)
             {
-                TextDamageManager.Instance?.Show(amount, showPosition);
+                CombatFeedback.Show(amount, showPosition, TextValueType.ShieldAbsorb);
             }
 
             if (m_RedShieldHp <= 0f)

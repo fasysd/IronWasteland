@@ -158,7 +158,6 @@ namespace IronWasteland.Tanks.GreenFox
                 else
                 {
                     m_OwnerEnemy.TakeDamage(m_TickDamage);
-                    CombatFeedback.Show(m_TickDamage, transform.position);
                 }
             }
 

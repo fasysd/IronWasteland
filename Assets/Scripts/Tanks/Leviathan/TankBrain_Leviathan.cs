@@ -634,7 +634,6 @@ namespace IronWasteland.Tanks.Leviathan
             // Gây sát thương lên kẻ địch
             DamageInfo info = new DamageInfo(this, enemy, finalDmg, Stats.ArmorPenetration, enemy.transform.position, sourceType: DamageSourceType.NormalSkill);
             enemy.TakeDamage(info);
-            CombatFeedback.Show(info.FinalDamage, enemy.transform.position);
 
             // Tích lũy năng lượng cho xe tăng khi đánh trúng
             float gain = energyGainPerHit > 0f ? energyGainPerHit : normalSkillEnergyGain;
@@ -712,7 +711,6 @@ namespace IronWasteland.Tanks.Leviathan
             float damage = CalculateSkillDamage(attackScale, maxHealthRatio);
             DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, enemy.transform.position, sourceType: DamageSourceType.SpecialSkill);
             enemy.TakeDamage(info);
-            CombatFeedback.Show(info.FinalDamage, enemy.transform.position);
         }
 
         private SpecializedSkill_Leviathan GetSpecializedSkillFromPool()

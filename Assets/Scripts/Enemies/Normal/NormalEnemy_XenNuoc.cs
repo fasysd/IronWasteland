@@ -342,7 +342,6 @@ namespace IronWasteland.Enemies.Normal
 
             DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
             tank.TakeDamage(damageInfo);
-            CombatFeedback.Show(damageInfo.FinalDamage, tank.transform.position);
 
             // GDD: Tong trung gay 100% Tan cong va day lui tank
             tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Knockback, 0.3f, knockbackDistance);

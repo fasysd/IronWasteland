@@ -15,7 +15,7 @@ namespace IronWasteland.Net
     public class NetCombatFeedback : MonoBehaviour
     {
         private const string MessageName = "IW.CombatFeedback";
-        private const int MessageSize = 16;
+        private const int MessageSize = 20;
 
         /// <summary>Gộp các tick sát thương theo thời gian (DoT) để khỏi gửi mỗi tick.</summary>
         private const float GroupWindow = 0.5f;
@@ -26,15 +26,16 @@ namespace IronWasteland.Net
         /// <summary>Instance trong scene; host và client đều có.</summary>
         public static NetCombatFeedback Instance { get; private set; }
 
-        private readonly System.Collections.Generic.Dictionary<long, PendingFeedback> m_Pending = new();
+        private readonly System.Collections.Generic.Dictionary<(long Bucket, TextValueType Type), PendingFeedback> m_Pending = new();
         private float m_NextFlushTime;
         private bool m_Registered;
 
-        /// <summary>Số đang chờ gộp cho một ô vị trí.</summary>
+        /// <summary>Số đang chờ gộp cho một ô vị trí và loại text.</summary>
         private struct PendingFeedback
         {
             public float Amount;
             public Vector3 Position;
+            public TextValueType Type;
         }
 
         private void Awake()
@@ -88,13 +89,13 @@ namespace IronWasteland.Net
         }
 
         /// <summary>Host gọi sau khi đã hiện chữ cục bộ; số sẽ được gộp rồi gửi mỗi 0,5 s một lần.</summary>
-        public void Broadcast(float amount, Vector3 worldPosition)
+        public void Broadcast(float amount, Vector3 worldPosition, TextValueType type = TextValueType.EnemyDamage)
         {
             NetworkManager manager = NetworkManager.Singleton;
             if (manager == null || !manager.IsServer || manager.CustomMessagingManager == null) return;
             if (amount <= 0f) return;
 
-            long key = GetBucketKey(worldPosition);
+            var key = (GetBucketKey(worldPosition), type);
             if (m_Pending.TryGetValue(key, out PendingFeedback pending))
             {
                 pending.Amount += amount;
@@ -102,7 +103,7 @@ namespace IronWasteland.Net
             }
             else
             {
-                m_Pending[key] = new PendingFeedback { Amount = amount, Position = worldPosition };
+                m_Pending[key] = new PendingFeedback { Amount = amount, Position = worldPosition, Type = type };
             }
         }
 
@@ -113,11 +114,12 @@ namespace IronWasteland.Net
             if (manager == null || !manager.IsListening || !manager.IsServer || manager.CustomMessagingManager == null) return;
             if (Time.time < m_NextFlushTime) return;
 
-            foreach (System.Collections.Generic.KeyValuePair<long, PendingFeedback> entry in m_Pending)
+            foreach (System.Collections.Generic.KeyValuePair<(long Bucket, TextValueType Type), PendingFeedback> entry in m_Pending)
             {
                 using FastBufferWriter writer = new(MessageSize, Allocator.Temp);
                 writer.WriteValueSafe(entry.Value.Amount);
                 writer.WriteValueSafe((Vector2)entry.Value.Position);
+                writer.WriteValueSafe((byte)entry.Value.Type);
                 manager.CustomMessagingManager.SendNamedMessageToAll(MessageName, writer);
             }
 
@@ -138,7 +140,8 @@ namespace IronWasteland.Net
             if (senderClientId != NetworkManager.ServerClientId) return; // chỉ host được phát số sát thương
             reader.ReadValueSafe(out float amount);
             reader.ReadValueSafe(out Vector2 position);
-            TextDamageManager.Instance?.Show(amount, position);
+            reader.ReadValueSafe(out byte rawType);
+            TextValueManager.Instance?.Show(amount, position, (TextValueType)rawType);
         }
     }
 }

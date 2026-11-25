@@ -205,7 +205,6 @@ namespace IronWasteland.Tanks.Leviathan
             {
                 DamageInfo info = new DamageInfo(ownerTank, enemy, damage, ownerTank != null ? ownerTank.Stats.ArmorPenetration : 0f, enemy.transform.position, sourceType: DamageSourceType.OptionSkill2);
                 enemy.TakeDamage(info);
-                CombatFeedback.Show(info.FinalDamage, enemy.transform.position);
 
                 StartCoroutine(PullEnemyToCenter(enemy, centerPosition));
             }

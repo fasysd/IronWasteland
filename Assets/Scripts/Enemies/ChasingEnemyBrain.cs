@@ -235,7 +235,6 @@ namespace IronWasteland.Enemies
 
                 DamageInfo info = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
                 tank.TakeDamage(info);
-                CombatFeedback.Show(info.FinalDamage, tank.transform.position);
             }
 
             return damaged.Count;

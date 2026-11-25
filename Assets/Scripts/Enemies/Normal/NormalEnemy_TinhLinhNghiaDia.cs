@@ -170,7 +170,6 @@ namespace IronWasteland.Enemies.Normal
 
                 DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
                 tank.TakeDamage(damageInfo);
-                CombatFeedback.Show(damageInfo.FinalDamage, tank.transform.position);
 
                 // GDD: Giảm 20% Tốc độ trong 2s, kích hoạt lại sẽ đặt lại thời gian duy trì
                 tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Slow, 2.0f, 0.20f);

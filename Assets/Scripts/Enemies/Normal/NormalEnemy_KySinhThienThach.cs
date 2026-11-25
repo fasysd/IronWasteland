@@ -239,7 +239,6 @@ namespace IronWasteland.Enemies.Normal
                     // 1. Gây sát thương 100% tấn công chuẩn DamageInfo
                     DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
                     tank.TakeDamage(damageInfo);
-                    CombatFeedback.Show(damageInfo.FinalDamage, tank.transform.position);
 
                     // 2. Làm chậm tốc độ di chuyển của Tank qua CrowdControl
                     tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Slow, slowDuration, slowPercent);

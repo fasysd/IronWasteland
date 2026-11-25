@@ -76,7 +76,6 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
                 sourceType: DamageSourceType.EnemyAttack);
 
             tank.TakeDamage(info);
-            TextDamageManager.Instance?.Show(info.FinalDamage, tank.transform.position);
 
             // Xác định hướng đẩy dạt sang bên trái hoặc bên phải của đường lướt
             Vector2 perp = new Vector2(-m_DashDirection.y, m_DashDirection.x);

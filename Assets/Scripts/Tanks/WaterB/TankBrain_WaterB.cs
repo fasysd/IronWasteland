@@ -178,7 +178,6 @@ namespace IronWasteland.Tanks.WaterB
             if (target == null || amount <= 0f) return;
 
             target.Heal(amount);
-            CombatFeedback.Show(amount, target.transform.position);
         }
 
         private Vector3 GetValidPlacementPosition()
@@ -253,7 +252,6 @@ namespace IronWasteland.Tanks.WaterB
 
             DamageInfo info = new DamageInfo(this, enemy, finalDamage, Stats.ArmorPenetration, enemyPos, sourceType: sourceType);
             enemy.TakeDamage(info);
-            CombatFeedback.Show(info.FinalDamage, enemyPos);
 
             ApplyLifeDrain(finalDamage, enemyPos);
         }

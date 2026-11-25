@@ -5,7 +5,18 @@ using UnityEngine;
 namespace IronWasteland
 {
     /// <summary>
-    /// Singleton hien thi TextDamage (so sat thuong) bang pooling.
+    /// Phân loại giá trị hiển thị trên TextValueManager để chọn màu sắc tương ứng.
+    /// </summary>
+    public enum TextValueType : byte
+    {
+        EnemyDamage = 0,
+        TankDamage = 1,
+        Heal = 2,
+        ShieldAbsorb = 3
+    }
+
+    /// <summary>
+    /// Singleton hien thi TextValue (so sat thuong, hoi mau, khien chan) bang pooling.
     ///
     /// - Goi <see cref="Show(float, Vector3)"/>: truyen so sat thuong (float) va vi tri world.
     ///   So hien thi la float da lam tron sang int, chi chua so thuong (khong trang thai dac biet).
@@ -17,7 +28,7 @@ namespace IronWasteland
     /// Tu tao GameObject khi truy cap <see cref="Instance"/> neu chua co trong Scene.
     /// </summary>
     [DisallowMultipleComponent]
-    public class TextDamageManager : MonoBehaviour
+    public class TextValueManager : MonoBehaviour
     {
         #region Inspector fields
 
@@ -46,8 +57,17 @@ namespace IronWasteland
         [Tooltip("Co chu (world space).")]
         [SerializeField, Min(1)] private int fontSize = 14;
 
-        [Tooltip("Mau chu. Alpha thuc te = color.a nhan voi alphaOverLifetime.")]
-        [SerializeField] private Color color = Color.white;
+        [Tooltip("Mau chu sat thuong Enemy nhan tru vao mau.")]
+        [SerializeField] private Color enemyDamageColor = Color.red;
+
+        [Tooltip("Mau chu sat thuong Tank nhan tru vao mau.")]
+        [SerializeField] private Color tankDamageColor = Color.yellow;
+
+        [Tooltip("Mau chu gia tri hoi mau (Tank va Enemy).")]
+        [SerializeField] private Color healColor = Color.green;
+
+        [Tooltip("Mau chu gia tri bi chan boi khien (Tank va Enemy).")]
+        [SerializeField] private Color shieldAbsorbColor = new Color(0.25f, 0.75f, 1f, 1f);
 
         [Header("Text Outline")]
         [Tooltip("Mau vien chu TextDamage.")]
@@ -79,23 +99,23 @@ namespace IronWasteland
 
         #region Singleton
 
-        private static TextDamageManager m_Instance;
+        private static TextValueManager m_Instance;
 
         /// <summary>Đảm bảo cảnh báo thiếu Outline chỉ in một lần cho cả phiên.</summary>
         private static bool s_OutlineWarningLogged;
 
         /// <summary>Instance duy nhat. Tu tao GameObject neu chua co trong Scene.</summary>
-        public static TextDamageManager Instance
+        public static TextValueManager Instance
         {
             get
             {
                 if (m_Instance == null)
                 {
-                    m_Instance = FindAnyObjectByType<TextDamageManager>();
+                    m_Instance = FindAnyObjectByType<TextValueManager>();
                     if (m_Instance == null)
                     {
-                        var go = new GameObject(nameof(TextDamageManager));
-                        m_Instance = go.AddComponent<TextDamageManager>();
+                        var go = new GameObject(nameof(TextValueManager));
+                        m_Instance = go.AddComponent<TextValueManager>();
                     }
                 }
 
@@ -116,6 +136,7 @@ namespace IronWasteland
             public MeshRenderer Renderer;
             public Vector3 Direction;
             public Vector3 BaseScale;
+            public Color BaseColor;
             public float Elapsed;
         }
 
@@ -134,7 +155,7 @@ namespace IronWasteland
             // Guard instance trung: giu instance dau tien, huy cac cai sau.
             if (m_Instance != null && m_Instance != this)
             {
-                Debug.LogWarning($"[{nameof(TextDamageManager)}] Co instance trung, giu instance dau tien.");
+                Debug.LogWarning($"[{nameof(TextValueManager)}] Co instance trung, giu instance dau tien.");
                 Destroy(gameObject);
                 return;
             }
@@ -199,12 +220,12 @@ namespace IronWasteland
         #region Public API
 
         /// <summary>
-        /// Hien thi TextDamage tai vi tri world.
+        /// Hien thi TextValue tai vi tri world voi loai va mau tuong ung.
         /// </summary>
-        /// <param name="damage">Sat thuong (float, duoc lam tron sang int de hien thi).</param>
-        /// <param name="worldPosition">Vi tri gay sat thuong trong world space.</param>
-        public void Show(float damage, Vector3 worldPosition)
+        public void Show(float value, Vector3 worldPosition, TextValueType type = TextValueType.EnemyDamage)
         {
+            if (value <= 0f) return;
+
             ActiveItem item = RentItem();
 
             // Vi tri xuat hien: ngau nhien trong vung ban kinh quan vi tri gay sat thuong.
@@ -224,12 +245,13 @@ namespace IronWasteland
 
             item.Elapsed = 0f;
             item.Direction = direction;
+            item.BaseColor = GetColorForType(type);
             item.Transform.position = spawnPosition;
 
             // Dat font truoc text de TMP chon dung material/shader cua Font Asset.
             item.Text.font = font != null ? font : TMP_Settings.defaultFontAsset;
             item.Text.fontSize = fontSize;
-            item.Text.text = Mathf.RoundToInt(damage).ToString();
+            item.Text.text = Mathf.RoundToInt(value).ToString();
 
             // Buoc TMP cap nhat mesh/material truoc khi ghi cac property outline.
             item.Text.ForceMeshUpdate();
@@ -263,7 +285,7 @@ namespace IronWasteland
                 {
                     s_OutlineWarningLogged = true;
                     Debug.LogWarning(
-                        $"[{nameof(TextDamageManager)}] Font material khong ho tro Outline. " +
+                        $"[{nameof(TextValueManager)}] Font material khong ho tro Outline. " +
                         "Hay dung TMP Distance Field shader cho Font Asset.",
                         item.Go);
                 }
@@ -332,6 +354,18 @@ namespace IronWasteland
             };
         }
 
+        private Color GetColorForType(TextValueType type)
+        {
+            switch (type)
+            {
+                case TextValueType.EnemyDamage: return enemyDamageColor;
+                case TextValueType.TankDamage: return tankDamageColor;
+                case TextValueType.Heal: return healColor;
+                case TextValueType.ShieldAbsorb: return shieldAbsorbColor;
+                default: return enemyDamageColor;
+            }
+        }
+
         /// <summary>
         /// Ap dung alpha + scale theo 2 AnimationCurve RIENG tren tien do lifetime (0..1).
         /// </summary>
@@ -344,7 +378,7 @@ namespace IronWasteland
                 ? Mathf.Clamp01(scaleOverLifetime.Evaluate(progress))
                 : 1f;
 
-            Color displayColor = color;
+            Color displayColor = item.BaseColor;
             displayColor.a *= alphaMultiplier;
 
             item.Text.color = displayColor;

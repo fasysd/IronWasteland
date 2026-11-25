@@ -491,7 +491,6 @@ namespace IronWasteland.Enemies.D1onk
                 float blockDamage = bossAtk * redBlockDamageRatio;
                 DamageInfo blockDmg = new DamageInfo(m_Boss, blockingTank, blockDamage, 0f, blockingTank.transform.position, sourceType: DamageSourceType.EnemyAttack);
                 blockingTank.TakeDamage(blockDmg);
-                TextDamageManager.Instance?.Show(blockDmg.FinalDamage, blockingTank.transform.position);
 
                 // Đường điện bị tạm ngắt -> không tích lũy điện
             }

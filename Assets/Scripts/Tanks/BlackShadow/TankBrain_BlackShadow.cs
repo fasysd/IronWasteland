@@ -512,7 +512,6 @@ namespace IronWasteland.Tanks.BlackShadow
 
             DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, skillInstance.transform.position, sourceType: DamageSourceType.NormalSkill);
             enemy.TakeDamage(info);
-            CombatFeedback.Show(info.FinalDamage, skillInstance.transform.position);
 
             // Hồi 10 EN khi đánh trúng mục tiêu (GDD)
             GainEnergy(normalSkillEnergyGain, normalSkillIndex);
@@ -524,7 +523,6 @@ namespace IronWasteland.Tanks.BlackShadow
                 float bonusDamage = CombatUtility.CalculateTankRawDamage(Stats.Attack, 2.0f, Stats.DamageRate);
                 DamageInfo bonusInfo = new DamageInfo(this, enemy, bonusDamage, Stats.ArmorPenetration, enemy.transform.position, sourceType: DamageSourceType.OptionSkill2);
                 enemy.TakeDamage(bonusInfo);
-                CombatFeedback.Show(bonusInfo.FinalDamage, enemy.transform.position);
             }
 
             if (!enemy.IsAlive && isEnhanced)
@@ -724,7 +722,6 @@ namespace IronWasteland.Tanks.BlackShadow
 
             DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, skillInstance.transform.position, sourceType: DamageSourceType.SpecialSkill);
             enemy.TakeDamage(info);
-            CombatFeedback.Show(info.FinalDamage, enemy.transform.position);
 
             if (!enemy.IsAlive && isEnhanced)
             {

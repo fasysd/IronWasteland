@@ -980,14 +980,8 @@ namespace IronWasteland.Tanks
                     isDirectToHealth: true,
                     isRedirected: true);
 
-                // Đo máu trước/sau để in đúng lượng máu người gánh mất (đã trừ giáp của họ).
-                float healthBefore = protector.CurrentHealth;
+                // Để người gánh tự xử lý TakeDamage và hiển thị số sát thương nhận vào.
                 protector.TakeDamage(redirected);
-                float healthLost = Mathf.Max(0f, healthBefore - protector.CurrentHealth);
-                if (healthLost > 0f)
-                {
-                    CombatFeedback.Show(healthLost, protector.transform.position + Vector3.up);
-                }
 
                 if (info.RawDamage <= 0f) break;
             }
@@ -1105,6 +1099,18 @@ namespace IronWasteland.Tanks
 
             currentHealth = Mathf.Max(0f, currentHealth);
 
+            Vector3 showPos = info.HitPosition != Vector2.zero ? (Vector3)info.HitPosition : transform.position;
+            float healthDamage = info.HealthDamage;
+            if (healthDamage > 0.01f)
+            {
+                CombatFeedback.Show(healthDamage, showPos, TextValueType.TankDamage);
+            }
+
+            if (info.AbsorbedByShield > 0.01f)
+            {
+                CombatFeedback.Show(info.AbsorbedByShield, showPos, TextValueType.ShieldAbsorb);
+            }
+
             OnTakeDamageEvent?.Invoke(info);
             m_EquippedAccessory?.OnOwnerTookDamage(info);
 
@@ -1129,9 +1135,16 @@ namespace IronWasteland.Tanks
 
         public virtual void Heal(float amount)
         {
-            if (!IsAlive) return;
+            if (!IsAlive || amount <= 0f) return;
             if (!HasGameplayAuthority) return;
+            float prevHealth = currentHealth;
             currentHealth = Mathf.Min(currentHealth + amount, EffectiveMaxHealth);
+            float actualHealed = currentHealth - prevHealth;
+            if (actualHealed > 0.01f)
+            {
+                CombatFeedback.Show(actualHealed, transform.position, TextValueType.Heal);
+            }
+
             OnHealEvent?.Invoke(amount);
             m_EquippedAccessory?.OnOwnerHealed(amount);
         }
@@ -1181,7 +1194,6 @@ namespace IronWasteland.Tanks
             if (hitPosition == default) hitPosition = target.transform.position;
             DamageInfo info = new DamageInfo(this, target, rawDamage, m_FinalStats.ArmorPenetration, hitPosition, sourceType: sourceType);
             target.TakeDamage(info);
-            CombatFeedback.Show(info.FinalDamage, hitPosition);
         }
 
         protected virtual void Die()

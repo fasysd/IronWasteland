@@ -194,7 +194,6 @@ namespace IronWasteland.Enemies.Normal
 
                 DamageInfo damageInfo = new DamageInfo(this, tank, finalDamage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
                 tank.TakeDamage(damageInfo);
-                CombatFeedback.Show(damageInfo.FinalDamage, tank.transform.position);
             }
         }
     }

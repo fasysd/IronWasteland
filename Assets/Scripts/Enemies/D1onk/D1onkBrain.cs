@@ -559,7 +559,6 @@ namespace IronWasteland.Enemies.D1onk
                 // Nhánh gần nhất: 150% ATK + giảm 20% DEF trong 5s
                 DamageInfo dmg = new DamageInfo(this, nearest, atk * 1.50f, 0f, nearest.transform.position, sourceType: DamageSourceType.EnemyAttack);
                 nearest.TakeDamage(dmg);
-                TextDamageManager.Instance?.Show(dmg.FinalDamage, nearest.transform.position);
 
                 nearest.AddBonusStats("D1onk_TrungPhat_Def", null, new TankStats { Defense = -0.20f });
                 StartCoroutine(RemoveBonusAfterDelay(nearest, "D1onk_TrungPhat_Def", 5.0f));
@@ -620,7 +619,6 @@ namespace IronWasteland.Enemies.D1onk
                 {
                     DamageInfo info = new DamageInfo(this, target, tickDmg, 0f, target.transform.position, sourceType: DamageSourceType.EnemyAttack);
                     target.TakeDamage(info);
-                    TextDamageManager.Instance?.Show(info.FinalDamage, target.transform.position);
                 }
             }
             m_LaserCoroutine = null;
@@ -655,7 +653,6 @@ namespace IronWasteland.Enemies.D1onk
 
                     DamageInfo info = new DamageInfo(this, t, finalDmg, 0f, t.transform.position, sourceType: DamageSourceType.EnemyAttack);
                     t.TakeDamage(info);
-                    TextDamageManager.Instance?.Show(info.FinalDamage, t.transform.position);
                 }
             }
 

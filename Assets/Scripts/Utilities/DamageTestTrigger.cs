@@ -126,7 +126,6 @@ namespace IronWasteland
 
             if (showDamageText && totalDealt > 0f)
             {
-                CombatFeedback.Show(totalDealt, tank.transform.position);
             }
         }
     }

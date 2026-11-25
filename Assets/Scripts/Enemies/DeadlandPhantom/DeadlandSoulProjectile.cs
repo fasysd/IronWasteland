@@ -138,7 +138,6 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             if (tank == null || !tank.IsAlive || m_Damage <= 0f) return;
             DamageInfo info = new DamageInfo(m_Owner, tank, m_Damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
             tank.TakeDamage(info);
-            TextDamageManager.Instance?.Show(info.FinalDamage, tank.transform.position);
         }
 
         public static TankBrain ResolveTankBrain(Collider2D col)

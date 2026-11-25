@@ -156,7 +156,6 @@ namespace IronWasteland.Enemies.Normal
             float damage = Stats != null ? Stats.Attack : 10f;
             DamageInfo damageInfo = new DamageInfo(this, target, damage, 0f, target.transform.position, sourceType: DamageSourceType.EnemyAttack);
             target.TakeDamage(damageInfo);
-            CombatFeedback.Show(damageInfo.FinalDamage, target.transform.position);
 
             // GDD: Hiệu ứng thiêu đốt gây 15% Tấn công mỗi 1s, duy trì 5s. Gán lại sẽ đặt lại thời gian duy trì.
             float burnDamagePerSecond = damage * 0.15f;

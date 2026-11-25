@@ -774,6 +774,12 @@ namespace IronWasteland.Enemies.ElementalReaper
                 float resolved = CombatUtility.ResolveDamage(info.RawDamage, Stats != null ? Stats.Defense : 0f, info.ArmorPenetration);
                 float absorbed = Mathf.Min(m_ElementalShieldAmount, resolved);
                 m_ElementalShieldAmount -= absorbed;
+                if (absorbed > 0.01f)
+                {
+                    Vector3 showPos = info.HitPosition != Vector2.zero ? (Vector3)info.HitPosition : transform.position;
+                    CombatFeedback.Show(absorbed, showPos, TextValueType.ShieldAbsorb);
+                }
+
                 if (m_ElementalShieldAmount <= 0f)
                 {
                     m_ElementalShieldAmount = 0f;
