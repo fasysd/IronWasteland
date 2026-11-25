@@ -1,3 +1,4 @@
+using IronWasteland.Core;
 using IronWasteland.Net;
 using IronWasteland.Tanks;
 using IronWasteland.Utilities;
@@ -114,8 +115,9 @@ namespace IronWasteland.Enemies
 
             if (damage > 0f && m_Target != null)
             {
-                m_Target.TakeDamage(damage);
-                CombatFeedback.Show(damage, m_Target.transform.position);
+                DamageInfo info = new DamageInfo(this, m_Target, damage, 0f, m_Target.transform.position, sourceType: DamageSourceType.EnemyAttack);
+                m_Target.TakeDamage(info);
+                CombatFeedback.Show(info.FinalDamage, m_Target.transform.position);
             }
 
             IronWasteland.Net.NetEntity.Despawn(gameObject);

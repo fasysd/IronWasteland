@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3415671714785424697
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5983231726695787050}
+  - component: {fileID: 1605683725634219162}
+  m_Layer: 0
+  m_Name: Accessory_05_BlackMoonCore
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5983231726695787050
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3415671714785424697}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1605683725634219162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3415671714785424697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d66d0b25bb600fe4a8d2763459902412, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_05_BlackMoonCore
+  equipmentId: Acc_05
+  displayName: "L\xF5i Ma Ph\xE1p H\u1EAFc Nguy\u1EC7t"
+  description: "+25% Gi\u1EDBi h\u1EA1n m\xE1u.\nPh\xE1t tr\u01B0\u1EDDng b\u1EE9c
+    x\u1EA1 xung quanh xe trong ph\u1EA1m vi b\xE1n k\xEDnh 2.5m l\xE0m k\u1EBB \u0111\u1ECBch
+    b\u1ECB gi\u1EA3m 20% T\u1ED1c \u0111\u1ED9 di chuy\u1EC3n v\xE0 gi\u1EA3m 15%
+    T\u1EA5n c\xF4ng."
+  icon: {fileID: 0}
+  baseMaxHealthMultiplier: 0.25
+  auraRadius: 2.5
+  slowPercent: 0.2
+  attackDebuffPercent: 0.15
+  pulseInterval: 0.3

@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4217317613911734896
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5561052024660762036}
+  - component: {fileID: 5058718884412959689}
+  m_Layer: 0
+  m_Name: Accessory_03_PhotonConvergence
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5561052024660762036
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4217317613911734896}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5058718884412959689
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4217317613911734896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ba96b3e25742e44589daaef27082d87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_03_PhotonConvergence
+  equipmentId: Acc_03
+  displayName: "L\xF5i Ma Ph\xE1p H\u1ED9i T\u1EE5 Quang T\u1EED"
+  description: "+18% T\u1EC9 l\u1EC7 s\xE1t th\u01B0\u01A1ng, +15% T\u1EC9 l\u1EC7
+    xuy\xEAn gi\xE1p.\nKhi d\xF9ng K\u1EF9 n\u0103ng th\u01B0\u1EDDng t\u1EA5n c\xF4ng
+    tr\xFAng m\u1EE5c ti\xEAu, n\u1EBFu kho\u1EA3ng c\xE1ch t\u1EDBi m\u1EE5c ti\xEAu
+    l\u1EDBn h\u01A1n 7m s\u1EBD t\u0103ng 25% T\u1EC9 l\u1EC7 s\xE1t th\u01B0\u01A1ng
+    trong 1s. K\xEDch ho\u1EA1t l\u1EA1i hi\u1EC7u \u1EE9ng s\u1EBD \u0111\u1EB7t
+    l\u1EA1i th\u1EDDi gian h\u1ED3i."
+  icon: {fileID: 0}
+  baseDamageRateMultiplier: 0.18
+  baseArmorPenetrationMultiplier: 0.15
+  distanceThreshold: 7
+  bonusDamageRate: 0.25
+  buffDuration: 1

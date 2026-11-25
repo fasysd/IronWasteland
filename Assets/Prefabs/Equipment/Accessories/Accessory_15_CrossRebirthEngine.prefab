@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7659443565954119928
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8548552316678556205}
+  - component: {fileID: 572672261498469661}
+  m_Layer: 0
+  m_Name: Accessory_15_CrossRebirthEngine
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8548552316678556205
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7659443565954119928}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &572672261498469661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7659443565954119928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55ba0afff1acefa4995d325f6ee10cc8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_15_CrossRebirthEngine
+  equipmentId: Acc_15
+  displayName: "L\xF5i \u0110\u1ED9ng C\u01A1 T\xE1i Sinh Ch\u1EEF Th\u1EADp"
+  description: "+30% Gi\u1EDBi h\u1EA1n m\xE1u.\nT\u1EF1 s\u1EEDa ch\u1EEFa 1.5%
+    m\xE1u t\u1ED1i \u0111a m\u1ED7i gi\xE2y; khi m\xE1u d\u01B0\u1EDBi 40%, t\u1ED1c
+    \u0111\u1ED9 s\u1EEDa ch\u1EEFa t\u0103ng g\u1EA5p \u0111\xF4i (3%/s) v\xE0 +25%
+    ph\xF2ng th\u1EE7."
+  icon: {fileID: 0}
+  baseMaxHealthMultiplier: 0.3
+  normalRegenPerSecond: 0.015
+  lowHealthThreshold: 0.4
+  lowHealthRegenPerSecond: 0.03
+  lowHealthBonusDefense: 0.25

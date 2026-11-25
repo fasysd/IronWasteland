@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7169898582928625851
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7073714257915848322}
+  - component: {fileID: 6201815960453548272}
+  m_Layer: 0
+  m_Name: Accessory_17_ElementalTwinLink
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7073714257915848322
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7169898582928625851}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6201815960453548272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7169898582928625851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59a85fac4f8cb8e4986f558599f91c25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_17_ElementalTwinLink
+  equipmentId: Acc_17
+  displayName: "L\xF5i Li\xEAn K\u1EBFt Song Tinh Nguy\xEAn T\u1ED1"
+  description: "+15% Gi\u1EDBi h\u1EA1n m\xE1u, +25% Ph\xF2ng th\u1EE7.\nN\u1ED1i
+    c\xE1p v\u1EDBi 1 xe \u0111\u1ED3ng minh th\u1EA5p m\xE1u nh\u1EA5t \u1EDF g\u1EA7n,
+    chuy\u1EC3n 20% s\xE1t th\u01B0\u01A1ng nh\u1EADn v\xE0o c\u1EE7a \u0111\u1ED3ng
+    minh sang cho b\u1EA3n th\xE2n. S\xE1t th\u01B0\u01A1ng chuy\u1EC3n n\xE0y s\u1EBD
+    tr\u1EEB tr\u1EF1c ti\u1EBFp v\xE0o m\xE1u. Khi kh\xF4ng c\xF3 \u0111\u1ED3ng
+    minh xung quanh \u0111\u1EC3 n\u1ED1i c\xE1p, s\u1EBD nh\u1EADn 50% Ph\xF2ng
+    th\u1EE7."
+  icon: {fileID: 0}
+  baseMaxHealthMultiplier: 0.15
+  baseDefenseMultiplier: 0.25
+  searchRadius: 10
+  sharedDamageRatio: 0.2
+  soloDefenseBonus: 0.5

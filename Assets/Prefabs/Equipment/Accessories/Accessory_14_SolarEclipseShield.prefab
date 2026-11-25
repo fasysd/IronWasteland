@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7359642230399408893
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6873483494151958152}
+  - component: {fileID: 7331237322862463928}
+  m_Layer: 0
+  m_Name: Accessory_14_SolarEclipseShield
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6873483494151958152
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7359642230399408893}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7331237322862463928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7359642230399408893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfa9ac0845869a84194d472bee352155, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_14_SolarEclipseShield
+  equipmentId: Acc_14
+  displayName: "L\xF5i Ma Tr\u1EADn Khi\xEAn Nh\u1EADt Th\u1EF1c"
+  description: "+20% Gi\u1EDBi h\u1EA1n m\xE1u, +60 Gi\u1EDBi h\u1EA1n n\u0103ng
+    l\u01B0\u1EE3ng.\nM\u1ED7i khi d\xF9ng k\u1EF9 n\u0103ng ti\xEAu hao n\u0103ng
+    l\u01B0\u1EE3ng, nh\u1EADn l\xE1 ch\u1EAFn h\u1EA5p th\u1EE5 s\xE1t th\u01B0\u01A1ng
+    b\u1EB1ng 12% m\xE1u t\u1ED1i \u0111a trong 6s (h\u1ED3i 6s)."
+  icon: {fileID: 0}
+  baseMaxHealthMultiplier: 0.2
+  baseMaxEnergy: 60
+  shieldHealthRatio: 0.12
+  shieldDuration: 6
+  shieldCooldown: 6

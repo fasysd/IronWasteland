@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Tanks;
 using IronWasteland.Utilities;
 using UnityEngine;
@@ -148,7 +149,7 @@ namespace IronWasteland.Enemies
         }
 
         /// <summary>Gay sat thuong cho tank nam tren duong thang tu origin theo huong direction.</summary>
-        private static int DamageTanksAlongLine(Vector2 origin, Vector2 direction, float length, float halfWidth, float damage)
+        private int DamageTanksAlongLine(Vector2 origin, Vector2 direction, float length, float halfWidth, float damage)
         {
             if (damage <= 0f) return 0;
 
@@ -171,8 +172,9 @@ namespace IronWasteland.Enemies
                 float gap = DistancePointToSegment(tank.transform.position, origin, end);
                 if (gap > halfWidth + tankRadius) continue;
 
-                tank.TakeDamage(damage);
-                CombatFeedback.Show(damage, tank.transform.position);
+                DamageInfo info = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
+                tank.TakeDamage(info);
+                CombatFeedback.Show(info.FinalDamage, tank.transform.position);
             }
 
             return damaged.Count;

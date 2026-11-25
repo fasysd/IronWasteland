@@ -1,3 +1,4 @@
+using IronWasteland.Core;
 using IronWasteland.Enemies;
 using IronWasteland.Net;
 using System;
@@ -107,7 +108,7 @@ namespace IronWasteland.Tanks.GreenFox
             }
 
             // Sát thương cơ bản
-            m_OwnerTank.DamageEnemy(enemy, m_Damage, hitPos);
+            m_OwnerTank.DamageEnemy(enemy, m_Damage, hitPos, sourceType: DamageSourceType.NormalSkill);
 
             // 25%: thường bị trói chân, Tinh anh nhận thêm sát thương
             if (Random.Range(0f, 100f) < procChancePercent)
@@ -115,7 +116,7 @@ namespace IronWasteland.Tanks.GreenFox
                 if (enemy is EliteEnemyBrain)
                 {
                     float bonus = m_OwnerTank.ScaledDamage(eliteBonusDamagePercent / 100f);
-                    m_OwnerTank.DamageEnemy(enemy, bonus, hitPos);
+                    m_OwnerTank.DamageEnemy(enemy, bonus, hitPos, sourceType: DamageSourceType.NormalSkill);
                 }
                 else if (m_OwnerTank.RootEnemy(enemy, rootDuration))
                 {

@@ -58,6 +58,23 @@ namespace IronWasteland.Core
         /// </summary>
         public bool IsDamageOverTime;
 
+        /// <summary>
+        /// Nguồn gốc / Loại của đòn đánh (NormalSkill, SpecialSkill, Accessory, EnemyAttack, v.v.).
+        /// </summary>
+        public DamageSourceType SourceType;
+
+        /// <summary>True nếu đòn đánh xuất phát từ Kỹ năng thường (Skill 0) của Tank.</summary>
+        public bool IsNormalSkill => SourceType == DamageSourceType.NormalSkill;
+
+        /// <summary>True nếu đòn đánh xuất phát từ bất kỳ Kỹ năng nào của Tank.</summary>
+        public bool IsTankSkill => SourceType == DamageSourceType.NormalSkill ||
+                                   SourceType == DamageSourceType.SpecialSkill ||
+                                   SourceType == DamageSourceType.OptionSkill1 ||
+                                   SourceType == DamageSourceType.OptionSkill2;
+
+        /// <summary>True nếu đòn đánh xuất phát từ kỹ năng bị động của Phụ kiện.</summary>
+        public bool IsAccessoryDamage => SourceType == DamageSourceType.Accessory;
+
         /// <summary>Sát thương thực tế trừ vào máu sau khi trừ đi phần khiên đã hấp thụ.</summary>
         public float HealthDamage => Mathf.Max(0f, FinalDamage - Mathf.Max(0f, AbsorbedByShield));
 
@@ -69,7 +86,8 @@ namespace IronWasteland.Core
             Vector2 hitPosition = default,
             bool isDirectToHealth = false,
             bool isRedirected = false,
-            bool isDamageOverTime = false)
+            bool isDamageOverTime = false,
+            DamageSourceType sourceType = DamageSourceType.Default)
         {
             Attacker = attacker;
             Target = target;
@@ -81,6 +99,7 @@ namespace IronWasteland.Core
             IsDirectToHealth = isDirectToHealth;
             IsRedirected = isRedirected;
             IsDamageOverTime = isDamageOverTime;
+            SourceType = sourceType;
         }
     }
 }

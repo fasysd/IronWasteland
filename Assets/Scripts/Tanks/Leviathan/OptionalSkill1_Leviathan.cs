@@ -1,4 +1,5 @@
 using IronWasteland;
+using IronWasteland.Core;
 using IronWasteland.Enemies;
 using IronWasteland.Tanks;
 using System;
@@ -219,8 +220,9 @@ namespace IronWasteland.Tanks.Leviathan
             // Gây sát thương lên tất cả kẻ địch trúng vụ nổ
             foreach (EnemyBrain enemy in affectedEnemies)
             {
-                enemy.TakeDamage(explosionDamage);
-                CombatFeedback.Show(explosionDamage, enemy.transform.position);
+                DamageInfo info = new DamageInfo(ownerTank, enemy, explosionDamage, ownerTank != null ? ownerTank.Stats.ArmorPenetration : 0f, enemy.transform.position, sourceType: DamageSourceType.OptionSkill1);
+                enemy.TakeDamage(info);
+                CombatFeedback.Show(info.FinalDamage, enemy.transform.position);
             }
 
             OnArmorStateChange?.Invoke(false);

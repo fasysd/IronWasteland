@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Net;
 using IronWasteland.Tanks;
 using IronWasteland.Utilities;
@@ -7,9 +8,9 @@ using UnityEngine;
 namespace IronWasteland.Enemies
 {
     /// <summary>
-    /// Vet lua (hoac vung sat thuong dung yen) do quai de lai tren san.
-    /// Theo tai lieu: ban kinh 1.5m, ton tai 5s, gay 100% Tan cong moi 1s
-    /// va lam cham 20% toc do trong 2s.
+    /// Vết lửa (hoặc vùng sát thương đứng yên) do quái để lại trên sàn.
+    /// Theo tài liệu: bán kính 1.5m, tồn tại 5s, gây 100% Tấn công mỗi 1s
+    /// và làm chậm 20% tốc độ trong 2s.
     /// </summary>
     [DisallowMultipleComponent]
     public class FlamePatch : MonoBehaviour
@@ -26,14 +27,15 @@ namespace IronWasteland.Enemies
         private SpriteRenderer m_Renderer;
         private Color m_BaseColor = new Color(1f, 0.45f, 0.1f, 0.45f);
 
-        /// <summary>Tao mot vet lua tai vi tri chi dinh va tu huy sau khi het thoi gian ton tai.</summary>
+        /// <summary>Tạo một vết lửa tại vị trí chỉ định và tự hủy sau khi hết thời gian tồn tại.</summary>
         public static FlamePatch Spawn(
             Vector2 position,
             float radius,
             float lifetime,
             float damagePerTick,
             float slowPercent,
-            float slowDuration)
+            float slowDuration,
+            float tickInterval = 1f)
         {
             GameObject go = new GameObject("FlamePatch");
             go.transform.position = position;
@@ -42,6 +44,7 @@ namespace IronWasteland.Enemies
             patch.m_Radius = Mathf.Max(0.05f, radius);
             patch.m_Lifetime = Mathf.Max(0.05f, lifetime);
             patch.m_DamagePerTick = Mathf.Max(0f, damagePerTick);
+            patch.m_TickInterval = Mathf.Max(0.05f, tickInterval);
             patch.m_SlowPercent = Mathf.Clamp01(slowPercent);
             patch.m_SlowDuration = Mathf.Max(0f, slowDuration);
             patch.BuildVisual();
@@ -58,7 +61,7 @@ namespace IronWasteland.Enemies
             SpriteRenderer renderer = gameObject.AddComponent<SpriteRenderer>();
             renderer.sprite = SpriteFactory.SoftCircle;
             renderer.color = m_BaseColor;
-            // Sprite 64px @ 64 PPU = 1 don vi -> scale = duong kinh mong muon.
+            // Sprite 64px @ 64 PPU = 1 đơn vị -> scale = đường kính mong muốn.
             renderer.transform.localScale = Vector3.one * (m_Radius * 2f);
             renderer.sortingOrder = -1;
             m_Renderer = renderer;
@@ -103,8 +106,9 @@ namespace IronWasteland.Enemies
 
                 if (m_DamagePerTick > 0f)
                 {
-                    tank.TakeDamage(m_DamagePerTick);
-                    CombatFeedback.Show(m_DamagePerTick, tank.transform.position);
+                    DamageInfo info = new DamageInfo(this, tank, m_DamagePerTick, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
+                    tank.TakeDamage(info);
+                    CombatFeedback.Show(info.FinalDamage, tank.transform.position);
                 }
 
                 if (m_SlowPercent > 0f && m_SlowDuration > 0f)

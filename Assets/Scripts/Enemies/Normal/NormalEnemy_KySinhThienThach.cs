@@ -237,7 +237,7 @@ namespace IronWasteland.Enemies.Normal
                     if (tank == null || !tank.IsAlive) continue;
 
                     // 1. Gây sát thương 100% tấn công chuẩn DamageInfo
-                    DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position);
+                    DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
                     tank.TakeDamage(damageInfo);
                     CombatFeedback.Show(damageInfo.FinalDamage, tank.transform.position);
 

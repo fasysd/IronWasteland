@@ -619,7 +619,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
-  owner: {fileID: 2227866231023619111}
+  owner: {fileID: 0}
 --- !u!114 &7183921048291048206
 MonoBehaviour:
   m_ObjectHideFlags: 0

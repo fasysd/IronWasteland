@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using IronWasteland.Core;
 using IronWasteland.Net;
 using IronWasteland.Tanks;
 using UnityEngine;
@@ -308,8 +309,9 @@ namespace IronWasteland.Enemies.Normal
             {
                 if (tank != null && tank.IsAlive)
                 {
-                    tank.TakeDamage(damage);
-                    CombatFeedback.Show(damage, tank.transform.position);
+                    DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
+                    tank.TakeDamage(damageInfo);
+                    CombatFeedback.Show(damageInfo.FinalDamage, tank.transform.position);
                 }
             }
         }

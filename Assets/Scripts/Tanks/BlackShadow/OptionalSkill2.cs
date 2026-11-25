@@ -124,8 +124,9 @@ namespace IronWasteland.Tanks.BlackShadow
                 ownerTank.Stats.Attack,
                 ambushDamageScale,
                 ownerTank.Stats.DamageRate);
-            enemy.TakeDamage(ambushDamage);
-            CombatFeedback.Show(ambushDamage, enemy.transform.position);
+            DamageInfo info = new DamageInfo(ownerTank, enemy, ambushDamage, ownerTank.Stats.ArmorPenetration, enemy.transform.position, sourceType: DamageSourceType.OptionSkill2);
+            enemy.TakeDamage(info);
+            CombatFeedback.Show(info.FinalDamage, enemy.transform.position);
 
             // 5. Hiển thị móng nanh ma quỷ cào xé tại vị trí kẻ địch
             Vector2 slashDir = (Vector2)enemy.transform.position - behindPos;

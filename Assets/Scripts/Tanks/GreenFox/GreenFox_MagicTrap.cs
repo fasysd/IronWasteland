@@ -1,4 +1,5 @@
 using System.Collections;
+using IronWasteland.Core;
 using IronWasteland.Enemies;
 using UnityEngine;
 
@@ -118,7 +119,7 @@ namespace IronWasteland.Tanks.GreenFox
             {
                 float damage = isElite ? m_EliteDamage : m_NormalDamage;
 
-                if (m_Owner != null) m_Owner.DamageEnemy(enemy, damage, explosionPos);
+                if (m_Owner != null) m_Owner.DamageEnemy(enemy, damage, explosionPos, sourceType: DamageSourceType.OptionSkill1);
                 else
                 {
                     enemy.TakeDamage(damage);

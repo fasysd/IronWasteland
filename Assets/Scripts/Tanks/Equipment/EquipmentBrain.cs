@@ -27,13 +27,6 @@ namespace IronWasteland.Tanks
         [Tooltip("Anh bieu tuong cho UI.")]
         [SerializeField] private Sprite icon;
 
-        [Header("Stats Bonuses")]
-        [Tooltip("Chi so cong phang (Flat bonus) khi trang bi.")]
-        [SerializeField] private TankStats flatBonus = TankStats.Zeroed();
-
-        [Tooltip("Chi so cong phan tram (Percent bonus) tinh theo BaseStats cua Tank (0.15 = +15%).")]
-        [SerializeField] private TankStats percentBonus = TankStats.Zeroed();
-
         // Runtime
         private TankBrain m_Owner;
         private bool m_IsEquipped;
@@ -42,8 +35,6 @@ namespace IronWasteland.Tanks
         public string DisplayName => displayName;
         public string Description => description;
         public Sprite Icon => icon;
-        public TankStats FlatBonus => flatBonus;
-        public TankStats PercentBonus => percentBonus;
         public TankBrain Owner => m_Owner;
         public bool IsEquipped => m_IsEquipped;
 
@@ -63,9 +54,6 @@ namespace IronWasteland.Tanks
             m_Owner = tank;
             m_IsEquipped = true;
 
-            string key = string.IsNullOrEmpty(equipmentId) ? name : equipmentId;
-            tank.AddBonusStats(key, flatBonus, percentBonus);
-
             OnEquipped(tank);
             return true;
         }
@@ -80,9 +68,6 @@ namespace IronWasteland.Tanks
             TankBrain prevOwner = m_Owner;
             m_IsEquipped = false;
             m_Owner = null;
-
-            string key = string.IsNullOrEmpty(equipmentId) ? name : equipmentId;
-            prevOwner.RemoveBonusStats(key);
 
             OnUnequipped(prevOwner);
             return true;
@@ -107,6 +92,12 @@ namespace IronWasteland.Tanks
 
         /// <summary>Goi khi Tank thi trien thanh cong 1 ky nang (0..3).</summary>
         public virtual void OnOwnerUsedSkill(int skillIndex) { }
+
+        /// <summary>Gọi khi Tank được hồi máu (Heal).</summary>
+        public virtual void OnOwnerHealed(float amount) { }
+
+        /// <summary>Gọi khi Tank nhận năng lượng từ kỹ năng (skillIndex = 0 là Skill thường).</summary>
+        public virtual void OnOwnerGainedEnergy(float amount, int skillIndex) { }
 
         #endregion
     }

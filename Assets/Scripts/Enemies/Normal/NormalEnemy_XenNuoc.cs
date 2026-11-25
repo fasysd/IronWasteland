@@ -340,7 +340,7 @@ namespace IronWasteland.Enemies.Normal
             float baseAtk = Stats != null ? Stats.Attack : 10f;
             float damage = baseAtk * damageMultiplier;
 
-            DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position);
+            DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
             tank.TakeDamage(damageInfo);
             CombatFeedback.Show(damageInfo.FinalDamage, tank.transform.position);
 

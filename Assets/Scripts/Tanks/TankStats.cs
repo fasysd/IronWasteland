@@ -14,7 +14,7 @@ namespace IronWasteland.Tanks
 
         [Header("Combat")]
         [Tooltip("Sat thuong co ban cua phao chinh.")]
-        public float Attack = 10f;
+        public float Attack;
 
         [Tooltip("Diem phong thu (flat stat) giam sat thuong nhan vao theo cong thuc Logarit.")]
         public float Defense;
@@ -27,24 +27,44 @@ namespace IronWasteland.Tanks
 
         [Header("Survivability")]
         [Tooltip("Luong mau toi da.")]
-        public float MaxHealth = 100f;
+        public float MaxHealth;
 
         [Tooltip("Luong nang luong toi da.")]
-        public float MaxEnergy = 50f;
+        public float MaxEnergy;
 
         [Header("Mobility")]
         [Tooltip("Toc do di chuyen (don vi/giay).")]
-        public float MoveSpeed = 3f;
+        public float MoveSpeed;
 
         [Header("Utility")]
         [Tooltip("Ti le giam hoi chieu (0..0.6, toi da 60%).")]
         public float CooldownReduction;
 
-        [Obsolete("Dung DamageRate thay the.")]
-        public float DamageMultiplier
+        public TankStats()
         {
-            get => DamageRate;
-            set => DamageRate = value;
+            Attack = 0f;
+            Defense = 0f;
+            DamageRate = 0f;
+            ArmorPenetration = 0f;
+            MaxHealth = 0f;
+            MaxEnergy = 0f;
+            MoveSpeed = 0f;
+            CooldownReduction = 0f;
+        }
+
+        public static TankStats DefaultBase()
+        {
+            return new TankStats
+            {
+                Attack = 10f,
+                Defense = 0f,
+                DamageRate = 0f,
+                ArmorPenetration = 0f,
+                MaxHealth = 100f,
+                MaxEnergy = 50f,
+                MoveSpeed = 3f,
+                CooldownReduction = 0f
+            };
         }
 
         public TankStats Clone() => (TankStats)MemberwiseClone();

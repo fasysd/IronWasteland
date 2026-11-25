@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8393728348637786467
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3213205401710921607}
+  - component: {fileID: 5705999334230236614}
+  m_Layer: 0
+  m_Name: Accessory_08_VoidPhaseEngine
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3213205401710921607
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8393728348637786467}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5705999334230236614
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8393728348637786467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ded3c01f65ca40f438041865f5eb6419, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_08_VoidPhaseEngine
+  equipmentId: Acc_08
+  displayName: "\u0110\u1ED9ng C\u01A1 Ph\xE2n Pha H\u01B0 Kh\xF4ng"
+  description: "+25% T\u1EA5n c\xF4ng, +15% T\u1ED1c \u0111\u1ED9 di chuy\u1EC3n.\nSau
+    khi di chuy\u1EC3n m\u1ED9t qu\xE3ng 3m, s\u1EBD nh\u1EADn 30% T\u1EC9 l\u1EC7
+    xuy\xEAn gi\xE1p v\xE0 40% T\u1EC9 l\u1EC7 s\xE1t th\u01B0\u01A1ng, hi\u1EC7u
+    qu\u1EA3 s\u1EBD bi\u1EBFn m\u1EA5t khi g\xE2y s\xE1t th\u01B0\u01A1ng."
+  icon: {fileID: 0}
+  baseAttackMultiplier: 0.25
+  baseMoveSpeedMultiplier: 0.15
+  distanceToCharge: 3
+  bonusArmorPenetration: 0.3
+  bonusDamageRate: 0.4

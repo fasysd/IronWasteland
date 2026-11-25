@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using IronWasteland.Core;
 using IronWasteland.Core.Effects;
+using IronWasteland.Enemies;
 using IronWasteland.Net;
 using Unity.Netcode;
 using UnityEngine;
@@ -114,6 +115,7 @@ namespace IronWasteland.Tanks
         public TankDefinition Definition { get; set; }
         public TankStats BaseStats => baseStats;
         public TankStats Stats => m_FinalStats;
+        public TankStats FinalStats => m_FinalStats;
         public Vector2 LookTarget => m_LookTarget;
         public bool HasLookTarget => m_HasLookTarget;
         public float CurrentHealth => currentHealth;
@@ -882,7 +884,7 @@ namespace IronWasteland.Tanks
             Debug.Log($"[TankBrain] Level {level} su dung ky nang {index + 1}/{SkillCount}.");
         }
 
-        protected virtual float GetSkillEnergyCost(int index)
+        public virtual float GetSkillEnergyCost(int index)
         {
             if (index == 0) return 0f;
             return 30f; // Mac dinh cac skill 1, 2, 3 ton 30 energy (lop con ghi de theo GDD)
@@ -1113,12 +1115,19 @@ namespace IronWasteland.Tanks
             if (!HasGameplayAuthority) return;
             currentHealth = Mathf.Min(currentHealth + amount, EffectiveMaxHealth);
             OnHealEvent?.Invoke(amount);
+            m_EquippedAccessory?.OnOwnerHealed(amount);
         }
 
         public virtual void GainEnergy(float amount)
         {
+            GainEnergy(amount, -1);
+        }
+
+        public virtual void GainEnergy(float amount, int skillIndex)
+        {
             if (!HasGameplayAuthority) return;
             currentEnergy = Mathf.Min(currentEnergy + amount, m_FinalStats.MaxEnergy);
+            m_EquippedAccessory?.OnOwnerGainedEnergy(amount, skillIndex);
         }
 
         public virtual void SpendEnergy(float amount)
@@ -1143,6 +1152,18 @@ namespace IronWasteland.Tanks
         public virtual void SetEnergy(float value)
         {
             currentEnergy = Mathf.Clamp(value, 0f, m_FinalStats.MaxEnergy);
+        }
+
+        /// <summary>
+        /// Tiện ích gây sát thương từ xe Tank lên Kẻ địch, tự động gán ArmorPenetration và SourceType tương ứng.
+        /// </summary>
+        public virtual void ApplyDamageToEnemy(EnemyBrain target, float rawDamage, DamageSourceType sourceType, Vector2 hitPosition = default)
+        {
+            if (target == null || !target.IsAlive || rawDamage <= 0f) return;
+            if (hitPosition == default) hitPosition = target.transform.position;
+            DamageInfo info = new DamageInfo(this, target, rawDamage, m_FinalStats.ArmorPenetration, hitPosition, sourceType: sourceType);
+            target.TakeDamage(info);
+            CombatFeedback.Show(info.FinalDamage, hitPosition);
         }
 
         protected virtual void Die()

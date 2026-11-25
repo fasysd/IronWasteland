@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4723580921499151199
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4283062280359105345}
+  - component: {fileID: 2752656985962315643}
+  m_Layer: 0
+  m_Name: Accessory_07_MonesResonanceCore
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4283062280359105345
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4723580921499151199}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2752656985962315643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4723580921499151199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21e58f708e038a44c8237ec6a82fbbc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_07_MonesResonanceCore
+  equipmentId: Acc_07
+  displayName: "L\xF5i Ma Tr\u1EADn C\u1ED9ng H\u01B0\u1EDFng Mones"
+  description: "+80 Gi\u1EDBi h\u1EA1n n\u0103ng l\u01B0\u1EE3ng, +15% T\u1EC9 l\u1EC7
+    gi\u1EA3m h\u1ED3i chi\xEAu.\nD\xF9ng k\u1EF9 n\u0103ng th\u01B0\u1EDDng h\u1ED3i
+    n\u0103ng l\u01B0\u1EE3ng s\u1EBD chia s\u1EBB 50% l\u01B0\u1EE3ng h\u1ED3i cho
+    \u0111\u1ED3ng minh trong ph\u1EA1m vi 7m \u1EDF g\u1EA7n nh\u1EA5t v\xE0 cho
+    h\u1ECD +10% Gi\u1EA3m h\u1ED3i chi\xEAu."
+  icon: {fileID: 0}
+  baseMaxEnergyFlat: 80
+  baseCooldownReduction: 0.15
+  sharedEnergyRatio: 0.5
+  shareRadius: 7
+  allyBonusCooldownReduction: 0.1
+  allyBuffDuration: 4

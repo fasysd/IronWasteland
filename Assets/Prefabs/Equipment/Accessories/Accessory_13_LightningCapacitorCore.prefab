@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2771289557248208816
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5101910461564775102}
+  - component: {fileID: 3124516798507029325}
+  m_Layer: 0
+  m_Name: Accessory_13_LightningCapacitorCore
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5101910461564775102
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2771289557248208816}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3124516798507029325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2771289557248208816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2712aedb56911dc42a4de8fa2334354e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_13_LightningCapacitorCore
+  equipmentId: Acc_13
+  displayName: "L\xF5i T\u1EE5 \u0110i\u1EC7n Ma Ph\xE1p S\u1EA5m S\xE9t"
+  description: "+20% T\u1EA5n c\xF4ng.\nM\u1ED7i l\u1EA7n thi tri\u1EC3n K\u1EF9
+    n\u0103ng th\u01B0\u1EDDng th\u1EE9 3 s\u1EBD ph\xF3ng tia s\xE9t chu\u1ED7i
+    lan qua 4 k\u1EBB \u0111\u1ECBch \u0111\u1EE9ng g\u1EA7n nhau, g\xE2y 65% s\xE1t
+    th\u01B0\u01A1ng T\u1EA5n c\xF4ng v\xE0 l\xE0m ch\u1EADm 20% trong 5s."
+  icon: {fileID: 0}
+  baseAttackMultiplier: 0.2
+  normalSkillCountRequired: 3
+  maxChainTargets: 4
+  chainDamageAttackRatio: 0.65
+  slowPercent: 0.2
+  slowDuration: 5
+  chainJumpRadius: 6

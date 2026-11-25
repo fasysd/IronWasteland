@@ -285,7 +285,7 @@ namespace IronWasteland.Tanks.Leviathan
         /// Năng lượng tiêu hao theo từng biến thể kỹ năng. TankBrain.UseSkill gọi hàm này để
         /// kiểm tra và trừ năng lượng trước khi thi triển, nên các hàm Use* bên dưới KHÔNG trừ thêm.
         /// </summary>
-        protected override float GetSkillEnergyCost(int index)
+        public override float GetSkillEnergyCost(int index)
         {
             if (index == specializedSkillIndex)
             {
@@ -631,8 +631,9 @@ namespace IronWasteland.Tanks.Leviathan
             float finalDmg = CalculateSkillDamage(scale, hpRatio);
 
             // Gây sát thương lên kẻ địch
-            enemy.TakeDamage(finalDmg);
-            CombatFeedback.Show(finalDmg, enemy.transform.position);
+            DamageInfo info = new DamageInfo(this, enemy, finalDmg, Stats.ArmorPenetration, enemy.transform.position, sourceType: DamageSourceType.NormalSkill);
+            enemy.TakeDamage(info);
+            CombatFeedback.Show(info.FinalDamage, enemy.transform.position);
 
             // Tích lũy năng lượng cho xe tăng khi đánh trúng
             if (energyGainPerHit > 0f)
@@ -707,8 +708,9 @@ namespace IronWasteland.Tanks.Leviathan
                 return;
 
             float damage = CalculateSkillDamage(attackScale, maxHealthRatio);
-            enemy.TakeDamage(damage);
-            CombatFeedback.Show(damage, enemy.transform.position);
+            DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, enemy.transform.position, sourceType: DamageSourceType.SpecialSkill);
+            enemy.TakeDamage(info);
+            CombatFeedback.Show(info.FinalDamage, enemy.transform.position);
         }
 
         private SpecializedSkill_Leviathan GetSpecializedSkillFromPool()

@@ -269,7 +269,7 @@ namespace IronWasteland.Tanks.BlackShadow
         /// ShadowStep 40, Shadow Predator 45, Shadow Link 50, Shadow Guard 40,
         /// Shadow Ambush 50, Shadow Possession 60, Shadow Exchange 65.
         /// </summary>
-        protected override float GetSkillEnergyCost(int index)
+        public override float GetSkillEnergyCost(int index)
         {
             if (index == specializedSkillIndex)
             {
@@ -522,7 +522,8 @@ namespace IronWasteland.Tanks.BlackShadow
                 }
             }
 
-            enemy.TakeDamage(damage);
+            DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, skillInstance.transform.position, sourceType: DamageSourceType.NormalSkill);
+            enemy.TakeDamage(info);
 
             if (!enemy.IsAlive && isEnhanced)
             {
@@ -720,8 +721,9 @@ namespace IronWasteland.Tanks.BlackShadow
             // Sát thương nổ của ShadowStep: Tấn công * 1.5 * (1 + Tỉ lệ sát thương).
             float damage = CombatUtility.CalculateTankRawDamage(Stats.Attack, specializedSkillScale, Stats.DamageRate);
 
-            enemy.TakeDamage(damage);
-            CombatFeedback.Show(damage, enemy.transform.position);
+            DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, skillInstance.transform.position, sourceType: DamageSourceType.SpecialSkill);
+            enemy.TakeDamage(info);
+            CombatFeedback.Show(info.FinalDamage, enemy.transform.position);
 
             if (!enemy.IsAlive && isEnhanced)
             {

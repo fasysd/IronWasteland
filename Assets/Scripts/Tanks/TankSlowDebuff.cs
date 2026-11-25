@@ -42,6 +42,7 @@ namespace IronWasteland.Tanks
         {
             if (m_Tank == null) m_Tank = GetComponent<TankBrain>();
             if (m_Tank == null) return;
+            if (string.IsNullOrEmpty(m_Key)) m_Key = "slow_" + GetEntityId().ToString();
 
             // Muc giam doi -> go ban cu roi ap ban moi (AddBonusStats cong don).
             if (m_Applied && !Mathf.Approximately(m_AppliedPercent, slowPercent)) Release();

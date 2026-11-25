@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2055326570403741493
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6648381625404845471}
+  - component: {fileID: 3075662692409597723}
+  m_Layer: 0
+  m_Name: Accessory_19_D1onkOverlordCore
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6648381625404845471
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2055326570403741493}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3075662692409597723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2055326570403741493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc18b74ea85fd09439e44cba906ccd29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_19_D1onkOverlordCore
+  equipmentId: Acc_19
+  displayName: "L\xF5i Si\xEAu C\u01A1 Gi\xE1p Th\u1ED1ng L\u0129nh D1ONK"
+  description: "+50% T\u1EA5n c\xF4ng, 50% Gi\u1EDBi h\u1EA1n m\xE1u, 50% Ph\xF2ng
+    th\u1EE7, 15% T\u1EC9 l\u1EC7 s\xE1t th\u01B0\u01A1ng, +30% T\u1EC9 l\u1EC7 xuy\xEAn
+    gi\xE1p.\nKhi nh\u1EADn ph\u1EA7n th\u01B0\u1EDFng t\u1EEB k\u1EBB \u0111\u1ECBch
+    Tinh anh, s\u1EBD h\u1ED3i 50% Gi\u1EDBi h\u1EA1n n\u0103ng l\u01B0\u1EE3ng,
+    +30 T\u1EC9 l\u1EC7 gi\u1EA3m h\u1ED3i chi\xEAu v\xE0 +30% T\u1EC9 l\u1EC7 s\xE1t
+    th\u01B0\u01A1ng trong 10s."
+  icon: {fileID: 0}
+  baseAttackMultiplier: 0.5
+  baseMaxHealthMultiplier: 0.5
+  baseDefenseMultiplier: 0.5
+  baseDamageRateMultiplier: 0.15
+  baseArmorPenetrationMultiplier: 0.3
+  energyRestoreRatio: 0.5
+  rewardCooldownReduction: 0.3
+  rewardDamageRate: 0.3
+  rewardDuration: 10

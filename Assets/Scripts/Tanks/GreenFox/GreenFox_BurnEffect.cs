@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using IronWasteland.Core;
 using IronWasteland.Enemies;
 using UnityEngine;
 
@@ -152,7 +153,7 @@ namespace IronWasteland.Tanks.GreenFox
                 if (m_Owner != null)
                 {
                     // Qua DamageEnemy: hiện số, cộng dồn ấn, tính hạ gục (1A), hồi năng lượng Fox Territory
-                    m_Owner.DamageEnemy(m_OwnerEnemy, m_TickDamage, transform.position);
+                    m_Owner.DamageEnemy(m_OwnerEnemy, m_TickDamage, transform.position, sourceType: DamageSourceType.DamageOverTime);
                 }
                 else
                 {

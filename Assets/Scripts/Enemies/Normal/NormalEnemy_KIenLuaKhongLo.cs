@@ -155,7 +155,7 @@ namespace IronWasteland.Enemies.Normal
             if (target == null || !target.IsAlive) return;
 
             float damage = Stats != null ? Stats.Attack : 10f;
-            DamageInfo damageInfo = new DamageInfo(this, target, damage, 0f, target.transform.position);
+            DamageInfo damageInfo = new DamageInfo(this, target, damage, 0f, target.transform.position, sourceType: DamageSourceType.EnemyAttack);
             target.TakeDamage(damageInfo);
             CombatFeedback.Show(damageInfo.FinalDamage, target.transform.position);
 

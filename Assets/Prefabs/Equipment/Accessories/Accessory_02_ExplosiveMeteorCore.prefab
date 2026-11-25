@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &9023487779007078438
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3158324493993094053}
+  - component: {fileID: 9126332489414371945}
+  m_Layer: 0
+  m_Name: Accessory_02_ExplosiveMeteorCore
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3158324493993094053
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9023487779007078438}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9126332489414371945
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9023487779007078438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a35fae1db02b2f74cb8286ba8c15b3f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.Equipment.Accessory_02_ExplosiveMeteorCore
+  equipmentId: Acc_02
+  displayName: "L\xF5i N\u0103ng L\u01B0\u1EE3ng Thi\xEAn Th\u1EA1ch N\u1ED5"
+  description: "+20% Gi\u1EDBi h\u1EA1n m\xE1u, +20% Ph\xF2ng th\u1EE7.\nM\u1ED7i
+    khi m\u1EA5t 15% m\xE1u t\u1ED1i \u0111a, gi\xE1p ph\xE1t n\u1ED5 trong ph\u1EA1m
+    vi b\xE1n k\xEDnh 1.5m g\xE2y s\xE1t th\u01B0\u01A1ng b\u1EB1ng 100% Ph\xF2ng
+    th\u1EE7 v\xE0 \u0111\u1EA9y l\xF9i \u0111\u1ECBch lo\u1EA1i th\u01B0\u1EDDng
+    xung quanh."
+  icon: {fileID: 0}
+  baseMaxHealthMultiplier: 0.2
+  baseDefenseMultiplier: 0.2
+  hpLossThresholdRatio: 0.15
+  explosionRadius: 1.5
+  knockbackDistance: 2.5
