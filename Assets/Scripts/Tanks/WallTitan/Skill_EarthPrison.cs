@@ -78,7 +78,34 @@ namespace IronWasteland.Tanks.WallTitan
             if (m_CollapseCoroutine != null)
                 StopCoroutine(m_CollapseCoroutine);
 
+            TrapEnemiesInside();
             m_CollapseCoroutine = StartCoroutine(CollapseRoutine());
+        }
+
+        private void TrapEnemiesInside()
+        {
+            if (m_OwnerRef == null) return;
+            foreach (Collider2D collider in m_OwnerRef.GetTriggerColliders())
+            {
+                if (collider == null) continue;
+                ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collider);
+                EnemyBrain enemy = targetRef != null ? targetRef.GetOwner<EnemyBrain>() : null;
+                if (enemy != null && enemy.IsAlive)
+                {
+                    enemy.ApplyCrowdControl(Core.CrowdControlType.Root, duration);
+                }
+            }
+        }
+
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            if (!m_Initialized || other == null) return;
+            ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(other);
+            EnemyBrain enemy = targetRef != null ? targetRef.GetOwner<EnemyBrain>() : null;
+            if (enemy != null && enemy.IsAlive)
+            {
+                enemy.ApplyCrowdControl(Core.CrowdControlType.Root, duration);
+            }
         }
 
         private IEnumerator CollapseRoutine()

@@ -71,6 +71,7 @@ namespace IronWasteland.Tanks.Equipment
                 if (enemy != null && enemy.IsAlive)
                 {
                     m_CurrentEnemies.Add(enemy);
+                    enemy.ApplyCrowdControl(CrowdControlType.Slow, pulseInterval + 0.25f, slowPercent);
                     if (m_AffectedEnemies.Add(enemy))
                     {
                         ApplyDebuff(enemy);

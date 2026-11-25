@@ -23,20 +23,20 @@ namespace IronWasteland.Tanks.Leviathan
         [SerializeField, Min(0)] private int initialPoolSize = 6;
 
         [Header("Normal Skill - Combat")]
-        [Tooltip("Hệ số sát thương của Water Pulse theo Tấn công (0.6 = 60% Tấn công theo GDD).")]
-        [SerializeField, Min(0f)] private float normalSkillScale = 0.6f;
+        [Tooltip("Hệ số sát thương của Water Pulse theo Tấn công (0.5 = 50% Tấn công theo GDD).")]
+        [SerializeField, Min(0f)] private float normalSkillScale = 0.5f;
 
-        [Tooltip("Tỉ lệ sát thương cộng thêm theo Giới hạn máu của chính Leviathan (0.01 = 1% máu tối đa theo GDD).")]
-        [SerializeField, Min(0f)] private float normalSkillMaxHealthRatio = 0.01f;
+        [Tooltip("Tỉ lệ sát thương cộng thêm theo Giới hạn máu của chính Leviathan (0.005 = 0.5% máu tối đa theo GDD).")]
+        [SerializeField, Min(0f)] private float normalSkillMaxHealthRatio = 0.005f;
 
         [Tooltip("Thời gian hồi chiêu của Normal Skill (giây).")]
         [SerializeField, Min(0.01f)] private float normalSkillCooldown = 0.6f;
 
-        [Tooltip("Năng lượng hồi lại cho xe mỗi lần bắn Water Pulse.")]
+        [Tooltip("Năng lượng hồi lại cho xe khi bắn trúng Water Pulse (không dùng khi bấm chiêu).")]
         [SerializeField, Min(0f)] private float normalSkillEnergyGain = 12f;
 
-        [Tooltip("Năng lượng cộng thêm cho mỗi kẻ địch trúng đòn (để 0 nếu chỉ muốn hồi theo mỗi lần bắn).")]
-        [SerializeField, Min(0f)] private float energyGainPerHit = 0f;
+        [Tooltip("Năng lượng cộng thêm cho mỗi kẻ địch trúng đòn (12 theo GDD).")]
+        [SerializeField, Min(0f)] private float energyGainPerHit = 12f;
 
         [Header("Specialized Skill - Design")]
         [Tooltip("Prefab hoặc mẫu của SpecializedSkill_Leviathan (Bong bóng nước).")]
@@ -329,7 +329,8 @@ namespace IronWasteland.Tanks.Leviathan
         {
             if (index == normalSkillIndex)
             {
-                return normalSkillEnergyGain;
+                // GDD: Water Pulse chỉ hồi 12 EN khi đánh trúng mục tiêu, không hồi lúc bấm.
+                return 0f;
             }
 
             return base.GetSkillEnergyGain(index);
@@ -617,15 +618,15 @@ namespace IronWasteland.Tanks.Leviathan
             if (enemy == null)
                 return;
 
-            // Sát thương Water Pulse = 60% Tấn công + 1% Giới hạn máu
+            // Sát thương Water Pulse cơ bản = 50% Tấn công + 0.5% Giới hạn máu
             float scale = normalSkillScale;
             float hpRatio = normalSkillMaxHealthRatio;
 
-            // Trong thời gian giáp duy trì, sát thương Water Pulse gây ra của Leviathan tăng nhẹ
+            // Trong thời gian Water Armor duy trì, sát thương Water Pulse trở thành 60% ATK + 1% Giới hạn máu (GDD)
             if (optionalSkill1 != null && optionalSkill1.IsActive)
             {
-                scale *= (1f + optionalSkill1.WaterPulseDamageBonus);
-                hpRatio *= (1f + optionalSkill1.WaterPulseDamageBonus);
+                scale = 0.6f;
+                hpRatio = 0.01f;
             }
 
             float finalDmg = CalculateSkillDamage(scale, hpRatio);
@@ -636,9 +637,10 @@ namespace IronWasteland.Tanks.Leviathan
             CombatFeedback.Show(info.FinalDamage, enemy.transform.position);
 
             // Tích lũy năng lượng cho xe tăng khi đánh trúng
-            if (energyGainPerHit > 0f)
+            float gain = energyGainPerHit > 0f ? energyGainPerHit : normalSkillEnergyGain;
+            if (gain > 0f)
             {
-                GainEnergy(energyGainPerHit);
+                GainEnergy(gain, normalSkillIndex);
             }
         }
         #endregion
@@ -837,13 +839,13 @@ namespace IronWasteland.Tanks.Leviathan
             }
         }
 
-        public override void TakeDamage(float amount)
+        public override void TakeDamage(DamageInfo info)
         {
-            base.TakeDamage(amount);
+            base.TakeDamage(info);
 
-            if (amount > 0f && optionalSkill1_3 != null && optionalSkill1_3.IsActive)
+            if (info.FinalDamage > 0f && optionalSkill1_3 != null && optionalSkill1_3.IsActive)
             {
-                optionalSkill1_3.OnOwnerDamaged(amount);
+                optionalSkill1_3.OnOwnerDamaged(info.FinalDamage);
             }
         }
     }

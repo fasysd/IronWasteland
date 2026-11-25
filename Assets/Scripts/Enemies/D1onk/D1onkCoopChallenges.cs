@@ -395,7 +395,7 @@ namespace IronWasteland.Enemies.D1onk
         {
             blockPoint = m_RedReceiverPos;
 
-            // 1. Dùng Physics2D LinecastAll phát hiện collider có ColliderOwnerRef.Owner là TankBrain
+            // 1. Dùng Physics2D LinecastAll phát hiện TankBrain hoặc Tường/Địa hình chặn tia điện
             RaycastHit2D[] hits = Physics2D.LinecastAll(m_RedTransmitterPos, m_RedReceiverPos);
             for (int i = 0; i < hits.Length; i++)
             {
@@ -411,6 +411,12 @@ namespace IronWasteland.Enemies.D1onk
                         blockPoint = hit.point;
                         return tank;
                     }
+                }
+                else if (!hit.collider.isTrigger && (ownerRef == null || ownerRef.Owner == null))
+                {
+                    // Địa hình hoặc Tường vật lý (non-trigger, không thuộc Unit nào)
+                    blockPoint = hit.point;
+                    return null;
                 }
             }
 

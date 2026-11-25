@@ -43,6 +43,8 @@ namespace IronWasteland.Tanks.Equipment
             base.OnUnequipped(owner);
         }
 
+        private const string CrystalShieldId = "Acc16_HealingCrystal_Shield";
+
         public override void OnOwnerHealed(float amount)
         {
             if (Owner == null || !Owner.IsAlive || amount <= 0f) return;
@@ -50,7 +52,7 @@ namespace IronWasteland.Tanks.Equipment
             float shieldToAdd = amount * healToShieldRatio;
             float maxShieldCap = Owner.FinalStats.MaxHealth * maxShieldHealthCapRatio;
 
-            // Nếu lượng khiên hiện tại đã chạm trần thì không cộng thêm, nhưng vẫn làm mới thời gian
+            // Nếu lượng khiên hiện tại đã chạm trần thì không cộng thêm, nhưng vẫn làm mới thời gian 5s
             float currentShield = Owner.CurrentShield;
             if (currentShield + shieldToAdd > maxShieldCap)
             {
@@ -59,7 +61,11 @@ namespace IronWasteland.Tanks.Equipment
 
             if (shieldToAdd > 0f)
             {
-                Owner.AddShield(shieldToAdd, shieldDuration);
+                Owner.AddShield(shieldToAdd, shieldDuration, CrystalShieldId, Owner, "Khiên Thủy Tinh");
+            }
+            else if (currentShield > 0f)
+            {
+                Owner.AddShield(0.001f, shieldDuration, CrystalShieldId, Owner, "Khiên Thủy Tinh");
             }
         }
     }

@@ -119,20 +119,7 @@ namespace IronWasteland.Tanks.BlackShadow
             // 3. Hướng nòng súng ngắm thẳng vào tâm kẻ địch
             ownerTank.SetLookTarget(enemy.transform.position);
 
-            // 4. Gây sát thương Shadow Ambush ngay lập tức lên kẻ địch (200% Tấn công)
-            float ambushDamage = CombatUtility.CalculateTankRawDamage(
-                ownerTank.Stats.Attack,
-                ambushDamageScale,
-                ownerTank.Stats.DamageRate);
-            DamageInfo info = new DamageInfo(ownerTank, enemy, ambushDamage, ownerTank.Stats.ArmorPenetration, enemy.transform.position, sourceType: DamageSourceType.OptionSkill2);
-            enemy.TakeDamage(info);
-            CombatFeedback.Show(info.FinalDamage, enemy.transform.position);
-
-            // 5. Hiển thị móng nanh ma quỷ cào xé tại vị trí kẻ địch
-            Vector2 slashDir = (Vector2)enemy.transform.position - behindPos;
-            PlayClawAt(enemy.transform.position, slashDir);
-
-            // 6. Gán buff chí mạng cho đòn đánh kế tiếp
+            // 4. Dịch chuyển không gây sát thương (GDD); gán buff đòn đánh kế tiếp gây riêng 200% ATK
             ApplyBackstabBuff();
 
             if (!gameObject.activeSelf)

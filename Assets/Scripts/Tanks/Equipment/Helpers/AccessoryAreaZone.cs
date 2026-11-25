@@ -28,9 +28,11 @@ namespace IronWasteland.Tanks.Equipment
         [SerializeField] private float radius = 1.2f;
 
         private float m_Timer;
+        private float m_SlowRefreshTimer;
         private CircleCollider2D m_Collider;
         private readonly HashSet<TankBrain> m_TanksInside = new HashSet<TankBrain>();
         private readonly HashSet<EnemyBrain> m_EnemiesInside = new HashSet<EnemyBrain>();
+        private static readonly Dictionary<TankBrain, int> s_SoulFireCounts = new Dictionary<TankBrain, int>();
 
         public static AccessoryAreaZone Spawn(Vector2 position, ZoneEffectType type, float zoneRadius, float zoneDuration, Color zoneColor)
         {
@@ -39,7 +41,8 @@ namespace IronWasteland.Tanks.Equipment
 
             var col = go.AddComponent<CircleCollider2D>();
             col.isTrigger = true;
-            col.radius = zoneRadius;
+            // localScale = zoneRadius * 2 => radius 0.5 trong local space cho đúng bán kính world = zoneRadius
+            col.radius = 0.5f;
 
             var zone = go.AddComponent<AccessoryAreaZone>();
             zone.zoneType = type;
@@ -65,6 +68,22 @@ namespace IronWasteland.Tanks.Equipment
         private void Update()
         {
             m_Timer += Time.deltaTime;
+            if (zoneType == ZoneEffectType.SoulFire)
+            {
+                m_SlowRefreshTimer += Time.deltaTime;
+                if (m_SlowRefreshTimer >= 0.4f)
+                {
+                    m_SlowRefreshTimer = 0f;
+                    foreach (var enemy in m_EnemiesInside)
+                    {
+                        if (enemy != null && enemy.IsAlive)
+                        {
+                            enemy.ApplyCrowdControl(CrowdControlType.Slow, 0.6f, 0.20f);
+                        }
+                    }
+                }
+            }
+
             if (m_Timer >= duration)
             {
                 CleanupZone();
@@ -120,7 +139,12 @@ namespace IronWasteland.Tanks.Equipment
         {
             if (zoneType == ZoneEffectType.SoulFire)
             {
-                tank.AddBonusStats("Acc_SoulFire_Speed", null, new TankStats { MoveSpeed = 0.20f });
+                s_SoulFireCounts.TryGetValue(tank, out int count);
+                s_SoulFireCounts[tank] = count + 1;
+                if (count == 0)
+                {
+                    tank.AddBonusStats("Acc_SoulFire_Speed", null, new TankStats { MoveSpeed = 0.20f });
+                }
             }
         }
 
@@ -128,7 +152,19 @@ namespace IronWasteland.Tanks.Equipment
         {
             if (zoneType == ZoneEffectType.SoulFire)
             {
-                tank.RemoveBonusStats("Acc_SoulFire_Speed");
+                if (s_SoulFireCounts.TryGetValue(tank, out int count))
+                {
+                    count--;
+                    if (count <= 0)
+                    {
+                        s_SoulFireCounts.Remove(tank);
+                        tank.RemoveBonusStats("Acc_SoulFire_Speed");
+                    }
+                    else
+                    {
+                        s_SoulFireCounts[tank] = count;
+                    }
+                }
             }
         }
 

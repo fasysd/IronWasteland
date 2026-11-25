@@ -152,8 +152,8 @@ namespace IronWasteland.Tanks.GreenFox
 
                 if (m_Owner != null)
                 {
-                    // Qua DamageEnemy: hiện số, cộng dồn ấn, tính hạ gục (1A), hồi năng lượng Fox Territory
-                    m_Owner.DamageEnemy(m_OwnerEnemy, m_TickDamage, transform.position, sourceType: DamageSourceType.DamageOverTime);
+                    // Qua DamageEnemy: hiện số, không cộng dồn ấn cho tick DoT (tránh tự cộng stack mỗi 0.5s)
+                    m_Owner.DamageEnemy(m_OwnerEnemy, m_TickDamage, transform.position, addMarkStacks: false, sourceType: DamageSourceType.DamageOverTime);
                 }
                 else
                 {

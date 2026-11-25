@@ -57,7 +57,7 @@ namespace IronWasteland.Tanks.Equipment
 
         private void HandleAnyEnemyDied(EnemyBrain enemy)
         {
-            if (Owner == null || !Owner.IsAlive || enemy == null) return;
+            if (Owner == null || !Owner.IsAlive || !Owner.HasGameplayAuthority || enemy == null) return;
 
             float distance = Vector2.Distance(Owner.transform.position, enemy.transform.position);
             if (distance <= triggerRadius)

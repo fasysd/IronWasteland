@@ -64,9 +64,18 @@ namespace IronWasteland.Tanks.Equipment
             }
         }
 
+        public override float GetIncomingDamageMultiplier(DamageInfo info)
+        {
+            if (m_CurrentStacks <= 0) return 1f;
+            return Mathf.Clamp01(1f - m_CurrentStacks * damageReductionPerStack);
+        }
+
         public override void OnBrainTick(float deltaTime)
         {
             if (!m_IsEmpowered) return;
+
+            // Miễn nhiễm làm chậm trong suốt thời gian cường hóa
+            Owner?.RemoveCrowdControl(CrowdControlType.Slow);
 
             m_EmpoweredTimer -= deltaTime;
             if (m_EmpoweredTimer <= 0f)

@@ -61,7 +61,6 @@ namespace IronWasteland.Enemies.Normal
 
             base.OnBrainTick(deltaTime);
 
-            repathTimer -= deltaTime;
             if (movementAgent != null && Stats != null)
             {
                 movementAgent.SetSpeed(Stats.MoveSpeed / 100f);

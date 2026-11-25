@@ -60,11 +60,11 @@ namespace IronWasteland.Tanks.Equipment
             if (Owner == null || !Owner.IsAlive) return;
             if (m_CooldownTimer > 0f) return;
 
-            // Kỹ năng gây sát thương
+            // Kỹ năng gây sát thương -> tạo vùng khói độc xung quanh xe tăng sở hữu
             if (info.IsTankSkill && info.FinalDamage > 0f)
             {
                 m_CooldownTimer = smokeCooldown;
-                SpawnToxicSmoke(info.HitPosition);
+                SpawnToxicSmoke(Owner.transform.position);
             }
         }
 

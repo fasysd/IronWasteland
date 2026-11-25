@@ -634,8 +634,8 @@ namespace IronWasteland.Enemies.ElementalReaper
                 {
                     MaxHealth = MaxHealth * 0.25f,
                     Attack = Stats != null ? Stats.Attack : 250f,
-                    Defense = 25f,
-                    MoveSpeed = 90f
+                    Defense = Stats != null ? Stats.Defense : 25f,
+                    MoveSpeed = Stats != null ? Stats.MoveSpeed : 90f
                 };
 
                 m_SubArena.StartBurstPhase(tanks, cloneStats);
@@ -745,8 +745,8 @@ namespace IronWasteland.Enemies.ElementalReaper
                 m_SubArena.CleanupArena();
             }
 
-            // 4. Nổ trừng phạt toàn bản đồ: 100% ATK cho mỗi bản sao còn sống
-            float penaltyDamage = (Stats != null ? Stats.Attack : 250f) * livingClones;
+            // 4. Nổ trừng phạt toàn bản đồ: 100% ATK (GDD)
+            float penaltyDamage = Stats != null ? Stats.Attack : 250f;
             var allTanks = FindObjectsByType<TankBrain>(FindObjectsSortMode.None);
             for (int i = 0; i < allTanks.Length; i++)
             {
@@ -757,14 +757,36 @@ namespace IronWasteland.Enemies.ElementalReaper
                 }
             }
 
-            // 5. Boss hồi 10% Max HP
-            Heal(MaxHealth * 0.10f);
+            // 5. Boss hồi 10% Max HP cho mỗi bản sao chưa bị tiêu diệt
+            Heal(MaxHealth * 0.10f * livingClones);
 
             // 6. HÌNH PHẠT VĨNH VIỄN: Mở khóa cả 6 kỹ năng của cả 3 hệ đến hết trận đấu!
             m_PermanentAllSkillsUnlocked = true;
 
             // 7. Reset timer kỹ năng để tung chiêu ngay lập tức
             ResetAllSkillTimersReady();
+        }
+
+        public override void TakeDamage(DamageInfo info)
+        {
+            if (IsBurstActive && m_ElementalShieldAmount > 0f && info.RawDamage > 0f)
+            {
+                float resolved = CombatUtility.ResolveDamage(info.RawDamage, Stats != null ? Stats.Defense : 0f, info.ArmorPenetration);
+                float absorbed = Mathf.Min(m_ElementalShieldAmount, resolved);
+                m_ElementalShieldAmount -= absorbed;
+                if (m_ElementalShieldAmount <= 0f)
+                {
+                    m_ElementalShieldAmount = 0f;
+                    m_VfxController?.DeactivateBurstShield();
+                }
+
+                float remaining = resolved - absorbed;
+                if (remaining <= 0f) return;
+
+                info = new DamageInfo(info.Attacker, this, remaining, armorPenetration: 1f, hitPosition: info.HitPosition, isDirectToHealth: true, sourceType: info.SourceType);
+            }
+
+            base.TakeDamage(info);
         }
 
         protected override void OnBurstEnded()

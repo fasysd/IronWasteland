@@ -50,10 +50,10 @@ namespace IronWasteland.Tanks.Equipment
         {
             if (Owner == null || !Owner.IsAlive) return;
 
-            m_AccumulatedDamageTaken += info.FinalDamage;
+            m_AccumulatedDamageTaken += info.HealthDamage;
             float threshold = Owner.FinalStats.MaxHealth * hpLossThresholdRatio;
 
-            if (threshold > 0f && m_AccumulatedDamageTaken >= threshold)
+            while (threshold > 0f && m_AccumulatedDamageTaken >= threshold)
             {
                 m_AccumulatedDamageTaken -= threshold;
                 TriggerMeteorExplosion();

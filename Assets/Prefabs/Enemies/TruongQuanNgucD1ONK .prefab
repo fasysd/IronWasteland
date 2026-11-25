@@ -1676,6 +1676,7 @@ GameObject:
   - component: {fileID: 4382231180120962163}
   - component: {fileID: 4556977129910709487}
   - component: {fileID: -3170757082340412462}
+  - component: {fileID: 3055714485745801555}
   m_Layer: 7
   m_Name: 'TruongQuanNgucD1ONK '
   m_TagString: Untagged
@@ -1719,7 +1720,7 @@ MonoBehaviour:
     MaxHealth: 500
     MoveSpeed: 70
   currentHealth: 0
-  burstHpThreshold: 0.9
+  burstHpThreshold: 0.6
   burstChargeTime: 2
   burstDuration: 40
   rewardPhaseDuration: 10
@@ -1729,14 +1730,15 @@ MonoBehaviour:
   burstMoveSpeedMultiplier: 1
   globalSkillInterval: 2
   stopDistance: 7
+  wanderChangeInterval: 2
   moveSpeedDivisor: 100
   rotationSpeed: 360
   rotationOffset: 0
   rotationPivot: {fileID: 1910718092571899764}
-  trungPhatCooldown: 999
-  lazeNguyenToCooldown: 999
-  toaNhietDienRongCooldown: 999
-  vienBinhTinhLinhCooldown: 1
+  trungPhatCooldown: 8
+  lazeNguyenToCooldown: 12
+  toaNhietDienRongCooldown: 15
+  vienBinhTinhLinhCooldown: 20
   subArenaPrefab: {fileID: 1971750688958054942, guid: e652e3fa50282d44cb7fdf4800a623b5, type: 3}
   cockpitCenter: {x: 200, y: 100}
 --- !u!50 &4556977129910709487
@@ -1818,6 +1820,33 @@ MonoBehaviour:
   - {fileID: 46436049341597291, guid: fa914b93d15fd4d41920d832034cf707, type: 3}
   - {fileID: 7692010306268881268, guid: 3d7a3d53f4ad62449ad228d3ead96c34, type: 3}
   - {fileID: 2191416951487824985, guid: dd67fd1da0bc9f34eb67cc48121a0809, type: 3}
+--- !u!114 &3055714485745801555
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2997488555990479441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 0
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  m_InScenePlaced: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!1 &3072718851655084315
 GameObject:
   m_ObjectHideFlags: 0

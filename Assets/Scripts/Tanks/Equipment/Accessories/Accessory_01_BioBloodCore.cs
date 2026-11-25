@@ -43,6 +43,7 @@ namespace IronWasteland.Tanks.Equipment
         public override void OnOwnerDealtDamage(DamageInfo info)
         {
             if (Owner == null || !Owner.IsAlive) return;
+            if (!info.IsTankSkill) return;
             if (info.FinalDamage <= 0f) return;
 
             float healAmount = info.FinalDamage * lifestealRatio;

@@ -100,8 +100,31 @@ namespace IronWasteland.Tanks.WaterB
             ColliderOwnerRef targetRef = ColliderOwnerRef.FromCollider(collision);
             if (targetRef == null) return;
 
+            TankBrain ally = targetRef.GetOwner<TankBrain>();
+            if (ally != null && ally != m_OwnerTank && ally.IsAlive)
+            {
+                HitAlly(ally);
+                return;
+            }
+
             EnemyBrain enemy = targetRef.GetOwner<EnemyBrain>();
             if (enemy != null) HitEnemy(enemy);
+        }
+
+        private void HitAlly(TankBrain ally)
+        {
+            m_Consumed = true;
+            Vector3 hitPos = ally.transform.position;
+
+            if (m_PowerAmount > 0f && m_OwnerTank is TankBrain_WaterB waterB)
+            {
+                waterB.HealAlly(ally, m_PowerAmount);
+                // GDD: mỗi lần hồi máu thành công sẽ tích lũy năng lượng cho Water B
+                m_OnSuccess?.Invoke(m_PowerAmount);
+            }
+
+            SpawnHitEffect(hitPos);
+            Destroy(gameObject);
         }
 
         private void HitEnemy(EnemyBrain enemy)
@@ -121,9 +144,6 @@ namespace IronWasteland.Tanks.WaterB
                     enemy.TakeDamage(m_PowerAmount);
                     CombatFeedback.Show(m_PowerAmount, hitPos);
                 }
-
-                // GDD: mỗi lần đánh trúng thành công sẽ tích lũy năng lượng cho Water B
-                m_OnSuccess?.Invoke(m_PowerAmount);
             }
 
             SpawnHitEffect(hitPos);

@@ -632,8 +632,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f5c0b8a27dea504e86a14075aec032b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.Normal.SwampZone_QuaiVatDamLay
-  swampDuration: 3.5
-  slowPercent: 0.5
+  swampDuration: 3
+  slowPercent: 0.4
   hitCheckDelay: 0.05
   tankLayer:
     serializedVersion: 2

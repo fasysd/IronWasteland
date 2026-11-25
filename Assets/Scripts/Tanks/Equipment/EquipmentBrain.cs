@@ -99,6 +99,12 @@ namespace IronWasteland.Tanks
         /// <summary>Gọi khi Tank nhận năng lượng từ kỹ năng (skillIndex = 0 là Skill thường).</summary>
         public virtual void OnOwnerGainedEnergy(float amount, int skillIndex) { }
 
+        /// <summary>Hệ số nhân sát thương nhận vào (dùng cho phụ kiện giảm sát thương theo tầng).</summary>
+        public virtual float GetIncomingDamageMultiplier(DamageInfo info) => 1f;
+
+        /// <summary>Gọi khi Tank hồi máu hoặc tạo khiên cho một đồng minh.</summary>
+        public virtual void OnOwnerSupportedAlly(TankBrain ally) { }
+
         #endregion
     }
 }

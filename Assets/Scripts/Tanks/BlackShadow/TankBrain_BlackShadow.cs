@@ -258,10 +258,8 @@ namespace IronWasteland.Tanks.BlackShadow
         /// </summary>
         protected override float GetSkillEnergyGain(int index)
         {
-            if (index == normalSkillIndex)
-                return normalSkillEnergyGain;
-
-            return base.GetSkillEnergyGain(index);
+            // GDD: Shadow Claw chỉ hồi 10 EN khi đánh trúng mục tiêu, không hồi lúc bấm.
+            return 0f;
         }
 
         /// <summary>
@@ -293,7 +291,11 @@ namespace IronWasteland.Tanks.BlackShadow
             if (index == optionalSkill2Index)
             {
                 if (Context.OptionSkill2 == 1) return optionalSkill2_1EnergyCost;
-                if (Context.OptionSkill2 == 2) return optionalSkill2_2EnergyCost;
+                if (Context.OptionSkill2 == 2)
+                {
+                    if (optionalSkill2_2 != null && optionalSkill2_2.HasActiveClone) return 0f;
+                    return optionalSkill2_2EnergyCost;
+                }
                 return optionalSkill2EnergyCost;
             }
 
@@ -506,31 +508,30 @@ namespace IronWasteland.Tanks.BlackShadow
             // Với Shadow Claw: Scale = normalSkillScale (mặc định 0.9 = 90% Tấn công).
             float damage = CombatUtility.CalculateTankRawDamage(Stats.Attack, normalSkillScale, Stats.DamageRate);
 
-            // Nếu có buff chí mạng từ Shadow Ambush cho đòn đánh kế tiếp
-            if (optionalSkill2 != null && optionalSkill2.HasBackstabBuff)
-            {
-                // Kiểm tra vị trí của xe tank có đang ở sau lưng kẻ địch hay không.
-                // Lưu ý: hàm này tiêu hao buff ngay, nên Stats.DamageRate sau đây đã mất phần chí mạng.
-                bool isBackstab = optionalSkill2.CheckAndConsumeBackstab(transform.position, enemy);
-                if (isBackstab)
-                {
-                    // Đánh từ sau lưng -> cộng lại phần tỉ lệ sát thương chí mạng vừa bị gỡ
-                    damage = CombatUtility.CalculateTankRawDamage(
-                        Stats.Attack,
-                        normalSkillScale,
-                        Stats.DamageRate + optionalSkill2.BonusDamageMultiplier);
-                }
-            }
+            bool hadAmbushBuff = optionalSkill2 != null && optionalSkill2.HasBackstabBuff;
 
             DamageInfo info = new DamageInfo(this, enemy, damage, Stats.ArmorPenetration, skillInstance.transform.position, sourceType: DamageSourceType.NormalSkill);
             enemy.TakeDamage(info);
+            CombatFeedback.Show(info.FinalDamage, skillInstance.transform.position);
+
+            // Hồi 10 EN khi đánh trúng mục tiêu (GDD)
+            GainEnergy(normalSkillEnergyGain, normalSkillIndex);
+
+            // Shadow Ambush: bất kỳ đòn sát thương nào tiếp theo gây thêm 1 đòn riêng 200% ATK
+            if (hadAmbushBuff && enemy.IsAlive && optionalSkill2 != null && optionalSkill2.HasBackstabBuff)
+            {
+                optionalSkill2.CheckAndConsumeBackstab(transform.position, enemy);
+                float bonusDamage = CombatUtility.CalculateTankRawDamage(Stats.Attack, 2.0f, Stats.DamageRate);
+                DamageInfo bonusInfo = new DamageInfo(this, enemy, bonusDamage, Stats.ArmorPenetration, enemy.transform.position, sourceType: DamageSourceType.OptionSkill2);
+                enemy.TakeDamage(bonusInfo);
+                CombatFeedback.Show(bonusInfo.FinalDamage, enemy.transform.position);
+            }
 
             if (!enemy.IsAlive && isEnhanced)
             {
                 ReduceSkillCooldown(specializedSkillIndex, cooldownReductionKillingInEnhanced);
                 SpawnOptionalSkill1Orb(enemy.transform.position);
             }
-            CombatFeedback.Show(damage, skillInstance.transform.position);
         }
         #endregion
 
@@ -727,6 +728,7 @@ namespace IronWasteland.Tanks.BlackShadow
 
             if (!enemy.IsAlive && isEnhanced)
             {
+                ReduceSkillCooldown(specializedSkillIndex, cooldownReductionKillingInEnhanced);
                 SpawnOptionalSkill1Orb(enemy.transform.position);
             }
         }

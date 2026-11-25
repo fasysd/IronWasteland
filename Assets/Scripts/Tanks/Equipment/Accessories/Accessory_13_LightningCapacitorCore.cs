@@ -28,6 +28,7 @@ namespace IronWasteland.Tanks.Equipment
         [SerializeField, Min(1f)] private float chainJumpRadius = 6.0f;
 
         private int m_NormalSkillCastCount;
+        private bool m_PendingChainLightning;
 
 
         protected override void OnEquipped(TankBrain owner)
@@ -38,6 +39,7 @@ namespace IronWasteland.Tanks.Equipment
                 owner.AddBonusStats(BaseStatsKey, null, new TankStats { Attack = baseAttackMultiplier });
             }
             m_NormalSkillCastCount = 0;
+            m_PendingChainLightning = false;
         }
 
         protected override void OnUnequipped(TankBrain owner)
@@ -49,19 +51,27 @@ namespace IronWasteland.Tanks.Equipment
             base.OnUnequipped(owner);
         }
 
+        public override void OnOwnerUsedSkill(int skillIndex)
+        {
+            if (Owner == null || !Owner.IsAlive || skillIndex != 0) return;
+
+            m_NormalSkillCastCount++;
+            if (m_NormalSkillCastCount >= normalSkillCountRequired)
+            {
+                m_NormalSkillCastCount = 0;
+                m_PendingChainLightning = true;
+            }
+        }
+
         public override void OnOwnerDealtDamage(DamageInfo info)
         {
-            if (Owner == null || !Owner.IsAlive) return;
+            if (Owner == null || !Owner.IsAlive || !m_PendingChainLightning) return;
 
-            // Kích hoạt khi Kỹ năng thường trúng mục tiêu
+            // Kích hoạt khi Kỹ năng thường trúng mục tiêu sau lần thi triển thứ 3
             if (info.SourceType == DamageSourceType.NormalSkill && info.Target is EnemyBrain firstTarget && firstTarget.IsAlive)
             {
-                m_NormalSkillCastCount++;
-                if (m_NormalSkillCastCount >= normalSkillCountRequired)
-                {
-                    m_NormalSkillCastCount = 0;
-                    CastChainLightning(firstTarget);
-                }
+                m_PendingChainLightning = false;
+                CastChainLightning(firstTarget);
             }
         }
 

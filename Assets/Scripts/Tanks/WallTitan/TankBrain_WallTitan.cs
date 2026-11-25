@@ -571,7 +571,8 @@ namespace IronWasteland.Tanks.WallTitan
             TankStats flat = TankStats.Zeroed();
             TankStats percent = TankStats.Zeroed();
             percent.Defense = stoneFortressDefensePercent;
-            percent.MoveSpeed = -stoneFortressSpeedPenalty;
+            // GDD: giảm 30 Tốc độ cố định (hỗ trợ cả giá trị 0.30 cũ trên prefab lẫn 30).
+            flat.MoveSpeed = -(stoneFortressSpeedPenalty <= 1f ? stoneFortressSpeedPenalty * 100f : stoneFortressSpeedPenalty);
             AddBonusStats(BonusKeyStoneFortress, flat, percent);
 
             if (stoneFortressVisual != null)
@@ -598,7 +599,9 @@ namespace IronWasteland.Tanks.WallTitan
             TankBrain target = FindTargetTankNear(LookTarget, allyCastRange, true);
             if (target == null)
             {
-                // Nếu không trỏ vào ai (kể cả bản thân) thì coi như không thi triển
+                // Nếu không trỏ vào ai (kể cả bản thân) thì hoàn năng lượng & hồi chiêu.
+                GainEnergy(guardianWallEnergyCost);
+                ResetSkillCooldown(SkillOption1Index);
                 return;
             }
 
@@ -763,7 +766,9 @@ namespace IronWasteland.Tanks.WallTitan
         {
             TankStats flat = TankStats.Zeroed();
             flat.Defense = immovableTitanDefenseFlat;
-            AddBonusStats(BonusKeyStoneFortress + "_Immovable", flat);
+            TankStats percent = TankStats.Zeroed();
+            percent.MoveSpeed = -1f; // GDD: bất động trong thời gian hiệu lực
+            AddBonusStats(BonusKeyStoneFortress + "_Immovable", flat, percent);
 
             IsCrowdControlImmune = true;
             ClearAllCrowdControl();
@@ -792,7 +797,9 @@ namespace IronWasteland.Tanks.WallTitan
             TankBrain ally = FindAllyNear(LookTarget, allyCastRange);
             if (ally == null)
             {
-                // Không có ColliderOwnerRef nào có Owner là TankBrain thì thôi.
+                // Không có đồng minh trong tầm thì hoàn năng lượng & hồi chiêu.
+                GainEnergy(earthGuardianEnergyCost);
+                ResetSkillCooldown(SkillOption2Index);
                 return;
             }
 

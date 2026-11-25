@@ -29,6 +29,8 @@ namespace IronWasteland.Tanks.Equipment
 
 
 
+        private TankBrain m_BuffedAlly;
+
         protected override void OnEquipped(TankBrain owner)
         {
             base.OnEquipped(owner);
@@ -40,11 +42,42 @@ namespace IronWasteland.Tanks.Equipment
 
         protected override void OnUnequipped(TankBrain owner)
         {
+            ClearCurrentAllyBuff();
             if (owner != null)
             {
                 owner.RemoveBonusStats(BaseStatsKey);
             }
             base.OnUnequipped(owner);
+        }
+
+        public override void OnBrainTick(float deltaTime)
+        {
+            if (Owner == null || !Owner.IsAlive)
+            {
+                ClearCurrentAllyBuff();
+                return;
+            }
+
+            // Luôn áp dụng +10% CDR cho đồng minh gần nhất trong phạm vi 7m khi đủ điều kiện
+            TankBrain nearest = FindNearestAlly(Owner.transform.position, shareRadius);
+            if (nearest != m_BuffedAlly)
+            {
+                ClearCurrentAllyBuff();
+                m_BuffedAlly = nearest;
+                if (m_BuffedAlly != null)
+                {
+                    m_BuffedAlly.AddBonusStats(AllyBuffKey, null, new TankStats { CooldownReduction = allyBonusCooldownReduction });
+                }
+            }
+        }
+
+        private void ClearCurrentAllyBuff()
+        {
+            if (m_BuffedAlly != null)
+            {
+                m_BuffedAlly.RemoveBonusStats(AllyBuffKey);
+                m_BuffedAlly = null;
+            }
         }
 
         public override void OnOwnerGainedEnergy(float amount, int skillIndex)
@@ -58,19 +91,6 @@ namespace IronWasteland.Tanks.Equipment
             {
                 float sharedAmount = amount * sharedEnergyRatio;
                 nearestAlly.GainEnergy(sharedAmount);
-
-                // Cấp buff giảm hồi chiêu cho đồng minh trong 4s
-                nearestAlly.AddBonusStats(AllyBuffKey, null, new TankStats { CooldownReduction = allyBonusCooldownReduction });
-                StartCoroutine(RemoveAllyBuffAfterDelay(nearestAlly, allyBuffDuration));
-            }
-        }
-
-        private System.Collections.IEnumerator RemoveAllyBuffAfterDelay(TankBrain ally, float delay)
-        {
-            yield return new WaitForSeconds(delay);
-            if (ally != null)
-            {
-                ally.RemoveBonusStats(AllyBuffKey);
             }
         }
 

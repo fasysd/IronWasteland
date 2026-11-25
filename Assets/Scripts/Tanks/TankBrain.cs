@@ -603,8 +603,19 @@ namespace IronWasteland.Tanks
             ShieldEffect shield = new ShieldEffect(id, displayName, duration, amount, source, maxAbsorbHits);
             ApplyEffect(shield);
 
+            if (source is TankBrain caster && caster != this)
+            {
+                caster.NotifySupportedAlly(this);
+            }
+
             // ApplyEffect có thể cộng dồn vào lớp khiên cùng EffectId đã tồn tại → trả về lớp đang hoạt động thật.
             return GetEffect(id) as ShieldEffect ?? shield;
+        }
+
+        public virtual void NotifySupportedAlly(TankBrain ally)
+        {
+            if (ally == null || ally == this) return;
+            m_EquippedAccessory?.OnOwnerSupportedAlly(ally);
         }
 
         public virtual void ClearShield()
@@ -748,7 +759,7 @@ namespace IronWasteland.Tanks
                 if (index == 0)
                 {
                     // Ky nang thuong: hoi nang luong
-                    GainEnergy(GetSkillEnergyGain(index));
+                    GainEnergy(GetSkillEnergyGain(index), index);
                 }
                 else
                 {
@@ -964,7 +975,7 @@ namespace IronWasteland.Tanks
                     info.Attacker,
                     protector,
                     sharedAmount,
-                    info.ArmorPenetration,
+                    armorPenetration: 1f,
                     info.HitPosition,
                     isDirectToHealth: true,
                     isRedirected: true);
@@ -1065,8 +1076,15 @@ namespace IronWasteland.Tanks
             // Đòn đã được gánh hộ toàn bộ thì không còn gì để xử lý tiếp (không phát event sát thương).
             if (rawDamageBeforeRedirect > 0f && info.RawDamage <= 0f) return;
 
-            // [3] Tinh sat thuong thuc te bang CombatUtility
-            float finalDamage = CombatUtility.ResolveDamage(info.RawDamage, m_FinalStats.Defense, info.ArmorPenetration);
+            if (!info.IsDirectToHealth && m_EquippedAccessory != null)
+            {
+                info.RawDamage *= Mathf.Clamp(m_EquippedAccessory.GetIncomingDamageMultiplier(info), 0f, 1f);
+            }
+
+            // [3] Tinh sat thuong thuc te bang CombatUtility (sat thuong truc tiep vao mau la sat thuong chuan, bo qua giap & khien)
+            float finalDamage = info.IsDirectToHealth
+                ? Mathf.Max(0f, info.RawDamage)
+                : CombatUtility.ResolveDamage(info.RawDamage, m_FinalStats.Defense, info.ArmorPenetration);
             info.FinalDamage = finalDamage;
 
             if (info.IsDirectToHealth)

@@ -247,6 +247,7 @@ namespace IronWasteland.Enemies.Normal
                     EnemyStats childStats = kySinhThienThachTemplate.Stats != null
                         ? kySinhThienThachTemplate.Stats.Clone()
                         : new EnemyStats();
+                    childStats.MaxHealth *= 2f;
                     ksttInstance = spawnService != null
                         ? spawnService.SpawnEnemy(kySinhThienThachTemplate, spawnPos, childStats) as NormalEnemy_KySinhThienThach
                         : null;

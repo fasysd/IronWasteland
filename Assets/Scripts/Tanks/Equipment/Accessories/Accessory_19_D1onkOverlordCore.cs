@@ -65,7 +65,7 @@ namespace IronWasteland.Tanks.Equipment
 
         private void HandleEnergyBurstReward(EliteEnemyBrain elite)
         {
-            if (Owner == null || !Owner.IsAlive) return;
+            if (Owner == null || !Owner.IsAlive || !Owner.HasGameplayAuthority) return;
 
             // Hồi 50% Giới hạn năng lượng
             float energyAmount = Owner.FinalStats.MaxEnergy * energyRestoreRatio;

@@ -164,10 +164,9 @@ namespace IronWasteland.Enemies.Normal
 
             if (!m_IsActive) yield break;
 
-            // Quét target tại thời điểm xuất hiện và kích hoạt event trả target về EnemyBrain
+            // Quét target tại thời điểm xuất hiện (chỉ gây sát thương khi phát nổ sau 3s theo GDD)
             HashSet<TankBrain> targets = GetCurrentTargets();
             OnAppearTargets?.Invoke(this, targets);
-            OnTargetsDetected?.Invoke(this, targets);
 
             m_AppearCoroutine = null;
         }

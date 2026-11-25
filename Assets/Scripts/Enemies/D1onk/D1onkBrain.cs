@@ -674,7 +674,7 @@ namespace IronWasteland.Enemies.D1onk
             TriggerGlobalSkillCooldown(globalSkillInterval);
             TriggerAnimator(HashVienBinhTinhLinh);
 
-            if (count < 1) count = UnityEngine.Random.Range(3, 6);
+            if (count < 1) count = 3;
             count = Mathf.Clamp(count, 1, 5);
 
             if (m_VfxController != null)
@@ -1121,7 +1121,8 @@ namespace IronWasteland.Enemies.D1onk
             // Mục tiêu cốt lõi là hạ Trái Tim trong buồng lái Sub-Arena
             if (IsBurstInProgress && !info.IsDirectToHealth)
             {
-                float potentialHp = CurrentHealth - info.RawDamage;
+                float resolved = Core.CombatUtility.ResolveDamage(info.RawDamage, Stats != null ? Stats.Defense : 0f, info.ArmorPenetration);
+                float potentialHp = CurrentHealth - resolved;
                 if (potentialHp < 1f)
                 {
                     float safeDmg = Mathf.Max(0f, CurrentHealth - 1f);

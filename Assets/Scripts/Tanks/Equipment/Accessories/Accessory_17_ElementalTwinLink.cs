@@ -10,7 +10,7 @@ namespace IronWasteland.Tanks.Equipment
     ///   sang cho bản thân (trừ trực tiếp vào máu). Khi không có đồng minh xung quanh để nối cáp, sẽ nhận 50% Phòng thủ.
     /// </summary>
     [DisallowMultipleComponent]
-    public class Accessory_17_ElementalTwinLink : EquipmentBrain
+    public class Accessory_17_ElementalTwinLink : EquipmentBrain, IDamageRedirector
     {
         private const string BaseStatsKey = "Accessory_17_ElementalTwinLink_BaseStats";
 
@@ -77,7 +77,7 @@ namespace IronWasteland.Tanks.Equipment
                 if (bestAlly != null)
                 {
                     m_LinkedAlly = bestAlly;
-                    m_LinkedAlly.OnTakeDamageEvent += HandleAllyTookDamage;
+                    m_LinkedAlly.AddDamageRedirector(this);
                     RemoveSoloBuff();
                 }
                 else
@@ -91,22 +91,31 @@ namespace IronWasteland.Tanks.Equipment
             }
         }
 
-        private void HandleAllyTookDamage(DamageInfo allyDamageInfo)
+        public bool TryRedirect(DamageInfo info, out TankBrain protector, out float sharedAmount)
         {
-            if (Owner == null || !Owner.IsAlive || allyDamageInfo.FinalDamage <= 0f) return;
+            protector = Owner;
+            sharedAmount = 0f;
 
-            // Chuyển 20% sát thương nhận vào của đồng minh sang cho bản thân (trừ trực tiếp vào máu)
-            float damageToSelf = allyDamageInfo.FinalDamage * sharedDamageRatio;
-            DamageInfo selfDmg = new DamageInfo(
-                allyDamageInfo.Attacker,
-                Owner,
-                damageToSelf,
-                isDirectToHealth: true,
-                isRedirected: true,
-                sourceType: allyDamageInfo.SourceType);
+            if (Owner == null || !Owner.IsAlive || m_LinkedAlly == null || !m_LinkedAlly.IsAlive)
+                return false;
 
-            Owner.TakeDamage(selfDmg);
-            TextDamageManager.Instance?.Show(damageToSelf, Owner.transform.position);
+            if (info.IsRedirected || info.RawDamage <= 0f)
+                return false;
+
+            if (Vector2.Distance(Owner.transform.position, m_LinkedAlly.transform.position) > searchRadius)
+                return false;
+
+            sharedAmount = info.RawDamage * sharedDamageRatio;
+            return sharedAmount > 0f;
+        }
+
+        private void UnbindCurrentAlly()
+        {
+            if (m_LinkedAlly != null)
+            {
+                m_LinkedAlly.RemoveDamageRedirector(this);
+                m_LinkedAlly = null;
+            }
         }
 
         private void ApplySoloBuff()
@@ -125,15 +134,6 @@ namespace IronWasteland.Tanks.Equipment
                 Owner.RemoveBonusStats(SoloDefenseBuffKey);
             }
             m_IsSoloBuffActive = false;
-        }
-
-        private void UnbindCurrentAlly()
-        {
-            if (m_LinkedAlly != null)
-            {
-                m_LinkedAlly.OnTakeDamageEvent -= HandleAllyTookDamage;
-                m_LinkedAlly = null;
-            }
         }
 
         private TankBrain FindLowestHealthAlly(Vector2 center, float radius)

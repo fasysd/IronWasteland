@@ -169,17 +169,14 @@ namespace IronWasteland.Enemies.The2Face
                 }
                 else if (m_Mode == The2FaceVortexMode.Anger)
                 {
-                    // Tức giận: Tank khi bị tấn công đầu tiên bởi kỹ năng này sẽ bị trừ 20% năng lượng tối đa
-                    // Mỗi Tank chỉ bị trừ 1 lần cho 1 lần cast, các lần tick tiếp theo không bị trừ nữa
+                    // Tức giận: tăng 20% sát thương nhận vào và trừ 20% năng lượng tối đa
                     if (m_EnergyDrainedTanks.Add(tank))
                     {
-                        float maxEnergy = tank.Stats != null ? tank.Stats.MaxEnergy : 100f;
-                        float drain = maxEnergy * m_AngerEnergyDrainRatio;
-                        if (drain > 0f)
-                        {
-                            tank.SpendEnergy(drain);
-                            Debug.Log($"[The2Face] Vùng xoáy Tức giận: trừ {drain:0.0} Max Mana của {tank.name} (còn {tank.CurrentEnergy:0.0}).");
-                        }
+                        tank.ApplyEffect(new The2FaceAngerEffect(
+                            m_SadDuration,
+                            0.20f,
+                            m_AngerEnergyDrainRatio,
+                            m_Owner));
                     }
                 }
             }

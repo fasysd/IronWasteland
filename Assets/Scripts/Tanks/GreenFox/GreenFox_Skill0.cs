@@ -107,18 +107,18 @@ namespace IronWasteland.Tanks.GreenFox
                 return;
             }
 
-            // Sát thương cơ bản
-            m_OwnerTank.DamageEnemy(enemy, m_Damage, hitPos, sourceType: DamageSourceType.NormalSkill);
-
-            // 25%: thường bị trói chân, Tinh anh nhận thêm sát thương
-            if (Random.Range(0f, 100f) < procChancePercent)
+            // 25%: thường bị trói chân, Tinh anh đổi scale thành 120% ATK thay vì trói chân (GDD)
+            bool procced = Random.Range(0f, 100f) < procChancePercent;
+            if (procced && enemy is EliteEnemyBrain)
             {
-                if (enemy is EliteEnemyBrain)
-                {
-                    float bonus = m_OwnerTank.ScaledDamage(eliteBonusDamagePercent / 100f);
-                    m_OwnerTank.DamageEnemy(enemy, bonus, hitPos, sourceType: DamageSourceType.NormalSkill);
-                }
-                else if (m_OwnerTank.RootEnemy(enemy, rootDuration))
+                float eliteDamage = m_OwnerTank.ScaledDamage(eliteBonusDamagePercent / 100f);
+                m_OwnerTank.DamageEnemy(enemy, eliteDamage, hitPos, sourceType: DamageSourceType.NormalSkill);
+            }
+            else
+            {
+                m_OwnerTank.DamageEnemy(enemy, m_Damage, hitPos, sourceType: DamageSourceType.NormalSkill);
+
+                if (procced && m_OwnerTank.RootEnemy(enemy, rootDuration))
                 {
                     SpawnRootEffect(enemy);
                     NetEffectSync.Instance?.BroadcastEnemyEffect(GetNetworkId(enemy), "GreenFox_Root", 1, rootDuration);

@@ -464,7 +464,7 @@ namespace IronWasteland.Tanks.WaterB
 
             Vector3 center = GetValidPlacementPosition();
             int count = Mathf.Max(1, skill2SubDesign.TurretCount);
-            float damage = Atk * skill2SubDesign.TurretDamageAtkRatio;
+            float damage = Atk * skill2SubDesign.TurretDamageAtkRatio * (1f + Stats.DamageRate);
             float energyPerHit = skill2SubDesign.EnergyRegenPerHit;
 
             for (int i = 0; i < count; i++)

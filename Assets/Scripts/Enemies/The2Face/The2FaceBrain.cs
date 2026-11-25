@@ -748,7 +748,12 @@ namespace IronWasteland.Enemies.The2Face
         {
             ClearLightPoints();
 
-            int tankCount = FindObjectsByType<TankBrain>().Length;
+            int tankCount = 0;
+            var allTanks = FindObjectsByType<TankBrain>();
+            for (int i = 0; i < allTanks.Length; i++)
+            {
+                if (allTanks[i] != null && allTanks[i].IsAlive) tankCount++;
+            }
             int count = Mathf.Clamp(tankCount, 1, 4);
             m_TotalLightPoints = count;
 
@@ -812,8 +817,8 @@ namespace IronWasteland.Enemies.The2Face
 
             int alive = CountAliveLights();
             int lit = CountLitLights();
-            // Toàn bộ Điểm Sáng còn sống trên sân đều được bật đồng thời (k = alive)
-            bool fullOpen = alive > 0 && lit == alive;
+            // Toàn bộ Điểm Sáng ban đầu đều được bật đồng thời
+            bool fullOpen = m_TotalLightPoints > 0 && lit == m_TotalLightPoints;
             int unlocked = fullOpen ? TankBrain.SkillCount : Mathf.Clamp(lit, 0, TankBrain.SkillCount);
 
             if (unlocked == m_UnlockedSlotCount) return;

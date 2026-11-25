@@ -215,7 +215,7 @@ namespace IronWasteland.Tanks.RedNova
                     switch (ResolveOption1Branch())
                     {
                         case 1: return 0f;
-                        case 2: return executionCoreEnergyCost;
+                        case 2: return m_ExecutionCoreFreeCast ? 0f : executionCoreEnergyCost;
                         default: return overdriveEnergyCost;
                     }
 
@@ -263,6 +263,7 @@ namespace IronWasteland.Tanks.RedNova
                         if (CurrentEnergy < laserShotEnergyCost)
                         {
                             m_IsLaserCannonActive = false;
+                            FireNovaShot();
                             return;
                         }
 
@@ -294,17 +295,16 @@ namespace IronWasteland.Tanks.RedNova
         /// <summary>
         /// Sát thương gốc theo GDD 4.1: Tấn công × Scale kỹ năng × (1 + Tỉ lệ sát thương).
         /// </summary>
-        private float CalculateRawDamage(float attackCoefficient, float flatAttackPercentBonus = 0f)
+        private float CalculateRawDamage(float attackCoefficient, float flatAttackScaleBonus = 0f)
         {
-            float attack = Stats.Attack * (1f + flatAttackPercentBonus);
-            return attack * attackCoefficient * (1f + Stats.DamageRate);
+            return Stats.Attack * (attackCoefficient + flatAttackScaleBonus) * (1f + Stats.DamageRate);
         }
 
         /// <summary>
         /// Gây sát thương qua đúng đường ống CombatUtility (giáp → xuyên giáp → khiên),
         /// rồi xử lý các buff "mất khi gây sát thương" và hiệu ứng hạ gục.
         /// </summary>
-        private void ApplySkillDamage(EnemyBrain enemy, float rawDamage, Vector2 hitPosition, DamageSourceType sourceType = DamageSourceType.Default)
+        private void ApplySkillDamage(EnemyBrain enemy, float rawDamage, Vector2 hitPosition, DamageSourceType sourceType = DamageSourceType.Default, bool consumeNovaRush = false)
         {
             if (enemy == null || !enemy.IsAlive)
                 return;
@@ -315,7 +315,7 @@ namespace IronWasteland.Tanks.RedNova
             CombatFeedback.Show(info.FinalDamage, hitPosition);
 
             // Overdrive / Execution Core: hiệu ứng mất ngay khi gây sát thương.
-            if (m_HasNovaRushEmpoweredShot)
+            if (consumeNovaRush && m_HasNovaRushEmpoweredShot)
                 m_HasNovaRushEmpoweredShot = false;
 
             if (m_IsOverdriveActive)
@@ -474,7 +474,7 @@ namespace IronWasteland.Tanks.RedNova
             // Nova Rush: đòn kế tiếp được cộng thêm ATK (GDD: +200%).
             float rushBonus = m_HasNovaRushEmpoweredShot ? novaRushBonusAttackPercent : 0f;
 
-            ApplySkillDamage(enemy, CalculateRawDamage(novaShotDamageMultiplier, rushBonus), skill.transform.position, DamageSourceType.NormalSkill);
+            ApplySkillDamage(enemy, CalculateRawDamage(novaShotDamageMultiplier, rushBonus), skill.transform.position, DamageSourceType.NormalSkill, consumeNovaRush: true);
             GainEnergy(novaShotEnergyGain);
         }
 
@@ -483,6 +483,8 @@ namespace IronWasteland.Tanks.RedNova
             // Theo GDD: đang ở trạng thái Laser Cannon thì không thể dùng Triple Nova.
             if (m_IsLaserCannonActive)
             {
+                GainEnergy(tripleNovaEnergyCost);
+                ResetSkillCooldown(SkillTripleNovaIndex);
                 Debug.Log($"[{nameof(TankBrain_RedNova)}] Đang ở trạng thái Laser Cannon, không thể dùng Triple Nova.");
                 return;
             }
@@ -553,7 +555,7 @@ namespace IronWasteland.Tanks.RedNova
                 return;
 
             float rushBonus = m_HasNovaRushEmpoweredShot ? novaRushBonusAttackPercent : 0f;
-            ApplySkillDamage(enemy, CalculateRawDamage(tripleNovaDamageMultiplier, rushBonus), skill.transform.position, DamageSourceType.SpecialSkill);
+            ApplySkillDamage(enemy, CalculateRawDamage(tripleNovaDamageMultiplier, rushBonus), skill.transform.position, DamageSourceType.SpecialSkill, consumeNovaRush: true);
         }
         #endregion
 
@@ -629,10 +631,7 @@ namespace IronWasteland.Tanks.RedNova
 
                 case 2:
                 default:
-                    if (m_ExecutionCoreFreeCast)
-                        m_ExecutionCoreFreeCast = false;
-                    else
-            
+                    m_ExecutionCoreFreeCast = false;
                     ActivateExecutionCore();
                     break;
             }
@@ -742,7 +741,7 @@ namespace IronWasteland.Tanks.RedNova
             // Laser là "kỹ năng thường cường hóa" nên cũng phải nhận buff Nova Rush
             // (đòn kế tiếp +200% ATK) và tiêu buff đó sau khi gây sát thương.
             float rushBonus = m_HasNovaRushEmpoweredShot ? novaRushBonusAttackPercent : 0f;
-            ApplySkillDamage(enemy, CalculateRawDamage(laserCannonDamageMultiplier, rushBonus), enemy.transform.position, DamageSourceType.OptionSkill1);
+            ApplySkillDamage(enemy, CalculateRawDamage(laserCannonDamageMultiplier, rushBonus), enemy.transform.position, DamageSourceType.OptionSkill1, consumeNovaRush: true);
         }
 
         private void ActivateExecutionCore()

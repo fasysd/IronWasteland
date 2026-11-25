@@ -31,10 +31,10 @@ namespace IronWasteland.Tanks.Equipment
         [SerializeField, Min(1f)] private float allySearchRadius = 8.0f;
 
         private const string AllyBuffKeyPrefix = "Acc18_The2Face_Atk_";
-        private readonly List<float> m_AllyBuffTimers = new List<float>();
+        private readonly Dictionary<EnemyBrain, int> m_EnemyDebuffStacks = new Dictionary<EnemyBrain, int>();
+        private readonly Dictionary<TankBrain, int> m_AllyBuffStacks = new Dictionary<TankBrain, int>();
 
-
-                protected override void OnEquipped(TankBrain owner)
+        protected override void OnEquipped(TankBrain owner)
         {
             base.OnEquipped(owner);
             if (owner != null)
@@ -53,68 +53,35 @@ namespace IronWasteland.Tanks.Equipment
             base.OnUnequipped(owner);
         }
 
-        public override void OnBrainTick(float deltaTime)
-        {
-            if (Owner == null || !Owner.IsAlive) return;
-
-            // Quản lý các tầng buff độc lập cho bản thân/đồng minh
-            for (int i = m_AllyBuffTimers.Count - 1; i >= 0; i--)
-            {
-                m_AllyBuffTimers[i] -= deltaTime;
-                if (m_AllyBuffTimers[i] <= 0f)
-                {
-                    m_AllyBuffTimers.RemoveAt(i);
-                    Owner.RemoveBonusStats(AllyBuffKeyPrefix + i);
-                }
-            }
-        }
+        public override void OnBrainTick(float deltaTime) { }
 
         public override void OnOwnerDealtDamage(DamageInfo info)
         {
             if (Owner == null || !Owner.IsAlive) return;
             if (!(info.Target is EnemyBrain enemy) || !enemy.IsAlive) return;
 
-            // Áp dụng giảm phòng thủ 10% trong 4s cho kẻ địch
-            if (enemy.Stats != null)
+            // Tối đa 2 tầng độc lập (-10% DEF trong 4s)
+            m_EnemyDebuffStacks.TryGetValue(enemy, out int stacks);
+            if (stacks < 2 && enemy.Stats != null)
             {
+                m_EnemyDebuffStacks[enemy] = stacks + 1;
                 StartCoroutine(ApplyEnemyDefenseDebuffRoutine(enemy, enemyDefenseReductionPerStack, enemyDebuffDuration));
             }
         }
 
-        public override void OnOwnerHealed(float amount)
+        public override void OnOwnerSupportedAlly(TankBrain ally)
         {
-            if (amount <= 0f) return;
-            TriggerAllyAttackBuff();
+            if (Owner == null || !Owner.IsAlive || ally == null || !ally.IsAlive || ally == Owner) return;
+            TriggerAllyAttackBuff(ally);
         }
 
-        private void TriggerAllyAttackBuff()
+        private void TriggerAllyAttackBuff(TankBrain ally)
         {
-            if (Owner == null || !Owner.IsAlive) return;
-
-            // Giới hạn tối đa 2 tầng độc lập
-            if (m_AllyBuffTimers.Count < 2)
+            m_AllyBuffStacks.TryGetValue(ally, out int stacks);
+            if (stacks < 2)
             {
-                int stackIndex = m_AllyBuffTimers.Count;
-                m_AllyBuffTimers.Add(allyBuffDuration);
-                Owner.AddBonusStats(AllyBuffKeyPrefix + stackIndex, null, new TankStats { Attack = allyAttackBuffPerStack });
-            }
-            else
-            {
-                // Làm mới thời gian của tầng sớm hết hạn nhất
-                m_AllyBuffTimers[0] = allyBuffDuration;
-            }
-
-            // Đồng thời buff cho các đồng minh lân cận
-            TankBrain[] allTanks = Object.FindObjectsByType<TankBrain>(FindObjectsSortMode.None);
-            for (int i = 0; i < allTanks.Length; i++)
-            {
-                TankBrain ally = allTanks[i];
-                if (ally == null || !ally.IsAlive || ally == Owner) continue;
-
-                if (Vector2.Distance(Owner.transform.position, ally.transform.position) <= allySearchRadius)
-                {
-                    StartCoroutine(ApplyAllyAttackBuffRoutine(ally, allyAttackBuffPerStack, allyBuffDuration));
-                }
+                m_AllyBuffStacks[ally] = stacks + 1;
+                StartCoroutine(ApplyAllyAttackBuffRoutine(ally, allyAttackBuffPerStack, allyBuffDuration));
             }
         }
 
@@ -131,11 +98,17 @@ namespace IronWasteland.Tanks.Equipment
             {
                 enemy.Stats.Defense += reduced;
             }
+
+            if (enemy != null && m_EnemyDebuffStacks.TryGetValue(enemy, out int stacks))
+            {
+                if (stacks <= 1) m_EnemyDebuffStacks.Remove(enemy);
+                else m_EnemyDebuffStacks[enemy] = stacks - 1;
+            }
         }
 
         private System.Collections.IEnumerator ApplyAllyAttackBuffRoutine(TankBrain ally, float bonusAtkRatio, float duration)
         {
-            string key = "Acc18_AllyAtkBuff_" + System.Guid.NewGuid().ToString("N");
+            string key = AllyBuffKeyPrefix + System.Guid.NewGuid().ToString("N");
             ally.AddBonusStats(key, null, new TankStats { Attack = bonusAtkRatio });
 
             yield return new WaitForSeconds(duration);
@@ -143,17 +116,18 @@ namespace IronWasteland.Tanks.Equipment
             if (ally != null)
             {
                 ally.RemoveBonusStats(key);
+                if (m_AllyBuffStacks.TryGetValue(ally, out int stacks))
+                {
+                    if (stacks <= 1) m_AllyBuffStacks.Remove(ally);
+                    else m_AllyBuffStacks[ally] = stacks - 1;
+                }
             }
         }
 
         private void ClearAllyBuffs()
         {
-            if (Owner != null)
-            {
-                Owner.RemoveBonusStats(AllyBuffKeyPrefix + "0");
-                Owner.RemoveBonusStats(AllyBuffKeyPrefix + "1");
-            }
-            m_AllyBuffTimers.Clear();
+            m_AllyBuffStacks.Clear();
+            m_EnemyDebuffStacks.Clear();
         }
     }
 }
