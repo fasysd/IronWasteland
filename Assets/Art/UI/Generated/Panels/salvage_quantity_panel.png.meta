@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 34eb3767931857046b951e8f67d882b9
+guid: 05a2749411cd44b48ab6fe3bbaa2c21a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6461490575108202338
-    second: sel_frame_0
+      213: 8682761351519859996
+    second: salvage_quantity_panel_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: sel_frame_0
+      name: salvage_quantity_panel_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 414
-        height: 112
+        x: 7
+        y: 7
+        width: 322
+        height: 30
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 26fdbd09173dba950800000000000000
-      internalID: 6461490575108202338
+      spriteID: c15f4da227d5f7870800000000000000
+      internalID: 8682761351519859996
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      sel_frame_0: 6461490575108202338
+      salvage_quantity_panel_0: 8682761351519859996
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

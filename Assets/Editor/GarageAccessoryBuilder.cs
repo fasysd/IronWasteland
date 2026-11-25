@@ -242,6 +242,7 @@ namespace IronWasteland.EditorTools
             {
                 icon = AssetDatabase.LoadAssetAtPath<Sprite>(ItemDir + "/" + item.Key + ".jpg");
             }
+                entry.FindPropertyRelative("SalvageValue").intValue = DeriveSalvageValue(i);
                 entry.FindPropertyRelative("Icon").objectReferenceValue = icon;
                 if (icon == null)
                 {
@@ -253,6 +254,25 @@ namespace IronWasteland.EditorTools
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
             return catalog;
+        }
+
+        /// <summary>
+        /// Giá trị phân rã theo thứ tự phụ kiện trong danh mục: món càng về sau càng xịn
+        /// nên cho nhiều ngọc hơn. Sửa bảng này khi cần cân bằng lại kinh tế.
+        /// </summary>
+        private static int DeriveSalvageValue(int index)
+        {
+            if (index < 8)
+            {
+                return 5;
+            }
+
+            if (index < 14)
+            {
+                return 8;
+            }
+
+            return 12;
         }
 
         private static List<RawItem> ParseData(string text)
@@ -507,20 +527,20 @@ namespace IronWasteland.EditorTools
             }
 
             AddImage(root, "ButtonCancel", 1210f, 900f, 290f, 52f, buttonSecondary);
-            AddText(root, "TextCancel", "HỦY BỎ", 1210f, 900f, 17f, new Color32(0xC4, 0xD0, 0xDC, 0xFF), barlow800, 290f, 1.8f, TextAlignmentOptions.Center, 52f, false, true);
+            AddText(root, "TextCancel", "HỦY BỎ", 1210f, 900f, 20f, new Color32(0xC4, 0xD0, 0xDC, 0xFF), barlow800, 290f, 1.8f, TextAlignmentOptions.Center, 52f, false, true);
 
             AddImage(root, "ButtonConfirm", 1526f, 900f, 296f, 52f, buttonConfirm);
-            AddText(root, "TextConfirm", "XÁC NHẬN TRANG BỊ", 1526f, 900f, 16.2f, new Color32(0x0B, 0x0F, 0x14, 0xFF), barlow800, 296f, 1.2f, TextAlignmentOptions.Center, 52f, false, true);
+            AddText(root, "TextConfirm", "XÁC NHẬN TRANG BỊ", 1526f, 900f, 18.5f, new Color32(0x0B, 0x0F, 0x14, 0xFF), barlow800, 296f, 1.2f, TextAlignmentOptions.Center, 52f, false, true);
             AddText(root, "TextConfirmArrow", "›", 1788f, 900f, 28f, new Color32(0x0B, 0x0F, 0x14, 0xFF), barlow800, 28f, 0f, TextAlignmentOptions.Center, 52f, false, true);
 
             AddImage(root, "KeyEsc", 88f, 900f, 54f, 26f, keycap);
-            AddText(root, "TextEsc", "ESC", 88f, 900f, 8.4f, new Color32(0x8A, 0x99, 0xAB, 0xFF), mono, 54f, 0f, TextAlignmentOptions.Center, 26f, false, true);
-            AddText(root, "TextCancelHint", "HỦY BỎ", 150f, 919f, 10.2f, new Color32(0x8A, 0x99, 0xAB, 0xFF), barlow700, 110f, 0.8f);
+            AddText(root, "TextEsc", "ESC", 88f, 900f, 9.6f, new Color32(0x8A, 0x99, 0xAB, 0xFF), mono, 54f, 0f, TextAlignmentOptions.Center, 26f, false, true);
+            AddText(root, "TextCancelHint", "HỦY BỎ", 150f, 919f, 12.5f, new Color32(0x8A, 0x99, 0xAB, 0xFF), barlow700, 110f, 0.8f);
 
             AddImage(root, "KeyEnter", 204f, 900f, 64f, 26f, keycap);
-            AddText(root, "TextEnter", "ENTER", 204f, 900f, 8.4f, new Color32(0x8A, 0x99, 0xAB, 0xFF), mono, 64f, 0f, TextAlignmentOptions.Center, 26f, false, true);
-            AddText(root, "TextConfirmHint", "XÁC NHẬN TRANG BỊ", 276f, 919f, 10.2f, new Color32(0x8A, 0x99, 0xAB, 0xFF), barlow700, 230f, 0.8f);
-            AddText(root, "TextSaveHint", "THAY ĐỔI ĐƯỢC LƯU VÀO NHÀ XE", 480f, 919f, 9.4f, new Color32(0x4B, 0x58, 0x67, 0xFF), barlow600, 380f, 1.4f);
+            AddText(root, "TextEnter", "ENTER", 204f, 900f, 9.6f, new Color32(0x8A, 0x99, 0xAB, 0xFF), mono, 64f, 0f, TextAlignmentOptions.Center, 26f, false, true);
+            AddText(root, "TextConfirmHint", "XÁC NHẬN TRANG BỊ", 276f, 919f, 12.5f, new Color32(0x8A, 0x99, 0xAB, 0xFF), barlow700, 230f, 0.8f);
+            AddText(root, "TextSaveHint", "THAY ĐỔI ĐƯỢC LƯU VÀO NHÀ XE", 480f, 919f, 11.5f, new Color32(0x4B, 0x58, 0x67, 0xFF), barlow600, 380f, 1.4f);
 
             GarageAccessoryController controller = canvasObject.AddComponent<GarageAccessoryController>();
             SerializedObject serialized = new SerializedObject(controller);
@@ -602,8 +622,9 @@ namespace IronWasteland.EditorTools
             TextMeshProUGUI category = AddText(cardRoot, "TextCategory", "LÕI ĐỘNG CƠ", 0f, 190f + CardContentShiftY, 9.0f, new Color32(0x8A, 0x99, 0xAB, 0xFF), barlow700, 276f, 1.4f, TextAlignmentOptions.Top);
             TextMeshProUGUI name = AddText(cardRoot, "TextName", "TRỌNG LỰC ĐỊA MẠCH", 14f, 220f + CardContentShiftY, 19f, new Color32(0xE6, 0xED, 0xF5, 0xFF), barlow900, 248f, 0.6f, TextAlignmentOptions.Top, 40f, true);
             TextMeshProUGUI role = AddText(cardRoot, "TextRole", "GIÁP / PHÒNG THỦ", 0f, 246f + CardContentShiftY, 9.6f, new Color32(0xC9, 0xA9, 0xFF, 0xFF), barlow700, 276f, 1.0f, TextAlignmentOptions.Top);
-            TextMeshProUGUI stats = AddText(cardRoot, "TextStats", "+35% PHÒNG THỦ", 20f, 268f + CardContentShiftY, 9.8f, new Color32(0x4A, 0xDE, 0x80, 0xFF), barlow700, 236f, 0.2f, TextAlignmentOptions.Top, 76f);
-            TextMeshProUGUI description = AddText(cardRoot, "TextDescription", "Mô tả hiệu ứng của phụ kiện.", 20f, 344f + CardContentShiftY, 11f, new Color32(0x8A, 0x99, 0xAB, 0xFF), barlow600, 236f, 0.2f, TextAlignmentOptions.Top, 196f, true);
+            TextMeshProUGUI stats = AddText(cardRoot, "TextStats", "+35% PHÒNG THỦ", 20f, 268f + CardContentShiftY, 13.5f, new Color32(0x4A, 0xDE, 0x80, 0xFF), barlow700, 236f, 0.2f, TextAlignmentOptions.Top, 104f);
+            TextMeshProUGUI description = AddText(cardRoot, "TextDescription", "Mô tả hiệu ứng của phụ kiện.", 20f, 440f, 16f, new Color32(0x8A, 0x99, 0xAB, 0xFF), barlow600, 236f, 0.2f, TextAlignmentOptions.Top, 126f, true);
+            description.overflowMode = TextOverflowModes.Ellipsis;
             TextMeshProUGUI footer = AddText(cardRoot, "TextFooter", "TRANG BỊ  ›", 20f, 576f, 9.2f, new Color32(0x4B, 0x58, 0x67, 0xFF), barlow600, 236f, 1.0f, TextAlignmentOptions.TopRight);
 
             GarageAccessoryController.CardView view = new GarageAccessoryController.CardView();

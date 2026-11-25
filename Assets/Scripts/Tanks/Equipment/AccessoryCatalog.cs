@@ -39,6 +39,9 @@ namespace IronWasteland.Tanks
 
             [Tooltip("Ảnh vuông của phụ kiện.")]
             public Sprite Icon;
+
+            [Tooltip("Số ngọc nhận được khi phân rã 1 bản sao.")]
+            public int SalvageValue = 5;
         }
 
         [Tooltip("Toàn bộ phụ kiện, xếp đúng thứ tự hiển thị trên màn chọn.")]

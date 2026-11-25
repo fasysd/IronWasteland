@@ -1,5 +1,6 @@
 using IronWasteland.Save;
 using IronWasteland.Tanks;
+using IronWasteland.UiModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -47,32 +48,34 @@ namespace IronWasteland.UI
                 return;
             }
 
-            int equipped = SaveSystem.Instance.GetEquippedAccessory(SaveSystem.Instance.LastSelectedTankIndex);
-            AccessoryCatalog.Entry entry = equipped >= 0 ? m_Catalog.Get(equipped) : null;
-            if (entry == null)
+            int tankIndex = SaveSystem.Instance.LastSelectedTankIndex;
+            int savedIndex = SaveSystem.Instance.GetEquippedAccessory(tankIndex);
+            AccessoryCatalog.Entry entry = m_Catalog.Get(savedIndex);
+            if (entry == null || !SaveSystem.Instance.HasAccessory(savedIndex))
             {
-                SetText(m_AccessoryName, "CHƯA TRANG BỊ");
-                SetText(m_Category, string.Empty);
-                SetText(m_Stats, string.Empty);
-                SetText(m_Description, "MỞ MÀN PHỤ KIỆN ĐỂ CHỌN TRANG BỊ.");
-                if (m_Icon != null)
+                // Save cũ có thể trỏ tới món đã phân rã hoặc ngoài danh mục: dọn về chưa trang bị.
+                if (savedIndex >= 0)
                 {
-                    m_Icon.enabled = false;
+                    SaveSystem.Instance.SetEquippedAccessory(tankIndex, -1);
                 }
 
-                return;
+                entry = null;
             }
+            AccessoryCard card = entry != null
+                ? AccessoryCardModel.Build(new AccessoryCardSource(entry.DisplayName, entry.Stats, entry.Description))
+                : AccessoryCardModel.Build(null);
 
             if (m_Icon != null)
             {
-                m_Icon.sprite = entry.Icon;
-                m_Icon.enabled = entry.Icon != null;
+                m_Icon.sprite = entry != null ? entry.Icon : null;
+                m_Icon.enabled = card.HasAccessory && entry != null && entry.Icon != null;
             }
 
-            SetText(m_AccessoryName, entry.DisplayName);
-            SetText(m_Category, entry.Category);
-            SetText(m_Stats, entry.Stats != null ? string.Join("   ", entry.Stats) : string.Empty);
-            SetText(m_Description, entry.Description);
+            // Nhóm phụ kiện đã gộp vào tên nên nhãn riêng để trống.
+            SetText(m_AccessoryName, card.NameText);
+            SetText(m_Category, string.Empty);
+            SetText(m_Stats, card.BonusText);
+            SetText(m_Description, card.HasAccessory ? card.PassiveText : "MỞ MÀN PHỤ KIỆN ĐỂ CHỌN TRANG BỊ.");
         }
 
         private static void SetText(TextMeshProUGUI target, string value)

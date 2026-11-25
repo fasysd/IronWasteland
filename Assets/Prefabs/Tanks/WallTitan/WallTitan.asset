@@ -12,11 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a7d3e9f1c2b4d6e8f0a1b3c5d7e9f21, type: 3}
   m_Name: WallTitan
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankDefinition
-  tankName: Wall Titan
+  tankName: WALL TITAN
   description: "C\u1ED7 xe tank ma ph\xE1p h\u1EA1ng n\u1EB7ng \u0111\u1EA7u ti\xEAn
     c\u1EE7a nh\xE2n lo\u1EA1i, \u0111\u01B0\u1EE3c t\u1EA1o ra b\xEAn trong th\xE0nh
     ph\u1ED1 ng\u1EA7m, k\u1EBFt h\u1EE3p gi\u1EEFa xe tank v\xE0 tinh th\u1EC3 
     ma ph\xE1p \u0111\u1EA5t."
+  rolePrimary: TANKER
+  roleSecondary: "H\u1ED6 TR\u1EE2"
+  unlockStageCode: 
+  rosterIcon: {fileID: 21300000, guid: 98b40d66ba551674f84536fec7f7ae54, type: 3}
+  rosterAccent: {r: 0.8784314, g: 0.6627451, b: 0.29411766, a: 1}
+  portrait: {fileID: 21300000, guid: b3447f9d14a6a7447b0ffa1414ac1938, type: 3}
+  portraitOffset: {x: 6.1, y: 0}
+  menuPortrait: {fileID: 21300000, guid: 56bfddea8530e4b49aacbeb57a2e2b2e, type: 3}
+  skillDescriptions:
+  - "KH\xD4NG T\u1ED0N N\u0102NG L\u01AF\u1EE2NG"
+  - "T\u1ED0N N\u0102NG L\u01AF\u1EE2NG"
+  - "3 L\u1EF0A CH\u1ECCN  \u203A"
+  - "3 L\u1EF0A CH\u1ECCN  \u203A"
+  startingLevel: 1
   baseStatsLevel1:
     Attack: 15
     Defense: 25
@@ -43,10 +57,10 @@ MonoBehaviour:
     OptionSkill1: 0
     OptionSkill2: 0
   skillIcons:
-  - {fileID: 21300000, guid: 3a48c8e8133746b419afc82a441c4c68, type: 3}
-  - {fileID: 21300000, guid: 45827ee3f0878ce42b7e595699d73104, type: 3}
-  - {fileID: 21300000, guid: 1624d5b6bf8292045ab631a10987ed59, type: 3}
-  - {fileID: 21300000, guid: 8d7ae579b5306a54ea7a5fcc1759100b, type: 3}
+  - {fileID: 21300000, guid: 568578471d7455e45b7a65d2f81c00a7, type: 3}
+  - {fileID: 21300000, guid: 8225ad6977646cc4dbdd16695cee5bc5, type: 3}
+  - {fileID: 21300000, guid: 6c4a956924dd1794d83202288c387d82, type: 3}
+  - {fileID: 21300000, guid: 730c280bc7056784da26ea8035fd4862, type: 3}
   skillIconsCooldown: []
   skillIconsIncludeLabels: 0
   skillNames:

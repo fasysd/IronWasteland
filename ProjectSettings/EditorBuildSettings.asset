@@ -53,5 +53,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Stage_2_5.unity
     guid: d2f7d3f5c69bb254eaa6dbb4f07a0751
+  - enabled: 1
+    path: Assets/Scenes/AccessorySalvage.unity
+    guid: 6b5488bcca9eb4b41ab268eeec243f58
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

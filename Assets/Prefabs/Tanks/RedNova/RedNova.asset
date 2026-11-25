@@ -12,10 +12,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a7d3e9f1c2b4d6e8f0a1b3c5d7e9f21, type: 3}
   m_Name: RedNova
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankDefinition
-  tankName: Red Nova
+  tankName: RED NOVA
   description: "C\u1ED7 xe tank tinh anh ma ph\xE1p  \u0111\u1EA7u ti\xEAn xu\u1EA5t
     hi\u1EC7n sau khi \u0111\xE1nh b\u1EA1i Seau Bearus, \u0111\u01B0\u1EE3c ch\u1EBF
     t\u1EA1o v\u1EDBi s\u1EF1 gi\xFAp \u0111\u1EE1 c\u1EE7a Mones."
+  rolePrimary: DPS
+  roleSecondary: "H\u1ED6 TR\u1EE2 L\u1EF0C XA"
+  unlockStageCode: 1-4
+  rosterIcon: {fileID: 21300000, guid: 7c70e28d1161f7f4bbd32913a675bda4, type: 3}
+  rosterAccent: {r: 1, g: 0.3529412, b: 0.23529412, a: 1}
+  portrait: {fileID: 21300000, guid: 4c1d75a7c294d5c4a841087a25968052, type: 3}
+  portraitOffset: {x: -1.9, y: 0}
+  menuPortrait: {fileID: 21300000, guid: 1b9ebaeb189e4654698cd2555df14bb4, type: 3}
+  skillDescriptions:
+  - "KH\xD4NG T\u1ED0N N\u0102NG L\u01AF\u1EE2NG"
+  - "T\u1ED0N N\u0102NG L\u01AF\u1EE2NG"
+  - "3 L\u1EF0A CH\u1ECCN  \u203A"
+  - "3 L\u1EF0A CH\u1ECCN  \u203A"
+  startingLevel: 10
   baseStatsLevel1:
     Attack: 25
     Defense: 10
@@ -42,10 +56,10 @@ MonoBehaviour:
     OptionSkill1: 0
     OptionSkill2: 0
   skillIcons:
-  - {fileID: 21300000, guid: be7ce659e2befae43b1e7620ea51746a, type: 3}
-  - {fileID: 21300000, guid: 980e2ab8fc8c66d468949c62c2c34d53, type: 3}
-  - {fileID: 21300000, guid: 4ba4d1b478eb2854fbd1c51cd0000662, type: 3}
-  - {fileID: 21300000, guid: f429d190c212e0541ad0b4b8b6e7cb29, type: 3}
+  - {fileID: 21300000, guid: 89d6b752abfd93748bb60d745f381734, type: 3}
+  - {fileID: 21300000, guid: 8e009a8e4955fe54cb0a6f5979799b69, type: 3}
+  - {fileID: 21300000, guid: 8e9578954ad088343b5e46e24c7febb1, type: 3}
+  - {fileID: 21300000, guid: a84c66046f8101b44968cc0bb8007afe, type: 3}
   skillIconsCooldown: []
   skillIconsIncludeLabels: 0
   skillNames:

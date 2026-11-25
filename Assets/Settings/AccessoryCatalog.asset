@@ -22,6 +22,7 @@ MonoBehaviour:
     Description: "\u0110\u1EE9ng y\xEAn sau 1.5s gi\xFAp +35% Ph\xF2ng th\u1EE7,
       h\u1ED3i 1.5% Gi\u1EDBi h\u1EA1n m\xE1u m\u1ED7i gi\xE2y."
     Icon: {fileID: 21300000, guid: be9d9fcecf0f3064cb3a038089f25d65, type: 3}
+    SalvageValue: 5
   - Key: loi_huyet_tinh_sinh_hoc
     DisplayName: "SINH H\u1ECCC"
     Category: "L\xD5I HUY\u1EBET TINH"
@@ -33,6 +34,7 @@ MonoBehaviour:
       m\xE1u s\u1EEDa ch\u1EEFa cho b\u1EA3n th\xE2n v\xE0 1 xe \u0111\u1ED3ng minh
       th\u1EA5p m\xE1u nh\u1EA5t trong ph\u1EA1m vi 5m xung quanh"
     Icon: {fileID: 21300000, guid: 07404b2ba9b471f4dbe095ec1a7c9a5a, type: 3}
+    SalvageValue: 5
   - Key: loi_nang_luong_thien_thach_no
     DisplayName: "THI\xCAN TH\u1EA0CH N\u1ED4"
     Category: "L\xD5I N\u0102NG L\u01AF\u1EE2NG"
@@ -45,6 +47,7 @@ MonoBehaviour:
       b\u1EB1ng 100% Ph\xF2ng th\u1EE7 v\xE0 \u0111\u1EA9y l\xF9i \u0111\u1ECBch
       lo\u1EA1i th\u01B0\u1EDDng xung quanh."
     Icon: {fileID: 21300000, guid: cc1e2446dc202aa4982dd21067f46d3d, type: 3}
+    SalvageValue: 5
   - Key: loi_ma_phap_hoi_tu_quang_tu
     DisplayName: "H\u1ED8I T\u1EE4 QUANG T\u1EEC"
     Category: "L\xD5I MA PH\xC1P"
@@ -58,6 +61,7 @@ MonoBehaviour:
       trong 1s. K\xEDch ho\u1EA1t l\u1EA1i hi\u1EC7u \u1EE9ng s\u1EBD \u0111\u1EB7t
       l\u1EA1i th\u1EDDi gian h\u1ED3i"
     Icon: {fileID: 21300000, guid: e16136108697fb141ad368f8c07f1167, type: 3}
+    SalvageValue: 5
   - Key: dong_co_xung_kich_tinh_the_thach_anh
     DisplayName: "TINH TH\u1EC2 TH\u1EA0CH ANH"
     Category: "\u0110\u1ED8NG C\u01A0 XUNG K\xCDCH"
@@ -73,6 +77,7 @@ MonoBehaviour:
       l\u1EA1i c\u1ED9ng d\u1ED3n hi\u1EC7u \u1EE9ng t\u0103ng s\xE1t th\u01B0\u01A1ng
       v\xE0 \u0111\u1EB7t l\u1EA1i th\u1EDDi gian h\u1ED3i"
     Icon: {fileID: 21300000, guid: 3c5d36fe0ae524548a82e2a4b6b12ffd, type: 3}
+    SalvageValue: 5
   - Key: loi_ma_phap_hac_nguyet
     DisplayName: "H\u1EAEC NGUY\u1EC6T"
     Category: "L\xD5I MA PH\xC1P"
@@ -83,6 +88,7 @@ MonoBehaviour:
       vi b\xE1n k\xEDnh 2.5m l\xE0m k\u1EBB \u0111\u1ECBch b\u1ECB gi\u1EA3m 20%
       T\u1ED1c \u0111\u1ED9 di chuy\u1EC3n v\xE0 gi\u1EA3m 15% T\u1EA5n c\xF4ng."
     Icon: {fileID: 21300000, guid: af3c8fd23a372274cb52dabd6063d95d, type: 3}
+    SalvageValue: 5
   - Key: dong_co_tua_bin_linh_hoa
     DisplayName: "TUA-BIN LINH H\u1ECEA"
     Category: "\u0110\u1ED8NG C\u01A0"
@@ -95,6 +101,7 @@ MonoBehaviour:
       minh \u0111i qua +20% T\u1ED1c \u0111\u1ED9 di chuy\u1EC3n, k\u1EBB \u0111\u1ECBch
       di chuy\u1EC3n v\xE0o s\u1EBD l\xE0m gi\u1EA3m 20% t\u1ED1c \u0111\u1ED9."
     Icon: {fileID: 21300000, guid: 4eabb7c619a9a2948b9435a1098a5883, type: 3}
+    SalvageValue: 5
   - Key: loi_ma_tran_cong_huong_mones
     DisplayName: "C\u1ED8NG H\u01AF\u1EDENG MONES"
     Category: "L\xD5I MA TR\u1EACN"
@@ -107,6 +114,7 @@ MonoBehaviour:
       ph\u1EA1m vi 7m \u1EDF g\u1EA7n nh\u1EA5t v\xE0 cho h\u1ECD +10% Gi\u1EA3m
       h\u1ED3i chi\xEAu."
     Icon: {fileID: 21300000, guid: f378c59f46fee6d4e8f3d2284e12dcc8, type: 3}
+    SalvageValue: 5
   - Key: dong_co_phan_pha_hu_khong
     DisplayName: "PH\xC2N PHA H\u01AF KH\xD4NG"
     Category: "\u0110\u1ED8NG C\u01A0"
@@ -118,6 +126,7 @@ MonoBehaviour:
       30% T\u1EC9 l\u1EC7 xuy\xEAn gi\xE1p v\xE0 40% T\u1EC9 l\u1EC7 s\xE1t th\u01B0\u01A1ng,
       hi\u1EC7u qu\u1EA3 s\u1EBD bi\u1EBFn m\u1EA5t khi g\xE2y s\xE1t th\u01B0\u01A1ng."
     Icon: {fileID: 21300000, guid: 4116a36e446408641b292e4f5bcc3146, type: 3}
+    SalvageValue: 8
   - Key: loi_nhiet_hach_ba_loi
     DisplayName: "BA L\xD5I"
     Category: "L\xD5I NHI\u1EC6T H\u1EA0CH"
@@ -134,6 +143,7 @@ MonoBehaviour:
       3 c\u1ED9ng d\u1ED3n s\u1EBD th\xEAm 25% t\u0103ng s\xE1t th\u01B0\u01A1ng
       trong 3s v\xE0 x\xF3a m\u1ECDi c\u1ED9ng d\u1ED3n Thi\xEAu \u0111\u1ED1t."
     Icon: {fileID: 21300000, guid: 5412e3fc36cfffa44a39b70d029c8930, type: 3}
+    SalvageValue: 8
   - Key: dong_co_thuy_luc_ma_phap_dam_lay
     DisplayName: "TH\u1EE6Y L\u1EF0C MA PH\xC1P \u0110\u1EA6M L\u1EA6Y"
     Category: "\u0110\u1ED8NG C\u01A0"
@@ -147,6 +157,7 @@ MonoBehaviour:
       15% T\u1EC9 l\u1EC7 gi\u1EA3m h\u1ED3i chi\xEAu trong 5s, sau khi h\u1EBFt
       th\u1EDDi gian hi\u1EC7u l\u1EF1c s\u1EBD x\xF3a h\u1EBFt c\u1ED9ng d\u1ED3n"
     Icon: {fileID: 21300000, guid: ec651a5f48e05db4b811746948238998, type: 3}
+    SalvageValue: 8
   - Key: dong_co_tua_bin_xoay_nuoc
     DisplayName: "TUA-BIN XO\xC1Y N\u01AF\u1EDAC"
     Category: "\u0110\u1ED8NG C\u01A0"
@@ -162,6 +173,7 @@ MonoBehaviour:
       ho\u1EA1t hi\u1EC7u \u1EE9ng s\u1EBD \u0111\u1EB7t l\u1EA1i th\u1EDDi gian
       duy tr\xEC"
     Icon: {fileID: 21300000, guid: e00ba23880a137942a7d3ba0d553e5f9, type: 3}
+    SalvageValue: 8
   - Key: loi_ma_phap_bao_tu_doc
     DisplayName: "B\xC0O T\u1EEC \u0110\u1ED8C"
     Category: "L\xD5I MA PH\xC1P"
@@ -174,6 +186,7 @@ MonoBehaviour:
       b\u1ECB gi\u1EA3m 20% Ph\xF2ng th\u1EE7. Hi\u1EC7u \u1EE9ng k\xEDch ho\u1EA1t
       m\u1ED7i 3s m\u1ED9t l\u1EA7n."
     Icon: {fileID: 21300000, guid: 5b3994283a5c4e24bb8270dd1ed5f87a, type: 3}
+    SalvageValue: 8
   - Key: loi_tu_dien_ma_phap_sam_set
     DisplayName: "MA PH\xC1P S\u1EA4M S\xC9T"
     Category: "L\xD5I T\u1EE4 \u0110I\u1EC6N"
@@ -185,6 +198,7 @@ MonoBehaviour:
       \u0111\u1EE9ng g\u1EA7n nhau, g\xE2y 65% s\xE1t th\u01B0\u01A1ng T\u1EA5n c\xF4ng
       v\xE0 l\xE0m ch\u1EADm 20% trong 5s."
     Icon: {fileID: 21300000, guid: 7354f1bf22ade2040929417877688c37, type: 3}
+    SalvageValue: 8
   - Key: loi_ma_tran_khien_nhat_thuc
     DisplayName: "KHI\xCAN NH\u1EACT TH\u1EF0C"
     Category: "L\xD5I MA TR\u1EACN"
@@ -196,6 +210,7 @@ MonoBehaviour:
       nh\u1EADn l\xE1 ch\u1EAFn h\u1EA5p th\u1EE5 s\xE1t th\u01B0\u01A1ng b\u1EB1ng
       12% m\xE1u t\u1ED1i \u0111a trong 6s (h\u1ED3i 6s)"
     Icon: {fileID: 21300000, guid: 1bcd41830fac25a46b40aa1cff1ba7da, type: 3}
+    SalvageValue: 12
   - Key: loi_dong_co_tai_sinh_chu_thap
     DisplayName: "T\xC1I SINH CH\u1EEE TH\u1EACP"
     Category: "L\xD5I \u0110\u1ED8NG C\u01A0"
@@ -206,6 +221,7 @@ MonoBehaviour:
       gi\xE2y; khi m\xE1u d\u01B0\u1EDBi 40%, t\u1ED1c \u0111\u1ED9 s\u1EEDa ch\u1EEFa
       t\u0103ng g\u1EA5p \u0111\xF4i (3%/s) v\xE0 +25% ph\xF2ng th\u1EE7."
     Icon: {fileID: 21300000, guid: dc832c255d20ff14dae152cd4956f2c5, type: 3}
+    SalvageValue: 12
   - Key: loi_thuy_tinh_tri_lieu
     DisplayName: "TR\u1ECA LI\u1EC6U"
     Category: "L\xD5I TH\u1EE6Y TINH"
@@ -221,6 +237,7 @@ MonoBehaviour:
       Gi\xE1 tr\u1ECB khi\xEAn t\u1ED1i \u0111a b\u1EB1ng 30% Gi\u1EDBi h\u1EA1n
       m\xE1u."
     Icon: {fileID: 21300000, guid: 819b440f2a82ad742b01c6ae4ba00316, type: 3}
+    SalvageValue: 12
   - Key: loi_lien_ket_song_tinh_nguyen_to
     DisplayName: "SONG TINH NGUY\xCAN T\u1ED0"
     Category: "L\xD5I LI\xCAN K\u1EBET"
@@ -235,6 +252,7 @@ MonoBehaviour:
       kh\xF4ng c\xF3 \u0111\u1ED3ng minh xung quanh \u0111\u1EC3 n\u1ED1i c\xE1p,
       s\u1EBD nh\u1EADn 50% Ph\xF2ng th\u1EE7."
     Icon: {fileID: 21300000, guid: 8dade00785cd6d74ebe1da694e8542c0, type: 3}
+    SalvageValue: 12
   - Key: loi_dong_co_luong_cuc_the2face
     DisplayName: "L\u01AF\u1EE0NG C\u1EF0C THE2FACE"
     Category: "L\xD5I \u0110\u1ED8NG C\u01A0"
@@ -248,6 +266,7 @@ MonoBehaviour:
       hi\u1EC7u \u1EE9ng c\u1ED9ng d\u1ED3n t\u1ED1i \u0111a 2 t\u1EA7ng, m\u1ED7i
       t\xE2ng c\xF3 th\u1EDDi gian duy tr\xEC \u0111\u1ED9c l\u1EADp."
     Icon: {fileID: 21300000, guid: e29e9622183cf434b85402a97744e05d, type: 3}
+    SalvageValue: 12
   - Key: loi_dong_co_giap_thong_linh_d1onk
     DisplayName: "TH\u1ED0NG L\u0128NH D1ONK"
     Category: "L\xD5I SI\xCAU C\u01A0 GI\xC1P"
@@ -263,3 +282,4 @@ MonoBehaviour:
       +30 T\u1EC9 l\u1EC7 gi\u1EA3m h\u1ED3i chi\xEAu v\xE0 +30% T\u1EC9 l\u1EC7
       s\xE1t th\u01B0\u01A1ng trong 10s."
     Icon: {fileID: 21300000, guid: dd7c2b035e774304c8eb567148938a5e, type: 3}
+    SalvageValue: 12

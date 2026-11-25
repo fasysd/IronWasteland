@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using IronWasteland.Save;
 using IronWasteland.Tanks;
+using IronWasteland.UiModels;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,26 +22,6 @@ namespace IronWasteland.UI
     [DisallowMultipleComponent]
     public sealed class MainMenuController : MonoBehaviour
     {
-        /// <summary>Dữ liệu hiển thị của một xe trong khu trưng bày ở menu chính.</summary>
-        [Serializable]
-        public sealed class TankPreview
-        {
-            [Tooltip("Tên xe hiển thị dưới ảnh trưng bày.")]
-            public string DisplayName = "BLACK SHADOW";
-
-            [Tooltip("Dòng vai trò nhỏ ngay dưới tên xe.")]
-            public string Role = "SÁT THỦ CƠ ĐỘNG";
-
-            [Tooltip("Cấp hiện tại của xe.")]
-            public int Level = 5;
-
-            [Tooltip("8 chỉ số theo thứ tự ATK, HP, EN, DEF, SPD, CDR, DMG, PEN.")]
-            public int[] Stats = new int[8];
-
-            [Tooltip("Ảnh trưng bày của xe.")]
-            public Sprite Portrait;
-        }
-
         [Header("Khối gốc")]
         [SerializeField]
         [Tooltip("Nhóm CanvasGroup dùng để làm hiệu ứng mờ dần khi vào màn.")]
@@ -85,24 +67,31 @@ namespace IronWasteland.UI
         private TextMeshProUGUI m_TankName;
 
         [SerializeField]
-        [Tooltip("Dòng vai trò dưới tên xe.")]
-        private TextMeshProUGUI m_TankRole;
-
-        [SerializeField]
         [Tooltip("Dòng CURRENT UNIT ở góc trên khu trưng bày, hiện tên xe đang chọn.")]
         private TextMeshProUGUI m_TankCaption;
 
         [SerializeField]
-        [Tooltip("Cấp hiện tại của xe, canh theo ô CẤP ĐỘ.")]
+        [Tooltip("Số cấp hiện tại của xe, canh theo ô CẤP ĐỘ.")]
         private TextMeshProUGUI m_TankLevel;
+
+        [SerializeField]
+        [Tooltip("Hậu tố mẫu số của khung CẤP ĐỘ, ví dụ / 90.")]
+        private TextMeshProUGUI m_TankLevelMax;
 
         [SerializeField]
         [Tooltip("Bốn giá trị chỉ số đang hiện: ATK, HP, EN, SPD.")]
         private TextMeshProUGUI[] m_TankStatValues = new TextMeshProUGUI[4];
 
         [SerializeField]
-        [Tooltip("Dữ liệu sáu xe, đúng thứ tự trong Garage.")]
-        private TankPreview[] m_Tanks = new TankPreview[0];
+        [Tooltip("Roster xe dùng chung với Garage, thứ tự trùng với chỉ số LastTankIndex.")]
+        private TankRoster m_Roster;
+
+        [SerializeField]
+        [Tooltip("Hai pill vai trò dưới tên xe; pill thứ hai ẩn khi xe chỉ có một vai trò.")]
+        private RoleTagView[] m_RoleTags = new RoleTagView[2];
+
+        private const float RoleTagStartX = 1087f;
+        private const float RoleTagGap = 10f;
 
         private const int SectionCampaign = 0;
         private const int SectionGarage = 1;
@@ -458,56 +447,60 @@ namespace IronWasteland.UI
             }
         }
 
-        private static readonly int[] MenuStatOrder = { 0, 1, 2, 4 };
-
-        /// <summary>Cập nhật khu trưng bày theo xe đang chọn trong Garage.</summary>
+        /// <summary>Cập nhật khu trưng bày theo xe đang chọn trong Garage, đọc thẳng TankRoster + PlayerProgress.</summary>
         private void ApplyTankPreview(int index)
         {
-            if (m_Tanks == null || m_Tanks.Length == 0)
+            if (m_Roster == null)
             {
                 return;
             }
 
-            int clamped = Mathf.Clamp(index, 0, m_Tanks.Length - 1);
-            TankPreview tank = m_Tanks[clamped];
+            IReadOnlyList<TankDefinition> tanks = m_Roster.Tanks;
+            if (tanks.Count == 0)
+            {
+                return;
+            }
+
+            TankDefinition tank = tanks[Mathf.Clamp(index, 0, tanks.Count - 1)];
             if (tank == null)
             {
                 return;
             }
 
-            int level = SaveSystem.Instance.GetTankLevel(clamped);
-            bool owned = level > 0;
-            TankDefinition def = TankRegistry.GetDefinition(clamped);
+            int level = SaveSystem.Instance.GetTankLevel(index);
+            LevelFrame frame = LevelFrameModel.Build(level, TankDefinition.MaxLevel);
 
             if (m_TankPortrait != null)
             {
-                m_TankPortrait.sprite = tank.Portrait;
+                m_TankPortrait.sprite = tank.MenuPortrait;
                 m_TankPortrait.preserveAspect = true;
             }
 
             if (m_TankName != null)
             {
-                m_TankName.text = def != null ? def.TankName : tank.DisplayName;
-            }
-
-            if (m_TankRole != null)
-            {
-                m_TankRole.text = owned ? tank.Role : "CHƯA SỞ HỮU";
+                m_TankName.text = tank.TankName;
             }
 
             if (m_TankCaption != null)
             {
-                m_TankCaption.text = "CURRENT UNIT // " + (def != null ? def.TankName : tank.DisplayName);
+                m_TankCaption.text = "CURRENT UNIT // " + tank.TankName;
             }
 
             if (m_TankLevel != null)
             {
-                m_TankLevel.text = owned ? level.ToString("00") : "--";
+                m_TankLevel.text = frame.LevelText;
             }
 
-            // Lấy 4 chỉ số ATK, HP, EN, SPD từ TankDefinition theo level
-            TankStats stats = def != null ? def.GetStatsForLevel(Mathf.Max(1, level)) : null;
+            if (m_TankLevelMax != null)
+            {
+                m_TankLevelMax.text = frame.MaxText;
+            }
 
+            ApplyRoleTags(tank);
+
+            // Bốn ô chỉ số trên dải stats, đúng thứ tự ATK, HP, EN, SPD và cùng cấp với khung CẤP ĐỘ.
+            TankStats stats = tank.GetStatsForLevel(level);
+            float[] values = { stats.Attack, stats.MaxHealth, stats.MaxEnergy, stats.MoveSpeed };
             for (int i = 0; i < m_TankStatValues.Length; i++)
             {
                 if (m_TankStatValues[i] == null)
@@ -515,31 +508,42 @@ namespace IronWasteland.UI
                     continue;
                 }
 
-                if (!owned)
+                int value = i < values.Length ? Mathf.RoundToInt(values[i]) : 0;
+                m_TankStatValues[i].text = value.ToString();
+            }
+        }
+
+        /// <summary>Đổ hai pill vai trò từ RoleTagModel và xếp nối tiếp từ mốc thiết kế 1087px.</summary>
+        private void ApplyRoleTags(TankDefinition tank)
+        {
+            if (m_RoleTags == null || m_RoleTags.Length == 0)
+            {
+                return;
+            }
+
+            Color32 accent = tank.RosterAccent;
+            uint accentArgb = ((uint)accent.r << 16) | ((uint)accent.g << 8) | accent.b;
+            RoleTag[] tags = RoleTagModel.Build(tank.RolePrimary, tank.RoleSecondary, accentArgb);
+
+            float cursor = RoleTagStartX;
+            for (int i = 0; i < m_RoleTags.Length; i++)
+            {
+                if (m_RoleTags[i] == null)
                 {
-                    m_TankStatValues[i].text = "-";
                     continue;
                 }
 
-                if (stats != null)
+                if (i >= tags.Length)
                 {
-                    // MenuStatOrder = { 0, 1, 2, 4 } tương ứng: 0:ATK, 1:HP, 2:EN, 4:SPD
-                    float val = 0f;
-                    switch (i)
-                    {
-                        case 0: val = stats.Attack; break;
-                        case 1: val = stats.MaxHealth; break;
-                        case 2: val = stats.MaxEnergy; break;
-                        case 3: val = stats.MoveSpeed; break;
-                    }
-                    m_TankStatValues[i].text = val.ToString("0.#");
+                    m_RoleTags[i].Hide();
+                    continue;
                 }
-                else
-                {
-                    int statIndex = MenuStatOrder[i];
-                    bool hasStat = tank.Stats != null && statIndex < tank.Stats.Length;
-                    m_TankStatValues[i].text = hasStat ? tank.Stats[statIndex].ToString() : "0";
-                }
+
+                uint argb = tags[i].Argb;
+                Color32 color = new Color32((byte)(argb >> 16), (byte)(argb >> 8), (byte)argb, 0xFF);
+                float width = m_RoleTags[i].Bind(tags[i].Text, color);
+                m_RoleTags[i].SetLeft(cursor);
+                cursor += width + RoleTagGap;
             }
         }
 

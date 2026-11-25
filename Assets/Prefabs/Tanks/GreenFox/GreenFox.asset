@@ -12,11 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a7d3e9f1c2b4d6e8f0a1b3c5d7e9f21, type: 3}
   m_Name: GreenFox
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankDefinition
-  tankName: Green Fox
+  tankName: GREEN FOX
   description: "\u0110\u01B0\u1EE3c t\u1EA1o ra trong th\xE0nh ph\u1ED1 ng\u1EA7m,
     sau khi t\xECm ra ng\u01B0\u1EDDi l\xE1i \u0111\u01B0\u1EE3c xe tank ma ph\xE1p,
     c\xE1c th\u1EBF h\u1EC7 ti\u1EBFp theo \u0111\xE3 \u0111\u01B0\u1EE3c t\u1EA1o
     ra trong \u0111\xF3 c\xF3 Green Fox."
+  rolePrimary: DPS
+  roleSecondary: DPS
+  unlockStageCode: 2-5
+  rosterIcon: {fileID: 21300000, guid: a809ecb8b8dd3c64fa6a694091285cca, type: 3}
+  rosterAccent: {r: 0.23921569, g: 0.2901961, b: 0.34901962, a: 1}
+  portrait: {fileID: 21300000, guid: bf28a72c9210d864fb765674c50acdd4, type: 3}
+  portraitOffset: {x: 14.6, y: 0}
+  menuPortrait: {fileID: 21300000, guid: 7088acb490698674cb50f31e833571d2, type: 3}
+  skillDescriptions:
+  - "KH\xD4NG T\u1ED0N N\u0102NG L\u01AF\u1EE2NG"
+  - "T\u1ED0N N\u0102NG L\u01AF\u1EE2NG"
+  - "3 L\u1EF0A CH\u1ECCN  \u203A"
+  - "3 L\u1EF0A CH\u1ECCN  \u203A"
+  startingLevel: 1
   baseStatsLevel1:
     Attack: 25
     Defense: 12
@@ -43,10 +57,10 @@ MonoBehaviour:
     OptionSkill1: 0
     OptionSkill2: 0
   skillIcons:
-  - {fileID: 21300000, guid: 47e0b7b91afd9b14fa45d093f0054264, type: 3}
-  - {fileID: 21300000, guid: 6158f237d92c4bf4cb3ccaa4020b23ab, type: 3}
-  - {fileID: 21300000, guid: f4dd4013234d5e849aa90be825646cc7, type: 3}
-  - {fileID: 21300000, guid: 664e35bd811355b48aad5f8da90c2e98, type: 3}
+  - {fileID: 21300000, guid: 70935f390709b5a4889ace0ba0bf492e, type: 3}
+  - {fileID: 21300000, guid: 20e7a8db5c2b3174284ed1c3cd4126da, type: 3}
+  - {fileID: 21300000, guid: 0fd35c28d76e04a49a2f5690e852c133, type: 3}
+  - {fileID: 21300000, guid: d779a6cc53fe51e42bd863dac110eaf7, type: 3}
   skillIconsCooldown: []
   skillIconsIncludeLabels: 0
   skillNames:

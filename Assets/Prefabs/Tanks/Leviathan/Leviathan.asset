@@ -12,11 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a7d3e9f1c2b4d6e8f0a1b3c5d7e9f21, type: 3}
   m_Name: Leviathan
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.TankDefinition
-  tankName: Leviathan
+  tankName: LEVIATHAN
   description: "\u0110\u01B0\u1EE3c t\u1EA1o ra trong nh\u1EEFng tr\u1EADn chi\u1EBFn
     t\u1EA1i v\xF9ng \u0111\u1EA5t  nguy\xEAn t\u1ED1,d\u1EF1a tr\xEAn nh\u1EEFng
     v\u1EADt li\u1EC7u xe tank c\xF3 s\u1EB5n l\u1EA5y t\u1EEB Black Shadow v\xE0
     Water B."
+  rolePrimary: TANKER
+  roleSecondary: TANKER
+  unlockStageCode: 2-1
+  rosterIcon: {fileID: 21300000, guid: 3ec4a0bbde2e9df4ea55695699fe4413, type: 3}
+  rosterAccent: {r: 0.18431373, g: 0.9098039, b: 0.8784314, a: 1}
+  portrait: {fileID: 21300000, guid: 07753841b5edf094e9e8c9bcdcb542b4, type: 3}
+  portraitOffset: {x: -2.8, y: 0}
+  menuPortrait: {fileID: 21300000, guid: b6781ac235a9e9143a2ed65159624e6d, type: 3}
+  skillDescriptions:
+  - "KH\xD4NG T\u1ED0N N\u0102NG L\u01AF\u1EE2NG"
+  - "T\u1ED0N N\u0102NG L\u01AF\u1EE2NG"
+  - "3 L\u1EF0A CH\u1ECCN  \u203A"
+  - "3 L\u1EF0A CH\u1ECCN  \u203A"
+  startingLevel: 1
   baseStatsLevel1:
     Attack: 5
     Defense: 28
@@ -43,10 +57,10 @@ MonoBehaviour:
     OptionSkill1: 0
     OptionSkill2: 0
   skillIcons:
-  - {fileID: 21300000, guid: c6f9c3b0ec35097458d1a4a0448f1a64, type: 3}
-  - {fileID: 21300000, guid: 05d0bbcd69c7f9a44b6e6187f3378e09, type: 3}
-  - {fileID: 21300000, guid: c906e5aca5f75fc4e934d62607278e61, type: 3}
-  - {fileID: 21300000, guid: 090382f4eca1b8240a50cb72e54e6d06, type: 3}
+  - {fileID: 21300000, guid: 0ba0c587bad52c84ebb735c81530906e, type: 3}
+  - {fileID: 21300000, guid: a318c7a57a3f8c84cad682c80da7a1c3, type: 3}
+  - {fileID: 21300000, guid: 1e46d85ac962bcf4db3e901cfc730cc8, type: 3}
+  - {fileID: 21300000, guid: 47eded2a99736d84d95051449e506b6e, type: 3}
   skillIconsCooldown: []
   skillIconsIncludeLabels: 0
   skillNames:
