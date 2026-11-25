@@ -54,3 +54,4 @@ MonoBehaviour:
   - LASER CANNON
   - NOVA BARRAGE
   skillGlyphs: []
+  portrait: {fileID: 21300000, guid: 1b9ebaeb189e4654698cd2555df14bb4, type: 3}

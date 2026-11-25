@@ -73,6 +73,7 @@ namespace IronWasteland.UI
         };
 
         private readonly List<Entry> m_Entries = new List<Entry>();
+        private readonly List<EnemyBrain> m_EnemyBuffer = new List<EnemyBrain>();
         private readonly List<Vector2> m_UsedLocal = new List<Vector2>();
         private readonly Dictionary<Component, Entry> m_ByTarget = new Dictionary<Component, Entry>();
         private float m_ScanTimer;
@@ -98,7 +99,7 @@ namespace IronWasteland.UI
             m_UsedLocal.Clear();
             PlacePlayer();
             PlaceEnemies();
-            RecycleUnused();
+            CleanupStaleEntries();
         }
 
         // ------------------------------------------------------------- đơn vị
@@ -108,7 +109,7 @@ namespace IronWasteland.UI
             GameController gc = FindAnyObjectByType<GameController>();
             TankBrain tank = gc != null ? gc.PlayerTank : null;
 
-            if (tank == null || !tank.IsAlive)
+            if (IsStaleTarget(tank))
             {
                 Hide(GetEntry(tank, true));
                 return;
@@ -137,9 +138,29 @@ namespace IronWasteland.UI
                 : Vector2.zero;
 
             EnemyBrain[] enemies = FindObjectsByType<EnemyBrain>(FindObjectsSortMode.None);
+
+            // Thứ tự FindObjectsByType không xác định, nên nếu cắt theo giới hạn maxLabels ngay
+            // thì tập quái được hiện sẽ đổi tuỳ ý và ta có thể bỏ sót quái đứng ngay cạnh người chơi.
+            // Sắp xếp gần trước để giới hạn chỉ rơi vào những con ở xa.
+            m_EnemyBuffer.Clear();
+            m_EnemyBuffer.AddRange(enemies);
+            m_EnemyBuffer.Sort((a, b) =>
+            {
+                if (a == null) return b == null ? 0 : 1;
+                if (b == null) return -1;
+
+                // Boss luôn được ưu tiên giữ suất hiển thị.
+                bool bossA = a.GetComponent<BossTag>() != null;
+                bool bossB = b.GetComponent<BossTag>() != null;
+                if (bossA != bossB) return bossA ? -1 : 1;
+
+                return Vector2.SqrMagnitude((Vector2)a.transform.position - tankPos)
+                    .CompareTo(Vector2.SqrMagnitude((Vector2)b.transform.position - tankPos));
+            });
+
             int shown = 0;
 
-            foreach (EnemyBrain enemy in enemies)
+            foreach (EnemyBrain enemy in m_EnemyBuffer)
             {
                 if (enemy == null) continue;
 
@@ -259,17 +280,60 @@ namespace IronWasteland.UI
 
         private void Rescan()
         {
-            // Giữ chỗ cho hook quét định kỳ (hiện chỉ ẩn entry của mục tiêu đã bị huỷ).
+            // Giữ chỗ cho hook quét định kỳ; việc ẩn entry cũ do CleanupStaleEntries() lo mỗi frame.
         }
 
-        private void RecycleUnused()
+        /// <summary>
+        /// Ẩn nhãn của mục tiêu đã bị huỷ hoặc đã chết/bị đưa về pool.
+        /// Quái chết được EnemySpawner gọi SetActive(false) rồi cất vào pool, mà
+        /// FindObjectsByType mặc định bỏ qua object inactive — nên nếu chỉ dựa vào
+        /// vòng lặp mỗi frame thì nhãn của nó sẽ treo lại trên màn hình.
+        /// </summary>
+        internal void CleanupStaleEntries()
         {
-            // Không cần huỷ: entry được tái dùng khi có đơn vị mới, nên chỉ ẩn khi không còn mục tiêu.
             for (int i = 0; i < m_Entries.Count; i++)
             {
                 Entry entry = m_Entries[i];
-                if (entry.Target == null) Hide(entry);
+                if (IsStaleTarget(entry.Target)) Hide(entry);
             }
+        }
+
+        /// <summary>
+        /// Mục tiêu không còn hiển thị được nữa: đã bị huỷ, đã chết, hoặc đã bị đưa về pool
+        /// (EnemySpawner gọi SetActive(false) nên nó biến mất khỏi FindObjectsByType).
+        /// </summary>
+        private static bool IsStaleTarget(Component target)
+        {
+            if (target == null) return true;
+            if (!target.gameObject.activeInHierarchy) return true;
+
+            switch (target)
+            {
+                case EnemyBrain enemy:
+                    return !enemy.IsAlive;
+                case TankBrain tank:
+                    return !tank.IsAlive;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Hook cho self-check: lấy (hoặc tạo) nhãn của một mục tiêu và trả về RectTransform gốc.
+        /// </summary>
+        internal RectTransform GetOrCreateEntryRoot(Component target)
+        {
+            Entry entry = GetEntry(target, false);
+            return entry != null ? entry.Root : null;
+        }
+
+        /// <summary>Hook cho self-check: nhãn của mục tiêu này có đang hiện trên màn hình không.</summary>
+        internal bool HasVisibleNameplate(Component target)
+        {
+            if (target == null) return false;
+            return m_ByTarget.TryGetValue(target, out Entry entry)
+                && entry.Root != null
+                && entry.Root.gameObject.activeSelf;
         }
 
         private Entry GetEntry(Component target, bool isPlayer)
@@ -299,6 +363,8 @@ namespace IronWasteland.UI
 
         private Entry CreateEntry()
         {
+            if (container == null) container = transform as RectTransform;
+
             var go = new GameObject("Nameplate", typeof(RectTransform));
             RectTransform rt = go.GetComponent<RectTransform>();
             rt.SetParent(container, false);
@@ -362,6 +428,7 @@ namespace IronWasteland.UI
             fillRt.offsetMax = new Vector2(-1f, -1f);
 
             entry.HpFill = fillRt.gameObject.AddComponent<Image>();
+            entry.HpFill.sprite = UISprites.Square();
             entry.HpFill.color = enemyBarColor;
             entry.HpFill.raycastTarget = false;
             entry.HpFill.type = Image.Type.Filled;

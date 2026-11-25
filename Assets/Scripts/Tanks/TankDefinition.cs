@@ -56,7 +56,14 @@ namespace IronWasteland.Tanks
         [Tooltip("Bieu tuong trong suot (chi con hinh) de HUD tu ve khung + ten + trang thai ben duoi.")]
         [SerializeField] private Sprite[] skillGlyphs = new Sprite[0];
 
+        [Header("UI - Chân dung HUD")]
+        [Tooltip("Ảnh đại diện của xe trong panel người chơi ở màn chơi.")]
+        [SerializeField] private Sprite portrait;
+
         public bool SkillIconsIncludeLabels => skillIconsIncludeLabels;
+
+        /// <summary>Ảnh đại diện hiện ở panel người chơi trong màn chơi (null nếu chưa khai báo).</summary>
+        public Sprite Portrait => portrait;
 
         /// <summary>Ten ky nang cua slot (rong neu chua khai bao).</summary>
         public string GetSkillName(int index)

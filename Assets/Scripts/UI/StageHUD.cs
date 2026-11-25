@@ -61,6 +61,9 @@ namespace IronWasteland.UI
         [Tooltip("Định dạng đồng hồ: phút:giây.")]
         [SerializeField] private bool showTimer = true;
 
+        /// <summary>Hook cho self-check: Image của thanh máu boss (null nếu prefab chưa nối).</summary>
+        internal Image BossFillImage => bossFill;
+
         private void Awake()
         {
             if (director == null) director = FindAnyObjectByType<StageDirector>();
