@@ -247,13 +247,37 @@ namespace IronWasteland.Stages
         /// <summary>Client ép kết thúc thắng từ sự kiện mạng.</summary>
         public void ForceClear()
         {
-            Clear();
+            ForceClear(StageReward.Roll(definition));
+        }
+
+        /// <summary>Client ép kết thúc thắng từ sự kiện mạng với phần thưởng Host đã roll.</summary>
+        public void ForceClear(StageRewardResult reward)
+        {
+            if (m_State == StageRunState.Cleared) return;
+            m_State = StageRunState.Cleared;
+
+            UnhookPlayer();
+            UnhookSpawner();
+            if (spawner != null) spawner.DespawnAll();
+
+            if (logEvents) Debug.Log($"[StageDirector] THANG ai {definition?.StageCode} sau {m_Elapsed:0.0}s - {reward}");
+
+            StageCleared?.Invoke(this, reward);
         }
 
         /// <summary>Client ép kết thúc thua từ sự kiện mạng.</summary>
         public void ForceFail(string reason)
         {
-            Fail(reason);
+            if (m_State == StageRunState.Cleared || m_State == StageRunState.Failed) return;
+            m_State = StageRunState.Failed;
+
+            UnhookPlayer();
+            UnhookSpawner();
+            if (spawner != null) spawner.DespawnAll();
+
+            if (logEvents) Debug.Log($"[StageDirector] THUA ai {definition?.StageCode}: {reason}");
+
+            StageFailed?.Invoke(this, reason);
         }
 
         /// <summary>

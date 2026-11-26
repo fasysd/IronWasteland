@@ -532,7 +532,7 @@ namespace IronWasteland.Net
             if (!IsServer || Phase != MatchPhase.Playing) return;
             Phase = MatchPhase.Cleared;
             Broadcast();
-            NetStageEvents.Instance?.Broadcast(d, NetStageEvents.StateCleared);
+            NetStageEvents.Instance?.BroadcastCleared(d, reward);
         }
 
         private void HandleDirectorFailed(StageDirector d, string reason)
@@ -641,6 +641,16 @@ namespace IronWasteland.Net
             UnhookSceneManager();
             ResetLocal();
             Changed?.Invoke();
+
+            string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (currentScene != "SampleScene" && currentScene != "CoopLobby" && currentScene != "StageSelect" && currentScene != "MainMenu")
+            {
+                Time.timeScale = 1f;
+                if (Application.CanStreamedLevelBeLoaded("StageSelect"))
+                {
+                    UnityEngine.SceneManagement.SceneManager.LoadScene("StageSelect");
+                }
+            }
         }
 
         private void ResetLocal()

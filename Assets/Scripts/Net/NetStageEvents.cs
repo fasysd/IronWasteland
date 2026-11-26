@@ -119,6 +119,39 @@ namespace IronWasteland.Net
             ApplyState(state, director.Kills, 0, director.Elapsed);
         }
 
+        /// <summary>Host gửi trạng thái thắng ải kèm phần thưởng đã roll cho toàn bộ client.</summary>
+        public void BroadcastCleared(StageDirector director, StageRewardResult reward)
+        {
+            if (director == null) return;
+
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsServer) return;
+
+            CustomMessagingManager messaging = manager.CustomMessagingManager;
+            if (messaging == null) return;
+
+            int[] indices = reward.DroppedAccessoryIndices ?? System.Array.Empty<int>();
+            int dropLen = Mathf.Min(indices.Length, 32);
+            int capacity = 32 + dropLen * 4;
+
+            using FastBufferWriter writer = new FastBufferWriter(capacity, Allocator.Temp);
+            writer.WriteValueSafe(StateCleared);
+            writer.WriteValueSafe(director.Kills);
+            writer.WriteValueSafe(0);
+            writer.WriteValueSafe(director.Elapsed);
+            writer.WriteValueSafe(reward.Gems);
+            writer.WriteValueSafe(reward.AccessoryCount);
+            writer.WriteValueSafe((byte)dropLen);
+            for (int i = 0; i < dropLen; i++)
+            {
+                writer.WriteValueSafe(indices[i]);
+            }
+
+            messaging.SendNamedMessageToAll(MessageName, writer);
+
+            ApplyState(StateCleared, director.Kills, 0, director.Elapsed);
+        }
+
         /// <summary>Host gửi trạng thái ải hiện tại cho toàn bộ client.</summary>
         public void Broadcast(StageManager stage, byte state)
         {
@@ -181,17 +214,39 @@ namespace IronWasteland.Net
             reader.ReadValueSafe(out int target);
             reader.ReadValueSafe(out float elapsed);
 
+            bool hasReward = false;
+            StageRewardResult reward = default;
+            if (state == StateCleared && reader.Length - reader.Position >= 9)
+            {
+                reader.ReadValueSafe(out int gems);
+                reader.ReadValueSafe(out int accCount);
+                reader.ReadValueSafe(out byte dropLen);
+                int[] dropped = dropLen > 0 ? new int[dropLen] : System.Array.Empty<int>();
+                for (int i = 0; i < dropLen; i++)
+                {
+                    if (reader.Length - reader.Position < 4) break;
+                    reader.ReadValueSafe(out dropped[i]);
+                }
+                reward = new StageRewardResult(gems, accCount, dropped);
+                hasReward = true;
+            }
+
             ApplyState(state, kills, target, elapsed);
 
             StageDirector director = FindAnyObjectByType<StageDirector>();
             if (director != null)
             {
                 director.SetKills(kills);
-                if (state == StateCleared && director.State == StageRunState.Running)
+                if (state == StateStarted && director.State == StageRunState.Idle)
                 {
-                    director.ForceClear();
+                    director.Begin();
                 }
-                else if (state == StateFailed && director.State == StageRunState.Running)
+                else if (state == StateCleared)
+                {
+                    if (hasReward) director.ForceClear(reward);
+                    else director.ForceClear();
+                }
+                else if (state == StateFailed)
                 {
                     director.ForceFail("Thất bại");
                 }
