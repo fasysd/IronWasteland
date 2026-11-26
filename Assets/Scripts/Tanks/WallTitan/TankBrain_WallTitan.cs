@@ -287,28 +287,16 @@ namespace IronWasteland.Tanks.WallTitan
             enemy.TakeDamage(info);
         }
 
-        /// <summary>Tìm đồng minh gần nhất có ColliderOwnerRef sở hữu bởi TankBrain quanh điểm chỉ định; không có thì trả về null.</summary>
+        /// <summary>Tìm đồng minh gần nhất đang sống quanh điểm chỉ định; không có thì trả về null.</summary>
         private TankBrain FindTargetTankNear(Vector2 point, float maxDistance, bool includeSelf = false)
         {
-            Collider2D[] hits = Physics2D.OverlapCircleAll(point, maxDistance);
-
+            TankBrain[] tanks = FindObjectsByType<TankBrain>(FindObjectsInactive.Exclude);
             TankBrain best = null;
-            float bestSqr = float.MaxValue;
+            float bestSqr = maxDistance * maxDistance;
 
-            for (int i = 0; i < hits.Length; i++)
+            for (int i = 0; i < tanks.Length; i++)
             {
-                Collider2D hit = hits[i];
-                if (hit == null)
-                    continue;
-
-                ColliderOwnerRef ownerRef = hit.GetComponent<ColliderOwnerRef>();
-                if (ownerRef == null)
-                    ownerRef = hit.GetComponentInParent<ColliderOwnerRef>();
-
-                if (ownerRef == null)
-                    continue;
-
-                TankBrain candidate = ownerRef.GetOwner<TankBrain>();
+                TankBrain candidate = tanks[i];
                 if (candidate == null || !candidate.IsAlive)
                     continue;
 
@@ -316,7 +304,7 @@ namespace IronWasteland.Tanks.WallTitan
                     continue;
 
                 float sqr = ((Vector2)candidate.transform.position - point).sqrMagnitude;
-                if (sqr < bestSqr)
+                if (sqr <= bestSqr)
                 {
                     bestSqr = sqr;
                     best = candidate;
@@ -599,6 +587,7 @@ namespace IronWasteland.Tanks.WallTitan
             if (target == null)
             {
                 // Nếu không trỏ vào ai (kể cả bản thân) thì hoàn năng lượng & hồi chiêu.
+                SkillExecutionSucceeded = false;
                 GainEnergy(guardianWallEnergyCost);
                 ResetSkillCooldown(SkillOption1Index);
                 return;
@@ -797,6 +786,7 @@ namespace IronWasteland.Tanks.WallTitan
             if (ally == null)
             {
                 // Không có đồng minh trong tầm thì hoàn năng lượng & hồi chiêu.
+                SkillExecutionSucceeded = false;
                 GainEnergy(earthGuardianEnergyCost);
                 ResetSkillCooldown(SkillOption2Index);
                 return;
