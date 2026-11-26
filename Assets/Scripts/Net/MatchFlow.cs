@@ -164,8 +164,17 @@ namespace IronWasteland.Net
                 if (!string.IsNullOrEmpty(m_PendingTargetScene) && sceneEvent.SceneName == m_PendingTargetScene)
                 {
                     m_PendingTargetScene = null;
-                    OnStageSceneLoaded();
+                    StartCoroutine(DeferredStageSceneLoaded());
                 }
+            }
+        }
+
+        private System.Collections.IEnumerator DeferredStageSceneLoaded()
+        {
+            yield return null;
+            if (IsServer && Listening)
+            {
+                OnStageSceneLoaded();
             }
         }
 
