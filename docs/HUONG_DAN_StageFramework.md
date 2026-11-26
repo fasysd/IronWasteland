@@ -1,7 +1,7 @@
 # Hướng dẫn dùng Stage Framework (Phase 1)
 
 > Dành cho người mới với Unity. Mọi thao tác đều ghi rõ **bấm vào đâu**, và giải thích **vì sao**.
-> Code tương ứng nằm trong `Assets/Scripts/Stages/` (6 file: `StageDefinition`, `StageObjective`, `SpawnZone`, `EnemySpawner`, `StageDirector`, `StageReward`).
+> Code tương ứng nằm trong `Assets/Scripts/Stages/` (15 file). 6 file cốt lõi: `StageDefinition`, `StageObjective`, `SpawnZone`, `EnemySpawner`, `StageDirector`, `StageReward`; từ 26/11/2026 có thêm `EnemyWave`, `WaveTimeline`, `ObstacleLayout`, `StageObstacleField`.
 
 ---
 

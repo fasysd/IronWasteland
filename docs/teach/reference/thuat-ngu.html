@@ -12,7 +12,7 @@
   <p class="eyebrow">Tham chiếu · Từ điển</p>
   <h1>Từ điển thuật ngữ</h1>
   <p class="lead">Mỗi dòng: thuật ngữ — nghĩa đủ dùng — nó là cái gì trong repo này. In ra một tờ là đủ dùng cả tháng.</p>
-  <p class="meta">Cập nhật 25/11/2026 · nhánh <span class="file">SuaLoi_Coop</span></p>
+  <p class="meta">Cập nhật 26/11/2026 · nhánh <span class="file">Fix/HUD-ThanhMau-BossBar</span></p>
 
   <h2>A. Khái niệm Unity</h2>
 
@@ -34,7 +34,7 @@
       <tr><td><strong>Canvas / uGUI</strong></td><td>Hệ UI cổ điển của Unity (nút, chữ, thanh máu).</td><td><span class="file">Assets/Scripts/UI/</span>, TextMeshPro cho chữ</td></tr>
       <tr><td><strong>Inspector</strong></td><td>Bảng bên phải hiện các trường của Component đang chọn.</td><td>Nơi designer sửa <span class="file">.asset</span> và prefab</td></tr>
       <tr><td><strong>Play Mode</strong></td><td>Chế độ chạy thử trong Editor; bấm Stop là mọi thay đổi runtime mất.</td><td>Dùng để test màn, xem Console</td></tr>
-      <tr><td><strong>Console</strong></td><td>Cửa sổ log — lỗi đỏ, cảnh báo vàng, log trắng.</td><td><span class="file">StageManager</span> ghi trạng thái màn ra đây</td></tr>
+      <tr><td><strong>Console</strong></td><td>Cửa sổ log — lỗi đỏ, cảnh báo vàng, log trắng.</td><td><span class="file">StageDirector</span> ghi trạng thái màn ra đây</td></tr>
       <tr><td><strong>Update / FixedUpdate</strong></td><td>Update mỗi khung hình (input, đếm giờ); FixedUpdate theo nhịp vật lý (di chuyển).</td><td><span class="file">TankBrain</span> dùng cả hai, đúng mục đích</td></tr>
       <tr><td><strong>Object Pool</strong></td><td>Tái dùng vật thể thay vì tạo/huỷ liên tục, tránh GC gây giật.</td><td>Đạn, VFX, chữ sát thương, laser</td></tr>
       <tr><td><strong>Assembly (asmdef)</strong></td><td>Đơn vị biên dịch C#; thiếu asmdef thì mọi script vào chung Assembly-CSharp.</td><td>Repo <em>không</em> có asmdef → chung một assembly</td></tr>
@@ -54,8 +54,11 @@
       <tr><td><strong>Definition</strong></td><td>File dữ liệu tĩnh mô tả một thực thể.</td><td><span class="file">TankDefinition</span>, <span class="file">StageDefinition</span></td></tr>
       <tr><td><strong>Owner / ColliderOwnerRef</strong></td><td>Nhãn “vật này của ai”, để quy sát thương đúng chủ.</td><td><span class="file">Assets/Scripts/Core/</span></td></tr>
       <tr><td><strong>ải / màn</strong></td><td>Một màn chơi (stage). Mã dạng <span class="file">1_1</span> = chương 1, màn 1.</td><td><span class="file">Stage_1_1</span> … <span class="file">Stage_2_5</span></td></tr>
-      <tr><td><strong>đợt / wave</strong></td><td>Một nhóm quái sinh ra ở một thời điểm trong màn.</td><td><span class="file">StageDefinition</span> + <span class="file">EnemySpawner</span></td></tr>
-      <tr><td><strong>StageDirector</strong></td><td>Nhạc trưởng của một màn: sinh quái, xét mục tiêu, quyết thắng/thua.</td><td><span class="file">Assets/Scripts/Stages/StageDirector.cs</span></td></tr>
+      <tr><td><strong>đợt / wave</strong></td><td>Một nhóm quái sinh ra ở một thời điểm trong màn.</td><td><span class="file">EnemyWave</span> + <span class="file">EnemySpawner.Waves</span> (trong scene, từ 26/11/2026)</td></tr>
+      <tr><td><strong>vùng spawn / SpawnZone</strong></td><td>Vùng trên map mà quái rơi vào; đợt khai <span class="file">ZoneId</span> để chọn vùng.</td><td><span class="file">SpawnZone</span> + danh sách <span class="file">SpawnZones</span> trên <span class="file">EnemySpawner</span></td></tr>
+      <tr><td><strong>WaveTimeline</strong></td><td>Lịch bắn đợt quái: sắp theo <span class="file">StartTime</span>, mỗi đợt bắn đúng một lần.</td><td><span class="file">Assets/Scripts/Stages/WaveTimeline.cs</span> (thuần C#, test bằng dotnet)</td></tr>
+      <tr><td><strong>StageDirector</strong></td><td>Nhạc trưởng của một màn: xét mục tiêu, quyết thắng/thua, ra lệnh cho spawner chạy lịch đợt quái.</td><td><span class="file">Assets/Scripts/Stages/StageDirector.cs</span></td></tr>
+      <tr><td><strong>EnemySpawner</strong></td><td>Người giữ thiết kế đợt quái của màn: <span class="file">Waves</span>, <span class="file">SpawnZones</span>, pool và <span class="file">Clone()</span> chỉ số quái.</td><td><span class="file">Assets/Scripts/Stages/EnemySpawner.cs</span></td></tr>
       <tr><td><strong>StageObjective</strong></td><td>Một điều kiện của màn (diệt đủ quái, sống sót, phá mục tiêu…).</td><td><span class="file">Assets/Scripts/Stages/StageObjective.cs</span></td></tr>
       <tr><td><strong>Tinh anh / Elite</strong></td><td>Quái mạnh có lõi năng lượng; phá hết lõi thì vào <em>cửa sổ suy yếu</em>.</td><td><span class="file">EliteEnemyBrain</span></td></tr>
       <tr><td><strong>Break Window</strong></td><td>Khoảng thời gian quái tinh anh bị giảm giáp sau khi vỡ lõi — lúc dồn sát thương.</td><td><span class="file">EliteEnemyBrain</span></td></tr>
@@ -77,7 +80,7 @@
     <tbody>
       <tr><td><strong>Definition vs Brain</strong></td><td>Definition là <em>con số tĩnh</em> trong file asset (máu cấp 1 = 1200). Brain là <em>con số đang sống</em> (còn 640 máu). Sửa asset lúc đang Play không đổi được trận đang chạy.</td></tr>
       <tr><td><strong>Brain vs View</strong></td><td>Brain không được gọi <span class="file">SpriteRenderer</span> hay <span class="file">Animator</span>. Nếu bạn thấy mình cần, tức là nên thêm một hàm/hự kiện vào View.</td></tr>
-      <tr><td><strong>StageManager vs StageDirector</strong></td><td><span class="file">StageManager</span> là bản cũ, chỉ biết “diệt đủ N quái”, không scene nào dùng nữa. <span class="file">StageDirector</span> là bản hiện hành: nhiều điều kiện thắng, quái sinh theo vùng.</td></tr>
+      <tr><td><strong>StageManager vs StageDirector</strong></td><td><span class="file">StageManager</span> là bản cũ, chỉ biết “diệt đủ N quái”, không scene nào dùng nữa. <span class="file">StageDirector</span> là bản hiện hành: nhiều điều kiện thắng, còn đợt quái và vùng spawn do <span class="file">EnemySpawner</span> trong scene giữ.</td></tr>
     </tbody>
   </table>
 

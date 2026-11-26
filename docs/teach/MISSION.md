@@ -18,7 +18,7 @@ Người dùng là lập trình viên mới với Unity, đang làm việc trên
 - Thời gian học xen trong lúc làm việc thật: mỗi buổi 10–15 phút, một thắng lợi cụ thể.
 - Tài liệu trong repo bằng tiếng Việt; bài học cũng viết tiếng Việt.
 - Không đẩy code lên remote và không chạy kiểm tra/verify trừ khi người dùng yêu cầu rõ.
-- Đang ở nhánh `SuaLoi_Coop`; nội dung bài học phải khớp code nhánh này, không tin tài liệu cũ trong `docs/`.
+- Đang ở nhánh `Fix/HUD-ThanhMau-BossBar`; nội dung bài học phải khớp code nhánh này, không tin tài liệu cũ trong `docs/`.
 
 ## Out of scope
 

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài 03 — Một con quái đi qua những file nào</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+  <p class="eyebrow">Bài 03 · Đọc code runtime</p>
+  <h1>Một con quái đi qua những file nào</h1>
+  <p class="lead">Mục tiêu: sau 10 phút, bạn trace được một con quái từ lúc được sinh ra đến lúc chết và báo thắng màn — chỉ bằng cách mở đúng 6 file, không cần chạy.</p>
+  <p class="meta">Dự án: <span class="file">IronWasteland</span> · Unity 6000.5.6f1 · nhánh <span class="file">Fix/HUD-ThanhMau-BossBar</span> · cập nhật 26/11/2026</p>
+
+  <h2>1. Sáu bước của một con quái</h2>
+
+  <p>Đây là toàn bộ đường đi. Cột phải là <em>lớp</em> — bài 01 gọi là Data / Logic / View; bạn sẽ thấy mỗi bước chỉ thuộc đúng một lớp.</p>
+
+  <table>
+    <thead><tr><th>#</th><th>Chuyện gì xảy ra</th><th>File · dòng</th><th>Lớp</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>0</td>
+        <td>Đồng hồ chạy, đợt quái tới giờ</td>
+        <td><a class="file" href="../../../Assets/Scripts/Stages/EnemySpawner.cs#L161">EnemySpawner.TickWaves</a></td>
+        <td>Logic</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>Chọn vùng spawn, gọi <span class="file">Spawn()</span> cho từng con</td>
+        <td><a class="file" href="../../../Assets/Scripts/Stages/EnemySpawner.cs#L183">EnemySpawner.SpawnWave</a></td>
+        <td>Logic</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Nhân bản chỉ số (<span class="file">Clone()</span>), lấy từ pool, giao cho <span class="file">EnemyBrain</span></td>
+        <td><a class="file" href="../../../Assets/Scripts/Stages/EnemySpawner.cs#L260">EnemySpawner.Spawn</a></td>
+        <td>Logic</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Quái sống: mỗi frame AI chạy trong <span class="file">OnBrainTick</span></td>
+        <td><a class="file" href="../../../Assets/Scripts/Enemies/EnemyBrain.cs#L623">EnemyBrain.Update</a></td>
+        <td>Logic</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Trúng đạn: tính sát thương theo Def rồi trừ máu</td>
+        <td><a class="file" href="../../../Assets/Scripts/Enemies/EnemyBrain.cs#L219">EnemyBrain.TakeDamage</a></td>
+        <td>Logic</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Máu ≤ 0: chết, dọn xác, rồi phát event chết</td>
+        <td><a class="file" href="../../../Assets/Scripts/Enemies/EnemyBrain.cs#L305">EnemyBrain.Die</a></td>
+        <td>Logic</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Director nhận event, tăng kills, đẩy cho objective</td>
+        <td><a class="file" href="../../../Assets/Scripts/Stages/StageDirector.cs#L423">OnSpawnerEnemyDied</a></td>
+        <td>Logic</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>Objective xong ⇒ <span class="file">EvaluateOutcome</span> gọi <span class="file">Clear</span> ⇒ thắng</td>
+        <td><a class="file" href="../../../Assets/Scripts/Stages/StageDirector.cs#L331">EvaluateOutcome</a></td>
+        <td>Logic</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="callout__label">Điều đáng chú ý</span>
+    <p>Không bước nào trong 8 bước trên vẽ gì lên màn hình. HUD chỉ <em>nghe</em> event (<span class="file">StageCleared</span>, <span class="file">KillCountChanged</span>) rồi tự cập nhật chữ. Đó là lý do sửa HUD không bao giờ làm hỏng gameplay, và ngược lại.</p>
+  </div>
+
+  <h2>2. Hai chi tiết dễ đọc sai</h2>
+
+  <h3>2.1. <span class="file">Clone()</span> trước khi sửa chỉ số</h3>
+  <p>Trong <span class="file">Spawn()</span>, dòng quan trọng nhất là <span class="file">prefab.Stats.Clone()</span>. Nếu lấy thẳng <span class="file">prefab.Stats</span> rồi nhân máu co-op, mọi con quái sau đó sẽ nhân dồn — con thứ 10 thành 1024 lần máu. Đây là lý do có comment <em>"BAY QUAN TRONG"</em> ngay trên dòng đó.</p>
+
+  <h3>2.2. <span class="file">OnDeath()</span> chạy trước <span class="file">OnDeathEvent</span></h3>
+  <p>Trong <a class="file" href="../../../Assets/Scripts/Enemies/EnemyBrain.cs#L305">Die()</a>, thứ tự là: gọi <span class="file">OnDeath()</span> (dọn xác / trả pool) → rồi mới <span class="file">OnDeathEvent?.Invoke()</span>. Nhờ vậy <span class="file">DestructibleTarget</span> — thứ lắng nghe event chết để báo "đã phá lõi" — vẫn đọc được dữ liệu trước khi object bị huỷ. Đảo thứ tự này là màn 1-4 không bao giờ thắng được, dù bạn đập trúng lõi.</p>
+
+  <h2>3. Đọc một file <span class="file">.cs</span> theo thứ tự này</h2>
+
+  <p>Đừng đọc từ trên xuống. Với mọi file trong repo, đi theo 5 bước sau — mất khoảng 2 phút:</p>
+
+  <ol class="steps">
+    <li><strong>Khối <span class="file">&lt;summary&gt;</span> đầu class.</strong> Repo này viết tiếng Việt, nói rõ file <em>chịu trách nhiệm gì</em> và <em>không</em> làm gì.</li>
+    <li><strong>Các field <span class="file">[SerializeField]</span>.</strong> Đây là những gì designer thấy trong Inspector — tức là "hợp đồng dữ liệu" của file.</li>
+    <li><strong>Property/event public.</strong> Đây là API cho file khác dùng; đọc tên là biết ai gọi ai.</li>
+    <li><strong>Các method private.</strong> Chỉ đọc sau khi đã biết API — chúng là chi tiết thực thi.</li>
+    <li><strong>Chỗ bắn event.</strong> Gõ tìm <span class="file">?.</span> hoặc <span class="file">Invoke(</span>: đó là các "cửa ra" nối sang file khác.</li>
+  </ol>
+
+  <h2>4. Kiểm tra hiểu bài</h2>
+
+  <div class="quiz" data-quiz>
+
+    <fieldset class="q" data-answer="1" data-explain="TickWaves chỉ đẩy đồng hồ; SpawnWave mới là nơi chọn vùng và gọi Spawn() cho từng con trong đợt.">
+      <legend><span class="num">1</span> Ai gọi <span class="file">Spawn()</span> cho từng con quái?</legend>
+      <label class="opt"><input type="radio" name="q1" value="0"><span>StageDirector.Tick</span></label>
+      <label class="opt"><input type="radio" name="q1" value="1"><span>EnemySpawner.SpawnWave</span></label>
+      <label class="opt"><input type="radio" name="q1" value="2"><span>EnemyBrain.OnBrainTick</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="2" data-explain="EnemyBrain.TakeDamage chỉ là cửa vào; CombatUtility.ResolveDamage mới là nơi đổi Def thành % giảm và ra con số cuối.">
+      <legend><span class="num">2</span> Hàm nào quyết định con số sát thương cuối?</legend>
+      <label class="opt"><input type="radio" name="q2" value="0"><span>EnemyBrain.TakeDamage</span></label>
+      <label class="opt"><input type="radio" name="q2" value="1"><span>EnemyBrain.OnBrainTick</span></label>
+      <label class="opt"><input type="radio" name="q2" value="2"><span>CombatUtility.ResolveDamage</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="0" data-explain="Die() gọi OnDeath() trước để dọn xác, rồi mới phát OnDeathEvent; nhờ vậy listener như DestructibleTarget còn dữ liệu để đọc.">
+      <legend><span class="num">3</span> Khi quái chết, thứ tự trong <span class="file">Die()</span> là gì?</legend>
+      <label class="opt"><input type="radio" name="q3" value="0"><span>OnDeath() rồi OnDeathEvent</span></label>
+      <label class="opt"><input type="radio" name="q3" value="1"><span>OnDeathEvent rồi OnDeath()</span></label>
+      <label class="opt"><input type="radio" name="q3" value="2"><span>Chỉ phát OnDeathEvent</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="2" data-explain="OnSpawnerEnemyDied trong StageDirector tăng m_Kills, phát KillCountChanged và gọi OnEnemyKilled cho từng objective.">
+      <legend><span class="num">4</span> Ai tăng bộ đếm diệt quái của màn?</legend>
+      <label class="opt"><input type="radio" name="q4" value="0"><span>EliminateObjective</span></label>
+      <label class="opt"><input type="radio" name="q4" value="1"><span>EnemyBrain.OnDeath</span></label>
+      <label class="opt"><input type="radio" name="q4" value="2"><span>StageDirector</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="1" data-explain="StageHUD là lớp View: nó đọc director.Kills/WavesFired và nghe event rồi đổi chữ, không tham gia logic thắng thua.">
+      <legend><span class="num">5</span> Muốn đổi chữ "Đợt 2 / 3" trên HUD, sửa file nào?</legend>
+      <label class="opt"><input type="radio" name="q5" value="0"><span>WaveTimeline.cs</span></label>
+      <label class="opt"><input type="radio" name="q5" value="1"><span>StageHUD.cs</span></label>
+      <label class="opt"><input type="radio" name="q5" value="2"><span>StageDirector.cs</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <div class="quiz-bar">
+      <button class="btn" type="button" data-reset>Làm lại</button>
+      <span class="quiz-score" aria-live="polite"></span>
+    </div>
+  </div>
+
+  <h2>5. Bài tập 10 phút</h2>
+
+  <p>Làm trong Unity, không sửa gì — chỉ đọc và quan sát.</p>
+
+  <ol class="steps">
+    <li>Mở <span class="file">Assets/Scenes/Stage_1_1.unity</span>, bấm <strong>Play</strong>. Đứng yên khoảng 10 giây cho đợt 1 ra quái.</li>
+    <li>Trong Hierarchy, chọn một con quái dưới object <span class="file">EnemySpawner</span>. Inspector: tìm <span class="file">currentHealth</span>, <span class="file">stats.Attack</span>, <span class="file">stats.Defense</span>. Đối chiếu với prefab gốc — thấy máu đã bị nhân đôi chưa? (Chơi đơn thì chưa; co-op thì có.)</li>
+    <li>Dừng Play. Mở <a class="file" href="../../../Assets/Scripts/Enemies/EnemyBrain.cs#L219">EnemyBrain.cs:219</a> và tìm dòng gọi <span class="file">CombatUtility.ResolveDamage</span>. Đọc 5 dòng quanh nó.</li>
+    <li>Trong VSCode/Rider, chuột phải <span class="file">OnDeathEvent</span> → <em>Find All References</em>. Liệt kê miệng: ai đang nghe event chết? (Gợi ý: 3 chỗ — trong đó có <span class="file">DestructibleTarget</span> của màn 1-4.)</li>
+    <li>Trả lời miệng: nếu bỏ dòng <span class="file">m_Kills++</span> trong <span class="file">OnSpawnerEnemyDied</span>, HUD và điều kiện thắng hỏng cái nào trước?</li>
+  </ol>
+
+  <div class="callout callout--warn">
+    <span class="callout__label">Cẩn thận</span>
+    <p>Đừng sửa gì trong lúc Play Mode — Unity nuốt thay đổi khi Stop. Bài này chỉ đọc; mọi thay đổi nên làm ở bài tập của bài 02 hoặc bài sau.</p>
+  </div>
+
+  <h2>6. Đọc tiếp</h2>
+
+  <p><strong>Nguồn chính thống (tiếng Anh):</strong></p>
+  <ul>
+    <li><a href="https://docs.unity3d.com/6000.0/Documentation/Manual/execution-order.html">Unity Manual — Order of execution for event functions</a>: vì sao <span class="file">Awake</span> chạy trước <span class="file">Start</span>, và <span class="file">Update</span> khác <span class="file">FixedUpdate</span> ở đâu — nền để đọc mọi file khác.</li>
+    <li><a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/events/">C# — Events (Microsoft Learn)</a>: cú pháp <span class="file">event Action</span> mà <span class="file">EnemyBrain</span>, <span class="file">StageDirector</span> dùng.</li>
+  </ul>
+
+  <p><strong>Trong repo:</strong> <a href="0002-thiet-ke-dot-quai-va-vat-can.html">Bài 02 — thiết kế đợt quái</a> · <a href="../reference/ban-do-code.html">Bản đồ code</a> · <a href="../reference/thuat-ngu.html">Từ điển thuật ngữ</a> · <a href="../../../docs/HUONG_DAN_StageFramework.md">Hướng dẫn Stage Framework</a>.</p>
+
+  <div class="ask">
+    <p><strong>Bạn có giáo viên mà.</strong> Chỗ nào chưa rõ — "event khác gì gọi hàm trực tiếp?", "vì sao không cho HUD đọc thẳng vào EnemyBrain?", "Find All References ở đâu?" — hỏi lại trong khung chat. Bài sau sẽ đào sâu đúng chỗ bạn thấy hụt.</p>
+  </div>
+
+  <div class="nav">
+    <p class="eyebrow">Bài tiếp theo (dự kiến)</p>
+    <ul>
+      <li>Bài 04 — <em>Data / Logic / View: ba lớp trong thực chiến</em>: tự phân loại 10 file bất kỳ, rồi sửa một chỉ số và một câu chữ để thấy lớp nào đổi.</li>
+      <li>Bài 05 — <em>Object pooling</em>: vì sao đạn và quái không được <span class="file">Instantiate</span> liên tục, và <span class="file">ReturnToPool</span> giấu object đi đâu.</li>
+    </ul>
+    <p class="small">Soạn theo <a href="../MISSION.md">MISSION.md</a> · ghi chú học tập ở <a href="../NOTES.md">NOTES.md</a></p>
+  </div>
+
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

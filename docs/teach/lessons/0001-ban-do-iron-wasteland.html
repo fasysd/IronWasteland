@@ -12,7 +12,7 @@
   <p class="eyebrow">Bài 01 · Nhập môn</p>
   <h1>Iron Wasteland trong 10 phút</h1>
   <p class="lead">Mục tiêu duy nhất của bài này: sau 10 phút, khi ai đó nói “sửa cái này đi”, bạn mở đúng file — và biết mình còn chưa biết gì.</p>
-  <p class="meta">Dự án: <span class="file">IronWasteland</span> · Unity 6000.5.6f1 · URP 2D · nhánh <span class="file">SuaLoi_Coop</span> · cập nhật 25/11/2026</p>
+  <p class="meta">Dự án: <span class="file">IronWasteland</span> · Unity 6000.5.6f1 · URP 2D · nhánh <span class="file">Fix/HUD-ThanhMau-BossBar</span> · cập nhật 26/11/2026</p>
 
   <h2>1. Đây là game gì</h2>
 
@@ -22,7 +22,7 @@
     <thead><tr><th>Hạng mục</th><th>Con số thật trong repo</th></tr></thead>
     <tbody>
       <tr><td>Engine</td><td>Unity 6000.5.6f1, URP 2D, Input System mới</td></tr>
-      <tr><td>Mã C#</td><td>217 file trong <span class="file">Assets/Scripts</span></td></tr>
+      <tr><td>Mã C#</td><td>226 file trong <span class="file">Assets/Scripts</span></td></tr>
       <tr><td>Scene</td><td>18 file, 16 scene nằm trong Build Settings</td></tr>
       <tr><td>Xe tăng</td><td>6 (Wall Titan, Red Nova, Black Shadow, Leviathan, Water B, Green Fox)</td></tr>
       <tr><td>Màn chơi</td><td>9: <span class="file">Stage_1_1</span> → <span class="file">Stage_2_5</span> (dữ liệu ở <span class="file">Assets/Data/Stages/</span>)</td></tr>
@@ -56,7 +56,7 @@
       <tr>
         <td><strong>ScriptableObject</strong></td>
         <td>File dữ liệu trong project — không nằm trong scene, sửa là mọi nơi đọc theo.</td>
-        <td><span class="file">TankDefinition</span> (chỉ số xe), <span class="file">StageDefinition</span> (đợt quái), <span class="file">EquipmentDatabase</span></td>
+        <td><span class="file">TankDefinition</span> (chỉ số xe), <span class="file">StageDefinition</span> (mục tiêu/thưởng màn), <span class="file">EquipmentDatabase</span></td>
       </tr>
     </tbody>
   </table>
@@ -136,7 +136,8 @@ Garage / SkillPicker / Setting
     <thead><tr><th>Muốn đổi…</th><th>Mở</th></tr></thead>
     <tbody>
       <tr><td>Chỉ số máu / công / giáp của một xe</td><td><span class="file">Assets/Prefabs/Tanks/&lt;Xe&gt;/&lt;Xe&gt;.asset</span></td></tr>
-      <tr><td>Số đợt quái, điều kiện thắng của một màn</td><td><span class="file">Assets/Data/Stages/Stage_x_y.asset</span></td></tr>
+      <tr><td>Điều kiện thắng, thưởng, mã màn kế</td><td><span class="file">Assets/Data/Stages/Stage_x_y.asset</span></td></tr>
+      <tr><td>Số đợt quái, quái gì, rơi ở vùng nào</td><td>Component <span class="file">EnemySpawner</span> trong scene <span class="file">Stage_x_y</span></td></tr>
       <tr><td>Hành vi / kỹ năng của một xe</td><td><span class="file">Assets/Scripts/Tanks/&lt;Xe&gt;/</span></td></tr>
       <tr><td>AI quái</td><td><span class="file">Assets/Scripts/Enemies/</span></td></tr>
       <tr><td>Nút bấm, HUD, màn chọn ải</td><td><span class="file">Assets/Scripts/UI/</span></td></tr>
@@ -186,7 +187,7 @@ Garage / SkillPicker / Setting
       <p class="fb" aria-live="polite"></p>
     </fieldset>
 
-    <fieldset class="q" data-answer="1" data-explain="StageDefinition là ScriptableObject giữ dữ liệu tĩnh của màn: các đợt quái, vùng sinh quái, mục tiêu. StageDirector chỉ đọc asset đó lúc chạy.">
+    <fieldset class="q" data-answer="1" data-explain="StageDefinition là ScriptableObject giữ dữ liệu tĩnh của màn: mục tiêu, thưởng, mã màn. Từ 26/11/2026, đợt quái và vùng spawn nằm trên component EnemySpawner trong scene, không còn trong asset.">
       <legend><span class="num">4</span> Dữ liệu tĩnh của một màn nằm ở đâu?</legend>
       <label class="opt"><input type="radio" name="q4" value="0"><span>EnemySpawner</span></label>
       <label class="opt"><input type="radio" name="q4" value="1"><span>StageDefinition</span></label>
@@ -252,8 +253,8 @@ Garage / SkillPicker / Setting
   <div class="nav">
     <p class="eyebrow">Bài tiếp theo (dự kiến)</p>
     <ul>
-      <li>Bài 02 — <em>Đọc một file C# của dự án từ trên xuống</em>: MonoBehaviour, vòng đời Update/FixedUpdate, và vì sao <span class="file">TankBrain</span> chia Update/FixedUpdate.</li>
-      <li>Bài 03 — <em>ScriptableObject trong thực chiến</em>: tự tay đổi chỉ số một xe và thấy game đổi theo.</li>
+      <li>Bài 02 — <em><a href="0002-thiet-ke-dot-quai-va-vat-can.html">Thiết kế đợt quái nằm ngay trong scene</a></em>: wave chuyển vào <span class="file">EnemySpawner</span>, vật cản sinh theo seed, sửa màn 1-4.</li>
+      <li>Bài 03 — <em><a href="0003-mot-con-quai-di-qua-nhung-file-nao.html">Một con quái đi qua những file nào</a></em>: trace một luồng runtime thật và cách đọc file <span class="file">.cs</span>.</li>
       <li>Bài 04 — <em>Object pooling</em>: vì sao đạn không được <span class="file">Instantiate</span>.</li>
     </ul>
     <p class="small">Soạn theo <a href="../MISSION.md">MISSION.md</a> · ghi chú học tập ở <a href="../NOTES.md">NOTES.md</a></p>
