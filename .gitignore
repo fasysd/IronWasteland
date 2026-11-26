@@ -90,3 +90,7 @@ crashlytics-build.properties
 /Tài liệu thiết kế Game.docx
 /[Bb]in/
 /save/
+
+# Test harness build output (Tools/WaveTimelineTests)
+Tools/**/bin/
+Tools/**/obj/

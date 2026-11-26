@@ -152,9 +152,6 @@ MonoBehaviour:
   definition: {fileID: 11400000, guid: a89170b0c191d714cbc50e78dc8df934, type: 2}
   gameController: {fileID: 1241495291}
   spawner: {fileID: 1493952789}
-  spawnZones:
-  - {fileID: 1183980472}
-  - {fileID: 1740843148}
   autoStart: 1
   coopMode: 0
   failOnPlayerDeath: 1
@@ -536,6 +533,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1493952790}
   - component: {fileID: 1493952789}
+  - component: {fileID: 880000000}
   m_Layer: 0
   m_Name: EnemySpawner
   m_TagString: Untagged
@@ -559,6 +557,59 @@ MonoBehaviour:
   container: {fileID: 0}
   coopMode: 0
   logEvents: 1
+  waves:
+  - Label: W1 - phuc kich hai canh
+    StartTime: 0
+    Spawns:
+    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
+      Count: 10
+      SpeedMultiplier: 1
+      ZoneId: A
+    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
+      Count: 10
+      SpeedMultiplier: 1
+      ZoneId: B
+  - Label: W2 - xa thu tinh the
+    StartTime: 40
+    Spawns:
+    - Enemy: {fileID: 3897099387530954697, guid: 3d7a3d53f4ad62449ad228d3ead96c34, type: 3}
+      Count: 3
+      SpeedMultiplier: 1
+      ZoneId: A
+    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
+      Count: 5
+      SpeedMultiplier: 1
+      ZoneId: A
+    - Enemy: {fileID: 3897099387530954697, guid: 3d7a3d53f4ad62449ad228d3ead96c34, type: 3}
+      Count: 3
+      SpeedMultiplier: 1
+      ZoneId: B
+    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
+      Count: 5
+      SpeedMultiplier: 1
+      ZoneId: B
+  - Label: W3 - thach anh & tinh linh
+    StartTime: 70
+    Spawns:
+    - Enemy: {fileID: 6438814824446025724, guid: 56632388536e92747835f0a208002653, type: 3}
+      Count: 3
+      SpeedMultiplier: 1
+      ZoneId: A
+    - Enemy: {fileID: 6086734558255793529, guid: dc8cd304e186d3d4cb5b4ae517da1477, type: 3}
+      Count: 3
+      SpeedMultiplier: 1
+      ZoneId: A
+    - Enemy: {fileID: 6438814824446025724, guid: 56632388536e92747835f0a208002653, type: 3}
+      Count: 3
+      SpeedMultiplier: 1
+      ZoneId: B
+    - Enemy: {fileID: 6086734558255793529, guid: dc8cd304e186d3d4cb5b4ae517da1477, type: 3}
+      Count: 3
+      SpeedMultiplier: 1
+      ZoneId: B
+  spawnZones:
+  - {fileID: 1183980472}
+  - {fileID: 1740843148}
 --- !u!4 &1493952790
 Transform:
   m_ObjectHideFlags: 0
@@ -867,6 +918,22 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b4a3b144a02d359489950446fe978c66, type: 3}
+--- !u!114 &880000000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1493952788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4a7f0a52e6b4d9f1a8c3e5b0f2d7a46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stageCode: 1-2
+  obstacleCount: 7
+  obstacleColor: {r: 0.26, g: 0.27, b: 0.3, a: 1}
+  logBuild: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

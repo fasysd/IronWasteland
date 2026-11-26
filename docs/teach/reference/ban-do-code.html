@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tham chiếu — Bản đồ code Iron Wasteland</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+  <p class="eyebrow">Tham chiếu · Bản đồ</p>
+  <h1>Bản đồ code</h1>
+  <p class="lead">Tra nhanh: thư mục nào làm gì, sửa việc gì thì mở file nào, và những cái bẫy đã biết.</p>
+  <p class="meta">217 file C# · không asmdef (chung Assembly-CSharp) · nhánh <span class="file">SuaLoi_Coop</span> · 25/11/2026</p>
+
+  <h2>1. Thư mục <span class="file">Assets/Scripts</span></h2>
+
+  <table>
+    <thead><tr><th style="width:22%">Thư mục</th><th style="width:8%">Số file</th><th>Nhiệm vụ</th><th style="width:30%">File nên biết trước</th></tr></thead>
+    <tbody>
+      <tr><td><span class="file">Tanks/</span></td><td>13</td><td>Xe tăng: Brain gốc, chỉ số, context, registry, điều khiển</td><td><span class="file">TankBrain.cs</span>, <span class="file">GameController.cs</span>, <span class="file">TankDefinition.cs</span>, <span class="file">TankRegistry.cs</span></td></tr>
+      <tr><td><span class="file">Tanks/BlackShadow, RedNova, WallTitan, GreenFox, Leviathan, WaterB</span></td><td>11 / 5 / 6 / 16 / 9 / 15</td><td>Mỗi thư mục là một xe: Brain riêng + skill + VFX riêng</td><td><span class="file">TankBrain_&lt;Xe&gt;.cs</span></td></tr>
+      <tr><td><span class="file">Tanks/Equipment</span></td><td>4</td><td>Phụ kiện: 3 loại lõi cộng % chỉ số + database</td><td><span class="file">EquipmentBrain.cs</span>, <span class="file">EquipmentDatabase.cs</span></td></tr>
+      <tr><td><span class="file">Enemies/</span> + <span class="file">Enemies/Normal/</span></td><td>17 + 28</td><td>AI quái: Brain gốc, quái thường (chương 1 &amp; 2), boss</td><td><span class="file">EnemyBrain.cs</span>, <span class="file">EliteEnemyBrain.cs</span>, <span class="file">Normal/</span></td></tr>
+      <tr><td><span class="file">Stages/</span></td><td>11</td><td>Điều phối màn: định nghĩa màn, sinh quái, mục tiêu, thưởng</td><td><span class="file">StageDirector.cs</span>, <span class="file">StageDefinition.cs</span>, <span class="file">EnemySpawner.cs</span></td></tr>
+      <tr><td><span class="file">Net/</span></td><td>25</td><td>Co-op online: khởi tạo mạng, phòng, đồng bộ trạng thái, camera</td><td><span class="file">NetBootstrap.cs</span>, <span class="file">MatchFlow.cs</span>, <span class="file">NetRelayService.cs</span></td></tr>
+      <tr><td><span class="file">Save/</span></td><td>6</td><td>Lưu JSON: ngọc, xe, phụ kiện, tiến trình, cài đặt</td><td><span class="file">SaveSystem.cs</span>, <span class="file">GameData.cs</span></td></tr>
+      <tr><td><span class="file">UI/</span></td><td>16</td><td>Menu, chọn ải, garage, chọn kỹ năng, cài đặt, HUD</td><td><span class="file">MainMenuController.cs</span>, <span class="file">StageSelectController.cs</span>, <span class="file">GarageController.cs</span></td></tr>
+      <tr><td><span class="file">Core/</span></td><td>11</td><td>Hạ tầng dùng chung: chủ sở hữu va chạm, công thức sát thương, pool chữ sát thương, camera, CC</td><td><span class="file">ColliderOwnerRef.cs</span>, <span class="file">CombatUtility.cs</span>, <span class="file">TextDamageManager.cs</span></td></tr>
+      <tr><td><span class="file">Effects/</span></td><td>7</td><td>Hiệu ứng dùng chung (nổ, vệt, flash)</td><td>—</td></tr>
+      <tr><td><span class="file">Audio/</span></td><td>6</td><td>Âm thanh: nhạc nền, SFX, mixer</td><td>—</td></tr>
+      <tr><td><span class="file">Navigation/</span></td><td>2</td><td>Tìm đường A* cho quái (<span class="file">PathfindingGrid2D</span>)</td><td><span class="file">PathfindingGrid2D.cs</span></td></tr>
+      <tr><td><span class="file">Utilities/</span></td><td>3</td><td>Hàm phụ: tính tâm va chạm, điểm ngẫu nhiên trên collider</td><td><span class="file">Collider2DUtility.cs</span></td></tr>
+      <tr><td><span class="file">Tests/</span>, <span class="file">Test/</span></td><td>4 + 1</td><td>Test tự động (Unity Test Framework) và class mẫu <span class="file">_Test</span></td><td><span class="file">SaveSystemTests.cs</span></td></tr>
+      <tr><td><span class="file">Editor/</span></td><td>1</td><td>Code chỉ chạy trong Editor (vẽ Inspector)</td><td><span class="file">ReadOnlyDrawer.cs</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>2. Ngoài Scripts</h2>
+
+  <table>
+    <thead><tr><th style="width:30%">Đường dẫn</th><th>Chứa gì</th></tr></thead>
+    <tbody>
+      <tr><td><span class="file">Assets/Scenes/</span></td><td>18 scene; 16 scene trong Build Settings (MainMenu, StageSelect, Garage, GarageAccessory, SkillPicker, Setting, CoopLobby, Stage_1_1…Stage_2_5)</td></tr>
+      <tr><td><span class="file">Assets/Data/Stages/</span></td><td>9 <span class="file">StageDefinition</span> — dữ liệu quái/mục tiêu từng màn</td></tr>
+      <tr><td><span class="file">Assets/Prefabs/Tanks/&lt;Xe&gt;/</span></td><td>Prefab Brain + prefab View + <span class="file">&lt;Xe&gt;.asset</span> (TankDefinition) + prefab skill</td></tr>
+      <tr><td><span class="file">Assets/Prefabs/Enemies/</span></td><td>Prefab quái theo tên Việt hoá (KIenLuaKhongLo, SaoDen…) + nhóm ChapterOne cũ</td></tr>
+      <tr><td><span class="file">Assets/Art/</span>, <span class="file">Assets/Audio/</span></td><td>Sprite, animation, VFX, âm thanh — không chứa logic</td></tr>
+      <tr><td><span class="file">Assets/Settings/</span></td><td>Cấu hình URP, <span class="file">EquipmentDatabase.asset</span>, build profile</td></tr>
+      <tr><td><span class="file">docs/</span></td><td>Tài liệu thiết kế &amp; ngữ cảnh (tiếng Việt, khá dài) — xem mục 5</td></tr>
+    </tbody>
+  </table>
+
+  <h2>3. Sửa việc gì → mở file nào</h2>
+
+  <table>
+    <thead><tr><th style="width:40%">Việc cần làm</th><th style="width:34%">Mở</th><th>Cẩn thận</th></tr></thead>
+    <tbody>
+      <tr><td>Đổi máu/công/giáp một xe</td><td><span class="file">Assets/Prefabs/Tanks/&lt;Xe&gt;/&lt;Xe&gt;.asset</span></td><td>Số là thang GDD thô, xem mục 4</td></tr>
+      <tr><td>Đổi số đợt quái / mục tiêu màn</td><td><span class="file">Assets/Data/Stages/Stage_x_y.asset</span></td><td>Phải khớp scene đang dùng</td></tr>
+      <tr><td>Thêm kỹ năng mới cho một xe</td><td><span class="file">Assets/Scripts/Tanks/&lt;Xe&gt;/</span> + prefab skill</td><td>Phải dùng pool, không Instantiate</td></tr>
+      <tr><td>Sửa AI đuổi/bắn của quái</td><td><span class="file">Assets/Scripts/Enemies/Normal/</span></td><td>Chạm vào <span class="file">OnBrainTick</span>, không phải Update</td></tr>
+      <tr><td>Thêm loại quái</td><td>Brain mới + prefab + gắn vào <span class="file">StageDefinition</span></td><td>Nhớ <span class="file">ColliderOwnerRef</span></td></tr>
+      <tr><td>Sửa công thức sát thương</td><td><span class="file">Assets/Scripts/Core/CombatUtility.cs</span></td><td>Đổi là đổi toàn game</td></tr>
+      <tr><td>Thêm màn mới</td><td>Scene + <span class="file">StageDefinition</span> + Build Settings + mục trong <span class="file">StageSelect</span></td><td>Thiếu bước nào cũng hỏng</td></tr>
+      <tr><td>Sửa HUD / nút / màn chọn ải</td><td><span class="file">Assets/Scripts/UI/</span></td><td>uGUI + TextMeshPro</td></tr>
+      <tr><td>Sửa co-op (lobby, đồng bộ)</td><td><span class="file">Assets/Scripts/Net/</span></td><td>Host quyết định, client chỉ gửi yêu cầu</td></tr>
+      <tr><td>Thêm trường lưu trữ</td><td><span class="file">Assets/Scripts/Save/</span> (GameData + file con)</td><td>File cũ thiếu trường phải có giá trị mặc định</td></tr>
+      <tr><td>Đổi phím điều khiển</td><td><span class="file">Assets/InputSystem_Actions.inputactions</span></td><td>Sửa asset, không sửa code input</td></tr>
+      <tr><td>Đổi cân bằng phụ kiện</td><td><span class="file">Assets/Settings/EquipmentDatabase.asset</span> + prefab lõi</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <h2>4. Cái bẫy đã biết (đọc trước khi sửa)</h2>
+
+  <ol>
+    <li><strong>Chỉ số trong asset là thang GDD thô.</strong> Ví dụ <span class="file">Attack = 100</span> nghĩa là “1.00 lần”; code chia 100 khi dùng — xem <a class="file" href="../../../Assets/Scripts/Tanks/TankBrain.cs#L1199">TankBrain.cs:1199</a> (<span class="file">/ 100f</span>). Đừng “sửa lỗi” thành 5.</li>
+    <li><strong><span class="file">StageManager.cs</span> là xác cũ.</strong> Không scene nào còn gắn nó; màn chơi dùng <span class="file">StageDirector</span>. Đọc nhầm file này sẽ hiểu sai luồng.</li>
+    <li><strong><span class="file">SaveSystem</span> không nằm trong scene nào.</strong> Nó tự khởi tạo bằng <span class="file">[RuntimeInitializeOnLoadMethod(BeforeSceneLoad)]</span>; muốn biết file đang ghi ở đâu thì log <span class="file">SaveSystem.Instance.SaveFilePath</span>.</li>
+    <li><strong>Không có asmdef.</strong> Sửa một file là Unity biên dịch lại toàn bộ 217 file — đừng ngạc nhiên khi chờ lâu.</li>
+    <li><strong>Tài liệu trong <span class="file">docs/</span> đã lệch code.</strong> Ví dụ tài liệu cũ ghi “chỉ SampleScene trong build”, nay có 16 scene; vài chỗ còn mô tả schema <span class="file">TankDefinition</span> cũ. Tin code trước, tin docs sau.</li>
+    <li><strong>Mỗi scene màn phải tự gắn <span class="file">StageDirector</span>.</strong> Nó là component đặt trong scene, không phải tự sinh — quên gắn thì màn trống, không có quái và không có điều kiện thắng.</li>
+  </ol>
+
+  <h2>5. Bốn luật không được vi phạm</h2>
+
+  <ol>
+    <li>Không đặt <span class="file">SpriteRenderer</span> / <span class="file">Animator</span> / <span class="file">AudioSource</span> / <span class="file">ParticleSystem</span> trong Brain.</li>
+    <li>Mọi Collider sinh ra trong trận phải có <span class="file">ColliderOwnerRef</span>.</li>
+    <li>Đạn, tia, nổ, chữ sát thương: lấy từ pool, không <span class="file">Instantiate</span>/<span class="file">Destroy</span> trong lúc đánh.</li>
+    <li>Chỉ số runtime phải có <span class="file">[ReadOnly]</span>.</li>
+  </ol>
+
+  <div class="nav">
+    <p class="small">Xem thêm: <a href="thuat-ngu.html">Từ điển thuật ngữ</a> · <a href="unity-co-ban.html">Unity cơ bản (bản dài)</a> · <a href="ngu-canh-du-an.html">Ngữ cảnh dự án (bản gốc)</a> · <a href="../lessons/0001-ban-do-iron-wasteland.html">Bài 01 — Iron Wasteland trong 10 phút</a> · <a href="../../../docs/PROJECT_STRUCTURE.md">docs/PROJECT_STRUCTURE.md</a> (bản dài, đã cũ một phần)</p>
+  </div>
+
+</main>
+</body>
+</html>

@@ -8,30 +8,33 @@
 ## 0. Bức tranh tổng thể: 3 khối
 
 ```
-┌────────────────────┐        đọc        ┌────────────────────┐
-│  StageDefinition   │ ───────────────►  │   StageDirector    │
-│  (file .asset)     │                   │  (MonoBehaviour)   │
-│  - objectives      │                   │  - đếm giờ         │
-│  - waves           │                   │  - bắn wave        │
-│  - reward          │                   │  - xét thắng/thua  │
-└────────────────────┘                   └─────────┬──────────┘
-                                                   │ Spawn(prefab, vị trí)
-                                         ┌─────────▼──────────┐
-                                         │   EnemySpawner     │
-                                         │  (pool + Clone() ) │
-                                         └─────────┬──────────┘
-                                                   │ vị trí lấy từ
-                                         ┌─────────▼──────────┐
-                                         │     SpawnZone      │
-                                         │ (vùng trên map)    │
-                                         └────────────────────┘
+┌────────────────────┐      đọc mục tiêu      ┌────────────────────┐
+│  StageDefinition   │ ─────────────────────► │   StageDirector    │
+│  (file .asset)     │                        │  (MonoBehaviour)   │
+│  - objectives      │                        │  - đếm giờ         │
+│  - reward          │                        │  - xét thắng/thua  │
+│  - stageCode       │                        │  - đẩy giờ xuống   │
+└────────────────────┘                        └─────────┬──────────┘
+                                                        │ TickWaves(dt)
+                                            ┌───────────▼────────────┐
+                                            │     EnemySpawner       │
+                                            │  - waves (đợt quái)    │
+                                            │  - spawnZones          │
+                                            │  - pool + Clone()      │
+                                            └───────────┬────────────┘
+                                                        │ vị trí lấy từ
+                                            ┌───────────▼────────────┐
+                                            │      SpawnZone         │
+                                            │  (vùng trên map)       │
+                                            └────────────────────────┘
 ```
 
-- **`StageDefinition`** = *dữ liệu*: màn này có mấy đợt quái, điều kiện thắng là gì, thưởng bao nhiêu. Designer sửa trong Inspector, không cần code.
-- **`StageDirector`** = *bộ não*: bấm Play thì nó đếm giờ, đến giờ thì bảo spawner sinh quái, kiểm tra điều kiện thắng/thua, phát event.
-- **`EnemySpawner` + `SpawnZone`** = *cơ bắp*: spawner giữ pool và `Clone()` chỉ số quái; zone quyết định quái rơi ở đâu trên map.
+- **`StageDefinition`** = *dữ liệu tĩnh*: điều kiện thắng, thưởng, mã màn. Designer sửa trong Inspector, không cần code.
+- **`StageDirector`** = *trọng tài*: đếm giờ, xét điều kiện thắng/thua, phát event. Nó **không còn biết** màn có những đợt quái nào.
+- **`EnemySpawner`** = *nhà thiết kế wave + cơ bắp*: giữ danh sách đợt quái (`waves`), vùng spawn (`spawnZones`), lịch thời gian (`WaveTimeline`), pool và `Clone()` chỉ số quái.
+- **`SpawnZone`** = *địa điểm*: quyết định quái rơi ở đâu trên map.
 
-Ba khối này **độc lập**: 6 màn dùng chung 1 class, khác nhau chỉ ở file `.asset`.
+> **Từ 26/11/2026:** thiết kế đợt quái chuyển từ asset `StageDefinition` sang component `EnemySpawner` trong scene. Lý do: wave và vùng spawn là một việc, sửa cùng một chỗ. Asset chỉ còn mục tiêu/thưởng.
 
 ---
 
@@ -57,6 +60,8 @@ Mở scene, kiểm tra đủ các thứ sau. Thiếu cái nào thì quái sẽ k
 1. Trong cửa sổ **Project**, chuột phải vào `Assets/Settings` (hoặc thư mục bạn muốn) → **Create > Iron Wasteland > Stage > Stage Definition**.
 2. Đặt tên file theo quy ước đã chốt: `Stage_1_1`, `Stage_1_2`, … (dấu gạch dưới, không dấu cách).
 3. Bấm vào file, xem Inspector. Các nhóm field:
+
+> **Asset này không còn chứa đợt quái.** Từ 26/11/2026, `Waves` nằm trên component `EnemySpawner` trong scene — xem mục 2.4.
 
 ### 2.1. `Thong tin ai`
 
@@ -90,7 +95,13 @@ Chỉ dùng khi bạn **để trống** danh sách `Objectives` (bên dưới). 
 >
 > Một điều kiện `Escort` bị phá xe ⇒ thua ngay, không cần chờ điều kiện khác.
 
-### 2.4. `Cac dot quai` → `Waves`
+### 2.4. `Cac dot quai` → nằm trên `EnemySpawner` (không còn trong asset)
+
+Asset `StageDefinition` **không còn** trường `Waves`. Để sửa đợt quái:
+
+1. Mở scene của màn (ví dụ `Assets/Scenes/Stage_1_1.unity`).
+2. Chọn object `EnemySpawner`.
+3. Trong component `EnemySpawner`, mở danh sách **Waves**.
 
 Mỗi phần tử = 1 đợt. Bấm **+** rồi mở rộng:
 
@@ -109,6 +120,8 @@ Trong mỗi `Spawns`:
 | **Speed Multiplier** | Nhân vào tốc độ chạy. `1` = giữ nguyên, `1.5` = nhanh 1,5 lần (dùng cho "quái cường hóa tốc độ") |
 | **Zone Id** | Sinh ở vùng nào. Để trống = vùng bất kỳ |
 
+> **Thứ tự list không quan trọng.** `WaveTimeline` sắp xếp theo `StartTime`, nên W3 (120 s) khai báo trước W1 (0 s) vẫn bắn sau. Hai đợt cùng `StartTime` thì đợt khai báo trước bắn trước.
+
 ### 2.5. `Thuong`
 
 | Field | Ý nghĩa | Ví dụ |
@@ -119,6 +132,8 @@ Trong mỗi `Spawns`:
 | **Next Stage Code** | Mã màn kế tiếp | `1-2` — **hiện chưa dùng**, Phase 2 (StageSelect) sẽ đọc |
 
 ### 2.6. Dựng thử màn 1-1 (đúng số liệu GDD)
+
+> Tạo các đợt dưới đây **trên component `EnemySpawner` trong scene `Stage_1_1`** (mục 2.4), không phải trong asset.
 
 | Wave | Start Time | Enemy | Count | Speed Multiplier |
 |---|---|---|---|---|
@@ -144,7 +159,7 @@ Trong mỗi `Spawns`:
    - **Gizmo Color** = màu cam cho dễ thấy
 4. Chọn object trong Scene view sẽ thấy **vòng tròn gizmo** — kéo `Radius` để vòng tròn to/nhỏ, đó chính là vùng quái rơi.
 
-> Nếu map chỉ có 1 vùng duy nhất thì cứ để `Zone Id` trống ở `Wave.Spawns` — quái rơi vào vùng đầu tiên trong danh sách của Director.
+> Nếu map chỉ có 1 vùng duy nhất thì cứ để `Zone Id` trống ở `Wave.Spawns` — quái rơi vào vùng đầu tiên trong danh sách **Spawn Zones của spawner**.
 >
 > Muốn quái ra **hai cánh** như màn 1-2: tạo 2 zone `A` (trái) và `B` (phải), rồi trong wave đặt `Zone Id` = `A` cho một dòng `Spawns`, `B` cho dòng khác.
 
@@ -162,6 +177,27 @@ Trong mỗi `Spawns`:
 | **Container** | để trống | Trống = quái là con của chính object này (dễ nhìn trong Hierarchy). Muốn gọn hơn: tạo object con `Enemies` và kéo vào |
 | **Coop Mode** | bỏ tick | Đợt này không làm co-op (Q5). Nếu bật, **chỉ bật ở Director**, xem mục 5 |
 | **Log Events** | tick khi đang phát triển | In log mỗi lần spawn/thu hồi, rất tiện debug; build release thì bỏ tick |
+| **Waves** | danh sách đợt quái | Xem mục 2.4 — đây là nơi thiết kế wave |
+| **Spawn Zones** | bấm **+**, kéo `SpawnZone_A`, `SpawnZone_B` vào | Spawner cần biết vùng nào để chọn chỗ rơi quái |
+
+### 4.1. Thêm vật cản cho map (`StageObstacleField`)
+
+Component này dựng 5–7 tảng đá khi bấm Play, để map bớt trống và có chỗ né đạn. Không cần đặt tay từng tảng.
+
+1. Chọn object `EnemySpawner` (hoặc object ở giữa map).
+2. **Add Component** → `StageObstacleField`.
+3. Inspector:
+
+| Field | Ý nghĩa |
+|---|---|
+| **Stage Code** | Mã màn (`1-1`, `2-3`…). Đổi mã ⇒ đổi seed ⇒ bố cục đá khác. Để trống sẽ lấy tên scene |
+| **Obstacle Count** | Số tảng đá. `0` = tắt vật cản |
+| **Obstacle Color** | Màu nhuộm cho sprite đá |
+| **Log Build** | In số đá đã dựng khi vào màn |
+
+Đá tự động: nằm trong vành cách tâm 4–10 m, cách nhau ≥ 2.2 m, chừa tâm 4 m cho tank xuất phát, và **không lấn vào `SpawnZone`** (quái không sinh ra trong đá). Mỗi tảng ở layer **Terrain** (chặn tank) và được đăng ký với `PathfindingGrid2D` (quái A* né).
+
+> Muốn đá có thể phá: thêm `DestructibleTarget` + `EnemyBrain` cho từng tảng — hiện chưa làm, đây là bài tập mở rộng.
 
 ---
 
@@ -176,7 +212,8 @@ Trong mỗi `Spawns`:
 | **Definition** | file `Stage_1_1.asset` vừa tạo |
 | **Game Controller** | GameObject `GameController` (có component cùng tên) |
 | **Spawner** | GameObject `EnemySpawner` |
-| **Spawn Zones** | bấm **+**, tăng `Size` = 2, kéo `SpawnZone_A` và `SpawnZone_B` vào |
+
+**Không còn ô `Spawn Zones` trên Director** — danh sách vùng spawn giờ nằm trên `EnemySpawner` (mục 4).
 
 4. Tuỳ chọn:
    - **Auto Start**: tick (mặc định) = bấm Play là màn tự chạy. Bỏ tick nếu muốn tự gọi `Begin()` từ script khác.
@@ -288,17 +325,35 @@ public class StageEventListener : MonoBehaviour
 | `State` | `Idle`, `Running`, `Cleared`, `Failed` |
 | `Kills`, `Elapsed`, `AliveCount` | Số liệu để vẽ HUD |
 | `Objectives` | Danh sách điều kiện + `Label`, `Progress01` |
-| Event `StageStarted`, `WaveStarted`, `KillCountChanged`, `StageCleared`, `StageFailed` | HUD, âm thanh, chuyển màn |
+| Event `StageStarted`, `WaveStarted`, `KillCountChanged`, `StageCleared`, `StageFailed` | HUD, âm thanh, chuyển màn. `WaveStarted` phát `(int index, EnemyWave wave)` — Director chỉ chuyển tiếp từ spawner |
 | `ReportTargetDestroyed`, `ReportRadarActivated`, `ReportEscortProgress`, `ReportEscortDestroyed` | Vật thể mục tiêu báo về |
 
 ### `EnemySpawner`
 
 | Thành phần | Dùng để |
 |---|---|
+| `Waves`, `SpawnZones`, `TotalWaves`, `TotalEnemyCount`, `WaveIndex` | Thiết kế màn: đợt quái + vùng rơi quái |
+| `BeginWaves()` / `TickWaves(dt)` / `StopWaves()` | Chạy lịch wave; Director gọi 3 hàm này, không tự bắn |
+| `ConfigureDesign(waves, zones)` | Gán dữ liệu wave/zone bằng code (dùng khi dựng scene tự động) |
 | `Spawn(prefab, position, speedMultiplier)` | Sinh 1 quái (tự `Clone()` stats + áp co-op) |
 | `Prewarm(prefab, count)` | Tạo sẵn object cho đỡ giật lúc mới vào màn |
 | `Despawn(enemy)` / `DespawnAll()` | Thu hồi về pool |
 | `AliveCount`, `IsFull` | Kiểm tra trần quái |
+
+### `StageObstacleField`
+
+| Thành phần | Dùng để |
+|---|---|
+| `Build()` | Dựng vật cản (tự gọi trong `Awake`) |
+| `Stage Code`, `Obstacle Count`, `Obstacle Color` | Thiết kế vật cản trong Inspector |
+
+### `WaveTimeline` (lớp thuần C#, không phải MonoBehaviour)
+
+| Thành phần | Dùng để |
+|---|---|
+| `Advance(dt)` | Cộng thời gian |
+| `TryTakeDue(out int)` / `TakeDue(List<int>)` | Lấy các đợt đã tới giờ |
+| `Reset()` | Chạy lại màn |
 
 ### `SpawnZone`
 

@@ -15,20 +15,20 @@ namespace IronWasteland.Stages
     }
 
     /// <summary>
-    /// Dieu phoi 1 man choi: doc <see cref="StageDefinition"/>, sinh quai theo dot qua
-    /// <see cref="EnemySpawner"/>, theo doi cac <see cref="StageObjective"/> va quyet dinh
-    /// thang / thua.
+    /// Dieu phoi 1 man choi: doc <see cref="StageDefinition"/> (dieu kien thang/thua,
+    /// thuong), ra lenh cho <see cref="EnemySpawner"/> chay lich dot quai, theo doi cac
+    /// <see cref="StageObjective"/> va quyet dinh thang / thua.
     ///
-    /// Khac voi <see cref="StageManager"/> (ban cu, chi biet "diet du N quai"):
-    /// - Nhieu dieu kien thang cung luc (diet + sinh ton, pha tru + sinh ton...).
-    /// - Quai sinh theo vung (<see cref="SpawnZone"/>) chu khong phai vong tron quanh 1 diem.
-    /// - Co su kien de HUD / am thanh / chuyen man lang nghe.
+    /// TU 2026-11: thiet ke dot quai (dot nao, luc nao, quai gi, roi o vung nao) do
+    /// <see cref="EnemySpawner"/> trong scene so huu — StageDirector khong con doc
+    /// Waves tu asset nua. Muon sua dot quai thi chon object "EnemySpawner" trong scene.
     ///
     /// Cach dung trong scene:
     /// 1. GameObject "StageDirector" -> gan component nay.
     /// 2. Keo asset StageDefinition (vi du Stage_1_1.asset) vao o Definition.
     /// 3. Keo GameObject co GameController cua tank vao o Game Controller.
-    /// 4. Keo GameObject co EnemySpawner vao o Spawner, va cac SpawnZone vao list Spawn Zones.
+    /// 4. Keo GameObject co EnemySpawner vao o Spawner.
+    /// 5. Tren EnemySpawner: khai bao Waves + keo cac SpawnZone vao danh sach cua no.
     /// </summary>
     [DisallowMultipleComponent]
     public class StageDirector : MonoBehaviour
@@ -40,10 +40,8 @@ namespace IronWasteland.Stages
         [SerializeField] private GameController gameController;
 
         [Header("Sinh quái")]
+        [Tooltip("Spawner sở hữu lịch đợt quái và các vùng spawn của màn này.")]
         [SerializeField] private EnemySpawner spawner;
-
-        [Tooltip("Các vùng sinh quái trên map. Đợt nào khai báo ZoneId thì quái rơi trong vùng đó.")]
-        [SerializeField] private List<SpawnZone> spawnZones = new List<SpawnZone>();
 
         [Header("Tuỳ chọn")]
         [Tooltip("Tự động bắt đầu khi scene chạy.")]
@@ -58,7 +56,6 @@ namespace IronWasteland.Stages
         [SerializeField] private bool logEvents = true;
 
         private readonly List<StageObjective> m_Objectives = new List<StageObjective>();
-        private readonly HashSet<int> m_FiredWaves = new HashSet<int>();
         private Action m_PlayerDeathHandler;
         private TankBrain m_Player;
         private float m_Elapsed;
@@ -68,8 +65,8 @@ namespace IronWasteland.Stages
         /// <summary>Man bat dau chay.</summary>
         public event Action<StageDirector> StageStarted;
 
-        /// <summary>Mot dot quai vua duoc kich hoat (index, du lieu dot).</summary>
-        public event Action<int, StageDefinition.Wave> WaveStarted;
+        /// <summary>Mot dot quai vua duoc kich hoat (index, du lieu dot do EnemySpawner so huu).</summary>
+        public event Action<int, EnemyWave> WaveStarted;
 
         /// <summary>So quai da diet thay doi.</summary>
         public event Action<int> KillCountChanged;
@@ -96,8 +93,11 @@ namespace IronWasteland.Stages
         public int Kills => m_Kills;
         public int AliveCount => spawner != null ? spawner.AliveCount : 0;
         public IReadOnlyList<StageObjective> Objectives => m_Objectives;
-        public int WaveIndex => m_FiredWaves.Count;
-        public int TotalWaves => definition != null && definition.Waves != null ? definition.Waves.Count : 0;
+        public int WaveIndex => spawner != null ? spawner.WaveIndex : -1;
+        public int TotalWaves => spawner != null ? spawner.TotalWaves : 0;
+
+        /// <summary>Số đợt đã bắt đầu — đúng thứ tự thời gian, dùng cho HUD.</summary>
+        public int WavesFired => spawner != null ? spawner.WavesFired : 0;
         public bool IsRunning => m_State == StageRunState.Running;
 
         private void Awake()
@@ -125,10 +125,10 @@ namespace IronWasteland.Stages
             gameController = controller;
             spawner = enemySpawner;
 
-            if (zones != null)
+            // Vung spawn gio thuoc ve EnemySpawner — director chi chuyen tiep de API cu van dung duoc.
+            if (zones != null && spawner != null)
             {
-                spawnZones.Clear();
-                spawnZones.AddRange(zones);
+                spawner.ConfigureDesign(null, zones);
             }
         }
 
@@ -152,7 +152,6 @@ namespace IronWasteland.Stages
             m_State = StageRunState.Running;
             m_Elapsed = 0f;
             m_Kills = 0;
-            m_FiredWaves.Clear();
             m_Objectives.Clear();
 
             BuildObjectives();
@@ -165,6 +164,7 @@ namespace IronWasteland.Stages
                 spawner.CoopMode = coopMode;
                 UnhookSpawner();
                 spawner.EnemyDied += OnSpawnerEnemyDied;
+                spawner.WaveStarted += OnSpawnerWaveStarted;
             }
             else
             {
@@ -172,10 +172,14 @@ namespace IronWasteland.Stages
             }
 
             // Client trong phiên mạng không tự sinh quái hay tính thắng/thua, chỉ đồng bộ hiển thị từ host.
-            if (TankBrain.NetworkSessionActive && !Unity.Netcode.NetworkManager.Singleton.IsServer)
+            if (TankBrain.NetworkSessionActive && Unity.Netcode.NetworkManager.Singleton != null &&
+                !Unity.Netcode.NetworkManager.Singleton.IsServer)
             {
                 return;
             }
+
+            // Thiết kế wave nằm trên spawner; giờ mới bắt đầu chạy lịch.
+            if (spawner != null) spawner.BeginWaves();
 
             if (failOnPlayerDeath)
             {
@@ -218,7 +222,11 @@ namespace IronWasteland.Stages
         {
             UnhookPlayer();
             UnhookSpawner();
-            if (spawner != null) spawner.DespawnAll();
+            if (spawner != null)
+            {
+                spawner.StopWaves();
+                spawner.DespawnAll();
+            }
             m_State = StageRunState.Idle;
         }
 
@@ -227,7 +235,8 @@ namespace IronWasteland.Stages
             if (m_State != StageRunState.Running) return;
 
             // Client trong phiên mạng chỉ tick thời gian và điều kiện hiển thị HUD, không kích wave hay tự xử lý kết quả.
-            if (TankBrain.NetworkSessionActive && !Unity.Netcode.NetworkManager.Singleton.IsServer)
+            if (TankBrain.NetworkSessionActive && Unity.Netcode.NetworkManager.Singleton != null &&
+                !Unity.Netcode.NetworkManager.Singleton.IsServer)
             {
                 m_Elapsed += Time.deltaTime;
                 for (int i = 0; i < m_Objectives.Count; i++) m_Objectives[i].Tick(Time.deltaTime);
@@ -266,77 +275,17 @@ namespace IronWasteland.Stages
 
             m_Elapsed += deltaTime;
 
-            FireDueWaves();
+            // Spawner tự quyết định đợt nào tới giờ; director chỉ đẩy đồng hồ.
+            if (spawner != null) spawner.TickWaves(deltaTime);
 
             for (int i = 0; i < m_Objectives.Count; i++) m_Objectives[i].Tick(deltaTime);
 
             EvaluateOutcome();
         }
 
-        /// <summary>Kich hoat dot quai den gio (theo StartTime).</summary>
-        private void FireDueWaves()
+        private void OnSpawnerWaveStarted(int index, EnemyWave wave)
         {
-            if (definition.Waves == null) return;
-
-            for (int i = 0; i < definition.Waves.Count; i++)
-            {
-                if (m_FiredWaves.Contains(i)) continue;
-
-                StageDefinition.Wave wave = definition.Waves[i];
-                if (wave == null || m_Elapsed < wave.StartTime) continue;
-
-                m_FiredWaves.Add(i);
-                SpawnWave(wave);
-                WaveStarted?.Invoke(i, wave);
-
-                if (logEvents) Debug.Log($"[StageDirector] Dot {i + 1}/{TotalWaves} '{wave.Label}' - {wave.TotalCount} quai tai {m_Elapsed:0.0}s");
-            }
-        }
-
-        private void SpawnWave(StageDefinition.Wave wave)
-        {
-            if (wave.Spawns == null) return;
-
-            for (int i = 0; i < wave.Spawns.Count; i++)
-            {
-                StageDefinition.EnemySpawn spawn = wave.Spawns[i];
-                if (spawn == null || spawn.Enemy == null) continue;
-
-                SpawnZone zone = PickZone(spawn.ZoneId);
-                int count = Mathf.Max(1, spawn.Count);
-                for (int c = 0; c < count; c++)
-                {
-                    Vector2 position = zone != null ? zone.RandomPoint() : (Vector2)transform.position;
-                    if (spawner == null) break;
-                    spawner.Spawn(spawn.Enemy, position, spawn.SpeedMultiplier);
-                }
-            }
-        }
-
-        private SpawnZone PickZone(string zoneId)
-        {
-            if (spawnZones == null || spawnZones.Count == 0) return null;
-
-            SpawnZone fallback = null;
-            int matchCount = 0;
-            for (int i = 0; i < spawnZones.Count; i++)
-            {
-                SpawnZone zone = spawnZones[i];
-                if (zone == null) continue;
-                if (fallback == null) fallback = zone;
-                if (zone.Matches(zoneId)) matchCount++;
-            }
-
-            if (matchCount == 0) return fallback;
-
-            int pick = UnityEngine.Random.Range(0, matchCount);
-            for (int i = 0; i < spawnZones.Count; i++)
-            {
-                SpawnZone zone = spawnZones[i];
-                if (zone == null || !zone.Matches(zoneId)) continue;
-                if (pick-- == 0) return zone;
-            }
-            return fallback;
+            WaveStarted?.Invoke(index, wave);
         }
 
         private void BuildObjectives()
@@ -414,7 +363,11 @@ namespace IronWasteland.Stages
             StageRewardResult reward = StageReward.Roll(definition);
             UnhookPlayer();
             UnhookSpawner();
-            if (spawner != null) spawner.DespawnAll();
+            if (spawner != null)
+            {
+                spawner.StopWaves();
+                spawner.DespawnAll();
+            }
 
             if (logEvents) Debug.Log($"[StageDirector] THANG ai {definition.StageCode} sau {m_Elapsed:0.0}s - {reward}");
 
@@ -428,7 +381,11 @@ namespace IronWasteland.Stages
 
             UnhookPlayer();
             UnhookSpawner();
-            if (spawner != null) spawner.DespawnAll();
+            if (spawner != null)
+            {
+                spawner.StopWaves();
+                spawner.DespawnAll();
+            }
 
             if (logEvents) Debug.Log($"[StageDirector] THUA ai {definition.StageCode}: {reason}");
 
@@ -515,7 +472,9 @@ namespace IronWasteland.Stages
 
         private void UnhookSpawner()
         {
-            if (spawner != null) spawner.EnemyDied -= OnSpawnerEnemyDied;
+            if (spawner == null) return;
+            spawner.EnemyDied -= OnSpawnerEnemyDied;
+            spawner.WaveStarted -= OnSpawnerWaveStarted;
         }
     }
 }

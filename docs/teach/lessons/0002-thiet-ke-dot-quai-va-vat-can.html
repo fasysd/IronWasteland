@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài 02 — Thiết kế đợt quái nằm ngay trong scene</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+  <p class="eyebrow">Bài 02 · Cập nhật lớn · 26/11/2026</p>
+  <h1>Thiết kế đợt quái nằm ngay trong scene</h1>
+  <p class="lead">Mục tiêu: sau bài này bạn mở đúng chỗ để thêm/sửa một đợt quái, hiểu vì sao dữ liệu wave vừa chuyển từ asset sang component, và biết cách kiểm tra dữ liệu 9 màn mà không cần chơi thử.</p>
+  <p class="meta">Dự án: <span class="file">IronWasteland</span> · Unity 6000.5.6f1 · nhánh <span class="file">SuaLoi_Coop</span> · cập nhật 26/11/2026</p>
+
+  <h2>1. Chuyện gì vừa đổi</h2>
+
+  <p>Trước đây, muốn biết màn 1-1 có mấy đợt quái, bạn mở asset <span class="file">Assets/Data/Stages/Stage_1_1.asset</span>. Bây giờ bạn mở <strong>scene</strong> tương ứng và chọn object <span class="file">EnemySpawner</span>.</p>
+
+  <table>
+    <thead><tr><th></th><th>Trước 26/11/2026</th><th>Sau khi sửa</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Dữ liệu wave</strong></td>
+        <td>Nằm trong <span class="file">StageDefinition</span> (asset)</td>
+        <td>Nằm trên component <span class="file">EnemySpawner</span> trong scene</td>
+      </tr>
+      <tr>
+        <td><strong>Vùng spawn</strong></td>
+        <td><span class="file">StageDirector</span> giữ list <span class="file">spawnZones</span></td>
+        <td>Cũng chuyển sang <span class="file">EnemySpawner</span></td>
+      </tr>
+      <tr>
+        <td><strong>Ai bắn wave</strong></td>
+        <td><span class="file">StageDirector.FireDueWaves()</span></td>
+        <td><span class="file">EnemySpawner.TickWaves()</span></td>
+      </tr>
+      <tr>
+        <td><strong>StageDirector còn làm gì</strong></td>
+        <td>Đếm giờ, bắn quái, xét thắng/thua, phát event</td>
+        <td>Đếm giờ, đẩy đồng hồ cho spawner, xét thắng/thua, phát event</td>
+      </tr>
+      <tr>
+        <td><strong>StageDefinition còn gì</strong></td>
+        <td>Đợt quái + mục tiêu + thưởng</td>
+        <td>Mục tiêu + thưởng + mã màn (không còn đợt quái)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="callout__label">Vì sao đổi</span>
+    <p>Thiết kế đợt quái và thiết kế vùng rơi quái là <em>một</em> việc. Trước đây chúng nằm ở hai nơi (asset và scene), sửa cân bằng phải mở cả hai rồi đối chiếu. Gộp về <span class="file">EnemySpawner</span> nghĩa là: mở scene, chọn một object, thấy đủ “đợt nào, lúc nào, quái gì, rơi ở đâu”.</p>
+  </div>
+
+  <h2>2. Ba file mới, ba vai khác nhau</h2>
+
+  <table>
+    <thead><tr><th>File</th><th>Vai</th><th>Bạn sẽ đụng khi…</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><a class="file" href="../../../Assets/Scripts/Stages/EnemyWave.cs">EnemyWave.cs</a></td>
+        <td>Dữ liệu một đợt: <span class="file">Label</span>, <span class="file">StartTime</span>, danh sách <span class="file">Spawns</span> (prefab quái, số lượng, vùng).</td>
+        <td>Thêm field mới cho đợt quái (ví dụ “đợt này phải có boss”).</td>
+      </tr>
+      <tr>
+        <td><a class="file" href="../../../Assets/Scripts/Stages/WaveTimeline.cs">WaveTimeline.cs</a></td>
+        <td>Lịch thuần C#: giữ StartTime đã sắp xếp, trả về đợt nào tới giờ.</td>
+        <td>Sửa quy tắc thời gian (không đụng Unity, test được bằng dotnet).</td>
+      </tr>
+      <tr>
+        <td><a class="file" href="../../../Assets/Scripts/Stages/EnemySpawner.cs">EnemySpawner.cs</a></td>
+        <td>Giữ dữ liệu wave + zone, sinh quái, phát event <span class="file">WaveStarted</span>.</td>
+        <td>Mọi thứ còn lại: pool, nhân đôi máu co-op, vị trí rơi quái.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Đọc nhanh <span class="file">EnemySpawner</span> theo đúng thứ tự runtime:</p>
+  <ol class="steps">
+    <li><a class="file" href="../../../Assets/Scripts/Stages/EnemySpawner.cs#L131">BeginWaves()</a> — StageDirector gọi khi màn bắt đầu. Nó lấy StartTime của từng đợt đưa vào <span class="file">WaveTimeline</span>.</li>
+    <li><a class="file" href="../../../Assets/Scripts/Stages/EnemySpawner.cs#L161">TickWaves(deltaTime)</a> — mỗi frame StageDirector đẩy đồng hồ. Client mạng vẫn chạy lịch để HUD/âm thanh biết đợt vừa bắt đầu, nhưng việc sinh quái thì chỉ host làm (client nhận quái qua mạng).</li>
+    <li><a class="file" href="../../../Assets/Scripts/Stages/EnemySpawner.cs#L183">SpawnWave(index)</a> — chọn vùng spawn, gọi <span class="file">Spawn()</span> cho từng con, rồi phát <span class="file">WaveStarted</span>.</li>
+  </ol>
+
+  <h2>3. Vì sao wave bắn theo StartTime, không theo thứ tự khai báo</h2>
+
+  <p><a class="file" href="../../../Assets/Scripts/Stages/WaveTimeline.cs#L66">WaveTimeline.Advance()</a> cộng thời gian, <a class="file" href="../../../Assets/Scripts/Stages/WaveTimeline.cs#L72">TryTakeDue()</a> chỉ lấy đợt có StartTime ≤ thời gian đã trôi. Danh sách được sắp xếp <em>ổn định</em> theo StartTime ngay trong constructor.</p>
+
+  <p>Hệ quả thực tế:</p>
+  <ul>
+    <li>Bạn khai báo W3 (120s) trước W1 (0s) trong Inspector — game vẫn bắn W1 trước. Không cần sắp lại list.</li>
+    <li>Hai đợt cùng StartTime: đợt khai báo trước bắn trước (nhờ sắp xếp ổn định).</li>
+    <li>Không bao giờ bắn sót hay bắn hai lần một đợt; <span class="file">Reset()</span> để chạy lại màn.</li>
+  </ul>
+
+  <div class="callout">
+    <span class="callout__label">Đã có test</span>
+    <p>Luật trên được khoá bằng test headless: <span class="file">Tools/WaveTimelineTests</span> chạy <span class="file">dotnet run --project Tools/WaveTimelineTests</span> — hiện <strong>20 PASS / 0 FAIL</strong> (11 test lịch wave + 9 test layout vật cản). Đây là lý do tách <span class="file">WaveTimeline</span> thành lớp thuần C#: test không cần mở Unity.</p>
+  </div>
+
+  <h2>4. Vật cản: không đặt tay, sinh theo seed</h2>
+
+  <p>Mỗi màn có thêm component <a class="file" href="../../../Assets/Scripts/Stages/StageObstacleField.cs#L21">StageObstacleField</a> (gắn trên object <span class="file">EnemySpawner</span>). Khi bấm Play, nó gọi <a class="file" href="../../../Assets/Scripts/Stages/ObstacleLayout.cs#L56">ObstacleLayout.Build()</a> để sinh 5–7 tảng đá.</p>
+
+  <table>
+    <thead><tr><th>Luật</th><th>Con số</th><th>Để làm gì</th></tr></thead>
+    <tbody>
+      <tr><td>Cách tâm màn</td><td>4 – 10 m</td><td>Chừa chỗ cho tank xuất phát, không chặn lối ra</td></tr>
+      <tr><td>Cách nhau</td><td>≥ 2.2 m</td><td>Không tạo một bức tường bít lối</td></tr>
+      <tr><td>Bán kính đá</td><td>0.6 – 1.3 m</td><td>Đủ to để né, đủ nhỏ để lách</td></tr>
+      <tr><td>Vùng spawn quái</td><td>cách ≥ bán kính zone + 0.6 m</td><td>Quái không sinh ra trong đá</td></tr>
+    </tbody>
+  </table>
+
+  <p>Mỗi tảng đá được: gán layer <strong>Terrain</strong> (tank bị chặn), gắn <span class="file">CircleCollider2D</span>, và đăng ký với <span class="file">PathfindingGrid2D.AddObstacle()</span> để quái tìm đường né. Hình ảnh lấy từ <span class="file">SpriteFactory.Rock</span> — sprite blob sinh runtime, nhuộm màu xám trên component, nên chưa cần art thật.</p>
+
+  <p><strong>Muốn đổi:</strong> chọn object <span class="file">EnemySpawner</span> → component <span class="file">StageObstacleField</span> → sửa <span class="file">Obstacle Count</span>. Đổi <span class="file">Stage Code</span> sẽ đổi seed ⇒ bố cục khác. Đừng sửa số trong <span class="file">ObstacleLayout</span> mà không cập nhật test.</p>
+
+  <h2>5. Màn 1-4: vì sao trước không thắng được</h2>
+
+  <p>Màn 1-4 có mục tiêu phá 3 lõi <span class="file">SaoDen</span> (<span class="file">targetId = core</span>). Vấn đề cũ:</p>
+
+  <ul>
+    <li><span class="file">SaoDen</span> có <span class="file">includeSelf = 1</span> và <span class="file">Attack = 100</span>: mỗi 0.5 giây nó tự hồi 100 máu ⇒ <strong>200 HP/giây</strong>.</li>
+    <li>Tank Wall Titan level 12 đánh khoảng 19.3 sát thương, qua giảm trừ Def 18 còn ~11.5 ⇒ không thể bào hết 450 máu.</li>
+    <li>Đợt 2 (60 giây) gọi 6 con boss <span class="file">BongMaTuDia</span>, mỗi con 2000 máu — không phải mục tiêu, chỉ làm màn không thể thở.</li>
+  </ul>
+
+  <p>Đã sửa trong scene 1-4:</p>
+
+  <table>
+    <thead><tr><th>Thông số</th><th>Cũ</th><th>Mới</th><th>Kết quả</th></tr></thead>
+    <tbody>
+      <tr><td><span class="file">includeSelf</span></td><td>1</td><td>0</td><td>Lõi không tự hồi máu</td></tr>
+      <tr><td><span class="file">stats.MaxHealth</span></td><td>450</td><td>280</td><td>~22 đòn để phá một lõi</td></tr>
+      <tr><td><span class="file">stats.Defense</span></td><td>18</td><td>10</td><td>Giảm trừ 32.3% ⇒ ~13.1 sát thương/đòn</td></tr>
+      <tr><td><span class="file">stats.Attack</span></td><td>100</td><td>40</td><td>Nếu quái khác đứng trong vùng, chúng hồi 80 HP/giây thay vì 200</td></tr>
+      <tr><td>Số boss đợt 2</td><td>6</td><td>2</td><td>Vẫn có boss, nhưng không bít màn</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout--warn">
+    <span class="callout__label">Cẩn thận khi cân bằng</span>
+    <p>Lõi vẫn hồi máu cho <em>quái khác</em> trong vùng bán kính 4 m. Ba lõi cách nhau ~9 m nên không hồi nhau, nhưng nếu bạn kéo quái vào sát lõi thì chúng sẽ được hồi. Muốn tắt hẳn khả năng hồi, đặt <span class="file">stats.Attack = 0</span> hoặc <span class="file">healMultiplier</span> về mức thấp nhất (0.1).</p>
+  </div>
+
+  <h2>6. Kiểm tra dữ liệu 9 màn mà không cần chơi</h2>
+
+  <p>Hai công cụ trong menu <strong>Tools &gt; Iron Wasteland</strong>:</p>
+
+  <table>
+    <thead><tr><th>Mục</th><th>Làm gì</th><th>Khi nào dùng</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>QA Audit Stages</strong></td>
+        <td>Đọc asset + scene: mục tiêu, số wave, prefab quái thiếu, mã màn kế tiếp.</td>
+        <td>Kiểm tra nhanh sau khi sửa asset.</td>
+      </tr>
+      <tr>
+        <td><strong>Validate Stage Data</strong></td>
+        <td>Mở từng scene, kiểm tra wave/zone/vật cản; riêng 1-4 kiểm 3 lõi <span class="file">core</span>, <span class="file">includeSelf = false</span>, máu ≤ 350.</td>
+        <td>Trước khi commit hoặc sau khi sửa scene bằng tay/script.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Chạy được cả khi Unity đóng, bằng batchmode (đường dẫn Unity trên máy bạn có thể khác):</p>
+
+<pre><code>Unity.exe -batchmode -nographics -quit ^
+  -projectPath D:\GameUnity\IronWasteland ^
+  -executeMethod StageDataValidator.ValidateAll ^
+  -logFile Logs\stage-validate.log</code></pre>
+
+  <p>Kết quả lần chạy gần nhất: <strong>9/9 màn PASS</strong> — 1-1: 3 đợt/45 quái; 1-2: 3/48; 1-3: 4/35; 1-4: 2/14 + 3 lõi; 2-1: 2/50; 2-2: 3/26; 2-3: 3/30; 2-4: 2/24; 2-5: 2/14.</p>
+
+  <h2>7. Kiểm tra hiểu bài</h2>
+
+  <div class="quiz" data-quiz>
+
+    <fieldset class="q" data-answer="1" data-explain="Thiết kế đợt quái giờ nằm trên component EnemySpawner trong scene của màn. StageDefinition chỉ còn mục tiêu, thưởng và mã màn.">
+      <legend><span class="num">1</span> Muốn đổi đợt 2 của màn 2-3 ra muộn hơn, bạn mở gì?</legend>
+      <label class="opt"><input type="radio" name="q1" value="0"><span>Assets/Data/Stages/Stage_2_3.asset</span></label>
+      <label class="opt"><input type="radio" name="q1" value="1"><span>Scene Stage_2_3, object EnemySpawner</span></label>
+      <label class="opt"><input type="radio" name="q1" value="2"><span>StageDirector.cs</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="2" data-explain="WaveTimeline sắp xếp ổn định theo StartTime ngay khi tạo, nên thứ tự khai báo trong Inspector không quyết định thứ tự bắn.">
+      <legend><span class="num">2</span> Bạn khai báo W3 (120s) trước W1 (0s). Game bắn thế nào?</legend>
+      <label class="opt"><input type="radio" name="q2" value="0"><span>W3 trước, vì nằm trên</span></label>
+      <label class="opt"><input type="radio" name="q2" value="1"><span>Không bắn, vì list sai thứ tự</span></label>
+      <label class="opt"><input type="radio" name="q2" value="2"><span>W1 trước, theo StartTime</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="0" data-explain="ObstacleLayout sinh theo seed từ Stage Code; đổi Stage Code là đổi seed nên bố cục đá khác, còn số lượng chỉnh bằng Obstacle Count.">
+      <legend><span class="num">3</span> Muốn bố cục đá khác đi mà vẫn giữ số lượng, sửa gì?</legend>
+      <label class="opt"><input type="radio" name="q3" value="0"><span>Stage Code trên StageObstacleField</span></label>
+      <label class="opt"><input type="radio" name="q3" value="1"><span>Obstacle Count</span></label>
+      <label class="opt"><input type="radio" name="q3" value="2"><span>MaxRingDistance trong code</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="1" data-explain="includeSelf = 1 khiến lõi SaoDen tự hồi máu bằng chính Attack của nó (100 mỗi tick 0.5 giây). Đặt về 0 là điều kiện tiên quyết để màn có thể thắng.">
+      <legend><span class="num">4</span> Vì sao 3 lõi màn 1-4 trước đây không thể phá?</legend>
+      <label class="opt"><input type="radio" name="q4" value="0"><span>Vì chúng nằm ngoài bản đồ</span></label>
+      <label class="opt"><input type="radio" name="q4" value="1"><span>Vì chúng tự hồi 200 HP/giây</span></label>
+      <label class="opt"><input type="radio" name="q4" value="2"><span>Vì objective đếm sai</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="2" data-explain="StageDataValidator mở từng scene và kiểm dữ liệu thật (wave, zone, vật cản, lõi 1-4); nó chạy được trong batchmode nên dùng được cả khi Unity đóng.">
+      <legend><span class="num">5</span> Công cụ nào kiểm tra dữ liệu scene mà không cần bấm Play?</legend>
+      <label class="opt"><input type="radio" name="q5" value="0"><span>Console window</span></label>
+      <label class="opt"><input type="radio" name="q5" value="1"><span>QA Audit Stages</span></label>
+      <label class="opt"><input type="radio" name="q5" value="2"><span>Validate Stage Data</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <div class="quiz-bar">
+      <button class="btn" type="button" data-reset>Làm lại</button>
+      <span class="quiz-score" aria-live="polite"></span>
+    </div>
+  </div>
+
+  <h2>8. Bài tập 10 phút</h2>
+
+  <p>Làm trong Unity, không cần sửa code. Nhớ <strong>đừng lưu scene</strong> nếu chỉ muốn thử.</p>
+
+  <ol class="steps">
+    <li>Mở <span class="file">Assets/Scenes/Stage_1_1.unity</span>, chọn object <span class="file">EnemySpawner</span>.</li>
+    <li>Trong component <span class="file">EnemySpawner</span>, mở rộng <span class="file">Waves</span> → <span class="file">W2</span> → <span class="file">Spawns</span>. Đổi <span class="file">Count</span> từ 15 thành 8. Bấm Play: đợt 2 giờ ít quái hơn, tổng quái giảm.</li>
+    <li>Dừng Play. Trên component <span class="file">StageObstacleField</span>, đổi <span class="file">Obstacle Count</span> thành 0 rồi Play lại: map trống, quái đi thẳng.</li>
+    <li>Đổi <span class="file">Stage Code</span> từ <span class="file">1-1</span> thành <span class="file">1-9</span>, Play lại: số đá giữ nguyên nhưng bố cục khác (seed khác).</li>
+    <li>Trả mọi thứ về như cũ (hoặc thoát không lưu), rồi chạy <strong>Tools &gt; Iron Wasteland &gt; Validate Stage Data</strong> để chắc dữ liệu vẫn PASS.</li>
+  </ol>
+
+  <div class="callout callout--warn">
+    <span class="callout__label">Cẩn thận</span>
+    <p>Nếu bạn sửa <span class="file">waves</span> trong lúc Play Mode, Unity sẽ nuốt thay đổi khi Stop. Và đừng commit <span class="file">Logs/stage-validate.log</span> — đó là file tạm của công cụ kiểm tra.</p>
+  </div>
+
+  <h2>9. Đọc tiếp</h2>
+
+  <p><strong>Trong repo:</strong></p>
+  <ul>
+    <li><a href="../reference/ban-do-code.html">Bản đồ code</a> — xếp <span class="file">Stages/</span> vào đúng lớp Data/Logic/View.</li>
+    <li><a href="../../../docs/HUONG_DAN_StageFramework.md">Hướng dẫn Stage Framework</a> — bản Markdown dài, đã cập nhật theo cách chia mới.</li>
+    <li><a href="../../../docs/PLAN_Stages_Spawner_SFX.md">PLAN_Stages_Spawner_SFX.md</a> — thiết kế gốc 9 màn (đọc mục 4.2 để so với dữ liệu thật).</li>
+  </ul>
+
+  <p><strong>Nguồn chính thống (tiếng Anh):</strong></p>
+  <ul>
+    <li><a href="https://docs.unity3d.com/6000.0/Documentation/Manual/class-ScriptableObject.html">Unity Manual — ScriptableObject</a>: hiểu vì sao <span class="file">StageDefinition</span> vẫn là asset, còn wave thì không.</li>
+    <li><a href="https://docs.unity3d.com/6000.0/Documentation/Manual/class-MonoBehaviour.html">Unity Manual — MonoBehaviour</a>: vòng đời <span class="file">Awake</span>/<span class="file">Update</span>, lý do <span class="file">StageObstacleField</span> dựng đá trong <span class="file">Awake</span>.</li>
+  </ul>
+
+  <div class="ask">
+    <p><strong>Bạn có giáo viên mà.</strong> Chỗ nào chưa rõ — “tại sao phải seed?”, “nếu muốn đá có thể phá thì sao?”, “làm sao biết màn 1-4 giờ thắng được?” — hỏi lại trong khung chat. Bài sau sẽ đào sâu đúng chỗ bạn thấy hụt.</p>
+  </div>
+
+  <div class="nav">
+    <p class="eyebrow">Bài tiếp theo (dự kiến)</p>
+    <ul>
+      <li>Bài 03 — <em>Đọc một file C# của dự án từ trên xuống</em>: MonoBehaviour, vòng đời Update/FixedUpdate, và vì sao <span class="file">TankBrain</span> chia Update/FixedUpdate.</li>
+      <li>Bài 04 — <em>Test không cần Unity</em>: tự viết một lớp thuần C# và chạy bằng <span class="file">dotnet run</span> như <span class="file">WaveTimeline</span>.</li>
+      <li>Bài 05 — <em>Object pooling</em>: vì sao đạn không được <span class="file">Instantiate</span>.</li>
+    </ul>
+    <p class="small">Soạn theo <a href="../MISSION.md">MISSION.md</a> · ghi chú học tập ở <a href="../NOTES.md">NOTES.md</a></p>
+  </div>
+
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

@@ -1,63 +1,23 @@
 using System;
 using System.Collections.Generic;
-using IronWasteland.Enemies;
 using UnityEngine;
 
 namespace IronWasteland.Stages
 {
     /// <summary>
-    /// Du lieu cua 1 man choi (1 ai): dieu kien thang, thoi luong du kien va
-    /// danh sach cac dot quai (Wave) cung loai quai xuat hien theo moc thoi gian.
+    /// Du lieu cua 1 man choi (1 ai): dieu kien thang, thoi luong du kien va phan thuong.
+    ///
+    /// Thiet ke cac dot quai (wave) KHONG con nam o day: tu 2026-11, wave thuoc ve
+    /// component <see cref="EnemySpawner"/> trong scene cua man do. Ly do: wave la
+    /// thu designer chinh lien tuc khi can bang man, de chung voi vung spawn (SpawnZone)
+    /// tren cung 1 component thi sua nhanh hon la mo asset roi doi chieu scene.
     ///
     /// Designer tao asset tu menu chuot phai: Create > Iron Wasteland > Stage > Stage Definition.
-    /// Logic chay nam o <see cref="StageManager"/> - asset nay chi la du lieu.
+    /// Logic chay nam o <see cref="StageDirector"/> - asset nay chi la du lieu.
     /// </summary>
     [CreateAssetMenu(fileName = "Stage_New", menuName = "Iron Wasteland/Stage/Stage Definition")]
     public class StageDefinition : ScriptableObject
     {
-        [Serializable]
-        public class EnemySpawn
-        {
-            [Tooltip("Prefab quai (phai co component ke thua EnemyBrain).")]
-            public EnemyBrain Enemy;
-
-            [Tooltip("So luong quai cua loai nay trong dot.")]
-            [Min(1)] public int Count = 1;
-
-            [Tooltip("He so nhan vao MoveSpeed cua prefab (1 = giu nguyen, 1.5 = quai cuong hoa toc do).")]
-            [Min(0.01f)] public float SpeedMultiplier = 1f;
-
-            [Tooltip("Id cua SpawnZone muon sinh quai (rong = vung bat ky).")]
-            public string ZoneId = string.Empty;
-        }
-
-        [Serializable]
-        public class Wave
-        {
-            [Tooltip("Ten dot de hien thi / debug.")]
-            public string Label = "Wave";
-
-            [Tooltip("Thoi diem xuat hien tinh tu luc bat dau man (giay).")]
-            [Min(0f)] public float StartTime;
-
-            [Tooltip("Cac loai quai xuat hien trong dot nay.")]
-            public List<EnemySpawn> Spawns = new List<EnemySpawn>();
-
-            public int TotalCount
-            {
-                get
-                {
-                    int total = 0;
-                    if (Spawns == null) return total;
-                    for (int i = 0; i < Spawns.Count; i++)
-                    {
-                        if (Spawns[i] != null) total += Spawns[i].Count;
-                    }
-                    return total;
-                }
-            }
-        }
-
         /// <summary>
         /// Mo ta 1 dieu kien thang. Nhieu spec tren cung 1 man = phai thoa TAT CA.
         /// </summary>
@@ -94,9 +54,6 @@ namespace IronWasteland.Stages
         [Tooltip("Thoi luong du kien (giay) - dung de hien thi, khong phai dieu kien thua.")]
         [SerializeField, Min(1f)] private float timeLimitSeconds = 90f;
 
-        [Header("Cac dot quai")]
-        [SerializeField] private List<Wave> waves = new List<Wave>();
-
         [Header("Dieu kien thang (moi)")]
         [Tooltip("Danh sach dieu kien phai thoa HET de thang. Rong = dung killTarget cu.")]
         [SerializeField] private List<ObjectiveSpec> objectives = new List<ObjectiveSpec>();
@@ -118,7 +75,6 @@ namespace IronWasteland.Stages
         public string StageName => stageName;
         public int KillTarget => killTarget;
         public float TimeLimitSeconds => timeLimitSeconds;
-        public IReadOnlyList<Wave> Waves => waves;
 
         /// <summary>Cac dieu kien thang khai bao trong asset (co the rong).</summary>
         public IReadOnlyList<ObjectiveSpec> Objectives => objectives;
@@ -127,20 +83,5 @@ namespace IronWasteland.Stages
         public int RewardAccessoryCount => rewardAccessoryCount;
         public bool GuaranteeAccessories => guaranteeAccessories;
         public string NextStageCode => nextStageCode;
-
-        /// <summary>Tong so quai se spawn cua ca ai.</summary>
-        public int TotalEnemies
-        {
-            get
-            {
-                int total = 0;
-                if (waves == null) return total;
-                for (int i = 0; i < waves.Count; i++)
-                {
-                    if (waves[i] != null) total += waves[i].TotalCount;
-                }
-                return total;
-            }
-        }
     }
 }

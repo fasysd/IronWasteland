@@ -252,7 +252,7 @@ namespace IronWasteland.Net
             if (stage != null)
             {
                 GUILayout.Label("Man: " + stage.StageCode + " - " + stage.StageName +
-                                " (" + stage.KillTarget + " mang, " + stage.TotalEnemies + " quai)");
+                                " (" + stage.KillTarget + " mang)");
             }
 
             if (IsHost() && GUILayout.Button("Doi man")) flow.CycleStage();

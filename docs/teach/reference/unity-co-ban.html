@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unity cơ bản cho Iron Wasteland</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+  <p class="crumbs"><a href="../lessons/0001-ban-do-iron-wasteland.html">Bài 01 — Bản đồ dự án</a> · <a href="../reference/ban-do-code.html">Bản đồ code</a> · <a href="../reference/thuat-ngu.html">Từ điển</a></p>
+  <p class="eyebrow">Tài liệu · Unity cơ bản</p>
+  <h1>Unity Cơ Bản Cho Dự Án Iron Wasteland</h1>
+  <p class="meta">Bản đầy đủ, chuyển từ docs/UNITY_CO_BAN.md — giữ nguyên nội dung, chỉ trình bày lại cho dễ đọc và in.</p>
+  
+  <article class="doc">
+<blockquote><p>Dành cho người <strong>chưa từng dùng Unity</strong>. Chỉ gồm những thao tác bạn thực sự cần cho dự án này —</p><p>không lan man sang 3D, animation nâng cao hay shader.</p><p></p><p>Đọc xong tài liệu này + làm mục 8 (bài tập 15 phút) là bạn tự chạy thử, tự chỉnh số và tự tìm lỗi được.</p></blockquote>
+<hr>
+<h2 id="muc-luc">Mục lục</h2>
+<ol><li><a href="#1-truoc-khi-mo-unity">Trước khi mở Unity</a></li><li><a href="#2-nam-khai-niem-hieu-trong-2-phut">Năm khái niệm, hiểu trong 2 phút</a></li><li><a href="#3-sau-cua-so-va-cach-dieu-huong">Sáu cửa sổ và cách điều hướng</a></li><li><a href="#4-muoi-thao-tac-thuc-te">Mười thao tác thực tế</a></li><li><a href="#5-vong-lap-lam-viec-va-debug">Vòng lặp làm việc và debug</a></li><li><a href="#6-sau-dieu-dac-thu-cua-du-an-nay">Sáu điều đặc thù của dự án này</a></li><li><a href="#7-phim-tat-dang-nho">Phím tắt đáng nhớ</a></li><li><a href="#8-bai-tap-15-phut">Bài tập 15 phút</a></li><li><a href="#9-nam-loi-tan-binh-hay-mac">Năm lỗi tân binh hay mắc</a></li><li><a href="#10-khi-bi-ket-thi-doc-theo-thu-tu-nay">Khi bị kẹt thì đọc theo thứ tự này</a></li></ol>
+<hr>
+<h2 id="1-truoc-khi-mo-unity">1. Trước khi mở Unity</h2>
+<h3 id="1-1-dung-phien-ban">1.1 Đúng phiên bản</h3>
+<p>Dự án chạy trên <strong>Unity 6000.5.6f1</strong> (xem <code>ProjectSettings/ProjectVersion.txt</code>).</p>
+<ul><li>Mở <strong>Unity Hub</strong> → <strong>Add ▸ Add project from disk</strong> → chọn <code>D:\GameUnity\IronWasteland</code>.</li><li>Nếu Hub hỏi nâng cấp phiên bản → <strong>chọn 6000.5.6f1</strong>, đừng để nó tự nâng. Cả nhóm phải cùng phiên bản, nếu lệch sẽ sinh conflict hàng loạt trong <code>ProjectSettings/</code>.</li></ul>
+<h3 id="1-2-lan-mo-dau-tien-rat-cham">1.2 Lần mở đầu tiên rất chậm</h3>
+<p>Unity sẽ import lại toàn bộ <code>Library/</code> — có thể <strong>5–15 phút</strong>. Cứ để yên, đừng ngắt. Những lần sau mở chỉ mất vài giây.</p>
+<h3 id="1-3-lay-code-moi-nhat">1.3 Lấy code mới nhất</h3>
+<p>Trước khi mở Unity, luôn chạy trong terminal tại thư mục dự án:</p>
+<pre><code class="language-powershell">git pull</code></pre>
+<p>Nếu đang mở Unity mà pull về nhiều file, Unity sẽ tự import lại. Đang chạy Play thì nên dừng trước.</p>
+<h3 id="1-4-mo-scene-de-lam-viec">1.4 Mở scene để làm việc</h3>
+<p>Trong cửa sổ <strong>Project</strong> (góc dưới trái): <code>Assets ▸ Scenes ▸ SampleScene</code> → <strong>double-click</strong>.</p>
+<p>Đây là scene test chính của dự án. <code>MainScene</code> là bản cũ, ít dùng.</p>
+<hr>
+<h2 id="2-nam-khai-niem-hieu-trong-2-phut">2. Năm khái niệm, hiểu trong 2 phút</h2>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Khái niệm</th><th style="text-align:left">Nghĩ như</th><th style="text-align:left">Ví dụ trong dự án</th></tr></thead><tbody><tr><td style="text-align:left"><strong>GameObject</strong></td><td style="text-align:left">Một "cái hộp" vô nghĩa, chỉ có vị trí</td><td style="text-align:left"><code>WallTitan</code>, <code>Main Camera</code>, <code>GameController</code></td></tr><tr><td style="text-align:left"><strong>Component</strong></td><td style="text-align:left">Bộ phận gắn vào hộp để nó <em>làm gì đó</em></td><td style="text-align:left"><code>Rigidbody2D</code> (vật lý), <code>TankBrain</code> (logic), <code>SpriteRenderer</code> (hình)</td></tr><tr><td style="text-align:left"><strong>Transform</strong></td><td style="text-align:left">Component bắt buộc, giữ vị trí / xoay / scale</td><td style="text-align:left">Mọi object đều có, không xoá được</td></tr><tr><td style="text-align:left"><strong>Prefab</strong></td><td style="text-align:left">Khuôn mẫu: sửa khuôn → mọi bản sao đổi theo</td><td style="text-align:left"><code>WallTitan.prefab</code>, <code>QuaiVatTinhThach.prefab</code></td></tr><tr><td style="text-align:left"><strong>ScriptableObject</strong></td><td style="text-align:left">File dữ liệu thuần, <strong>không</strong> nằm trong scene</td><td style="text-align:left"><code>WallTitan.asset</code> (chỉ số), <code>EquipmentDatabase.asset</code></td></tr></tbody></table></div>
+<p><strong>Công thức cốt lõi:</strong></p>
+<pre><code>Một vật thể trong game  =  GameObject  +  nhiều Component</code></pre>
+<p>Không có chuyện "viết class kế thừa GameObject" — đây là điều người mới hay nhầm nhất khi chuyển từ lập trình thường sang Unity.</p>
+<p><strong>Ba loại file bạn sẽ gặp trong Project:</strong></p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Đuôi</th><th style="text-align:left">Là gì</th><th style="text-align:left">Sửa ở đâu</th></tr></thead><tbody><tr><td style="text-align:left"><code>.cs</code></td><td style="text-align:left">Code C#</td><td style="text-align:left">Mở bằng IDE (double-click)</td></tr><tr><td style="text-align:left"><code>.prefab</code></td><td style="text-align:left">Khuôn mẫu vật thể</td><td style="text-align:left">Prefab Mode (double-click)</td></tr><tr><td style="text-align:left"><code>.asset</code></td><td style="text-align:left">Dữ liệu (ScriptableObject)</td><td style="text-align:left">Chọn → sửa trong Inspector</td></tr></tbody></table></div>
+<hr>
+<h2 id="3-sau-cua-so-va-cach-dieu-huong">3. Sáu cửa sổ và cách điều hướng</h2>
+<h3 id="3-1-bo-cuc-mac-dinh">3.1 Bố cục mặc định</h3>
+<pre><code>┌──────────────┬──────────────────────────┬──────────────┐
+│  HIERARCHY   │         SCENE            │  INSPECTOR   │
+│  (mọi object │  (nhìn, căn vị trí)      │  (thuộc tính │
+│   trong scene)│                         │   của object)│
+├──────────────┴──────────────────────────┴──────────────┤
+│  PROJECT (file trên đĩa)  │  CONSOLE (log, lỗi)        │
+└───────────────────────────────────────────────────────┘</code></pre>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Cửa sổ</th><th style="text-align:left">Dùng để</th><th style="text-align:left">Mở bằng</th></tr></thead><tbody><tr><td style="text-align:left"><strong>Hierarchy</strong></td><td style="text-align:left">Chọn object trong scene đang mở</td><td style="text-align:left"><code>Ctrl+Shift+H</code></td></tr><tr><td style="text-align:left"><strong>Inspector</strong></td><td style="text-align:left">Xem/sửa component, gán file</td><td style="text-align:left"><code>Ctrl+3</code></td></tr><tr><td style="text-align:left"><strong>Project</strong></td><td style="text-align:left">Duyệt file, tạo asset, tìm prefab</td><td style="text-align:left"><code>Ctrl+5</code></td></tr><tr><td style="text-align:left"><strong>Console</strong></td><td style="text-align:left">Đọc lỗi và log</td><td style="text-align:left"><code>Ctrl+Shift+C</code></td></tr><tr><td style="text-align:left"><strong>Game</strong></td><td style="text-align:left">Xem kết quả khi bấm Play</td><td style="text-align:left"><code>Ctrl+2</code></td></tr><tr><td style="text-align:left"><strong>Profiler</strong></td><td style="text-align:left">Xem hiệu năng (FPS, GC)</td><td style="text-align:left"><code>Ctrl+7</code></td></tr></tbody></table></div>
+<p>Nếu bố cục bị rối: menu <strong>Window ▸ Layouts ▸ Default</strong> để về mặc định.</p>
+<h3 id="3-2-dieu-huong-scene-view">3.2 Điều hướng Scene view</h3>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Thao tác</th><th style="text-align:left">Kết quả</th></tr></thead><tbody><tr><td style="text-align:left">Chuột giữa + kéo</td><td style="text-align:left">Di chuyển khung nhìn (pan)</td></tr><tr><td style="text-align:left">Lăn chuột</td><td style="text-align:left">Phóng to / thu nhỏ</td></tr><tr><td style="text-align:left">Chuột phải + kéo</td><td style="text-align:left">Xoay góc nhìn</td></tr><tr><td style="text-align:left"><code>F</code></td><td style="text-align:left">Zoom thẳng vào object đang chọn</td></tr><tr><td style="text-align:left"><code>W</code> / <code>E</code> / <code>R</code></td><td style="text-align:left">Công cụ Di chuyển / Xoay / Scale</td></tr><tr><td style="text-align:left">Bấm nút <strong>2D</strong> trên thanh công cụ</td><td style="text-align:left">Khoá góc nhìn phẳng — <strong>nên bật</strong> vì game này 2D</td></tr></tbody></table></div>
+<blockquote><p>Nếu bấm <code>F</code> mà màn hình trắng trơn: bạn đang ở góc nhìn 3D nghiêng. Bật <strong>2D</strong> rồi bấm <code>F</code> lại.</p></blockquote>
+<hr>
+<h2 id="4-muoi-thao-tac-thuc-te">4. Mười thao tác thực tế</h2>
+<h3 id="chay-thu-game">① Chạy thử game</h3>
+<ol><li>Mở <code>Assets/Scenes/SampleScene.unity</code>.</li><li>Chọn object <code>GameController</code> trong Hierarchy.</li><li>Xem ô <strong>Tank Definition</strong>: nếu trống, kéo file <code>Assets/Prefabs/Tanks/WallTitan/WallTitan.asset</code> từ Project vào.</li><li>Bấm <strong>▶ Play</strong> (hoặc <code>Ctrl+P</code>).</li></ol>
+<p><strong>Điều khiển có sẵn:</strong></p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Phím</th><th style="text-align:left">Việc</th></tr></thead><tbody><tr><td style="text-align:left"><code>WASD</code> hoặc phím mũi tên</td><td style="text-align:left">Di chuyển</td></tr><tr><td style="text-align:left">Chuột</td><td style="text-align:left">Ngắm (nòng súng luôn quay về con trỏ)</td></tr><tr><td style="text-align:left"><code>J</code> <code>K</code> <code>L</code> <code>I</code></td><td style="text-align:left">4 kỹ năng (nhả phím mới kích hoạt)</td></tr></tbody></table></div>
+<blockquote><p>⚠️ Mọi thay đổi bạn làm <strong>khi đang Play sẽ mất</strong> khi bấm Stop. Đây là điều gây ức chế nhất cho người mới. Nhìn viền cửa sổ Editor đổi màu = đang Play.</p></blockquote>
+<h3 id="chinh-mot-con-so">② Chỉnh một con số</h3>
+<p>Chọn object → Inspector → sửa ô số → <code>Enter</code>. Chưa cần lưu nếu chỉ thử.</p>
+<h3 id="tao-object-moi">③ Tạo object mới</h3>
+<p>Hierarchy chuột phải vùng trống → <strong>Create Empty</strong> → <code>F2</code> đổi tên → bấm <strong>Add Component</strong> để gắn thứ cần.</p>
+<h3 id="gan-file-vao-o-trong-thao-tac-ban-se-lam-nhieu-nhat">④ Gán file vào ô trống (thao tác bạn sẽ làm nhiều nhất)</h3>
+<p>Mọi ô trống trong Inspector đều nhận <strong>kéo–thả</strong> từ cửa sổ Project:</p>
+<ul><li>Ô <code>Tank Definition</code> ← kéo <code>WallTitan.asset</code></li><li>Ô <code>None (Transform)</code> ← kéo một object từ Hierarchy</li><li>Ô <code>Bolt Design</code> ← kéo một prefab skill</li></ul>
+<p>Đây chính là cách dự án "nối dây": <code>TankDefinition</code> trỏ tới prefab tank → tank trỏ tới prefab skill → skill trỏ tới sprite.</p>
+<h3 id="sua-prefab">⑤ Sửa prefab</h3>
+<ul><li><strong>Double-click</strong> prefab trong Project → vào <strong>Prefab Mode</strong> (màn hình tối, chỉ thấy prefab đó).</li><li>Sửa xong bấm mũi tên <code>←</code> góc trái trên để thoát. Thay đổi <strong>tự động</strong> áp cho mọi bản sao.</li><li>Nếu bạn lỡ sửa một <strong>bản sao trong scene</strong>: Inspector hiện khối <strong>Overrides</strong><ul><li><strong>Apply All</strong> = đẩy thay đổi vào prefab</li><li><strong>Revert</strong> = bỏ thay đổi cục bộ, quay về như prefab</li></ul></li></ul>
+<h3 id="tao-scriptableobject-file-du-lieu">⑥ Tạo ScriptableObject (file dữ liệu)</h3>
+<p>Chuột phải trong Project → <strong>Create</strong> → tìm menu của dự án:</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Menu</th><th style="text-align:left">Tạo ra</th></tr></thead><tbody><tr><td style="text-align:left"><code>Iron Wasteland ▸ Tank ▸ Tank Definition</code></td><td style="text-align:left">Chỉ số một xe tăng</td></tr><tr><td style="text-align:left"><code>Iron Wasteland ▸ Stage ▸ Stage Definition</code></td><td style="text-align:left">Một màn chơi (wave quái, điều kiện thắng)</td></tr></tbody></table></div>
+<p>Kết quả là file <code>.asset</code>. Đây là <strong>dữ liệu</strong>, không phải code — sửa trực tiếp trong Inspector.</p>
+<h3 id="viet-code">⑦ Viết code</h3>
+<ol><li>Project chuột phải → <strong>Create ▸ C# Script</strong> → đặt tên.</li><li><strong>Tên file phải trùng tên class</strong> (<code>TankBrain.cs</code> chứa <code>class TankBrain</code>).</li><li>Double-click mở IDE → sửa → <code>Ctrl+S</code> → quay lại Unity, nó tự biên dịch.</li></ol>
+<p>Lỗi biên dịch hiện <strong>đỏ</strong> ở Console và góc dưới phải cửa sổ. <strong>Còn lỗi đỏ thì không bấm Play được.</strong></p>
+<h3 id="nhan-ban-tat-xoa">⑧ Nhân bản / tắt / xoá</h3>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Việc</th><th style="text-align:left">Cách</th></tr></thead><tbody><tr><td style="text-align:left">Nhân bản</td><td style="text-align:left"><code>Ctrl+D</code></td></tr><tr><td style="text-align:left">Tắt tạm (không xoá)</td><td style="text-align:left">Bỏ tick ở ô cạnh tên component, hoặc untick object trong Hierarchy</td></tr><tr><td style="text-align:left">Xoá</td><td style="text-align:left"><code>Delete</code></td></tr></tbody></table></div>
+<p>Tắt object là cách tốt để thử "nếu không có thứ này thì sao" mà không mất công dựng lại.</p>
+<h3 id="doc-console">⑨ Đọc Console</h3>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Màu</th><th style="text-align:left">Nghĩa</th></tr></thead><tbody><tr><td style="text-align:left">Trắng</td><td style="text-align:left"><code>Debug.Log</code> — log bình thường</td></tr><tr><td style="text-align:left">Vàng</td><td style="text-align:left">Cảnh báo — game vẫn chạy</td></tr><tr><td style="text-align:left">Đỏ</td><td style="text-align:left">Lỗi — thường là <code>NullReferenceException</code></td></tr></tbody></table></div>
+<p>Bấm vào dòng lỗi → Unity chỉ ra object gây lỗi. Hai nút hữu ích ở góc trái: <strong>Clear</strong> (xoá log cũ) và <strong>Collapse</strong> (gộp dòng trùng).</p>
+<p>Muốn lọc log của một hệ thống: gõ vào ô search, ví dụ <code>[TankBrain]</code> hoặc <code>[Stage]</code>.</p>
+<h3 id="luu">⑩ Lưu</h3>
+<p><code>Ctrl+S</code> lưu <strong>scene đang mở</strong>. <strong>Unity không tự lưu</strong> — thoát mà chưa lưu thì nó sẽ hỏi.</p>
+<p>Ba thứ lưu riêng nhau, đừng nhầm:</p>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Đang sửa gì</th><th style="text-align:left"><code>Ctrl+S</code> lưu cái đó</th></tr></thead><tbody><tr><td style="text-align:left">Scene</td><td style="text-align:left">Scene</td></tr><tr><td style="text-align:left">Prefab (trong Prefab Mode)</td><td style="text-align:left">Prefab</td></tr><tr><td style="text-align:left">ScriptableObject <code>.asset</code></td><td style="text-align:left">File <code>.asset</code></td></tr></tbody></table></div>
+<p>Sửa asset hay prefab thì Unity lưu ngay khi bạn đổi giá trị (có biểu tượng đĩa nhỏ ở góc dưới phải khi có thay đổi chưa ghi). Riêng <strong>scene</strong> thì phải <code>Ctrl+S</code> mới lưu.</p>
+<hr>
+<h2 id="5-vong-lap-lam-viec-va-debug">5. Vòng lặp làm việc và debug</h2>
+<h3 id="5-1-vong-lap-chuan">5.1 Vòng lặp chuẩn</h3>
+<pre><code>Sửa trong Inspector / Prefab Mode
+            ↓
+        Ctrl+P chạy thử
+            ↓
+     sai → Ctrl+P dừng → sửa tiếp</code></pre>
+<h3 id="5-2-debug-khong-can-viet-code-hieu-qua-nhat-voi-nguoi-moi">5.2 Debug không cần viết code (hiệu quả nhất với người mới)</h3>
+<p><strong>Bấm Play rồi chọn object</strong> — Inspector hiện số liệu <strong>sống</strong>, cập nhật realtime:</p>
+<ul><li>Chọn tank → thấy <code>Current Health</code>, <code>Current Energy</code>, <code>Stats</code> (giá trị sau khi cộng buff)</li><li>Chọn quái → thấy máu còn lại</li><li>Chọn <code>StageManager</code> → thấy số quái đã hạ</li></ul>
+<p>Đây là cách nhanh nhất để biết "skill có ăn không", "buff có cộng không" mà không phải in log.</p>
+<h3 id="5-3-debug-bang-log">5.3 Debug bằng log</h3>
+<p>Thêm tạm một dòng vào chỗ cần kiểm tra:</p>
+<pre><code class="language-csharp">Debug.Log($"Máu còn: {currentHealth}");</code></pre>
+<p>Rồi xem Console. <strong>Nhớ xoá trước khi commit</strong> — log rác làm chậm game và rối Console.</p>
+<h3 id="5-4-debug-bang-breakpoint">5.4 Debug bằng breakpoint</h3>
+<p>Trong IDE (Rider/Visual Studio): bấm vào lề trái dòng code để đặt chấm đỏ → quay lại Unity bấm Play → khi chạy tới dòng đó, game <strong>dừng lại</strong>, bạn xem được mọi biến. Bấm continue (▷) để chạy tiếp.</p>
+<p>Đây là công cụ mạnh nhất khi lỗi khó, nhưng hơi chậm — dùng khi log không đủ.</p>
+<h3 id="5-5-ba-nut-play">5.5 Ba nút Play</h3>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Nút</th><th style="text-align:left">Việc</th></tr></thead><tbody><tr><td style="text-align:left"><strong>▶</strong></td><td style="text-align:left">Chạy / dừng</td></tr><tr><td style="text-align:left"><strong>⏸</strong></td><td style="text-align:left">Tạm dừng (game đứng yên, vẫn xem được Inspector)</td></tr><tr><td style="text-align:left"><strong>⏭</strong></td><td style="text-align:left">Tiến từng frame khi đang tạm dừng</td></tr></tbody></table></div>
+<p>Nút ⏭ rất hữu ích để bắt lỗi "đạn xuyên qua" — tiến từng frame sẽ thấy đúng frame va chạm.</p>
+<h3 id="5-6-nhin-thay-vung-anh-huong">5.6 Nhìn thấy vùng ảnh hưởng</h3>
+<p>Chọn object rồi xem trong Scene view: các script có vẽ Gizmo sẽ hiện vòng tròn bán kính, đường bắn… Giúp căn bán kính AoE cho khớp thiết kế mà không phải đoán.</p>
+<hr>
+<h2 id="6-sau-dieu-dac-thu-cua-du-an-nay">6. Sáu điều đặc thù của dự án này</h2>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">#</th><th style="text-align:left">Điều</th><th style="text-align:left">Vì sao quan trọng</th></tr></thead><tbody><tr><td style="text-align:left">1</td><td style="text-align:left"><strong>Input dùng <code>Keyboard.current</code>, không phải <code>Input.GetKey</code></strong></td><td style="text-align:left">Project bật Input System mới; code kiểu cũ sẽ báo lỗi đỏ</td></tr><tr><td style="text-align:left">2</td><td style="text-align:left"><strong>Mọi collider cần component <code>ColliderOwnerRef</code></strong></td><td style="text-align:left">Đây là "chứng minh thư" để biết đạn trúng ai. Thiếu → đạn xuyên qua quái mà không gây sát thương</td></tr><tr><td style="text-align:left">3</td><td style="text-align:left"><strong>Không bao giờ xoá file <code>.meta</code></strong></td><td style="text-align:left">Mỗi file có <code>.meta</code> chứa GUID. Xoá là mọi tham chiếu đứt, Unity báo "Missing"</td></tr><tr><td style="text-align:left">4</td><td style="text-align:left"><strong>Tên file phải trùng tên class</strong></td><td style="text-align:left"><code>TankBrain.cs</code> chứa <code>class TankBrain</code></td></tr><tr><td style="text-align:left">5</td><td style="text-align:left"><strong>Logic ở <code>TankBrain_&lt;Xe&gt;.cs</code>, hình ở <code>&lt;Xe&gt;_View.prefab</code></strong></td><td style="text-align:left">Muốn đổi chỉ số thì sửa asset/prefab, đừng sửa code</td></tr><tr><td style="text-align:left">6</td><td style="text-align:left"><strong>Dự án chưa có UI thật</strong></td><td style="text-align:left">HUD hiện là panel vẽ tạm bằng <code>OnGUI</code> trong các script test</td></tr></tbody></table></div>
+<h3 id="6-1-cau-truc-mot-xe-tang-de-biet-sua-o-dau">6.1 Cấu trúc một xe tăng (để biết sửa ở đâu)</h3>
+<pre><code>Assets/Prefabs/Tanks/WallTitan/
+├── WallTitan.asset        ← CHỈ SỐ (Attack, HP, Speed, level 1 → 90)
+├── WallTitan.prefab       ← BRAIN (logic, cooldown, năng lượng từng chiêu)
+└── WallTitan_View.prefab  ← HÌNH (sprite, animator, vị trí nòng súng)</code></pre>
+<p><strong>Muốn cân bằng game</strong> → sửa <code>.asset</code> (chỉ số gốc) hoặc <code>.prefab</code> (hệ số từng chiêu). <strong>Muốn đổi hình</strong> → sửa <code>_View.prefab</code>. <strong>Muốn đổi hành vi</strong> → sửa code.</p>
+<h3 id="6-2-hai-cong-cu-test-co-san">6.2 Hai công cụ test có sẵn</h3>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Script</th><th style="text-align:left">Phím</th><th style="text-align:left">Dùng để</th></tr></thead><tbody><tr><td style="text-align:left"><code>SkillArena</code></td><td style="text-align:left"><code>1</code> <code>2</code> <code>3</code> <code>4</code> đổi nhánh chiêu · <code>R</code> hồi bia · <code>C</code> xoá hồi chiêu · <code>H</code> hồi đầy HP/EN</td><td style="text-align:left">Test skill trên bia, xem cooldown realtime</td></tr><tr><td style="text-align:left"><code>AllyTestSpawner</code></td><td style="text-align:left"><code>F2</code> spawn đồng minh tại con trỏ · <code>F3</code> xoá</td><td style="text-align:left">Test skill buff đồng minh</td></tr></tbody></table></div>
+<p>Gắn component vào một GameObject bất kỳ trong scene là dùng được.</p>
+<hr>
+<h2 id="7-phim-tat-dang-nho">7. Phím tắt đáng nhớ</h2>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">Phím</th><th style="text-align:left">Việc</th></tr></thead><tbody><tr><td style="text-align:left"><code>Ctrl+P</code></td><td style="text-align:left">Play / Stop</td></tr><tr><td style="text-align:left"><code>Ctrl+Shift+P</code></td><td style="text-align:left">Pause</td></tr><tr><td style="text-align:left"><code>Ctrl+S</code></td><td style="text-align:left">Lưu scene</td></tr><tr><td style="text-align:left"><code>Ctrl+D</code></td><td style="text-align:left">Nhân bản object</td></tr><tr><td style="text-align:left"><code>Ctrl+Z</code></td><td style="text-align:left">Undo (undo được cả thao tác trong Inspector)</td></tr><tr><td style="text-align:left"><code>F</code></td><td style="text-align:left">Zoom tới object đang chọn</td></tr><tr><td style="text-align:left"><code>Ctrl+Shift+C</code></td><td style="text-align:left">Mở Console</td></tr><tr><td style="text-align:left"><code>Ctrl+Shift+F</code></td><td style="text-align:left">Đặt object trùng vị trí camera</td></tr><tr><td style="text-align:left"><code>F2</code></td><td style="text-align:left">Đổi tên</td></tr><tr><td style="text-align:left"><code>Delete</code></td><td style="text-align:left">Xoá</td></tr></tbody></table></div>
+<hr>
+<h2 id="8-bai-tap-15-phut">8. Bài tập 15 phút</h2>
+<p>Làm đúng thứ tự, mỗi bước đều an toàn (không phá gì, cuối bài có hướng dẫn trả lại).</p>
+<p><strong>Bước 1 — Chạy thử (3 phút)</strong> Mở <code>SampleScene</code> → Play → di chuyển bằng <code>WASD</code>, ngắm bằng chuột, bấm <code>J K L I</code>. Dừng.</p>
+<p><strong>Bước 2 — Đổi level (2 phút)</strong> Chọn <code>GameController</code> → kéo thanh <code>Player Level</code> từ <code>1</code> lên <code>60</code> → Play. → Máu và sát thương tăng vọt. Đây là cách level ảnh hưởng chỉ số (nội suy từ level 1 đến 90). Dừng, kéo lại <code>1</code>.</p>
+<p><strong>Bước 3 — Đổi chỉ số gốc (3 phút)</strong> Mở <code>Assets/Prefabs/Tanks/WallTitan/WallTitan.asset</code> → trong Inspector, mục <code>Base Stats Level 1</code> → đổi <code>Max Health</code> từ <code>1200</code> thành <code>5000</code> → Play. → Tank trâu hơn hẳn. Dừng, đổi lại <code>1200</code>.</p>
+<p><strong>Bước 4 — Xem nơi cân bằng chiêu (3 phút)</strong> Double-click <code>WallTitan.prefab</code> → chọn object có component <code>Tank Brain Wall Titan</code> → xem các ô <code>Cooldown</code>, <code>Energy Cost</code>, <code>Damage Multiplier</code>. → Đây chính là nơi bạn sẽ chỉnh khi làm skill. Thoát bằng mũi tên <code>←</code>.</p>
+<p><strong>Bước 5 — Đọc log hệ thống (2 phút)</strong> Console → gõ <code>[TankBrain]</code> vào ô lọc → Play → bắn chiêu → thấy log từng lần dùng skill kèm level.</p>
+<p><strong>Bước 6 — Tìm hiểu một prefab quái (2 phút)</strong> Project → <code>Assets/Prefabs/Enemies/Normal/</code> → chọn một prefab → xem cấu trúc: object gốc có <code>EnemyBrain</code> + <code>Rigidbody2D</code>, object con <code>Model</code> có <code>SpriteRenderer</code> + <code>Animator</code>.</p>
+<blockquote><p>Nếu có gì đó trông khác mô tả (ô trống, object không có, Console báo đỏ) — đó là bình thường, dự án đang phát triển. Ghi lại và hỏi, đừng tự sửa lung tung.</p></blockquote>
+<hr>
+<h2 id="9-nam-loi-tan-binh-hay-mac">9. Năm lỗi tân binh hay mắc</h2>
+<div class="table-wrap"><table><thead><tr><th style="text-align:left">#</th><th style="text-align:left">Lỗi</th><th style="text-align:left">Hậu quả</th><th style="text-align:left">Cách tránh</th></tr></thead><tbody><tr><td style="text-align:left">1</td><td style="text-align:left">Sửa lúc đang Play</td><td style="text-align:left">Mất sạch khi Stop</td><td style="text-align:left">Nhìn viền Editor đổi màu = đang Play</td></tr><tr><td style="text-align:left">2</td><td style="text-align:left">Kéo object từ Hierarchy vào ô Inspector rồi xoá object đó</td><td style="text-align:left">Ô thành <code>Missing</code></td><td style="text-align:left">Ưu tiên kéo <strong>prefab/asset</strong> từ Project, không kéo object trong scene</td></tr><tr><td style="text-align:left">3</td><td style="text-align:left">Xoá <code>.meta</code> hoặc đổi tên file mà không đổi tên class</td><td style="text-align:left">Unity báo "script missing"</td><td style="text-align:left">Đổi tên trong Unity (F2), để Unity tự đổi <code>.meta</code></td></tr><tr><td style="text-align:left">4</td><td style="text-align:left">Quên gán ô <code>None (...)</code></td><td style="text-align:left"><code>NullReferenceException</code> khi Play</td><td style="text-align:left">Trước khi Play, lướt Inspector tìm ô <code>None</code></td></tr><tr><td style="text-align:left">5</td><td style="text-align:left">Sửa bản sao trong scene nhưng tưởng đang sửa prefab</td><td style="text-align:left">Sửa không áp dụng cho chỗ khác</td><td style="text-align:left">Kiểm tra khối <strong>Overrides</strong> trong Inspector</td></tr></tbody></table></div>
+<p><strong>Thêm một lỗi hay gặp với dự án này:</strong> bấm Play mà không có tank nào xuất hiện → <code>GameController</code> chưa gán <code>Tank Definition</code>, hoặc asset chưa có <code>tankPrefab</code>. Console sẽ báo <code>Khong tao duoc Tank</code>.</p>
+<hr>
+<h2 id="10-khi-bi-ket-thi-doc-theo-thu-tu-nay">10. Khi bị kẹt thì đọc theo thứ tự này</h2>
+<ol><li><strong>Console</strong> — lỗi đỏ nói gì? Object nào?</li><li><strong>Inspector</strong> — có ô nào đang <code>None</code> hoặc <code>Missing</code> không?</li><li><strong><code>PROJECT_CONTEXT.md</code></strong> — hệ thống này được thiết kế thế nào, công thức ra sao?</li><li><strong>File mẫu gần nhất</strong> — copy từ thứ đang chạy được, đừng viết từ đầu.</li><li><strong><code>git log --oneline -- &lt;đường-dẫn-file&gt;</code></strong> — ai sửa file này gần nhất, sửa gì.</li></ol>
+<p>Và nguyên tắc số một: <strong>thay đổi một thứ, chạy thử ngay.</strong> Sửa 5 chỗ rồi mới Play thì không biết chỗ nào gây lỗi.</p>
+<hr>
+<p><em>Tài liệu dành cho người mới, viết ngày 14/11/2026, dựa trên codebase <code>main</code> @ <code>ea49431</code> (Unity 6000.5.6f1).</em></p>
+  </article>
+  <div class="nav">
+    <p class="small">Bản gốc Markdown: <span class="file">docs/UNITY_CO_BAN.md</span> — trang này chỉ trình bày lại, nội dung giữ nguyên.</p>
+    <p class="small">Xem thêm: <a href="../lessons/0001-ban-do-iron-wasteland.html">Bài 01 — Iron Wasteland trong 10 phút</a> · <a href="thuat-ngu.html">Từ điển thuật ngữ</a> · <a href="ban-do-code.html">Bản đồ code</a></p>
+  </div>
+</main>
+</body>
+</html>

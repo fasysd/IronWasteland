@@ -579,6 +579,14 @@ public class SfxEmitter : MonoBehaviour
 
 ### 4.2 Nội dung từng màn (dữ liệu để điền vào `StageDefinition`)
 
+> **Cập nhật 26/11/2026 — thiết kế 1-4 đã lệch plan.** Màn 1-4 đang ship dùng
+> `DestroyTargets(3 lõi "core")` thay vì `KillBoss` 4 phase dưới đây; mục tiêu giữ nguyên
+> và màn được cân bằng lại (`includeSelf 0`, lõi 280 HP/DEF 10/ATK 40, đợt boss 6 → 2)
+> thay vì viết boss brain. Lý do: P6 (boss) vẫn chưa có người làm, và yêu cầu là "màn 1.4
+> thắng được", không phải đổi thiết kế màn. Khi làm P6 thì đây là chỗ phải cập nhật lại.
+> Từ cùng ngày, dữ liệu wave nằm trên `EnemySpawner` trong scene, không còn trong
+> `StageDefinition` — các bảng dưới đây là *nội dung* thiết kế, không phải nơi lưu.
+
 **1-1 Sương Mù Tím** — `EliminateEnemies(40)`, `timeLimit = 90`
 
 | Wave | Trigger | Nội dung | Zone |

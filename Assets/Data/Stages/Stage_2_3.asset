@@ -16,40 +16,6 @@ MonoBehaviour:
   stageName: "\u0110\u1ED9t K\xEDch Ti\u1EC1n \u0110\u1ED3n"
   killTarget: 0
   timeLimitSeconds: 900
-  waves:
-  - Label: W1
-    StartTime: 0
-    Spawns:
-    - Enemy: {fileID: 3360813821543528772, guid: 97e171ca3a01b3d40a49e4a3727b3bae, type: 3}
-      Count: 6
-      SpeedMultiplier: 1
-      ZoneId: 
-    - Enemy: {fileID: 805287383237241067, guid: dd67fd1da0bc9f34eb67cc48121a0809, type: 3}
-      Count: 4
-      SpeedMultiplier: 1
-      ZoneId: 
-  - Label: W2
-    StartTime: 40
-    Spawns:
-    - Enemy: {fileID: 1178018034635242686, guid: b6ed689b45e5ea9459d4f520cf9423c8, type: 3}
-      Count: 4
-      SpeedMultiplier: 1
-      ZoneId: 
-    - Enemy: {fileID: 3360813821543528772, guid: 97e171ca3a01b3d40a49e4a3727b3bae, type: 3}
-      Count: 6
-      SpeedMultiplier: 1
-      ZoneId: 
-  - Label: W3
-    StartTime: 80
-    Spawns:
-    - Enemy: {fileID: 854779836358371909, guid: 68e51485bfa081c4c8cd7ac60d5639cb, type: 3}
-      Count: 4
-      SpeedMultiplier: 1
-      ZoneId: 
-    - Enemy: {fileID: 2837244264739505214, guid: fa914b93d15fd4d41920d832034cf707, type: 3}
-      Count: 6
-      SpeedMultiplier: 1
-      ZoneId: 
   objectives:
   - Type: 2
     Count: 3

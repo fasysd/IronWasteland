@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tham chiếu — Từ điển thuật ngữ Iron Wasteland</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+  <p class="eyebrow">Tham chiếu · Từ điển</p>
+  <h1>Từ điển thuật ngữ</h1>
+  <p class="lead">Mỗi dòng: thuật ngữ — nghĩa đủ dùng — nó là cái gì trong repo này. In ra một tờ là đủ dùng cả tháng.</p>
+  <p class="meta">Cập nhật 25/11/2026 · nhánh <span class="file">SuaLoi_Coop</span></p>
+
+  <h2>A. Khái niệm Unity</h2>
+
+  <table>
+    <thead><tr><th style="width:28%">Thuật ngữ</th><th>Nghĩa đủ dùng</th><th style="width:34%">Trong repo này</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Project</strong></td><td>Thư mục chứa toàn bộ game; mở bằng Unity Hub.</td><td><span class="file">D:\GameUnity\IronWasteland</span></td></tr>
+      <tr><td><strong>Scene</strong></td><td>Một màn/một màn hình, chứa các GameObject.</td><td><span class="file">Assets/Scenes/*.unity</span> (18 file)</td></tr>
+      <tr><td><strong>GameObject</strong></td><td>Vật thể trong scene; một cái vỏ rỗng gắn các Component.</td><td>Xe tăng, quái, đạn, camera, canvas HUD</td></tr>
+      <tr><td><strong>Component</strong></td><td>Một mảnh chức năng gắn lên GameObject.</td><td><span class="file">TankBrain</span>, <span class="file">Rigidbody2D</span>, <span class="file">TankView</span></td></tr>
+      <tr><td><strong>MonoBehaviour</strong></td><td>Class C# gắn được lên GameObject; có vòng đời Awake/Start/Update.</td><td>Hầu hết file trong <span class="file">Assets/Scripts</span></td></tr>
+      <tr><td><strong>ScriptableObject</strong></td><td>Class C# sống thành file dữ liệu trong project, không thuộc scene.</td><td><span class="file">TankDefinition</span>, <span class="file">StageDefinition</span>, <span class="file">EquipmentDatabase</span></td></tr>
+      <tr><td><strong>Prefab</strong></td><td>Mẫu vật thể đóng gói, nhân bản ra nhiều instance.</td><td><span class="file">Assets/Prefabs/</span> — tank, quái, đạn, VFX, UI</td></tr>
+      <tr><td><strong>Transform</strong></td><td>Vị trí – xoay – tỉ lệ của vật thể; mọi GameObject đều có.</td><td>Cây cha–con: Brain là cha, View là con</td></tr>
+      <tr><td><strong>Rigidbody2D</strong></td><td>Thân vật lý 2D; di chuyển bằng vận tốc thay vì gán vị trí.</td><td>Xe tăng, quái, đạn xuyên</td></tr>
+      <tr><td><strong>Collider2D</strong></td><td>Vùng va chạm; bật <em>Is Trigger</em> thì chỉ báo chạm, không đẩy nhau.</td><td>Đạn, vùng nổ, thân xe, tường đất</td></tr>
+      <tr><td><strong>Animator</strong></td><td>Máy trạng thái animation (đứng, chạy, bắn, chết).</td><td>Nằm trong prefab View, không nằm trong Brain</td></tr>
+      <tr><td><strong>SpriteRenderer</strong></td><td>Vẽ một ảnh 2D lên màn hình.</td><td>Thân xe, nòng pháo, hiệu ứng</td></tr>
+      <tr><td><strong>Canvas / uGUI</strong></td><td>Hệ UI cổ điển của Unity (nút, chữ, thanh máu).</td><td><span class="file">Assets/Scripts/UI/</span>, TextMeshPro cho chữ</td></tr>
+      <tr><td><strong>Inspector</strong></td><td>Bảng bên phải hiện các trường của Component đang chọn.</td><td>Nơi designer sửa <span class="file">.asset</span> và prefab</td></tr>
+      <tr><td><strong>Play Mode</strong></td><td>Chế độ chạy thử trong Editor; bấm Stop là mọi thay đổi runtime mất.</td><td>Dùng để test màn, xem Console</td></tr>
+      <tr><td><strong>Console</strong></td><td>Cửa sổ log — lỗi đỏ, cảnh báo vàng, log trắng.</td><td><span class="file">StageManager</span> ghi trạng thái màn ra đây</td></tr>
+      <tr><td><strong>Update / FixedUpdate</strong></td><td>Update mỗi khung hình (input, đếm giờ); FixedUpdate theo nhịp vật lý (di chuyển).</td><td><span class="file">TankBrain</span> dùng cả hai, đúng mục đích</td></tr>
+      <tr><td><strong>Object Pool</strong></td><td>Tái dùng vật thể thay vì tạo/huỷ liên tục, tránh GC gây giật.</td><td>Đạn, VFX, chữ sát thương, laser</td></tr>
+      <tr><td><strong>Assembly (asmdef)</strong></td><td>Đơn vị biên dịch C#; thiếu asmdef thì mọi script vào chung Assembly-CSharp.</td><td>Repo <em>không</em> có asmdef → chung một assembly</td></tr>
+      <tr><td><strong>Netcode for GameObjects (NGO)</strong></td><td>Thư viện mạng chính thức của Unity.</td><td>Gói 2.14.0, dùng ở <span class="file">Assets/Scripts/Net/</span></td></tr>
+      <tr><td><strong>Relay / Lobby</strong></td><td>Dịch vụ Unity lo kết nối xuyên NAT và danh sách phòng.</td><td><span class="file">NetRelayService</span> — phòng 4 người, join bằng mã</td></tr>
+      <tr><td><strong>URP 2D</strong></td><td>Pipeline render 2D (ánh sáng, đổ bóng 2D, hậu kỳ).</td><td><span class="file">Assets/Settings/UniversalRP.asset</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>B. Thuật ngữ riêng của dự án</h2>
+
+  <table>
+    <thead><tr><th style="width:28%">Thuật ngữ</th><th>Nghĩa trong dự án</th><th style="width:32%">Ở đâu</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Brain</strong></td><td>Lớp logic: giữ chỉ số runtime, ra quyết định, phát event.</td><td><span class="file">TankBrain</span>, <span class="file">EnemyBrain</span></td></tr>
+      <tr><td><strong>View / Model</strong></td><td>Lớp hiển thị và vật lý, con của Brain.</td><td><span class="file">TankView</span>, <span class="file">EnemyModel</span></td></tr>
+      <tr><td><strong>Definition</strong></td><td>File dữ liệu tĩnh mô tả một thực thể.</td><td><span class="file">TankDefinition</span>, <span class="file">StageDefinition</span></td></tr>
+      <tr><td><strong>Owner / ColliderOwnerRef</strong></td><td>Nhãn “vật này của ai”, để quy sát thương đúng chủ.</td><td><span class="file">Assets/Scripts/Core/</span></td></tr>
+      <tr><td><strong>ải / màn</strong></td><td>Một màn chơi (stage). Mã dạng <span class="file">1_1</span> = chương 1, màn 1.</td><td><span class="file">Stage_1_1</span> … <span class="file">Stage_2_5</span></td></tr>
+      <tr><td><strong>đợt / wave</strong></td><td>Một nhóm quái sinh ra ở một thời điểm trong màn.</td><td><span class="file">StageDefinition</span> + <span class="file">EnemySpawner</span></td></tr>
+      <tr><td><strong>StageDirector</strong></td><td>Nhạc trưởng của một màn: sinh quái, xét mục tiêu, quyết thắng/thua.</td><td><span class="file">Assets/Scripts/Stages/StageDirector.cs</span></td></tr>
+      <tr><td><strong>StageObjective</strong></td><td>Một điều kiện của màn (diệt đủ quái, sống sót, phá mục tiêu…).</td><td><span class="file">Assets/Scripts/Stages/StageObjective.cs</span></td></tr>
+      <tr><td><strong>Tinh anh / Elite</strong></td><td>Quái mạnh có lõi năng lượng; phá hết lõi thì vào <em>cửa sổ suy yếu</em>.</td><td><span class="file">EliteEnemyBrain</span></td></tr>
+      <tr><td><strong>Break Window</strong></td><td>Khoảng thời gian quái tinh anh bị giảm giáp sau khi vỡ lõi — lúc dồn sát thương.</td><td><span class="file">EliteEnemyBrain</span></td></tr>
+      <tr><td><strong>Loadout</strong></td><td>Bộ chọn trước khi vào trận: xe, phụ kiện, 2 kỹ năng tuỳ chọn.</td><td><span class="file">TankBrainContext</span>, <span class="file">NetLoadout</span>, UI Garage</td></tr>
+      <tr><td><strong>Phụ kiện / Accessory</strong></td><td>Linh kiện cộng % chỉ số (hỏa lực, phòng thủ, cơ động).</td><td><span class="file">EquipmentBrain</span>, <span class="file">EquipmentDatabase</span></td></tr>
+      <tr><td><strong>Ngọc ma pháp / Gems</strong></td><td>Tiền tệ dùng để nâng cấp xe.</td><td><span class="file">GameData.Gems</span>, <span class="file">TankUpgradeUtility</span></td></tr>
+      <tr><td><strong>CC</strong></td><td>Crowd Control — làm choáng, làm chậm, giam, hất.</td><td><span class="file">CrowdControlType.cs</span></td></tr>
+      <tr><td><strong>DoT / HoT</strong></td><td>Sát thương / hồi máu theo thời gian.</td><td><span class="file">StatusEffect</span></td></tr>
+      <tr><td><strong>Shield</strong></td><td>Lớp khiên hấp thụ sát thương trước khi trừ máu.</td><td><span class="file">TankBrain</span> (ProcessShieldAbsorption)</td></tr>
+      <tr><td><strong>MatchFlow</strong></td><td>Máy trạng thái một phiên co-op: lobby → vào trận → thắng/thua → chơi lại.</td><td><span class="file">Assets/Scripts/Net/MatchFlow.cs</span></td></tr>
+      <tr><td><strong>SaveSystem</strong></td><td>Singleton lưu/đọc JSON, tự khởi tạo trước khi scene đầu chạy.</td><td><span class="file">Assets/Scripts/Save/SaveSystem.cs</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>C. Ba cặp dễ lẫn</h2>
+
+  <table>
+    <thead><tr><th style="width:32%">Cặp</th><th>Phân biệt</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Definition vs Brain</strong></td><td>Definition là <em>con số tĩnh</em> trong file asset (máu cấp 1 = 1200). Brain là <em>con số đang sống</em> (còn 640 máu). Sửa asset lúc đang Play không đổi được trận đang chạy.</td></tr>
+      <tr><td><strong>Brain vs View</strong></td><td>Brain không được gọi <span class="file">SpriteRenderer</span> hay <span class="file">Animator</span>. Nếu bạn thấy mình cần, tức là nên thêm một hàm/hự kiện vào View.</td></tr>
+      <tr><td><strong>StageManager vs StageDirector</strong></td><td><span class="file">StageManager</span> là bản cũ, chỉ biết “diệt đủ N quái”, không scene nào dùng nữa. <span class="file">StageDirector</span> là bản hiện hành: nhiều điều kiện thắng, quái sinh theo vùng.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="nav">
+    <p class="small">Xem thêm: <a href="ban-do-code.html">Bản đồ code</a> · <a href="unity-co-ban.html">Unity cơ bản (bản dài)</a> · <a href="ngu-canh-du-an.html">Ngữ cảnh dự án (bản gốc)</a> · <a href="../lessons/0001-ban-do-iron-wasteland.html">Bài 01 — Iron Wasteland trong 10 phút</a></p>
+  </div>
+
+</main>
+</body>
+</html>

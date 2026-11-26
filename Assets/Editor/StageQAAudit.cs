@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using UnityEditor;
-using UnityEngine;
 using IronWasteland.Stages;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// QA tu dong cho 9 man: kiem tra asset man + scene + chuoi nextStageCode.
+/// Tu 2026-11, dot quai nam tren component EnemySpawner trong scene (khong con trong
+/// StageDefinition), nen audit phai mo scene theo kieu additive de doc spawner.
 /// Chay: Tools > Iron Wasteland > QA Audit Stages.
 /// </summary>
 public static class StageQAAudit
@@ -41,34 +45,27 @@ public static class StageQAAudit
             string next = so.FindProperty("nextStageCode").stringValue;
             int gems = so.FindProperty("rewardGems").intValue;
 
-            SerializedProperty objectives = so.FindProperty("objectives");
-            SerializedProperty waves = so.FindProperty("waves");
+            int objCount = so.FindProperty("objectives").arraySize;
 
-            int objCount = objectives.arraySize;
-            int waveCount = waves.arraySize;
-            int spawnTotal = 0;
-            int badSpawns = 0;
-
-            for (int w = 0; w < waveCount; w++)
-            {
-                SerializedProperty spawns = waves.GetArrayElementAtIndex(w).FindPropertyRelative("Spawns");
-                for (int s = 0; s < spawns.arraySize; s++)
-                {
-                    SerializedProperty e = spawns.GetArrayElementAtIndex(s).FindPropertyRelative("Enemy");
-                    spawnTotal++;
-                    if (e.objectReferenceValue == null) badSpawns++;
-                }
-            }
+            WaveStats waves = ReadWavesFromScene(scenePath);
 
             bool objOk = objCount > 0;
-            bool waveOk = waveCount > 0 && badSpawns == 0;
+            bool waveOk = waves.WaveCount > 0 && waves.BadSpawns == 0;
             bool sceneOk = File.ReadAllText(scenePath).Contains(AssetDatabase.AssetPathToGUID(assetPath));
 
             string status = objOk && waveOk && sceneOk ? "PASS" : "FAIL";
-            if (status == "PASS") pass++; else problems.Add(code + ": obj=" + objOk + " wave=" + waveOk + " scene=" + sceneOk);
+            if (status == "PASS")
+            {
+                pass++;
+            }
+            else
+            {
+                problems.Add(code + ": obj=" + objOk + " wave=" + waveOk + " scene=" + sceneOk);
+            }
 
-            sb.AppendLine(string.Format("  {0} | {1,-10} | {2,-24} | obj={3} wave={4} spawn={5} ngoc={6} next={7} scene={8} => {9}",
-                code, stageCode, stageName, objCount, waveCount, spawnTotal, gems,
+            sb.AppendLine(string.Format(
+                "  {0} | {1,-10} | {2,-24} | obj={3} wave={4} spawn={5} ngoc={6} next={7} scene={8} => {9}",
+                code, stageCode, stageName, objCount, waves.WaveCount, waves.SpawnTotal, gems,
                 string.IsNullOrEmpty(next) ? "(het)" : next, sceneOk, status));
         }
 
@@ -76,6 +73,60 @@ public static class StageQAAudit
         for (int i = 0; i < problems.Count; i++) sb.AppendLine("  ! " + problems[i]);
 
         Debug.Log("[QA-AUDIT]\n" + sb.ToString());
+    }
+
+    private struct WaveStats
+    {
+        public int WaveCount;
+        public int SpawnTotal;
+        public int BadSpawns;
+    }
+
+    /// <summary>Mo scene additive, dem wave cua EnemySpawner trong scene roi dong lai.</summary>
+    private static WaveStats ReadWavesFromScene(string scenePath)
+    {
+        var stats = new WaveStats();
+        Scene scene = SceneManager.GetSceneByPath(scenePath);
+        bool openedHere = !scene.IsValid() || !scene.isLoaded;
+
+        if (openedHere)
+        {
+            scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
+        }
+
+        try
+        {
+            EnemySpawner[] spawners = Object.FindObjectsByType<EnemySpawner>(FindObjectsInactive.Include);
+            for (int s = 0; s < spawners.Length; s++)
+            {
+                EnemySpawner spawner = spawners[s];
+                if (spawner == null || spawner.gameObject.scene != scene) continue;
+
+                IReadOnlyList<EnemyWave> waves = spawner.Waves;
+                if (waves == null) continue;
+
+                for (int w = 0; w < waves.Count; w++)
+                {
+                    EnemyWave wave = waves[w];
+                    if (wave == null) continue;
+
+                    stats.WaveCount++;
+                    if (wave.Spawns == null) continue;
+
+                    for (int e = 0; e < wave.Spawns.Count; e++)
+                    {
+                        stats.SpawnTotal++;
+                        if (wave.Spawns[e] == null || wave.Spawns[e].Enemy == null) stats.BadSpawns++;
+                    }
+                }
+            }
+        }
+        finally
+        {
+            if (openedHere) EditorSceneManager.CloseScene(scene, true);
+        }
+
+        return stats;
     }
 }
 #endif

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài 01 — Iron Wasteland trong 10 phút</title>
+<link rel="stylesheet" href="../assets/course.css">
+</head>
+<body>
+<main class="page">
+
+  <p class="eyebrow">Bài 01 · Nhập môn</p>
+  <h1>Iron Wasteland trong 10 phút</h1>
+  <p class="lead">Mục tiêu duy nhất của bài này: sau 10 phút, khi ai đó nói “sửa cái này đi”, bạn mở đúng file — và biết mình còn chưa biết gì.</p>
+  <p class="meta">Dự án: <span class="file">IronWasteland</span> · Unity 6000.5.6f1 · URP 2D · nhánh <span class="file">SuaLoi_Coop</span> · cập nhật 25/11/2026</p>
+
+  <h2>1. Đây là game gì</h2>
+
+  <p>Game bắn xe tăng nhìn từ trên xuống (top-down 2D). Người chơi chọn một trong 6 xe tăng, mỗi xe có bộ kỹ năng riêng, lái qua 9 màn đã dựng, gặp quái thường – quái tinh anh – boss. Có hai chế độ: <strong>chơi đơn</strong> và <strong>co-op online tối đa 4 người</strong>.</p>
+
+  <table>
+    <thead><tr><th>Hạng mục</th><th>Con số thật trong repo</th></tr></thead>
+    <tbody>
+      <tr><td>Engine</td><td>Unity 6000.5.6f1, URP 2D, Input System mới</td></tr>
+      <tr><td>Mã C#</td><td>217 file trong <span class="file">Assets/Scripts</span></td></tr>
+      <tr><td>Scene</td><td>18 file, 16 scene nằm trong Build Settings</td></tr>
+      <tr><td>Xe tăng</td><td>6 (Wall Titan, Red Nova, Black Shadow, Leviathan, Water B, Green Fox)</td></tr>
+      <tr><td>Màn chơi</td><td>9: <span class="file">Stage_1_1</span> → <span class="file">Stage_2_5</span> (dữ liệu ở <span class="file">Assets/Data/Stages/</span>)</td></tr>
+      <tr><td>Mạng</td><td>Netcode for GameObjects 2.14 + Relay + Lobby của Unity Services</td></tr>
+      <tr><td>Lưu trữ</td><td>JSON: <span class="file">save/gamedata.json</span> cạnh thư mục game</td></tr>
+    </tbody>
+  </table>
+
+  <h2>2. Bốn từ Unity bạn phải thuộc</h2>
+
+  <p>Không cần hiểu hết Unity. Bốn khái niệm dưới đây là đủ để đọc 90% repo này.</p>
+
+  <table>
+    <thead><tr><th>Từ</th><th>Nghĩa ngắn</th><th>Trong dự án này là…</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Scene</strong></td>
+        <td>Một “màn hình chơi” — nơi chứa mọi vật thể.</td>
+        <td><span class="file">MainMenu</span>, <span class="file">StageSelect</span>, <span class="file">Stage_1_1</span>, <span class="file">Garage</span>…</td>
+      </tr>
+      <tr>
+        <td><strong>GameObject + Component</strong></td>
+        <td>Vật thể trong scene, được ghép từ các mảnh chức năng gắn lên nó.</td>
+        <td>Xe tăng = GameObject có <span class="file">TankBrain</span> + <span class="file">Rigidbody2D</span> + <span class="file">TankView</span></td>
+      </tr>
+      <tr>
+        <td><strong>Prefab</strong></td>
+        <td>Bản thiết kế đóng gói của một vật thể, đem nhân bản ra nhiều lần.</td>
+        <td><span class="file">Assets/Prefabs/Tanks/RedNova/RedNova.prefab</span>, đạn, quái, VFX</td>
+      </tr>
+      <tr>
+        <td><strong>ScriptableObject</strong></td>
+        <td>File dữ liệu trong project — không nằm trong scene, sửa là mọi nơi đọc theo.</td>
+        <td><span class="file">TankDefinition</span> (chỉ số xe), <span class="file">StageDefinition</span> (đợt quái), <span class="file">EquipmentDatabase</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="callout__label">Điểm mấu chốt</span>
+    <p>Designer cân bằng số liệu <em>không cần sửa code</em>: họ mở <span class="file">.asset</span> trong Inspector. Lập trình viên sửa hành vi trong <span class="file">.cs</span>. Art thay sprite trong prefab View. Ba người làm ba việc, không giẫm chân nhau — đó là lý do kiến trúc dự án chia lớp.</p>
+  </div>
+
+  <h2>3. Một phiên chơi đi qua những scene nào</h2>
+
+<pre><code>MainMenu ──▶ StageSelect
+               ├─ (chơi đơn) ──▶ Stage_1_1 … Stage_2_5
+               └─ (co-op) ─────▶ CoopLobby ──▶ Stage_x_y
+
+Garage / SkillPicker / Setting
+   mở chồng lên (additive), đóng rồi quay lại</code></pre>
+
+  <p>Ba điểm cần nhớ:</p>
+  <ul>
+    <li><span class="file">StageSelect</span> là nơi chọn ải và chọn chế độ; dữ liệu ải đọc từ <span class="file">Assets/Data/Stages/</span>.</li>
+    <li><span class="file">CoopLobby</span> là scene <em>mạng</em>: nó mang <span class="file">NetBootstrap</span> (dựng NetworkManager) và <span class="file">MatchFlow</span> (điều phối chọn màn → lobby → vào trận → thắng/thua), rồi tự chuyển sang scene màn chơi.</li>
+    <li>Chơi đơn không đụng gì tới mạng: vào thẳng scene màn.</li>
+  </ul>
+
+  <h2>4. Kiến trúc 3 lớp — luật quan trọng nhất của repo</h2>
+
+  <p>Mọi thực thể trong game (xe tăng, quái) đều bị xẻ làm ba phần, và <strong>không được trộn</strong>:</p>
+
+  <table>
+    <thead><tr><th>Lớp</th><th>Chịu trách nhiệm</th><th>Ví dụ</th><th>Không được làm</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Data</strong></td>
+        <td>Con số tĩnh, cấu hình</td>
+        <td><span class="file">TankDefinition</span>, <span class="file">TankStats</span>, <span class="file">StageDefinition</span></td>
+        <td>Chứa logic chạy theo frame</td>
+      </tr>
+      <tr>
+        <td><strong>Logic (Brain)</strong></td>
+        <td>Máu, năng lượng, hồi chiêu, AI, ra quyết định</td>
+        <td><span class="file">TankBrain</span>, <span class="file">EnemyBrain</span>, <span class="file">StageDirector</span></td>
+        <td>Đụng tới <span class="file">SpriteRenderer</span>, <span class="file">Animator</span>, <span class="file">AudioSource</span>, particle</td>
+      </tr>
+      <tr>
+        <td><strong>View</strong></td>
+        <td>Hiển thị: sprite, animation, âm thanh, xoay nòng</td>
+        <td><span class="file">TankView</span>, <span class="file">EnemyModel</span></td>
+        <td>Tự quyết định sát thương hay thắng thua</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>Lợi ích cụ thể: khi cần đổi hình con quái, bạn sửa prefab View và <em>không có dòng code nào</em> phải build lại. Khi cần chỉnh sát thương, bạn sửa asset và không phải động vào animation.</p>
+
+  <h2>5. Truy vết một viên đạn (bài tập đọc code)</h2>
+
+  <p>Đây là phần <em>duy nhất</em> của bài bạn nên đọc chậm. Nắm được đường đi này là bạn đọc được phần lớn repo.</p>
+
+  <ol class="steps">
+    <li><strong>Nhận input.</strong> <a class="file" href="../../../Assets/Scripts/Tanks/GameController.cs#L98">GameController.cs:98</a> (<span class="file">Awake</span>) tạo xe từ <span class="file">TankDefinition</span>; mỗi lần bấm chuột trái nó gọi <a class="file" href="../../../Assets/Scripts/Tanks/GameController.cs#L216">UseSkill(index)</a>.</li>
+    <li><strong>Kiểm tra điều kiện.</strong> <a class="file" href="../../../Assets/Scripts/Tanks/TankBrain.cs#L733">TankBrain.cs:733</a> (<span class="file">UseSkill</span>) kiểm tra hồi chiêu và năng lượng, trừ năng lượng, rồi gọi skill cụ thể của từng xe.</li>
+    <li><strong>Sinh vật thể.</strong> Skill lấy đạn/đạn pháo từ <em>object pool</em> (không <span class="file">Instantiate</span> liên tục) và gắn <span class="file">ColliderOwnerRef</span> trỏ về xe đã bắn.</li>
+    <li><strong>Va chạm.</strong> Collider của đạn gọi <a class="file" href="../../../Assets/Scripts/Core/ColliderOwnerRef.cs#L309">GetContactOwner()</a> để biết ai vừa trúng — nhờ vậy không bắn nhầm chính mình hay đồng đội.</li>
+    <li><strong>Tính sát thương.</strong> <a class="file" href="../../../Assets/Scripts/Core/CombatUtility.cs#L86">CombatUtility.ResolveDamage()</a> đổi Def của nạn nhân thành % giảm sát thương (4 đoạn logarit), ra con số cuối.</li>
+    <li><strong>Trừ máu + hiện số.</strong> <a class="file" href="../../../Assets/Scripts/Tanks/TankBrain.cs#L1048">TankBrain.TakeDamage()</a> / <span class="file">EnemyBrain.TakeDamage()</span> trừ máu; <a class="file" href="../../../Assets/Scripts/Core/TextDamageManager.cs#L203">TextDamageManager.Show()</a> bật chữ sát thương từ pool. Quái chết thì phát event cho <span class="file">StageDirector</span> đếm.</li>
+  </ol>
+
+  <div class="callout callout--lab">
+    <span class="callout__label">Mẹo đọc</span>
+    <p>Đừng đọc từ đầu file. Mỗi file trong repo có một khối <span class="file">&lt;summary&gt;</span> ở đầu class nói rõ nó làm gì — đọc khối đó trước, rồi nhảy tới đúng hàm bạn cần.</p>
+  </div>
+
+  <h2>6. “Muốn sửa X thì mở file nào?”</h2>
+
+  <table>
+    <thead><tr><th>Muốn đổi…</th><th>Mở</th></tr></thead>
+    <tbody>
+      <tr><td>Chỉ số máu / công / giáp của một xe</td><td><span class="file">Assets/Prefabs/Tanks/&lt;Xe&gt;/&lt;Xe&gt;.asset</span></td></tr>
+      <tr><td>Số đợt quái, điều kiện thắng của một màn</td><td><span class="file">Assets/Data/Stages/Stage_x_y.asset</span></td></tr>
+      <tr><td>Hành vi / kỹ năng của một xe</td><td><span class="file">Assets/Scripts/Tanks/&lt;Xe&gt;/</span></td></tr>
+      <tr><td>AI quái</td><td><span class="file">Assets/Scripts/Enemies/</span></td></tr>
+      <tr><td>Nút bấm, HUD, màn chọn ải</td><td><span class="file">Assets/Scripts/UI/</span></td></tr>
+      <tr><td>Co-op online</td><td><span class="file">Assets/Scripts/Net/</span></td></tr>
+      <tr><td>Lưu tiến trình, cài đặt, ngọc</td><td><span class="file">Assets/Scripts/Save/SaveSystem.cs</span></td></tr>
+    </tbody>
+  </table>
+
+  <p class="small">Bảng đầy đủ hơn: <a href="../reference/ban-do-code.html">Bản đồ code</a>. Thuật ngữ: <a href="../reference/thuat-ngu.html">Từ điển thuật ngữ</a>.</p>
+
+  <h2>7. Bốn luật bất biến của repo</h2>
+
+  <ol>
+    <li><strong>Không nhúng thứ hiển thị vào Brain.</strong> Sprite, Animator, Audio, Particle chỉ sống trong View/Model.</li>
+    <li><strong>Mọi Collider phải có <span class="file">ColliderOwnerRef</span>.</strong> Không có nó, game không biết ai gây sát thương cho ai.</li>
+    <li><strong>Đạn, VFX, chữ sát thương phải lấy từ pool.</strong> <span class="file">Instantiate</span>/<span class="file">Destroy</span> trong lúc đánh nhau sẽ gây giật khung hình.</li>
+    <li><strong>Chỉ số runtime phải đánh dấu <span class="file">[ReadOnly]</span>.</strong> Xem được trên Inspector nhưng không sửa tay được trong Play Mode.</li>
+  </ol>
+
+  <h2>8. Tự kiểm tra</h2>
+
+  <p class="small">Chọn đáp án — phản hồi hiện ngay. Sai mới là lúc học, nên cứ đoán.</p>
+
+  <div class="quiz" data-quiz>
+
+    <fieldset class="q" data-answer="1" data-explain="StageDirector đọc StageDefinition, theo dõi các StageObjective rồi phát sự kiện StageCleared / StageFailed. StageManager là bản cũ, không còn scene nào dùng.">
+      <legend><span class="num">1</span> Ai quyết định thắng hay thua một màn?</legend>
+      <label class="opt"><input type="radio" name="q1" value="0"><span>StageManager</span></label>
+      <label class="opt"><input type="radio" name="q1" value="1"><span>StageDirector</span></label>
+      <label class="opt"><input type="radio" name="q1" value="2"><span>GameController</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="2" data-explain="TankDefinition chỉ là dữ liệu tĩnh trong asset; TankView lo hiển thị; TankBrain giữ và tính chỉ số runtime như currentHealth, currentEnergy.">
+      <legend><span class="num">2</span> Máu và năng lượng hiện tại nằm trong lớp nào?</legend>
+      <label class="opt"><input type="radio" name="q2" value="0"><span>TankDefinition</span></label>
+      <label class="opt"><input type="radio" name="q2" value="1"><span>TankView</span></label>
+      <label class="opt"><input type="radio" name="q2" value="2"><span>TankBrain</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="0" data-explain="TextDamageManager là singleton giữ pool chữ sát thương; CombatFeedback lo rung/đập hình, DamageInfo chỉ là gói dữ liệu một đòn đánh.">
+      <legend><span class="num">3</span> Chữ sát thương bay lên do thành phần nào lo?</legend>
+      <label class="opt"><input type="radio" name="q3" value="0"><span>TextDamageManager</span></label>
+      <label class="opt"><input type="radio" name="q3" value="1"><span>CombatFeedback</span></label>
+      <label class="opt"><input type="radio" name="q3" value="2"><span>DamageInfo</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="1" data-explain="StageDefinition là ScriptableObject giữ dữ liệu tĩnh của màn: các đợt quái, vùng sinh quái, mục tiêu. StageDirector chỉ đọc asset đó lúc chạy.">
+      <legend><span class="num">4</span> Dữ liệu tĩnh của một màn nằm ở đâu?</legend>
+      <label class="opt"><input type="radio" name="q4" value="0"><span>EnemySpawner</span></label>
+      <label class="opt"><input type="radio" name="q4" value="1"><span>StageDefinition</span></label>
+      <label class="opt"><input type="radio" name="q4" value="2"><span>StageDirector</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="2" data-explain="Repo dùng com.unity.netcode.gameobjects 2.14 kèm Relay và Lobby của Unity Services; NetBootstrap dựng NetworkManager, NetRelayService lo phòng.">
+      <legend><span class="num">5</span> Co-op online chạy trên thư viện mạng nào?</legend>
+      <label class="opt"><input type="radio" name="q5" value="0"><span>Mirror</span></label>
+      <label class="opt"><input type="radio" name="q5" value="1"><span>FishNet</span></label>
+      <label class="opt"><input type="radio" name="q5" value="2"><span>Netcode</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <fieldset class="q" data-answer="0" data-explain="SaveSystem gộp mọi thứ vào một file gamedata.json trong thư mục save cạnh thư mục game; trước đây tách device_settings.json nhưng đã gộp lại.">
+      <legend><span class="num">6</span> Tiến trình chơi được ghi vào file nào?</legend>
+      <label class="opt"><input type="radio" name="q6" value="0"><span>gamedata.json</span></label>
+      <label class="opt"><input type="radio" name="q6" value="1"><span>settings.json</span></label>
+      <label class="opt"><input type="radio" name="q6" value="2"><span>playerdata.json</span></label>
+      <p class="fb" aria-live="polite"></p>
+    </fieldset>
+
+    <div class="quiz-bar">
+      <button class="btn" type="button" data-reset>Làm lại</button>
+      <span class="quiz-score" aria-live="polite"></span>
+    </div>
+  </div>
+
+  <h2>9. Bài tập 10 phút trong Unity</h2>
+
+  <p>Làm ngay sau khi đọc xong, đừng để hôm sau — trí nhớ tụt rất nhanh nếu chỉ đọc.</p>
+
+  <ol class="steps">
+    <li>Mở project bằng Unity 6000.5.6f1, đợi import xong (lần đầu có thể vài phút).</li>
+    <li>Mở scene <span class="file">Assets/Scenes/Stage_1_1.unity</span>, bấm <strong>Play</strong>. Lái thử, bắn thử.</li>
+    <li>Trong lúc Play, chọn GameObject xe tăng, xem Inspector: các ô <span class="file">currentHealth</span>, <span class="file">currentEnergy</span> bị làm xám — đó là <span class="file">[ReadOnly]</span>.</li>
+    <li>Dừng Play. Mở <span class="file">Assets/Data/Stages/Stage_1_1.asset</span> và tìm trường quy định số quái cần diệt.</li>
+    <li>Trả lời miệng: muốn quái ra chậm hơn thì sửa asset hay sửa code? <em>(Đáp án: asset.)</em></li>
+  </ol>
+
+  <div class="callout callout--warn">
+    <span class="callout__label">Cẩn thận</span>
+    <p>Đừng sửa gì trong lúc Play Mode — Unity sẽ nuốt mất thay đổi khi bạn bấm Stop. Và đừng commit các file <span class="file">.asset</span> font hoặc <span class="file">ProjectSettings</span> chỉ vì Unity tự ghi lại chúng.</p>
+  </div>
+
+  <h2>10. Đọc tiếp</h2>
+
+  <p><strong>Nguồn chính thống nên đọc (tiếng Anh, đáng tin hơn mọi video):</strong></p>
+  <ul>
+    <li><a href="https://docs.unity3d.com/6000.0/Documentation/Manual/class-ScriptableObject.html">Unity Manual — ScriptableObject</a>: hiểu đúng lớp Data, thứ mà repo này dùng khắp nơi.</li>
+    <li><a href="https://docs.unity3d.com/Packages/com.unity.netcode.gameobjects@2.0/manual/index.html">Netcode for GameObjects — Manual</a>: chỉ cần đọc phần “Getting started” là đủ hiểu <span class="file">NetBootstrap</span>.</li>
+  </ul>
+
+  <p><strong>Trong repo:</strong> <a href="../reference/thuat-ngu.html">Từ điển thuật ngữ</a> · <a href="../reference/ban-do-code.html">Bản đồ code</a> · <a href="../reference/unity-co-ban.html">Unity cơ bản — bản dài</a> · <a href="../reference/ngu-canh-du-an.html">Ngữ cảnh dự án — bản gốc</a>.</p>
+
+  <p class="small">Hai tài liệu cuối là bản HTML của <span class="file">docs/UNITY_CO_BAN.md</span> và <span class="file">docs/PROJECT_CONTEXT.md</span> — nội dung giữ nguyên, chỉ dễ đọc và in hơn.</p>
+
+  <div class="ask">
+    <p><strong>Bạn có giáo viên mà.</strong> Chỗ nào chưa rõ — “tại sao phải pool?”, “Brain với View khác gì nhau trong file thật?”, “mở Unity lên nhìn cái gì trước?” — cứ hỏi lại trong khung chat. Bài sau sẽ đào sâu đúng chỗ bạn thấy hụt, không theo giáo trình cứng.</p>
+  </div>
+
+  <div class="nav">
+    <p class="eyebrow">Bài tiếp theo (dự kiến)</p>
+    <ul>
+      <li>Bài 02 — <em>Đọc một file C# của dự án từ trên xuống</em>: MonoBehaviour, vòng đời Update/FixedUpdate, và vì sao <span class="file">TankBrain</span> chia Update/FixedUpdate.</li>
+      <li>Bài 03 — <em>ScriptableObject trong thực chiến</em>: tự tay đổi chỉ số một xe và thấy game đổi theo.</li>
+      <li>Bài 04 — <em>Object pooling</em>: vì sao đạn không được <span class="file">Instantiate</span>.</li>
+    </ul>
+    <p class="small">Soạn theo <a href="../MISSION.md">MISSION.md</a> · ghi chú học tập ở <a href="../NOTES.md">NOTES.md</a></p>
+  </div>
+
+</main>
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

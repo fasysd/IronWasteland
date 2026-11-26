@@ -1,0 +1,435 @@
+/* course.css — bộ khung chung cho mọi bài học của Iron Wasteland.
+   Mục tiêu: chữ dễ đọc trên màn hình, in ra giấy vẫn sạch, không phụ thuộc mạng. */
+
+:root {
+  --ink: #1b1a17;
+  --ink-soft: #3d3833;
+  --muted: #6d655c;
+  --paper: #fdfcf8;
+  --rule: #e3ddd1;
+  --accent: #a8452a;
+  --accent-soft: #f6e9e2;
+  --ok: #2f6b46;
+  --ok-soft: #e6f1ea;
+  --bad: #a33327;
+  --bad-soft: #f8e6e3;
+  --code-bg: #f2ede3;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 17px; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Palatino Linotype", "Book Antiqua", Cambria, "Times New Roman", serif;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 6rem;
+}
+
+/* ---------- tiêu đề ---------- */
+
+.eyebrow {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin: 0 0 0.6rem;
+}
+
+h1 {
+  font-size: 2.3rem;
+  line-height: 1.14;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.8rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.32rem;
+  line-height: 1.3;
+  margin: 3.1rem 0 0.7rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--rule);
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin: 1.9rem 0 0.4rem;
+}
+
+.lead {
+  font-size: 1.16rem;
+  color: var(--ink-soft);
+  margin: 0 0 1.6rem;
+}
+
+.meta {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 2rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 2px solid var(--ink);
+}
+
+p { margin: 0 0 1rem; }
+ul, ol { margin: 0 0 1rem; padding-left: 1.3rem; }
+li { margin: 0.32rem 0; }
+
+strong { font-weight: 700; }
+em { font-style: italic; }
+
+/* ---------- liên kết, mã ---------- */
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(168, 69, 42, 0.35);
+}
+
+a:hover { border-bottom-color: var(--accent); }
+
+code, .file {
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 0.85em;
+  background: var(--code-bg);
+  padding: 0.08em 0.32em;
+  border-radius: 3px;
+  word-break: break-word;
+}
+
+.file { border-bottom: none; }
+
+pre {
+  background: var(--code-bg);
+  padding: 0.95rem 1.1rem;
+  overflow-x: auto;
+  border-left: 3px solid var(--accent);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* ---------- bảng ---------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.3rem 0 1.6rem;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.9rem;
+}
+
+th {
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--ink);
+  padding: 0.5rem 0.6rem;
+  vertical-align: bottom;
+}
+
+td {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.5rem 0.6rem;
+  vertical-align: top;
+}
+
+tbody tr:hover { background: rgba(168, 69, 42, 0.04); }
+
+/* ---------- khối ghi chú ---------- */
+
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 0.85rem 1.1rem;
+  margin: 1.4rem 0;
+  font-size: 0.97rem;
+}
+
+.callout p:last-child { margin-bottom: 0; }
+
+.callout--lab {
+  border-left-color: var(--ok);
+  background: var(--ok-soft);
+}
+
+.callout--warn {
+  border-left-color: var(--bad);
+  background: var(--bad-soft);
+}
+
+.callout__label {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--accent);
+}
+
+.callout--lab .callout__label { color: var(--ok); }
+.callout--warn .callout__label { color: var(--bad); }
+
+/* ---------- danh sách đánh số lớn ---------- */
+
+.steps {
+  counter-reset: step;
+  list-style: none;
+  padding-left: 0;
+  margin: 1.4rem 0;
+}
+
+.steps li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 2.6rem;
+  margin: 0.85rem 0;
+}
+
+.steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0.15rem;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.65rem;
+  text-align: center;
+}
+
+/* ---------- quiz (dùng chung, xem assets/quiz.js) ---------- */
+
+.quiz { margin: 1.5rem 0 0.5rem; }
+
+.q {
+  border: 1px solid var(--rule);
+  background: #fff;
+  padding: 1rem 1.1rem 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.q legend {
+  font-size: 0.99rem;
+  font-weight: 700;
+  padding: 0 0.35rem;
+}
+
+.q .num {
+  color: var(--accent);
+  margin-right: 0.35rem;
+}
+
+.opt {
+  display: flex;
+  gap: 0.55rem;
+  align-items: baseline;
+  padding: 0.42rem 0.5rem;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.97rem;
+}
+
+.opt:hover { background: rgba(168, 69, 42, 0.06); }
+
+.opt input { margin: 0; accent-color: var(--accent); }
+
+.opt.is-right {
+  background: var(--ok-soft);
+  outline: 1px solid rgba(47, 107, 70, 0.35);
+}
+
+.opt.is-wrong {
+  background: var(--bad-soft);
+  outline: 1px solid rgba(163, 51, 39, 0.3);
+}
+
+.fb {
+  margin: 0.55rem 0 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  min-height: 1.2rem;
+  color: var(--muted);
+}
+
+.fb--right { color: var(--ok); }
+.fb--wrong { color: var(--bad); }
+
+.quiz-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.87rem;
+}
+
+.quiz-score { color: var(--muted); }
+
+.btn {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1px solid var(--rule);
+  background: #fff;
+  color: var(--ink-soft);
+  padding: 0.35rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---------- chân bài + điều hướng ---------- */
+
+.nav {
+  margin-top: 3.2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--rule);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.9rem;
+}
+
+.nav ul { list-style: none; padding: 0; }
+.nav li { margin: 0.45rem 0; }
+
+.ask {
+  margin-top: 2.4rem;
+  padding: 1rem 1.1rem;
+  border: 1px dashed var(--rule);
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+.small { font-size: 0.86rem; color: var(--muted); }
+
+/* ---------- in ---------- */
+
+@media print {
+  html { font-size: 11pt; }
+  body { background: #fff; }
+  .page { max-width: none; padding: 0; }
+  a { color: #000; border-bottom: none; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 8pt; color: #555; }
+  .q { break-inside: avoid; }
+  .btn, .quiz-bar { display: none; }
+  h2 { break-after: avoid; }
+}
+
+@media (max-width: 480px) {
+  html { font-size: 16px; }
+  .page { padding: 2.2rem 1.05rem 4rem; }
+  h1 { font-size: 1.85rem; }
+}
+
+/* ---------- bản chuyển từ Markdown (tài liệu dài) ---------- */
+
+.crumbs {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0 0 2.2rem;
+  letter-spacing: 0.01em;
+}
+
+.crumbs a { border-bottom: none; }
+
+.toc {
+  border: 1px solid var(--rule);
+  background: #fff;
+  padding: 1rem 1.2rem 0.9rem;
+  margin: 1.6rem 0 2.4rem;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.toc__label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.55rem;
+}
+
+.toc ol { list-style: none; padding-left: 0; margin: 0; }
+.toc ol ol { padding-left: 1.1rem; margin-top: 0.2rem; }
+.toc li { margin: 0.12rem 0; }
+.toc a { border-bottom: none; color: var(--ink-soft); }
+.toc a:hover { color: var(--accent); }
+
+.doc h1 { font-size: 2rem; }
+.doc h2 { font-size: 1.28rem; }
+.doc h3 { font-size: 1.06rem; color: var(--ink-soft); }
+.doc h4 { font-size: 0.97rem; margin: 1.5rem 0 0.35rem; }
+
+.doc blockquote {
+  margin: 1.3rem 0;
+  padding: 0.2rem 0 0.2rem 1.1rem;
+  border-left: 3px solid var(--rule);
+  color: var(--ink-soft);
+}
+
+.doc blockquote p:last-child { margin-bottom: 0; }
+
+.doc hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 2.4rem 0;
+}
+
+.table-wrap { overflow-x: auto; margin: 1.3rem 0 1.6rem; }
+.table-wrap table { margin: 0; }
+.doc table { font-size: 0.87rem; }
+.doc table th { white-space: nowrap; }
+.doc td code, .doc th code { white-space: nowrap; }
+
+.doc ul, .doc ol { margin-bottom: 1rem; }
+.doc li > ul, .doc li > ol { margin: 0.3rem 0 0.4rem; }
+
+.doc pre { font-size: 0.84rem; }
+
+@media print {
+  .toc { break-after: page; }
+  .doc pre, .doc blockquote, .doc table { break-inside: avoid; }
+}
+
+/* công thức (LaTeX trong tài liệu gốc được chuyển thành chữ) */
+.math-block {
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  background: #f7f2e8;
+  border-left: 3px solid var(--accent);
+  padding: 0.7rem 1rem;
+  margin: 1.2rem 0;
+  overflow-x: auto;
+}
+.math {
+  background: #f7f2e8;
+  padding: 0.05em 0.32em;
+  margin: 0 0.1em;
+  border-radius: 3px;
+  font-size: 0.95em;
+}

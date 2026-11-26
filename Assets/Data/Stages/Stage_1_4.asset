@@ -16,25 +16,6 @@ MonoBehaviour:
   stageName: "V\xF2ng Xoay Kh\xF4ng Gian"
   killTarget: 0
   timeLimitSeconds: 900
-  waves:
-  - Label: W1
-    StartTime: 0
-    Spawns:
-    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
-      Count: 8
-      SpeedMultiplier: 1
-      ZoneId: 
-    - Enemy: {fileID: 6086734558255793529, guid: dc8cd304e186d3d4cb5b4ae517da1477, type: 3}
-      Count: 4
-      SpeedMultiplier: 1
-      ZoneId: 
-  - Label: W2
-    StartTime: 60
-    Spawns:
-    - Enemy: {fileID: 6438814824446025724, guid: 56632388536e92747835f0a208002653, type: 3}
-      Count: 6
-      SpeedMultiplier: 1
-      ZoneId: 
   objectives:
   - Type: 2
     Count: 3

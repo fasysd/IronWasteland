@@ -16,21 +16,6 @@ MonoBehaviour:
   stageName: "Chi\u1EBFn H\u1EA1m D1ONK"
   killTarget: 0
   timeLimitSeconds: 900
-  waves:
-  - Label: W1
-    StartTime: 0
-    Spawns:
-    - Enemy: {fileID: 8420907976510360087, guid: dd03dff10e04c7847a6ca5bc5d1dae1d, type: 3}
-      Count: 8
-      SpeedMultiplier: 1
-      ZoneId: 
-  - Label: W2
-    StartTime: 90
-    Spawns:
-    - Enemy: {fileID: 2837244264739505214, guid: fa914b93d15fd4d41920d832034cf707, type: 3}
-      Count: 6
-      SpeedMultiplier: 1
-      ZoneId: 
   objectives:
   - Type: 2
     Count: 3
