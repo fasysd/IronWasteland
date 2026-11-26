@@ -14246,10 +14246,10 @@ MonoBehaviour:
   stageManager: {fileID: 0}
   matchFlow: {fileID: 1596902877}
   networkTankDefinitions:
+  - {fileID: 11400000, guid: 6c45234ae1746fa47a2143507c619a1c, type: 2}
+  - {fileID: 11400000, guid: 50cf10bfd48885b469ef03739b0d162d, type: 2}
   - {fileID: 11400000, guid: 8f2b6d4a1c3e5f7a9b1d3f5a7c9e1b34, type: 2}
   - {fileID: 11400000, guid: b46807db6f3524845957eee32a0b24a3, type: 2}
-  - {fileID: 11400000, guid: 50cf10bfd48885b469ef03739b0d162d, type: 2}
-  - {fileID: 11400000, guid: 6c45234ae1746fa47a2143507c619a1c, type: 2}
   - {fileID: 11400000, guid: cd7492e832ea8ad44a7d0a1a553c551f, type: 2}
   - {fileID: 11400000, guid: da2adcc56c23bf94abe7b8768551c551, type: 2}
   tankIndex: 0

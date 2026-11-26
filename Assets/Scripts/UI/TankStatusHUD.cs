@@ -268,6 +268,14 @@ namespace IronWasteland.UI
         private TankBrain ResolveTank()
         {
             if (gameController != null && gameController.PlayerTank != null) return gameController.PlayerTank;
+
+            if (TankBrain.NetworkSessionActive)
+            {
+                var nm = Unity.Netcode.NetworkManager.Singleton;
+                var playerObj = nm != null && nm.LocalClient != null ? nm.LocalClient.PlayerObject : null;
+                return playerObj != null ? playerObj.GetComponent<TankBrain>() : null;
+            }
+
             return FindAnyObjectByType<TankBrain>();
         }
 

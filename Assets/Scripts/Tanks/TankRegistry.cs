@@ -37,6 +37,8 @@ namespace IronWasteland.Tanks
             "Assets/Prefabs/Tanks/GreenFox/GreenFox.asset"
         };
 
+        private const string RosterResourcePath = "TankRoster";
+
         private static TankDefinition[] s_CachedDefinitions;
 
         public static TankDefinition GetDefinition(int index)
@@ -53,6 +55,18 @@ namespace IronWasteland.Tanks
                 if (IronWasteland.Net.NetSpawnService.Instance != null)
                 {
                     s_CachedDefinitions[index] = IronWasteland.Net.NetSpawnService.Instance.GetDefinition((byte)index);
+                }
+
+                if (s_CachedDefinitions[index] == null)
+                {
+                    TankRoster roster = Resources.Load<TankRoster>(RosterResourcePath);
+                    if (roster != null && roster.Tanks != null)
+                    {
+                        for (int i = 0; i < roster.Tanks.Count && i < TankCount; i++)
+                        {
+                            if (roster.Tanks[i] != null) s_CachedDefinitions[i] = roster.Tanks[i];
+                        }
+                    }
                 }
 #if UNITY_EDITOR
                 if (s_CachedDefinitions[index] == null)

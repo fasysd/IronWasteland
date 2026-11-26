@@ -57,11 +57,15 @@ MonoBehaviour:
     MaxHealth: 300
     MoveSpeed: 1.5
   currentHealth: 0
-  energyBurstHpThreshold: 0.5
-  energyCoreCount: 3
-  breakWindowDuration: 10
-  defenseBreakBonus: 0.5
-  defenseBreakDuration: 6
+  burstHpThreshold: 0.5
+  burstChargeTime: 2
+  burstDuration: 30
+  rewardPhaseDuration: 8
+  penaltyPhaseDuration: 8
+  burstAttackMultiplier: 1
+  burstDefenseMultiplier: 1
+  burstMoveSpeedMultiplier: 1
+  globalSkillInterval: 2
 --- !u!50 &4556977129910709487
 Rigidbody2D:
   serializedVersion: 5
@@ -101,7 +105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3316081225
+  GlobalObjectIdHash: 1391390187
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
