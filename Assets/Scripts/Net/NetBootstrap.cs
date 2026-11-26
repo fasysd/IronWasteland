@@ -715,6 +715,16 @@ namespace IronWasteland.Net
                 {
                     currentEquipment = savedEquip;
                 }
+
+                if (opt1 == 0)
+                {
+                    opt1 = SaveSystem.Instance.GetOptionSkill(currentTank, 0);
+                }
+
+                if (opt2 == 0)
+                {
+                    opt2 = SaveSystem.Instance.GetOptionSkill(currentTank, 1);
+                }
             }
 
             return new NetLoadout

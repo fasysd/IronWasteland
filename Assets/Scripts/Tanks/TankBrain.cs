@@ -235,7 +235,12 @@ namespace IronWasteland.Tanks
         /// <summary>Do TankDefinition goi luc khoi tao. Chi goi 1 lan.</summary>
         public virtual void Initialize(TankBrainContext context, TankStats stats)
         {
-            if (_initialized) return;
+            if (_initialized)
+            {
+                m_context = context;
+                level = Mathf.Clamp(context.Level, TankDefinition.MinLevel, TankDefinition.MaxLevel);
+                return;
+            }
             _initialized = true;
 
             if (view == null)

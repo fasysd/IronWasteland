@@ -49,7 +49,52 @@ namespace IronWasteland.Save
         public static string GetSaveDirectory()
         {
             string rootDir = Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath;
-            return Path.Combine(rootDir, SaveFolderName);
+            string baseDir = Path.Combine(rootDir, SaveFolderName);
+            string profile = ResolveSaveProfile();
+            return string.IsNullOrEmpty(profile) ? baseDir : Path.Combine(baseDir, profile);
+        }
+
+        private static string ResolveSaveProfile()
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length - 1; i++)
+            {
+                if (string.Equals(args[i], "-iw-save", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(args[i + 1]))
+                {
+                    return SanitizeProfileName(args[i + 1]);
+                }
+            }
+
+#if UNITY_EDITOR
+            Type currentPlayerType = Type.GetType("Unity.Multiplayer.Playmode.CurrentPlayer, Unity.Multiplayer.Playmode");
+            if (currentPlayerType != null)
+            {
+                var isMainProp = currentPlayerType.GetProperty("IsMainEditor", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (isMainProp != null && isMainProp.GetValue(null) is bool isMain && !isMain)
+                {
+                    var tagsMethod = currentPlayerType.GetMethod("ReadOnlyTags", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                    if (tagsMethod?.Invoke(null, null) is IReadOnlyList<string> tags && tags.Count > 0)
+                    {
+                        return "mppm_" + SanitizeProfileName(string.Join("_", tags));
+                    }
+
+                    // Fallback theo thư mục Library/VP/... của Virtual Player nếu chưa gắn tag.
+                    string vpDir = Directory.GetParent(Application.persistentDataPath)?.Name ?? "vp";
+                    return "mppm_" + SanitizeProfileName(vpDir);
+                }
+            }
+#endif
+            return null;
+        }
+
+        private static string SanitizeProfileName(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return "default";
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                raw = raw.Replace(c, '_');
+            }
+            return raw.Trim();
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -152,6 +197,25 @@ namespace IronWasteland.Save
             }
             else
             {
+                string rootDir = Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath;
+                string baseSavePath = Path.Combine(rootDir, SaveFolderName, GameDataFileName);
+                if (!string.Equals(m_GameDataPath, baseSavePath, StringComparison.OrdinalIgnoreCase) && File.Exists(baseSavePath))
+                {
+                    try
+                    {
+                        string json = File.ReadAllText(baseSavePath);
+                        Data = JsonUtility.FromJson<GameData>(json);
+                        if (Data == null) Data = CreateDefaultGameData();
+                        SaveGameData();
+                        EnsureTanksInitialized();
+                        if (Data.Settings == null) Data.Settings = new SettingsSaveData();
+                        return;
+                    }
+                    catch
+                    {
+                    }
+                }
+
                 // Tự động chuyển tiếp từ thư mục persistentDataPath cũ nếu có
                 string legacyPath = Path.Combine(Application.persistentDataPath, GameDataFileName);
                 if (File.Exists(legacyPath))

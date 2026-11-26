@@ -457,6 +457,15 @@ namespace IronWasteland.Net
             m_LoadoutApplied = true;
             ApplyHealth(m_Health.Value);
             ApplyEnergy(m_Energy.Value);
+
+            if (IsOwner)
+            {
+                GameController gc = FindAnyObjectByType<GameController>();
+                if (gc != null && gc.PlayerTank == m_Brain)
+                {
+                    gc.BindTank(m_Brain);
+                }
+            }
         }
 
         /// <summary>Client áp máu tối đa/tốc độ host gửi để kẹp máu và di chuyển khớp host.</summary>
