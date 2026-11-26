@@ -58,11 +58,11 @@ namespace IronWasteland.Tanks.Equipment
 
             Vector2 currentPos = Owner.transform.position;
             float movementDelta = Vector2.Distance(currentPos, m_LastPosition);
-            m_LastPosition = currentPos;
 
             if (movementDelta > 0.01f)
             {
-                // Có di chuyển -> reset bộ đếm và gỡ buff nếu đang có
+                // Có di chuyển -> cập nhật điểm neo, reset bộ đếm và gỡ buff nếu đang có
+                m_LastPosition = currentPos;
                 m_StationaryTimer = 0f;
                 if (m_IsStationaryActive)
                 {
