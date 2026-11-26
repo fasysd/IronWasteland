@@ -16,8 +16,6 @@ namespace IronWasteland.Tanks.GreenFox
     /// Mỗi nhịp, mỗi đuôi đánh 1 kẻ địch ngẫu nhiên trong vùng và đính kèm thiêu đốt nếu đang bật Burning Fox.
     /// </summary>
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(CircleCollider2D))]
-    [RequireComponent(typeof(ColliderOwnerRef))]
     public class GreenFox_NineTailedAssault : MonoBehaviour
     {
         private const string TailEffectId = "GreenFox_Tail";

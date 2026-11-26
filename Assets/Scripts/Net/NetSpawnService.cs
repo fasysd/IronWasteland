@@ -43,11 +43,16 @@ namespace IronWasteland.Net
 
         public int TankCount => tankDefinitions != null ? tankDefinitions.Length : 0;
 
-        /// <summary>Lấy định nghĩa xe theo chỉ số roster; trả null nếu roster chưa gán.</summary>
+        /// <summary>Lấy định nghĩa xe theo chỉ số roster; fallback sang TankRegistry nếu mảng trên scene trống.</summary>
         public TankDefinition GetDefinition(byte tankIndex)
         {
-            if (tankDefinitions == null || tankDefinitions.Length == 0) return null;
-            return tankDefinitions[Mathf.Clamp(tankIndex, 0, tankDefinitions.Length - 1)];
+            if (tankDefinitions != null && tankDefinitions.Length > 0)
+            {
+                TankDefinition def = tankDefinitions[Mathf.Clamp(tankIndex, 0, tankDefinitions.Length - 1)];
+                if (def != null && def.TankPrefab != null) return def;
+            }
+
+            return TankRegistry.GetDefinition(tankIndex);
         }
 
         /// <summary>Xe đã spawn cho client chưa (dùng để tránh spawn trùng).</summary>
