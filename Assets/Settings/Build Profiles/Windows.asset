@@ -23,6 +23,9 @@ MonoBehaviour:
   m_OverrideGlobalSceneList: 1
   m_Scenes:
   - m_enabled: 1
+    m_path: Assets/Scenes/MainMenu.unity
+    m_guid: 01cadaffda718704a9576da787dcb22b
+  - m_enabled: 1
     m_path: Assets/Scenes/CoopLobby.unity
     m_guid: 8c9cfa26abfee488c85f1582747f6a02
   - m_enabled: 1
@@ -34,9 +37,6 @@ MonoBehaviour:
   - m_enabled: 1
     m_path: Assets/Scenes/GarageAccessory.unity
     m_guid: 6131b411d4a36594a92b5eb2c8cd8668
-  - m_enabled: 1
-    m_path: Assets/Scenes/MainMenu.unity
-    m_guid: 01cadaffda718704a9576da787dcb22b
   - m_enabled: 1
     m_path: Assets/Scenes/Setting.unity
     m_guid: db276692bd2339945b368f389488ff14
