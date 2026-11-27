@@ -23,7 +23,7 @@ MonoBehaviour:
     - Enemy: {fileID: 4382231180120962163, guid: 3d3c6e517857da448ada899477541f30, type: 3}
       Count: 1
       SpeedMultiplier: 1
-      ZoneId: 
+      ZoneId: North
   - Label: W2
     StartTime: 999
     Spawns:

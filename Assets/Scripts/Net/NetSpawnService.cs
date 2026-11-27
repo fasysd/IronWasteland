@@ -27,6 +27,7 @@ namespace IronWasteland.Net
         public static NetSpawnService Instance { get; private set; }
 
         private readonly Dictionary<ulong, TankBrain> m_Spawned = new Dictionary<ulong, TankBrain>();
+        private readonly Dictionary<ulong, Transform> m_SpawnSlots = new Dictionary<ulong, Transform>();
 
         private void Awake()
         {
@@ -102,6 +103,7 @@ namespace IronWasteland.Net
         {
             if (!m_Spawned.TryGetValue(clientId, out TankBrain brain)) return;
             m_Spawned.Remove(clientId);
+            m_SpawnSlots.Remove(clientId);
             if (brain == null) return;
 
             NetworkObject networkObject = brain.GetComponent<NetworkObject>();
@@ -129,8 +131,15 @@ namespace IronWasteland.Net
             }
 
             GameController gc = FindAnyObjectByType<GameController>();
+            Transform slot = FindAvailableSpawnSlot(gc?.CoopSpawnPoints);
+            if (slot == null && gc?.CoopSpawnPoints?.Count > 0)
+            {
+                Debug.LogWarning($"[NetSpawnService] Không còn điểm xuất phát cho client {clientId}.", this);
+                return null;
+            }
+
             Vector3 origin = gc != null ? (Vector3)gc.SpawnPosition : spawnOrigin;
-            Vector3 position = origin + new Vector3(spawnSpacing * clientId, 0f, 0f);
+            Vector3 position = slot != null ? slot.position : origin + new Vector3(spawnSpacing * clientId, 0f, 0f);
             TankBrain brain = Instantiate(definition.TankPrefab, position, Quaternion.identity);
             NetworkObject networkObject = brain.GetComponent<NetworkObject>();
             if (networkObject == null)
@@ -170,7 +179,20 @@ namespace IronWasteland.Net
             }
 
             m_Spawned[clientId] = brain;
+            if (slot != null) m_SpawnSlots[clientId] = slot;
             return brain;
+        }
+
+        private Transform FindAvailableSpawnSlot(IReadOnlyList<Transform> slots)
+        {
+            if (slots == null) return null;
+
+            foreach (Transform slot in slots)
+            {
+                if (slot != null && !m_SpawnSlots.ContainsValue(slot)) return slot;
+            }
+
+            return null;
         }
 
         /// <summary>

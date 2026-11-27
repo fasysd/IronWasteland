@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using IronWasteland.Net;
 using IronWasteland.Save;
 using Unity.Netcode;
@@ -26,6 +27,8 @@ namespace IronWasteland.Tanks
         [SerializeField, Range(TankDefinition.MinLevel, TankDefinition.MaxLevel)] private int playerLevel = 1;
 
         [SerializeField] private Vector2 spawnPosition = Vector2.zero;
+        [SerializeField] private Transform playerSpawnPoint;
+        [SerializeField] private Transform[] coopSpawnPoints;
 
         [Tooltip("ID phụ kiện trong EquipmentDatabase (-1 = không trang bị).")]
         [SerializeField] private int equipmentId = -1;
@@ -56,7 +59,41 @@ namespace IronWasteland.Tanks
         public int PlayerLevel => m_PlayerTank != null ? m_PlayerTank.Level : playerLevel;
 
         /// <summary>Vị trí khởi tạo xe trong màn.</summary>
-        public Vector2 SpawnPosition => spawnPosition;
+        public Vector2 SpawnPosition => playerSpawnPoint != null ? (Vector2)playerSpawnPoint.position : spawnPosition;
+        public IReadOnlyList<Transform> CoopSpawnPoints => coopSpawnPoints;
+
+        public void ApplySpawnFacing(TankBrain tank)
+        {
+            if (playerSpawnPoint == null || tank == null) return;
+
+            Vector2 direction = playerSpawnPoint.up;
+            tank.View?.RotateBody(direction);
+            tank.SetLookTarget((Vector2)tank.transform.position + direction * 10f);
+        }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = new Color(0.3f, 1f, 0.75f);
+            if (playerSpawnPoint != null) DrawSpawnPoint(playerSpawnPoint.position, playerSpawnPoint.up);
+            if (coopSpawnPoints == null) return;
+
+            Gizmos.color = new Color(0.25f, 0.75f, 1f);
+            Vector3 direction = playerSpawnPoint != null ? playerSpawnPoint.up : Vector3.up;
+            foreach (Transform point in coopSpawnPoints)
+            {
+                if (point != null) DrawSpawnPoint(point.position, direction);
+            }
+        }
+
+        private static void DrawSpawnPoint(Vector3 position, Vector3 direction)
+        {
+            Vector3 tip = position + direction * 1.45f;
+            Vector3 side = Vector3.Cross(direction, Vector3.forward) * 0.35f;
+            Gizmos.DrawWireSphere(position, 0.3f);
+            Gizmos.DrawLine(position, tip);
+            Gizmos.DrawLine(tip, tip - direction * 0.45f + side);
+            Gizmos.DrawLine(tip, tip - direction * 0.45f - side);
+        }
 
         /// <summary>Gán xe do mạng spawn cho controller này (dùng khi online).</summary>
         public void BindTank(TankBrain tank)
@@ -143,7 +180,9 @@ namespace IronWasteland.Tanks
                 return;
             }
 
-            m_PlayerTank.transform.position = new Vector3(spawnPosition.x, spawnPosition.y, m_PlayerTank.transform.position.z);
+            Vector2 position = SpawnPosition;
+            m_PlayerTank.transform.position = new Vector3(position.x, position.y, m_PlayerTank.transform.position.z);
+            ApplySpawnFacing(m_PlayerTank);
         }
 
         private void Update()

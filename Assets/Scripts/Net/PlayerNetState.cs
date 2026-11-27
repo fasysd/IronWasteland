@@ -132,6 +132,8 @@ namespace IronWasteland.Net
                 ApplyBlocked(m_MovementBlocked.Value);
             }
 
+            FindAnyObjectByType<GameController>()?.ApplySpawnFacing(m_Brain);
+
             // AimAngle do chủ xe ghi (owner-write) để mọi máy thấy nòng bám chuột liên tục.
             if (IsOwner)
             {
