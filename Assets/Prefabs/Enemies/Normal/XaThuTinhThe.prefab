@@ -395,7 +395,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 931a7c66ee5088846b8ef9d4f037391a, type: 3}
   m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -465,7 +465,7 @@ MonoBehaviour:
     Attack: 75
     Defense: 25
     MaxHealth: 200
-    MoveSpeed: 80
+    MoveSpeed: 500
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1

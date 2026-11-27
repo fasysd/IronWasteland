@@ -88,7 +88,7 @@ MonoBehaviour:
     Attack: 120
     Defense: 45
     MaxHealth: 2000
-    MoveSpeed: 90
+    MoveSpeed: 650
   currentHealth: 0
   burstHpThreshold: 0.5
   burstChargeTime: 2

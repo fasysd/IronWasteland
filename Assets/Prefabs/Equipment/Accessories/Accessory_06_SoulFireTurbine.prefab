@@ -58,3 +58,4 @@ MonoBehaviour:
   zoneRadius: 1.2
   zoneDuration: 3.5
   zoneColor: {r: 0.1, g: 0.6, b: 1, a: 0.4}
+  soulFireZonePrefab: {fileID: 2693193787066250333, guid: 0ff8fa29271dd4c4d9207d4972f7a6ed, type: 3}

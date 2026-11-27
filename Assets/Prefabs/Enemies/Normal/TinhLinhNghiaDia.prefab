@@ -183,7 +183,7 @@ MonoBehaviour:
     Attack: 35
     Defense: 10
     MaxHealth: 250
-    MoveSpeed: 135
+    MoveSpeed: 400
   currentHealth: 0
   loopMode: 0
   waypoints:
@@ -571,8 +571,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: -1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.2, g: 0.8, b: 0.5, a: 0.35}
+  m_Sprite: {fileID: 21300000, guid: a2901c900680d5b4cad6e41715f68685, type: 3}
+  m_Color: {r: 0.2, g: 0.8, b: 0.5, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

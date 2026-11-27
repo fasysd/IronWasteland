@@ -23,6 +23,7 @@ namespace IronWasteland.Tanks.Equipment
         [SerializeField, Min(0.5f)] private float smokeDuration = 3.0f;
         [SerializeField, Min(0.5f)] private float smokeCooldown = 3.0f;
         [SerializeField] private Color smokeColor = new Color(0.2f, 0.8f, 0.2f, 0.4f); // Xanh lá độc
+        [SerializeField] private GameObject toxicSmokeZonePrefab;
 
         private float m_CooldownTimer;
 
@@ -70,7 +71,13 @@ namespace IronWasteland.Tanks.Equipment
 
         private void SpawnToxicSmoke(Vector2 position)
         {
-            AccessoryAreaZone.Spawn(position, AccessoryAreaZone.ZoneEffectType.ToxicSpore, smokeRadius, smokeDuration, smokeColor);
+            AccessoryAreaZone.Spawn(
+                position,
+                AccessoryAreaZone.ZoneEffectType.ToxicSpore,
+                smokeRadius,
+                smokeDuration,
+                smokeColor,
+                toxicSmokeZonePrefab);
         }
     }
 }

@@ -58,3 +58,4 @@ MonoBehaviour:
   smokeDuration: 3
   smokeCooldown: 3
   smokeColor: {r: 0.2, g: 0.8, b: 0.2, a: 0.4}
+  toxicSmokeZonePrefab: {fileID: 7836075392712455145, guid: 9909796f4564afc41b5629a2ee5ced36, type: 3}

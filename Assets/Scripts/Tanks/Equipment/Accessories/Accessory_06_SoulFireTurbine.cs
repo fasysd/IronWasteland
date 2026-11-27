@@ -23,6 +23,7 @@ namespace IronWasteland.Tanks.Equipment
         [SerializeField, Min(0.5f)] private float zoneRadius = 1.2f;
         [SerializeField, Min(0.5f)] private float zoneDuration = 3.5f;
         [SerializeField] private Color zoneColor = new Color(0.1f, 0.6f, 1f, 0.4f); // Xanh dương lam sáng
+        [SerializeField] private GameObject soulFireZonePrefab;
 
         private Vector2 m_LastPosition;
         private float m_TraveledDistance;
@@ -69,7 +70,13 @@ namespace IronWasteland.Tanks.Equipment
 
         private void SpawnSoulFirePatch(Vector2 position)
         {
-            AccessoryAreaZone.Spawn(position, AccessoryAreaZone.ZoneEffectType.SoulFire, zoneRadius, zoneDuration, zoneColor);
+            AccessoryAreaZone.Spawn(
+                position,
+                AccessoryAreaZone.ZoneEffectType.SoulFire,
+                zoneRadius,
+                zoneDuration,
+                zoneColor,
+                soulFireZonePrefab);
         }
     }
 }

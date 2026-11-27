@@ -59,7 +59,7 @@ MonoBehaviour:
     Attack: 180
     Defense: 35
     MaxHealth: 380
-    MoveSpeed: 75
+    MoveSpeed: 550
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
@@ -593,8 +593,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: -1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.35, g: 0.45, b: 0.2, a: 0.45}
+  m_Sprite: {fileID: 21300000, guid: 1597b2c32ab1dec409377dea39231dcd, type: 3}
+  m_Color: {r: 0.35, g: 0.45, b: 0.2, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

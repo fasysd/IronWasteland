@@ -58,7 +58,7 @@ MonoBehaviour:
     Attack: 150
     Defense: 24
     MaxHealth: 360
-    MoveSpeed: 140
+    MoveSpeed: 600
   currentHealth: 0
   anchorPointD: {x: 0, y: 0}
   autoSetAnchorDFromSpawnPosition: 1
