@@ -38,6 +38,6 @@ Garage đã chuyển sang Button thật từ ADR 0003 nhưng bảy màn còn l�
 - Vùng bấm hoạt động với chuột, bàn phím/gamepad UI và có trạng thái `Selectable` chuẩn.
 - Muốn đổi vùng bấm phải sửa builder và test scene-contract (cố ý, để hình và vùng bấm không lệch nhau).
 - Kéo thẻ vẫn dùng `OnGUI` `MouseDrag`; cờ `m_SuppressCardClick` chặn cú click phát sinh sau khi vừa kéo.
-- Danh sách màn đã chuyển (số Button): MainMenu 4, CoopLobby 15, GarageAccessory 23, StageSelect 13,
+- Danh sách màn đã chuyển (số Button): MainMenu 4, CoopLobby 16, GarageAccessory 23, StageSelect 13,
   AccessorySalvage 26, SkillPicker 7, Setting 3. Garage đã dùng Button từ ADR 0003.
 - Test suite EditMode: 32/32 xanh; `unity recompile` 0 lỗi.

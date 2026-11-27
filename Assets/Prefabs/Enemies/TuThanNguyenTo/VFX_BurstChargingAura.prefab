@@ -5030,6 +5030,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6230491664696090538}
   - component: {fileID: 801438410293525818}
+  - component: {fileID: 1519614658524385514}
   m_Layer: 0
   m_Name: VFX_BurstChargingAura
   m_TagString: Untagged
@@ -5074,3 +5075,15 @@ MonoBehaviour:
   outerRotationSpeed: 90
   innerRotationSpeed: -140
   defaultDuration: 2
+--- !u!114 &1519614658524385514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7417405375529767878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost

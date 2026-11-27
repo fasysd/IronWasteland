@@ -9,7 +9,7 @@ namespace IronWasteland.Enemies.ElementalReaper.VFX
     /// Cột lửa xoáy bốc lên cuồn cuộn tàn tro bán kính khớp chính xác 100% với radius của CircleCollider2D.
     /// </summary>
     [DisallowMultipleComponent]
-    public class FireTornadoVFX : MonoBehaviour
+    public class FireTornadoVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Components")]
         [SerializeField] private SpriteRenderer tornadoSprite;

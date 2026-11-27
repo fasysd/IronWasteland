@@ -422,6 +422,7 @@ GameObject:
   - component: {fileID: 6202641103523975840}
   - component: {fileID: 5484769612129924768}
   - component: {fileID: 5962067136331049482}
+  - component: {fileID: -1609301760667162215}
   m_Layer: 7
   m_Name: XaThuTinhThe
   m_TagString: Untagged
@@ -650,6 +651,38 @@ MonoBehaviour:
   playDeath: 1
   playCrowdControl: 1
   hitCooldown: 0.1
+--- !u!114 &-1609301760667162215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7692010306268881268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkAnimator
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkAnimatorExpanded: 0
+  AuthorityMode: 0
+  m_Animator: {fileID: 2742264485582657165}
+  TransitionStateInfoList: []
+  AnimatorParameterEntries:
+    ParameterEntries:
+    - name: MoveSpeed
+      NameHash: 526065662
+      Synchronize: 0
+      ParameterType: 1
+    - name: TakeDamage
+      NameHash: -339413771
+      Synchronize: 1
+      ParameterType: 9
+    - name: TakedDamege
+      NameHash: 78573937
+      Synchronize: 1
+      ParameterType: 9
+  AnimatorParametersExpanded: 0
 --- !u!1 &8258930589063095120
 GameObject:
   m_ObjectHideFlags: 0

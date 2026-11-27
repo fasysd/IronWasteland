@@ -164,6 +164,7 @@ GameObject:
   - component: {fileID: 3227480063663070482}
   - component: {fileID: 414518895096495019}
   - component: {fileID: 8699374612197449194}
+  - component: {fileID: 2040092465910286682}
   m_Layer: 0
   m_Name: VFX_D1onkMissileProjectile
   m_TagString: Untagged
@@ -331,3 +332,15 @@ MonoBehaviour:
   thrusterTrail: {fileID: 2172787482297978888}
   exhaustParticles: {fileID: 0}
   impactExplosionPrefab: {fileID: 246905549649215118, guid: f11ccd6ead6e5444086d25825c6c850f, type: 3}
+--- !u!114 &2040092465910286682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4902270035738657672}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost

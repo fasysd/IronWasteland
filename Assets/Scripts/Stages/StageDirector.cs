@@ -71,6 +71,7 @@ namespace IronWasteland.Stages
         private float m_Elapsed;
         private StageRunState m_State = StageRunState.Idle;
         private int m_Kills;
+        private string m_FailReason;
 
         /// <summary>Man bat dau chay.</summary>
         public event Action<StageDirector> StageStarted;
@@ -104,6 +105,9 @@ namespace IronWasteland.Stages
         public int KillTarget => killTarget;
         public float TimeLimitSeconds => timeLimitSeconds;
         public IReadOnlyList<StageObjectiveSpec> ObjectiveSpecs => objectives;
+
+        /// <summary>Lý do thua gần nhất; rỗng khi chưa thua hoặc vừa bắt đầu trận mới.</summary>
+        public string FailReason => m_FailReason;
         public int AliveCount => spawner != null ? spawner.AliveCount : 0;
         public IReadOnlyList<StageObjective> Objectives => m_Objectives;
         public int WaveIndex => spawner != null ? spawner.WaveIndex : -1;
@@ -112,6 +116,12 @@ namespace IronWasteland.Stages
         /// <summary>Số đợt đã bắt đầu — đúng thứ tự thời gian, dùng cho HUD.</summary>
         public int WavesFired => spawner != null ? spawner.WavesFired : 0;
         public bool IsRunning => m_State == StageRunState.Running;
+
+        /// <summary>
+        /// Cờ test: chặn toàn bộ đợt quái của ải để sân chỉ còn quái do probe spawn.
+        /// Chỉ bật từ công cụ dev (-iw-spawn/-iw-boss), mặc định false ở build thường.
+        /// </summary>
+        public static bool SuppressEnemyWaves { get; set; }
 
         private void Awake()
         {
@@ -165,6 +175,7 @@ namespace IronWasteland.Stages
             m_State = StageRunState.Running;
             m_Elapsed = 0f;
             m_Kills = 0;
+            m_FailReason = null;
             m_Objectives.Clear();
 
             BuildObjectives();
@@ -292,6 +303,7 @@ namespace IronWasteland.Stages
         {
             if (m_State == StageRunState.Cleared || m_State == StageRunState.Failed) return;
             m_State = StageRunState.Failed;
+            m_FailReason = reason;
 
             UnhookPlayer();
             UnhookSpawner();
@@ -322,6 +334,7 @@ namespace IronWasteland.Stages
 
         private void OnSpawnerWaveStarted(int index, EnemyWave wave)
         {
+            if (SuppressEnemyWaves) return;
             WaveStarted?.Invoke(index, wave);
         }
 
@@ -415,6 +428,7 @@ namespace IronWasteland.Stages
         {
             if (m_State != StageRunState.Running) return;
             m_State = StageRunState.Failed;
+            m_FailReason = reason;
 
             UnhookPlayer();
             UnhookSpawner();

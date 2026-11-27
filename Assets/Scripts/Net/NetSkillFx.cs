@@ -59,6 +59,13 @@ namespace IronWasteland.Net
 
         private void Awake()
         {
+            // Bản sao trên object của scene mới không được cướp Instance persistent.
+            if (Instance != null && Instance != this)
+            {
+                enabled = false;
+                return;
+            }
+
             Instance = this;
         }
 

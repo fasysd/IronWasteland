@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using IronWasteland.Core;
 using IronWasteland.Enemies.ElementalReaper.Hitboxes;
 using IronWasteland.Enemies.ElementalReaper.VFX;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -275,7 +276,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             if (m_TargetTank == null) return;
 
             RotateTowardsTarget(m_TargetTank.transform.position, instant: true);
-            if (m_Animator != null) m_Animator.SetTrigger("ThuyTrieu");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "ThuyTrieu");
 
             if (thuyTrieuPrefab != null)
             {
@@ -294,7 +295,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         {
             m_Skill2Timer = skill2Cooldown;
             RotateToZero(instant: true);
-            if (m_Animator != null) m_Animator.SetTrigger("ThuyLieu");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "ThuyLieu");
 
             // Tự hồi 5% Max HP
             Heal(MaxHealth * 0.05f);
@@ -319,7 +320,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             Vector2 targetPos = m_TargetTank.transform.position;
             Vector2 dir = (targetPos - (Vector2)transform.position).normalized;
             RotateTowardsTarget(targetPos, instant: true);
-            if (m_Animator != null) m_Animator.SetTrigger("DocQuat");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "DocQuat");
 
             if (docQuatPrefab != null)
             {
@@ -342,7 +343,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             Vector2 targetPos = m_TargetTank.transform.position;
             transform.position = targetPos;
             RotateTowardsTarget(targetPos, instant: true);
-            if (m_Animator != null) m_Animator.SetTrigger("LoanChuyen");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "LoanChuyen");
 
             if (loanChuyenPrefab != null)
             {
@@ -362,7 +363,7 @@ namespace IronWasteland.Enemies.ElementalReaper
 
             Vector2 dir = ((Vector2)m_TargetTank.transform.position - (Vector2)transform.position).normalized;
             RotateTowardsTarget(m_TargetTank.transform.position, instant: true);
-            if (m_Animator != null) m_Animator.SetTrigger("PhunDungNham");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "PhunDungNham");
 
             if (phunDungNhamPrefab != null)
             {
@@ -383,7 +384,7 @@ namespace IronWasteland.Enemies.ElementalReaper
 
             Vector2 targetPos = m_TargetTank.transform.position;
             RotateTowardsTarget(targetPos, instant: true);
-            if (m_Animator != null) m_Animator.SetTrigger("HoaToc_Charge");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "HoaToc_Charge");
 
             if (fireTornadoPrefab != null)
             {

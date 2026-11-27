@@ -11,7 +11,7 @@ namespace IronWasteland.Enemies.ElementalReaper.VFX
     /// Tự động đồng bộ kích thước hiển thị khớp chính xác 100% với beamLength và beamWidth của BoxCollider2D.
     /// </summary>
     [DisallowMultipleComponent]
-    public class LavaBeamVFX : MonoBehaviour
+    public class LavaBeamVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Components")]
         [SerializeField] private SpriteRenderer beamCoreSprite;

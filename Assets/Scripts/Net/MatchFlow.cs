@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using IronWasteland.Save;
 using IronWasteland.Stages;
@@ -76,6 +77,8 @@ namespace IronWasteland.Net
         private Coroutine m_ClientSceneLoadCoroutine;
         private readonly HashSet<ulong> m_SceneReadyClients = new HashSet<ulong>();
         private StageDirector m_Director;
+        private bool m_Replaying;
+        private bool m_StartingMatch;
 
         /// <summary>Giai đoạn hiện tại của phiên.</summary>
         public MatchPhase Phase { get; private set; } = MatchPhase.Lobby;
@@ -285,6 +288,13 @@ namespace IronWasteland.Net
         /// </summary>
         public void PrepareNewSession()
         {
+            // Phiên mới phải cắt mọi coroutine/cờ của phiên cũ: DeferredStageSceneLoaded còn chờ
+            // có thể tỉnh dậy sau khi đã đổi scene và bắt đầu nhầm một trận thứ hai.
+            StopAllCoroutines();
+            m_Replaying = false;
+            m_StartingMatch = false;
+            m_PendingTargetScene = null;
+
             bootstrap?.DespawnAllTanks();
             bootstrap?.Stage?.ResetToIdle();
             ResetStageEventsState();
@@ -382,8 +392,18 @@ namespace IronWasteland.Net
         /// <summary>Host cho cả phòng về lobby để chơi lại.</summary>
         public void Replay()
         {
-            if (!IsServer) return;
+            if (!IsServer || m_Replaying || m_StartingMatch) return;
 
+            m_Replaying = true;
+            StartCoroutine(ReplayRoutine());
+        }
+
+        /// <summary>
+        /// Despawn xe rồi chờ một nhịp mạng trước khi đổi scene. Nếu nạp scene ngay trong cùng frame,
+        /// gói despawn có thể chưa tới client và xe cũ sẽ sống sót, chồng lên xe mới ở trận sau.
+        /// </summary>
+        private IEnumerator ReplayRoutine()
+        {
             bootstrap?.DespawnAllTanks();
             bootstrap?.Stage?.ResetToIdle();
             UnhookDirector();
@@ -393,6 +413,10 @@ namespace IronWasteland.Net
             m_Ready[0] = true; // host luôn sẵn sàng
             Phase = MatchPhase.Lobby;
             Broadcast();
+
+            yield return new WaitForSecondsRealtime(0.25f);
+
+            m_Replaying = false;
 
             string lobbyScene = Application.CanStreamedLevelBeLoaded("CoopLobby") ? "CoopLobby" : "SampleScene";
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != lobbyScene && Application.CanStreamedLevelBeLoaded(lobbyScene))
@@ -406,6 +430,11 @@ namespace IronWasteland.Net
         /// <summary>Đóng phòng ở phía máy này.</summary>
         public void Leave()
         {
+            StopAllCoroutines();
+            m_Replaying = false;
+            m_StartingMatch = false;
+            m_PendingTargetScene = null;
+
             if (IsServer && Phase == MatchPhase.Playing)
             {
                 Phase = MatchPhase.Failed;
@@ -436,12 +465,18 @@ namespace IronWasteland.Net
 
         private void StartMatchInternal()
         {
+            // Chống bấm START hai lần / StartMatch và StartSingle chồng nhau: nếu đã có tiến trình
+            // bắt đầu trận đang chạy thì bỏ qua, tránh spawn thêm một bộ xe và Begin ải lần hai.
+            if (!IsServer || m_StartingMatch || Phase != MatchPhase.Lobby) return;
+
             StageDefinition stage = SelectedStage;
             if (stage == null)
             {
                 Debug.LogWarning("[MatchFlow] Chưa cấu hình màn chơi — không thể bắt đầu.", this);
                 return;
             }
+
+            m_StartingMatch = true;
 
             string sceneName = SaveSystem.SceneNameFor(stage.StageCode);
             if (IsServer && !string.IsNullOrEmpty(sceneName) && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != sceneName && Application.CanStreamedLevelBeLoaded(sceneName))
@@ -505,8 +540,25 @@ namespace IronWasteland.Net
 
         private void OnStageSceneLoaded()
         {
+            if (!IsServer || !Listening || !m_StartingMatch)
+            {
+                m_StartingMatch = false;
+                return;
+            }
+
+            if (Phase == MatchPhase.Playing)
+            {
+                // Trước đây coroutine DeferredStageSceneLoaded có thể chạy lần hai ngay sau khi ải
+                // đã bắt đầu: nó spawn thêm một xe cho mỗi người và gọi Begin lần nữa. Lần spawn
+                // thứ hai rơi vào lúc NGO đã đổi scene/đang tắt nên ném NRE, bỏ lại xe mồ côi.
+                m_StartingMatch = false;
+                Debug.LogWarning("[MatchFlow] Bỏ qua OnStageSceneLoaded lặp — trận đã ở Phase Playing.");
+                return;
+            }
+
             StageDefinition stage = SelectedStage;
             ResetStageEventsState();
+            NetStageEvents.Instance?.BeginMatch();
 
             if (bootstrap?.Stage != null)
             {
@@ -528,7 +580,12 @@ namespace IronWasteland.Net
                 bootstrap?.SpawnTankFor(m_ClientIds[i], m_TankIndexes[i], m_Option1s[i], m_Option2s[i]);
             }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            BossProbe.TrySpawn(new Vector3(0f, 6f, 0f));
+#endif
+
             Phase = MatchPhase.Playing;
+            m_StartingMatch = false;
             Broadcast();
 
             if (director != null)
@@ -578,7 +635,7 @@ namespace IronWasteland.Net
             if (!IsServer || Phase != MatchPhase.Playing) return;
             Phase = MatchPhase.Failed;
             Broadcast();
-            NetStageEvents.Instance?.Broadcast(d, NetStageEvents.StateFailed);
+            NetStageEvents.Instance?.Broadcast(d, NetStageEvents.StateFailed, reason);
         }
 
         private bool AddOrUpdatePlayer(ulong clientId, byte tankIndex, bool ready, byte option1, byte option2)
@@ -653,7 +710,6 @@ namespace IronWasteland.Net
             return true;
         }
 
-        /// <summary>NetBootstrap gọi khi một client vừa kết nối (đã lưu loadout).</summary>
         /// <summary>Host xử lý khi có client kết nối; trả false nếu phòng đầy (client sẽ bị ngắt).</summary>
         public bool OnClientJoined(ulong clientId)
         {
@@ -672,6 +728,11 @@ namespace IronWasteland.Net
         /// <summary>Client xử lý khi host ngắt kết nối hoặc đóng phòng.</summary>
         public void OnHostDisconnected()
         {
+            StopAllCoroutines();
+            m_Replaying = false;
+            m_StartingMatch = false;
+            m_PendingTargetScene = null;
+
             if (Phase == MatchPhase.Playing)
             {
                 Phase = MatchPhase.Failed;

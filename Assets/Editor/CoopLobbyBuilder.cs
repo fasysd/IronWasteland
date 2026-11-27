@@ -180,10 +180,10 @@ namespace IronWasteland.EditorTools
             TextMeshProUGUI back = AddText(root, "TextBack", "QUAY LẠI", 112f, 110f, 19f, TextMain, anton, 160f, false);
             back.characterSpacing = 0.6f / 19f * 100f;
 
-            TextMeshProUGUI title = AddText(root, "TextLobbyTitle", "PHÒNG CO-OP", 278f, 128f, 44f, TextMain, anton, 700f, false);
+            TextMeshProUGUI title = AddText(root, "TextLobbyTitle", "PHÒNG LAN", 278f, 128f, 44f, TextMain, anton, 700f, false);
             title.characterSpacing = 0.3f / 44f * 100f;
 
-            AddText(root, "TextLobbySub", "CHỌN PHÒNG THEO ĐÚNG ẢI ĐANG CHỌN  /  2-4 NGƯỜI", 282f, 153f, 10f, TextMuted, barlow, 720f, false);
+            AddText(root, "TextLobbySub", "CHỌN PHÒNG TRONG MẠNG LAN  /  2-4 NGƯỜI", 282f, 153f, 10f, TextMuted, barlow, 720f, false);
 
             TextMeshProUGUI stage = AddText(root, "TextLobbyStage", "ẢI 1-2  /  HANG ĐÁ GAI", 1298f, 118f, 26f, Orange, anton, 548f, false);
             stage.alignment = TextAlignmentOptions.TopRight;
@@ -212,45 +212,67 @@ namespace IronWasteland.EditorTools
             TextMeshProUGUI[] roomNames = new TextMeshProUGUI[6];
             TextMeshProUGUI[] roomDetails = new TextMeshProUGUI[6];
             GameObject emptyHint;
-            TextMeshProUGUI joinCodeText;
-            BuildBrowser(browserRect, anton, barlow, roomNames, roomDetails, out emptyHint, out joinCodeText);
+            TextMeshProUGUI addressText;
+            GameObject[] roomRows;
+            BuildBrowser(browserRect, anton, barlow, roomNames, roomDetails, out emptyHint, out addressText, out roomRows);
 
             TextMeshProUGUI[] slotTitles = new TextMeshProUGUI[4];
             TextMeshProUGUI[] slotDetails = new TextMeshProUGUI[4];
-            TextMeshProUGUI roomCode;
+            TextMeshProUGUI roomAddress;
             TextMeshProUGUI roomHint;
+            TextMeshProUGUI roomNote;
             TextMeshProUGUI readyLabel;
             TextMeshProUGUI startLabel;
-            BuildRoom(roomRect, anton, barlow, slotTitles, slotDetails, out roomCode, out roomHint, out readyLabel, out startLabel);
+            BuildRoom(roomRect, anton, barlow, slotTitles, slotDetails, out roomAddress, out roomHint, out roomNote, out readyLabel, out startLabel);
 
             TextMeshProUGUI status = AddText(root, "TextLobbyStatus", string.Empty, 74f, 1008f, 11.5f, TextMuted, barlow, 1200f, false);
             AddFooter(root, barlow);
 
+            NetBootstrap bootstrap = Object.FindAnyObjectByType<NetBootstrap>();
+            LanDiscoveryService discovery = Object.FindAnyObjectByType<LanDiscoveryService>();
+            if (discovery == null && bootstrap != null)
+            {
+                discovery = bootstrap.GetComponent<LanDiscoveryService>();
+                if (discovery == null) discovery = bootstrap.gameObject.AddComponent<LanDiscoveryService>();
+            }
+
+            if (bootstrap != null)
+            {
+                SerializedObject bootstrapSerialized = new SerializedObject(bootstrap);
+                bootstrapSerialized.FindProperty("discovery").objectReferenceValue = discovery;
+                bootstrapSerialized.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(bootstrap);
+            }
+
             CoopLobbyController controller = canvasObject.AddComponent<CoopLobbyController>();
             SerializedObject serialized = new SerializedObject(controller);
-            serialized.FindProperty("bootstrap").objectReferenceValue = Object.FindAnyObjectByType<NetBootstrap>();
+            serialized.FindProperty("bootstrap").objectReferenceValue = bootstrap;
             serialized.FindProperty("flow").objectReferenceValue = Object.FindAnyObjectByType<MatchFlow>();
-            serialized.FindProperty("m_LegacyPanel").objectReferenceValue = Object.FindAnyObjectByType<NetLobbyUI>();
+            serialized.FindProperty("discovery").objectReferenceValue = discovery;
             serialized.FindProperty("m_Root").objectReferenceValue = group;
             serialized.FindProperty("m_BrowserView").objectReferenceValue = browser;
             serialized.FindProperty("m_RoomView").objectReferenceValue = room;
             serialized.FindProperty("m_StageCaption").objectReferenceValue = stage;
             serialized.FindProperty("m_Status").objectReferenceValue = status;
-            serialized.FindProperty("m_RoomCode").objectReferenceValue = roomCode;
+            serialized.FindProperty("m_RoomAddress").objectReferenceValue = roomAddress;
             serialized.FindProperty("m_RoomHint").objectReferenceValue = roomHint;
+            serialized.FindProperty("m_RoomNote").objectReferenceValue = roomNote;
             serialized.FindProperty("m_ReadyLabel").objectReferenceValue = readyLabel;
             serialized.FindProperty("m_StartLabel").objectReferenceValue = startLabel;
             serialized.FindProperty("m_EmptyHint").objectReferenceValue = emptyHint;
-            serialized.FindProperty("m_JoinCodeText").objectReferenceValue = joinCodeText;
+            serialized.FindProperty("m_AddressText").objectReferenceValue = addressText;
 
             SerializedProperty names = serialized.FindProperty("m_RoomNames");
             names.arraySize = roomNames.Length;
             SerializedProperty details = serialized.FindProperty("m_RoomDetails");
             details.arraySize = roomDetails.Length;
+            SerializedProperty rowRoots = serialized.FindProperty("m_RoomRows");
+            rowRoots.arraySize = roomRows.Length;
             for (int i = 0; i < roomNames.Length; i++)
             {
                 names.GetArrayElementAtIndex(i).objectReferenceValue = roomNames[i];
                 details.GetArrayElementAtIndex(i).objectReferenceValue = roomDetails[i];
+                rowRoots.GetArrayElementAtIndex(i).objectReferenceValue = roomRows[i];
             }
 
             SerializedProperty titles = serialized.FindProperty("m_SlotTitles");
@@ -273,8 +295,9 @@ namespace IronWasteland.EditorTools
 
             BindButton(root, "ButtonCreate", controller.PressCreate);
             BindButton(root, "ButtonRefresh", controller.PressRefresh);
-            BindButton(root, "JoinCodeBox", controller.PressJoinCodeField);
-            BindButton(root, "ButtonJoinCode", controller.PressJoinCode);
+            BindButton(root, "JoinCodeBox", controller.PressAddressField);
+            BindButton(root, "ButtonJoinCode", controller.PressJoinAddress);
+            BindButton(root, "ButtonCopyAddress", controller.PressCopyAddress);
             BindButton(root, "ButtonReady", controller.PressReady);
             BindButton(root, "ButtonGarage", controller.PressGarage);
             BindButton(root, "ButtonStart", controller.PressStart);
@@ -321,11 +344,12 @@ namespace IronWasteland.EditorTools
             return null;
         }
 
-        private static void BuildBrowser(RectTransform parent, TMP_FontAsset anton, TMP_FontAsset barlow, TextMeshProUGUI[] names, TextMeshProUGUI[] details, out GameObject emptyHint, out TextMeshProUGUI joinCodeText)
+        private static void BuildBrowser(RectTransform parent, TMP_FontAsset anton, TMP_FontAsset barlow, TextMeshProUGUI[] names, TextMeshProUGUI[] details, out GameObject emptyHint, out TextMeshProUGUI addressText, out GameObject[] roomRows)
         {
+            roomRows = new GameObject[6];
             AddBox(parent, "BrowserListPanel", 72f, 208f, 1188f, 632f, PanelFill, Border, 2f);
-            AddText(parent, "TextListTitle", "DANH SÁCH PHÒNG", 100f, 252f, 22f, TextMain, anton, 500f, false);
-            AddText(parent, "TextListSub", "CHỈ HIỆN CÁC PHÒNG CỦA ẢI ĐANG CHỌN", 102f, 278f, 9.5f, TextMuted, barlow, 760f, false);
+            AddText(parent, "TextListTitle", "DANH SÁCH PHÒNG LAN", 100f, 252f, 22f, TextMain, anton, 500f, false);
+            AddText(parent, "TextListSub", "TỰ DÒ CÁC PHÒNG ĐANG MỞ TRONG MẠNG LAN", 102f, 278f, 9.5f, TextMuted, barlow, 760f, false);
 
             GameObject hint = new GameObject("EmptyHint", typeof(RectTransform));
             RectTransform hintRect = hint.GetComponent<RectTransform>();
@@ -336,10 +360,10 @@ namespace IronWasteland.EditorTools
             hintRect.offsetMax = Vector2.zero;
             emptyHint = hint;
 
-            TextMeshProUGUI hintTitle = AddText(hintRect, "TextEmptyTitle", "CHƯA CÓ PHÒNG NÀO", 96f, 486f, 25f, TextMuted, anton, 1120f, false);
+            TextMeshProUGUI hintTitle = AddText(hintRect, "TextEmptyTitle", "CHƯA TÌM THẤY PHÒNG LAN NÀO", 96f, 486f, 25f, TextMuted, anton, 1120f, false);
             hintTitle.alignment = TextAlignmentOptions.Center;
             hintTitle.characterSpacing = 0.3f / 25f * 100f;
-            TextMeshProUGUI hintBody = AddText(hintRect, "TextEmptyBody", "BẤM TẠO PHÒNG ĐỂ MỞ PHÒNG ĐẦU TIÊN CHO ẢI NÀY.", 96f, 520f, 11f, new Color32(0x4E, 0x5A, 0x69, 0xFF), barlow, 1120f, false);
+            TextMeshProUGUI hintBody = AddText(hintRect, "TextEmptyBody", "BẤM TẠO PHÒNG ĐỂ MỞ PHÒNG, HOẶC NHẬP IP HOST Ở DƯỚI.", 96f, 520f, 11f, new Color32(0x4E, 0x5A, 0x69, 0xFF), barlow, 1120f, false);
             hintBody.alignment = TextAlignmentOptions.Center;
 
             for (int i = 0; i < 6; i++)
@@ -353,6 +377,7 @@ namespace IronWasteland.EditorTools
                 rowRect.offsetMin = Vector2.zero;
                 rowRect.offsetMax = Vector2.zero;
                 row.SetActive(false);
+                roomRows[i] = row;
 
                 AddBox(rowRect, "RoomRow" + (i + 1), 96f, y, 1140f, 74f, new Color32(13, 21, 32, 235), new Color32(33, 44, 57, 255), 1f);
                 AddLine(rowRect, "RoomRowAccent" + (i + 1), 96f, y + 16f, 3f, 42f, Orange);
@@ -365,8 +390,8 @@ namespace IronWasteland.EditorTools
             AddBox(parent, "BrowserInfoPanel", 1288f, 208f, 560f, 632f, PanelFill, Border, 2f);
             AddLine(parent, "BrowserInfoAccent", 1288f, 208f, 4f, 72f, Orange);
             AddText(parent, "TextInfoLabel", "ẢI ĐANG CHỌN", 1316f, 252f, 10f, TextMuted, barlow, 480f, false);
-            AddText(parent, "TextInfoBig", "CO-OP", 1316f, 310f, 58f, new Color32(0x35, 0x42, 0x52, 0xFF), anton, 480f, false);
-            TextMeshProUGUI info = AddText(parent, "TextInfoBody", "MỌI PHÒNG ĐỀU ĐƯỢC LỌC THEO ẢI.\nTẠO PHÒNG SẼ MỞ MỘT PHÒNG RIÊNG\nCHO ĐÚNG ẢI NÀY, TỐI ĐA 4 NGƯỜI.\n\nBẤM VÀO MỘT PHÒNG ĐỂ VÀO NGAY.\nBẤM TẢI LẠI NẾU DANH SÁCH TRỐNG.", 1316f, 370f, 11f, TextMain, barlow, 490f, false);
+            AddText(parent, "TextInfoBig", "LAN", 1316f, 310f, 58f, new Color32(0x35, 0x42, 0x52, 0xFF), anton, 480f, false);
+            TextMeshProUGUI info = AddText(parent, "TextInfoBody", "CHƠI LAN: CÁC MÁY PHẢI Ở CÙNG\nMỘT MẠNG, KHÔNG CẦN INTERNET.\n\nTỰ DÒ PHÒNG HOẶC NHẬP IP HOST.\nBẤM VÀO MỘT PHÒNG ĐỂ VÀO NGAY.", 1316f, 370f, 11f, TextMain, barlow, 490f, false);
             info.textWrappingMode = TextWrappingModes.Normal;
             info.lineSpacing = 12f;
 
@@ -375,8 +400,8 @@ namespace IronWasteland.EditorTools
             string[] steps =
             {
                 "CHỌN ẢI Ở MÀN CHỌN ẢI",
-                "TẠO PHÒNG RIÊNG CHO ẢI NÀY",
-                "CHIA SẺ MÃ PHÒNG CHO ĐỒNG ĐỘI",
+                "TẠO PHÒNG TRÊN MÁY HOST",
+                "CHIA SẺ ĐỊA CHỈ HOST CHO ĐỒNG ĐỘI",
                 "HOST BẤM BẮT ĐẦU KHI ĐỦ NGƯỜI"
             };
             for (int i = 0; i < steps.Length; i++)
@@ -387,17 +412,17 @@ namespace IronWasteland.EditorTools
                 step.characterSpacing = 0.2f / 9.8f * 100f;
             }
 
-            AddText(parent, "TextInfoHint", "HỆ THỐNG SẴN SÀNG  /  KHÔNG TỐN NĂNG LƯỢNG RA TRẬN", 1316f, 780f, 8.6f, Teal, barlow, 490f, false);
+            AddText(parent, "TextInfoHint", "CÙNG MẠNG LAN  /  KHÔNG CẦN INTERNET", 1316f, 780f, 8.6f, Teal, barlow, 490f, false);
 
             AddButton(parent, "ButtonCreate", 140f, 866f, 320f, 68f, Orange, new Color32(0x1A, 0x12, 0x06, 0xFF), "TẠO PHÒNG", 21f, anton);
             AddButton(parent, "ButtonRefresh", 482f, 866f, 240f, 68f, new Color32(15, 22, 32, 255), TextMain, "TẢI LẠI", 16f, barlow);
             AddBox(parent, "JoinCodeBox", 740f, 866f, 332f, 68f, new Color32(15, 22, 32, 255), new Color32(80, 90, 104, 255), 1f);
-            joinCodeText = AddText(parent, "TextJoinCode", "NHẬP MÃ PHÒNG", 762f, 907f, 17f, TextMuted, barlow, 296f, false);
+            addressText = AddText(parent, "TextJoinCode", "NHẬP IP HOST", 762f, 907f, 17f, TextMuted, barlow, 296f, false);
             AddButton(parent, "ButtonJoinCode", 1092f, 866f, 180f, 68f, Orange, new Color32(0x1A, 0x12, 0x06, 0xFF), "VÀO PHÒNG", 15f, barlow);
             AddLine(parent, "BrowserFooterRule", 72f, 960f, 1776f, 1f, Line);
         }
 
-        private static void BuildRoom(RectTransform parent, TMP_FontAsset anton, TMP_FontAsset barlow, TextMeshProUGUI[] titles, TextMeshProUGUI[] details, out TextMeshProUGUI roomCode, out TextMeshProUGUI roomHint, out TextMeshProUGUI readyLabel, out TextMeshProUGUI startLabel)
+        private static void BuildRoom(RectTransform parent, TMP_FontAsset anton, TMP_FontAsset barlow, TextMeshProUGUI[] titles, TextMeshProUGUI[] details, out TextMeshProUGUI roomAddress, out TextMeshProUGUI roomHint, out TextMeshProUGUI roomNote, out TextMeshProUGUI readyLabel, out TextMeshProUGUI startLabel)
         {
             for (int i = 0; i < 4; i++)
             {
@@ -413,16 +438,17 @@ namespace IronWasteland.EditorTools
 
             AddBox(parent, "RoomInfoPanel", 1288f, 216f, 560f, 388f, PanelFill, Border, 2f);
             AddLine(parent, "RoomInfoAccent", 1288f, 216f, 4f, 58f, Teal);
-            AddText(parent, "TextRoomCodeLabel", "MÃ PHÒNG", 1316f, 260f, 10f, TextMuted, barlow, 480f, false);
-            roomCode = AddText(parent, "TextRoomCode", "MÃ PHÒNG // —", 1316f, 306f, 27f, TextMain, anton, 500f, false);
+            AddText(parent, "TextRoomCodeLabel", "PHÒNG LAN / IP HOST", 1316f, 260f, 10f, TextMuted, barlow, 480f, false);
+            roomAddress = AddText(parent, "TextRoomCode", "—", 1316f, 306f, 27f, TextMain, anton, 500f, false);
             roomHint = AddText(parent, "TextRoomHint", "ĐANG CHỜ ĐỒNG ĐỘI…", 1316f, 356f, 11.5f, Purple, barlow, 500f, false);
             roomHint.textWrappingMode = TextWrappingModes.Normal;
             roomHint.lineSpacing = 10f;
 
             AddLine(parent, "RoomInfoRule", 1316f, 438f, 500f, 1f, Line);
-            TextMeshProUGUI note = AddText(parent, "TextRoomNote", "CHIA SẺ MÃ PHÒNG ĐỂ MỜI ĐỒNG ĐỘI.\nHOST BẤM BẮT ĐẦU KHI CẢ ĐỘI ĐÃ SẴN SÀNG.\nPHÒNG CHỈ MỞ CHO ĐÚNG ẢI ĐANG CHỌN.", 1316f, 470f, 9.6f, TextMuted, barlow, 490f, false);
-            note.textWrappingMode = TextWrappingModes.Normal;
-            note.lineSpacing = 9f;
+            roomNote = AddText(parent, "TextRoomNote", "ĐỊA CHỈ SẼ HIỆN KHI MỞ PHÒNG.", 1316f, 470f, 9.6f, TextMuted, barlow, 490f, false);
+            roomNote.textWrappingMode = TextWrappingModes.Normal;
+            roomNote.lineSpacing = 8f;
+            AddButton(parent, "ButtonCopyAddress", 1316f, 540f, 300f, 44f, new Color32(15, 22, 32, 255), Orange, "SAO CHÉP ĐỊA CHỈ", 13f, barlow);
 
             AddButton(parent, "ButtonReady", 140f, 690f, 300f, 62f, new Color32(15, 22, 32, 255), TextMain, "SẴN SÀNG", 17f, barlow);
             AddButton(parent, "ButtonGarage", 520f, 690f, 300f, 62f, new Color32(15, 22, 32, 255), Orange, "NHÀ XE", 17f, barlow);
@@ -457,7 +483,7 @@ namespace IronWasteland.EditorTools
 
         private static void AddFooter(RectTransform root, TMP_FontAsset barlow)
         {
-            AddText(root, "TextLobbyHeaderMini", "CHIẾN DỊCH  /  PHÒNG CO-OP", 74f, 60f, 8.4f, new Color32(0x4E, 0x5A, 0x69, 0xFF), barlow, 600f, false);
+            AddText(root, "TextLobbyHeaderMini", "CHIẾN DỊCH  /  PHÒNG LAN", 74f, 60f, 8.4f, new Color32(0x4E, 0x5A, 0x69, 0xFF), barlow, 600f, false);
             AddText(root, "TextLobbyFooter", "IRON WASTELAND  /  BUILD v1.0-alpha", 74f, 1040f, 8.4f, new Color32(0x4E, 0x5A, 0x69, 0xFF), barlow, 900f, false);
             TextMeshProUGUI esc = AddText(root, "TextLobbyEsc", "ESC  ĐỂ QUAY LẠI", 1590f, 1040f, 8.4f, new Color32(0x4E, 0x5A, 0x69, 0xFF), barlow, 260f, false);
             esc.alignment = TextAlignmentOptions.TopRight;

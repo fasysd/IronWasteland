@@ -3,7 +3,9 @@
     "rootNamespace": "IronWasteland.Tests",
     "references": [
         "IronWasteland.UiModels",
+        "IronWasteland.NetModels",
         "UnityEngine.UI",
+        "Unity.TextMeshPro",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

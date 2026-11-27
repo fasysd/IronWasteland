@@ -1,0 +1,105 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46ce41f0ab0689b4097786e0b9606b5b, type: 3}
+  m_Name: NetSkillVisualCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetSkillVisualCatalog
+  m_Entries:
+  - Id: 1425414518
+    Prefab: {fileID: 7032942883382488858, guid: bc64fa9feb96077428bc9a05ddab3eb9, type: 3}
+    Lifetime: 5
+  - Id: 616571700
+    Prefab: {fileID: 5950168081622924102, guid: e1448d3f4b25cc6429ae28b8ae2e9d67, type: 3}
+    Lifetime: 5
+  - Id: 117837231
+    Prefab: {fileID: 5656888912672395306, guid: 210fac6ac9212b14fa0645f258f602d4, type: 3}
+    Lifetime: 5
+  - Id: 1792760462
+    Prefab: {fileID: 5104140148131782415, guid: f68250f881619614098c56bd7f8b3084, type: 3}
+    Lifetime: 5
+  - Id: 642896584
+    Prefab: {fileID: 8831673778008638128, guid: d0de62efb9205c840a5fca22c31af312, type: 3}
+    Lifetime: 5
+  - Id: 2029239037
+    Prefab: {fileID: 651868748885757744, guid: 6587d26c0fb12b04e80b7b82c28ddb07, type: 3}
+    Lifetime: 5
+  - Id: 625575654
+    Prefab: {fileID: 6414271459696881015, guid: 8240efc6b68bebd43b5dfa3aef9b0008, type: 3}
+    Lifetime: 5
+  - Id: 728456789
+    Prefab: {fileID: 3601114105565139478, guid: 8447bb1bc6335bc45b7299ef48206cb8, type: 3}
+    Lifetime: 5
+  - Id: 705435871
+    Prefab: {fileID: 4174546941761670337, guid: 59a02f7283b404d40922d8e7e9eaafe4, type: 3}
+    Lifetime: 5
+  - Id: 517116765
+    Prefab: {fileID: 9181232242175674489, guid: 174c9fa461ec9c940a47a04c3155e1bc, type: 3}
+    Lifetime: 5
+  - Id: 1618956970
+    Prefab: {fileID: 6733269282763954519, guid: 525ff3b9584b4c04994c2b06197c334f, type: 3}
+    Lifetime: 5
+  - Id: 32816336
+    Prefab: {fileID: 8264617363939735276, guid: 614a9f552da9d1a48a8be1bb7b1c3643, type: 3}
+    Lifetime: 5
+  - Id: 848886153
+    Prefab: {fileID: 246905549649215118, guid: f11ccd6ead6e5444086d25825c6c850f, type: 3}
+    Lifetime: 5
+  - Id: 932549803
+    Prefab: {fileID: 5649345031416540328, guid: 116d32094028f2342a90cbe9ddb4d18b, type: 3}
+    Lifetime: 5
+  - Id: 673333513
+    Prefab: {fileID: 4902270035738657672, guid: f690ee2de1216064d86d8ea90e95ebe6, type: 3}
+    Lifetime: 5
+  - Id: 1001426271
+    Prefab: {fileID: 2878022181906116093, guid: 31bfdd5bad2682e45bbed44146228267, type: 3}
+    Lifetime: 5
+  - Id: 1340023004
+    Prefab: {fileID: 7899954895171703830, guid: a3c73039c590e0848af53ade79ebb117, type: 3}
+    Lifetime: 5
+  - Id: 1444812664
+    Prefab: {fileID: 1009528961256101684, guid: 511c700caee212442a4eecd024fc7bd2, type: 3}
+    Lifetime: 5
+  - Id: 620173
+    Prefab: {fileID: 8983056598318181901, guid: feedbade1b441ec44a96c326ffc50a51, type: 3}
+    Lifetime: 5
+  - Id: 864437710
+    Prefab: {fileID: 5266869162677690209, guid: 5106e63399b83ab4896d06d6a51be188, type: 3}
+    Lifetime: 5
+  - Id: 1360462740
+    Prefab: {fileID: 7417405375529767878, guid: f0f2ec7aa439ca94a8d76f52880310c2, type: 3}
+    Lifetime: 5
+  - Id: 637789231
+    Prefab: {fileID: 709934015514844354, guid: 6498c279df6c3b44ca9b93b57c8d1720, type: 3}
+    Lifetime: 5
+  - Id: 326913191
+    Prefab: {fileID: 9053968721529726173, guid: 80ca6559fd2e1f04b9f4b9a4c03d7335, type: 3}
+    Lifetime: 5
+  - Id: 1105081988
+    Prefab: {fileID: 8703061181659199425, guid: 7939636cf3f4a1646aa40fe42baf0d8a, type: 3}
+    Lifetime: 5
+  - Id: 1228406791
+    Prefab: {fileID: 3567202655062707223, guid: da19262593cd6e54cb67bc97551d6bea, type: 3}
+    Lifetime: 5
+  - Id: 1331086682
+    Prefab: {fileID: 3470967951959175526, guid: 3c78659f012005145af28db138c871c5, type: 3}
+    Lifetime: 5
+  - Id: 1607516774
+    Prefab: {fileID: 271723051585972214, guid: 1305a7f97dbf0cc46a5c831766bb8df1, type: 3}
+    Lifetime: 5
+  - Id: 20729921
+    Prefab: {fileID: 4998747149743137043, guid: 6559fbebf5c20bf4bb8fa0fe00164ab6, type: 3}
+    Lifetime: 5
+  - Id: 1657886939
+    Prefab: {fileID: 4471769035943845470, guid: eb4b33741ebb825448d3eee4259f7d57, type: 3}
+    Lifetime: 5
+  - Id: 1813220319
+    Prefab: {fileID: 4155844852356838372, guid: d0c0493a47026224f89fd7f666549cf2, type: 3}
+    Lifetime: 5

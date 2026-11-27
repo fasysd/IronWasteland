@@ -7,7 +7,7 @@ namespace IronWasteland.Enemies.ElementalReaper.VFX
     /// Vòm khiên tam sắc bảo vệ Boss (25% Max HP) cùng 3 tinh thể nguyên tố (Tròn - Lam, Vuông - Lục, Tam Giác - Đỏ) xoay quanh.
     /// </summary>
     [DisallowMultipleComponent]
-    public class BurstShieldVFX : MonoBehaviour
+    public class BurstShieldVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Shield Components")]
         [SerializeField] private SpriteRenderer shieldDomeSprite;

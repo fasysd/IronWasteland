@@ -356,13 +356,13 @@ namespace IronWasteland.EditorTools
             Image coopImage = AddImage(root, new LayerRect("ModeCoop", 1579f, 467f, 269f, 47f), coopOn);
             TextMeshProUGUI singleLabel = AddText(root, "TextModeSingle", "CHƠI ĐƠN", 1313f, 491f, 15f, new Color32(0x6F, 0x7D, 0x8C, 0xFF), barlow, 160f, false);
             TextMeshProUGUI singleHint = AddText(root, "TextModeSingleHint", "01 NGƯỜI / CHIẾN DỊCH", 1313f, 501.5f, 7.8f, new Color32(0x4E, 0x5A, 0x69, 0xFF), barlow, 180f, false);
-            TextMeshProUGUI coopLabel = AddText(root, "TextModeCoop", "CHƠI CO-OP", 1585f, 491f, 15f, new Color32(0xFF, 0xFF, 0xFF, 0xFF), barlow, 160f, false);
-            TextMeshProUGUI coopHint = AddText(root, "TextModeCoopHint", "2-4 NGƯỜI / TẠO PHÒNG", 1585f, 501.5f, 7.8f, new Color32(0xFF, 0xE0, 0xB2, 0xFF), barlow, 180f, false);
+            TextMeshProUGUI coopLabel = AddText(root, "TextModeCoop", "CHƠI LAN", 1585f, 491f, 15f, new Color32(0xFF, 0xFF, 0xFF, 0xFF), barlow, 160f, false);
+            TextMeshProUGUI coopHint = AddText(root, "TextModeCoopHint", "2-4 NGƯỜI / MẠNG LAN", 1585f, 501.5f, 7.8f, new Color32(0xFF, 0xE0, 0xB2, 0xFF), barlow, 180f, false);
             Sprite modeCheckSprite = LoadUiSprite("mode_check");
             Image modeCheck = AddImage(root, new LayerRect("ModeCheck", 1806f, 476f, 20f, 16f), modeCheckSprite);
             modeCheck.preserveAspect = true;
 
-            // Thẻ 1-1 và 1-2 có trạng thái động; 1-2 tối đi khi chọn ải khác.
+            // Chín thẻ có trạng thái động; 1-2 tối đi khi chọn ải khác.
             // Toạ độ lấy trực tiếp từ các thẻ <rect> của stage_select.svg (không ước lượng).
             Rect[] cardRects =
             {
@@ -380,17 +380,36 @@ namespace IronWasteland.EditorTools
             Image card12Border = AddImage(root, new LayerRect("Card12Border", cardRects[1].x, cardRects[1].y, cardRects[1].width, cardRects[1].height), LoadUiSprite("card_border_neutral"));
             card12Border.raycastTarget = false;
 
-            Image[] statusCovers = new Image[cardRects.Length];
-            TextMeshProUGUI[] statusTexts = new TextMeshProUGUI[cardRects.Length];
-            for (int i = 0; i < cardRects.Length; i++)
+            int[] statusCardOrder = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+            Image[] statusCovers = new Image[statusCardOrder.Length];
+            TextMeshProUGUI[] statusTexts = new TextMeshProUGUI[statusCardOrder.Length];
+            for (int i = 0; i < statusCardOrder.Length; i++)
             {
-                Rect card = cardRects[i];
+                Rect card = cardRects[statusCardOrder[i]];
                 statusCovers[i] = AddImage(root, new LayerRect("StatusCover" + (i + 1), card.x + 3.5f, card.y + 3.5f, card.width - 7f, 30f), null);
                 statusCovers[i].color = i == 0 ? new Color32(11, 17, 24, 255) : new Color32(18, 21, 25, 255);
+                statusCovers[i].raycastTarget = false;
                 string initialText = i == 0 ? "ĐÃ HOÀN THÀNH" : (i == 1 ? "ĐANG CHỌN" : "CHƯA MỞ KHÓA");
                 statusTexts[i] = AddText(root, "StatusText" + (i + 1), initialText, card.x + 3.5f, card.y + 19.5f, 10.4f, new Color32(0x2F, 0xE8, 0xE0, 0xFF), barlow, card.width - 7f, false);
                 statusTexts[i].alignment = TextAlignmentOptions.Center;
                 statusTexts[i].characterSpacing = 0.2f / 10.4f * 100f;
+                statusTexts[i].raycastTarget = false;
+            }
+
+            // Chân thẻ có dòng mục tiêu tĩnh; khi ải đã mở khoá, lớp phủ này thay bằng mục tiêu động.
+            Image[] footerCovers = new Image[statusCardOrder.Length];
+            TextMeshProUGUI[] footerTexts = new TextMeshProUGUI[statusCardOrder.Length];
+            for (int i = 0; i < statusCardOrder.Length; i++)
+            {
+                Rect card = cardRects[statusCardOrder[i]];
+                footerCovers[i] = AddImage(root, new LayerRect("FooterCover" + (i + 1), card.x + 3.5f, card.y + card.height - 30f, card.width - 7f, 30f), null);
+                footerCovers[i].color = i == 0 ? new Color32(11, 17, 24, 255) : i == 1 ? new Color32(18, 21, 25, 255) : new Color32(11, 17, 24, 255);
+                footerCovers[i].raycastTarget = false;
+                footerTexts[i] = AddText(root, "FooterText" + (i + 1), "ĐÃ MỞ KHÓA", card.x + 3.5f, card.y + card.height - 24.4f, 10.4f, new Color32(0x6F, 0x7D, 0x8C, 0xFF), barlow, card.width - 7f, false);
+                footerTexts[i].rectTransform.anchoredPosition = new Vector2(footerCovers[i].rectTransform.anchoredPosition.x, footerCovers[i].rectTransform.anchoredPosition.y + 24.4f);
+                footerTexts[i].alignment = TextAlignmentOptions.Center;
+                footerTexts[i].characterSpacing = 0.2f / 10.4f * 100f;
+                footerTexts[i].raycastTarget = false;
             }
 
             Image selectionFrame = AddImage(root, new LayerRect("SelectionFrame", cardRects[1].x, cardRects[1].y, cardRects[1].width, cardRects[1].height), LoadUiSprite("select_frame"));
@@ -410,6 +429,7 @@ namespace IronWasteland.EditorTools
             serialized.FindProperty("m_MissionReward").objectReferenceValue = missionReward;
             serialized.FindProperty("m_MissionDrop").objectReferenceValue = missionDrop;
             serialized.FindProperty("m_GemCount").objectReferenceValue = gemCount;
+            serialized.FindProperty("m_CoopLobbySceneName").stringValue = "CoopLobby";
             serialized.FindProperty("m_SelectionFrame").objectReferenceValue = selectionFrame.rectTransform;
             serialized.FindProperty("m_Card12Border").objectReferenceValue = card12Border;
             serialized.FindProperty("m_ModeSingleImage").objectReferenceValue = singleImage;
@@ -437,10 +457,20 @@ namespace IronWasteland.EditorTools
             coversProperty.arraySize = statusCovers.Length;
             SerializedProperty statusTextsProperty = serialized.FindProperty("m_StatusTexts");
             statusTextsProperty.arraySize = statusTexts.Length;
-            for (int i = 0; i < statusTexts.Length; i++)
+            for (int i = 0; i < statusCovers.Length; i++)
             {
                 coversProperty.GetArrayElementAtIndex(i).objectReferenceValue = statusCovers[i];
                 statusTextsProperty.GetArrayElementAtIndex(i).objectReferenceValue = statusTexts[i];
+            }
+
+            SerializedProperty footerCoversProperty = serialized.FindProperty("m_CardFooterCovers");
+            footerCoversProperty.arraySize = footerCovers.Length;
+            SerializedProperty footerTextsProperty = serialized.FindProperty("m_CardFooterTexts");
+            footerTextsProperty.arraySize = footerTexts.Length;
+            for (int i = 0; i < footerCovers.Length; i++)
+            {
+                footerCoversProperty.GetArrayElementAtIndex(i).objectReferenceValue = footerCovers[i];
+                footerTextsProperty.GetArrayElementAtIndex(i).objectReferenceValue = footerTexts[i];
             }
 
             SerializedProperty cardRectsProperty = serialized.FindProperty("m_CardRects");

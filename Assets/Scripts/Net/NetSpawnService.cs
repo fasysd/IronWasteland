@@ -31,6 +31,15 @@ namespace IronWasteland.Net
 
         private void Awake()
         {
+            // Scene PHÒNG LAN được nạp lại khi chơi lại: bản sao trên object mới không được
+            // cướp Instance của object persistent, nếu không OnDestroy của nó sẽ xoá mất
+            // tham chiếu mà host đang dùng (khiến quái rơi về chế độ local-only).
+            if (Instance != null && Instance != this)
+            {
+                enabled = false;
+                return;
+            }
+
             Instance = this;
         }
 
@@ -121,6 +130,12 @@ namespace IronWasteland.Net
         /// <summary>Server dựng xe cho một client. Gọi trên host sau khi client được duyệt.</summary>
         public TankBrain SpawnPlayerTank(ulong clientId, NetLoadout loadout)
         {
+            // Chỉ host đang listen mới được spawn. Coroutine bắt đầu trận có thể chạy muộn sau khi
+            // Shutdown/scene đổi; gọi SpawnAsPlayerObject lúc đó sẽ ném NullReference và bỏ lại xe
+            // không được track — chính là chiếc xe "cũ" chồng lên xe mới ở trận sau.
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsListening || !manager.IsServer) return null;
+
             if (TryGetTank(clientId, out TankBrain existing)) return existing;
 
             TankDefinition definition = GetDefinition(loadout.TankIndex);
@@ -167,18 +182,33 @@ namespace IronWasteland.Net
                 loadout.OptionSkill2);
             definition.InitializeTank(brain, context);
 
-            networkObject.SpawnAsPlayerObject(clientId);
+            // Ghi vào roster TRƯỚC khi spawn: nếu SpawnAsPlayerObject ném lỗi, DespawnAll vẫn
+            // nhìn thấy chiếc xe này để dọn, thay vì để nó mồ côi trong scene/DDOL.
+            m_Spawned[clientId] = brain;
+
+            try
+            {
+                // destroyWithScene = true: rời ải là xe bị huỷ cùng scene, không sống sang phòng chờ.
+                networkObject.SpawnAsPlayerObject(clientId, true);
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogException(exception, this);
+                m_Spawned.Remove(clientId);
+                if (brain != null) Destroy(brain.gameObject);
+                return null;
+            }
 
             if (!networkObject.IsSpawned)
             {
                 // Prefab chưa đăng ký NetworkPrefabs thì spawn thất bại nhưng object đã Initialize
                 // và sẽ lọt roster của StageManager (khiến ải không bao giờ thua). Dọn ngay.
                 Debug.LogError($"[NetSpawnService] SpawnAsPlayerObject thất bại cho client {clientId} — huỷ xe.", this);
+                m_Spawned.Remove(clientId);
                 Destroy(brain.gameObject);
                 return null;
             }
 
-            m_Spawned[clientId] = brain;
             if (slot != null) m_SpawnSlots[clientId] = slot;
             return brain;
         }
@@ -204,22 +234,37 @@ namespace IronWasteland.Net
             if (prefab == null) return null;
 
             NetworkManager manager = NetworkManager.Singleton;
-            if (manager == null || !manager.IsServer) return null;
+            if (manager == null || !manager.IsServer || !manager.IsListening) return null;
 
-            EnemyBrain enemy = Instantiate(prefab, position, Quaternion.identity);
-            enemy.gameObject.SetActive(true);
-
-            NetworkObject networkObject = enemy.GetComponent<NetworkObject>();
-            if (networkObject == null)
+            EnemyBrain enemy = null;
+            try
             {
-                Debug.LogError($"[NetSpawnService] Prefab quái '{prefab.name}' chưa có NetworkObject.", this);
-                Destroy(enemy.gameObject);
+                enemy = Instantiate(prefab, position, Quaternion.identity);
+                enemy.gameObject.SetActive(true);
+
+                NetworkObject networkObject = enemy.GetComponent<NetworkObject>();
+                if (networkObject == null)
+                {
+                    Debug.LogError($"[NetSpawnService] Prefab quái '{prefab.name}' chưa có NetworkObject.", this);
+                    Destroy(enemy.gameObject);
+                    return null;
+                }
+
+                enemy.Initialize(stats);
+                networkObject.Spawn(true);
+                return enemy;
+            }
+            catch (System.Exception exception)
+            {
+                // Spawn lỗi giữa lúc đổi scene/tắt mạng từng bỏ lại quái không ai quản lý.
+                Debug.LogException(exception);
+                if (enemy != null)
+                {
+                    if (manager.IsListening) NetEntity.Despawn(enemy.gameObject);
+                    else Destroy(enemy.gameObject);
+                }
                 return null;
             }
-
-            enemy.Initialize(stats);
-            networkObject.Spawn(true);
-            return enemy;
         }
     }
 }

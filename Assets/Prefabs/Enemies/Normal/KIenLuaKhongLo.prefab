@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 4051118436989411208}
   - component: {fileID: 3612886641376569478}
   - component: {fileID: 1073904871650786730}
+  - component: {fileID: -5097484807153901060}
   m_Layer: 7
   m_Name: KIenLuaKhongLo
   m_TagString: Untagged
@@ -243,6 +244,38 @@ MonoBehaviour:
   playDeath: 1
   playCrowdControl: 1
   hitCooldown: 0.1
+--- !u!114 &-5097484807153901060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1031078827579660911}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkAnimator
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkAnimatorExpanded: 0
+  AuthorityMode: 0
+  m_Animator: {fileID: 3851081453422024251}
+  TransitionStateInfoList: []
+  AnimatorParameterEntries:
+    ParameterEntries:
+    - name: MoveSpeed
+      NameHash: 526065662
+      Synchronize: 0
+      ParameterType: 1
+    - name: TakeDamage
+      NameHash: -339413771
+      Synchronize: 1
+      ParameterType: 9
+    - name: TakedDamege
+      NameHash: 78573937
+      Synchronize: 1
+      ParameterType: 9
+  AnimatorParametersExpanded: 0
 --- !u!1 &4339226142179569615
 GameObject:
   m_ObjectHideFlags: 0
@@ -349,6 +382,7 @@ GameObject:
   - component: {fileID: 6524022170102301706}
   - component: {fileID: 4153879914011444355}
   - component: {fileID: 4209462172690551927}
+  - component: {fileID: 729859999029733425}
   m_Layer: 0
   m_Name: Skill
   m_TagString: Untagged
@@ -493,7 +527,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 0, b: 0, a: 1}
@@ -533,6 +567,18 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &729859999029733425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6164576974939703093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost
 --- !u!1 &6248567594932159892
 GameObject:
   m_ObjectHideFlags: 0

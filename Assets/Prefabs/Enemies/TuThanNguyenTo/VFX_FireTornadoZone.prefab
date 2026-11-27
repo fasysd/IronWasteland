@@ -104,6 +104,7 @@ GameObject:
   - component: {fileID: 4077365252900282985}
   - component: {fileID: 1986743247216101956}
   - component: {fileID: 1322144257814023112}
+  - component: {fileID: 8945215365366114756}
   m_Layer: 0
   m_Name: VFX_FireTornadoZone
   m_TagString: Untagged
@@ -198,6 +199,18 @@ MonoBehaviour:
   radius: 2
   rotationSpeed: 720
   duration: 1.5
+--- !u!114 &8945215365366114756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3567202655062707223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost
 --- !u!1 &5877086299602726816
 GameObject:
   m_ObjectHideFlags: 0

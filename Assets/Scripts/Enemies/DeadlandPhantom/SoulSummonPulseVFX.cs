@@ -12,7 +12,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
     /// tạo hiệu ứng sương mù u linh bao phủ mặt đất và tàn hồn bay lơ lửng.
     /// </summary>
     [DisallowMultipleComponent]
-    public class SoulSummonPulseVFX : MonoBehaviour
+    public class SoulSummonPulseVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Shockwave Pulse Settings")]
         [Tooltip("Bán kính tối đa của vòng xung kích (m). Chuẩn GDD là 10m.")]

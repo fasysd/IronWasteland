@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2453566361015706437}
   - component: {fileID: 4946979553235843084}
   - component: {fileID: 6854840781596709644}
+  - component: {fileID: 8360889520176946665}
   m_Layer: 0
   m_Name: VFX_ThuyTrieuHitbox
   m_TagString: Untagged
@@ -133,6 +134,18 @@ MonoBehaviour:
   radius: 7
   coneAngle: 60
   duration: 0.6
+--- !u!114 &8360889520176946665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4155844852356838372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost
 --- !u!1 &4615832334294087347
 GameObject:
   m_ObjectHideFlags: 0

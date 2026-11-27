@@ -4996,6 +4996,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2950214555467883161}
   - component: {fileID: 2791651470090450900}
+  - component: {fileID: 1255564512662604708}
   m_Layer: 0
   m_Name: VFX_DeadlandSoulImpact
   m_TagString: Untagged
@@ -5033,3 +5034,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.DeadlandPhantom.SimpleVFXAutoCleanup
   lifetime: 0.6
+--- !u!114 &1255564512662604708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6414271459696881015}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost

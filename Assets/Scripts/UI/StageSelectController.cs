@@ -13,7 +13,7 @@ namespace IronWasteland.UI
     /// <summary>
     /// Điều khiển màn hình CHỌN ẢI CHIẾN DỊCH. Khung nền, đường nối và 9 thẻ ải đã dựng sẵn;
     /// script cập nhật thẻ Siêu cơ sẵn sàng, ảnh ải đang chọn, thông tin nhiệm vụ và chế độ chơi.
-    /// Bấm CHƠI CO-OP sẽ sang scene chiến đấu ở trạng thái mở lobby; CHƠI ĐƠN vào trận ngay.
+    /// Bấm CHƠI LAN sẽ sang scene PHÒNG LAN; CHƠI ĐƠN vào trận ngay.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class StageSelectController : MonoBehaviour
@@ -177,12 +177,20 @@ namespace IronWasteland.UI
         private GameObject m_CurrentCardDim;
 
         [SerializeField]
-        [Tooltip("Nền che trạng thái tĩnh của các thẻ ải.")]
+        [Tooltip("Nền che trạng thái tĩnh của chín thẻ ải.")]
         private Image[] m_StatusCovers = new Image[9];
 
         [SerializeField]
-        [Tooltip("Chữ trạng thái động của các thẻ ải.")]
+        [Tooltip("Chữ trạng thái động của chín thẻ ải.")]
         private TextMeshProUGUI[] m_StatusTexts = new TextMeshProUGUI[9];
+
+        [SerializeField]
+        [Tooltip("Nền che dòng mục tiêu hoặc trạng thái tĩnh ở chân chín thẻ ải.")]
+        private Image[] m_CardFooterCovers = new Image[9];
+
+        [SerializeField]
+        [Tooltip("Chữ mục tiêu động ở chân thẻ khi ải đã mở khoá.")]
+        private TextMeshProUGUI[] m_CardFooterTexts = new TextMeshProUGUI[9];
 
         [Header("Chọn chế độ chơi")]
         [SerializeField]
@@ -247,6 +255,10 @@ namespace IronWasteland.UI
         [Tooltip("Tên scene chiến đấu được mở khi bắt đầu.")]
         private string m_GameSceneName = "SampleScene";
 
+        [SerializeField]
+        [Tooltip("Tên scene PHÒNG LAN mở khi bấm CHƠI LAN.")]
+        private string m_CoopLobbySceneName = "CoopLobby";
+
         private const float DesignHeight = 1080f;
 
         /// <summary>Độ nới của khung chọn để phủ kín viền card (đơn vị thiết kế).</summary>
@@ -289,7 +301,7 @@ namespace IronWasteland.UI
                 {
                     if (m_Stages[i] != null)
                     {
-                        m_Stages[i].Unlocked = SaveSystem.Instance.IsStageUnlocked(m_Stages[i].Code);
+                        m_Stages[i].Unlocked = m_Stages[i].Unlocked || SaveSystem.Instance.IsStageUnlocked(m_Stages[i].Code);
                     }
                 }
 
@@ -504,7 +516,12 @@ namespace IronWasteland.UI
                 m_CurrentCardDim.SetActive(SelectedStageIndex != 1);
             }
 
-            int statusCount = m_StatusTexts != null ? m_StatusTexts.Length : 0;
+            int statusCount = m_Stages != null ? m_Stages.Length : 0;
+            if (m_StatusTexts != null && m_StatusTexts.Length < statusCount)
+            {
+                statusCount = m_StatusTexts.Length;
+            }
+
             for (int i = 0; i < statusCount; i++)
             {
                 StageEntry entry = m_Stages != null && i < m_Stages.Length ? m_Stages[i] : null;
@@ -547,6 +564,50 @@ namespace IronWasteland.UI
                     text.color = color;
                 }
             }
+
+            int footerCount = m_Stages != null ? m_Stages.Length : 0;
+            if (m_CardFooterCovers == null || m_CardFooterTexts == null)
+            {
+                footerCount = 0;
+            }
+
+            if (m_CardFooterTexts != null && m_CardFooterTexts.Length < footerCount)
+            {
+                footerCount = m_CardFooterTexts.Length;
+            }
+
+            if (m_CardFooterCovers != null && m_CardFooterCovers.Length < footerCount)
+            {
+                footerCount = m_CardFooterCovers.Length;
+            }
+
+            for (int i = 0; i < footerCount; i++)
+            {
+                StageEntry entry = m_Stages != null && i < m_Stages.Length ? m_Stages[i] : null;
+                bool cleared = entry != null && SaveSystem.Instance.IsStageCleared(entry.Code);
+                bool unlocked = entry != null && entry.Unlocked;
+                bool showFooter = cleared || unlocked;
+
+                Image footerCover = m_CardFooterCovers[i];
+                if (footerCover != null)
+                {
+                    footerCover.enabled = showFooter;
+                }
+
+                TextMeshProUGUI footerText = m_CardFooterTexts[i];
+                if (footerText == null) continue;
+
+                footerText.enabled = showFooter;
+                if (!showFooter) continue;
+
+                string footerValue = cleared
+                    ? "ĐÃ HOÀN THÀNH"
+                    : !string.IsNullOrEmpty(entry.Objective) ? entry.Objective : "ĐÃ MỞ KHÓA";
+                footerText.text = footerValue;
+                footerText.color = cleared
+                    ? new Color32(0x2F, 0xE8, 0xE0, 0xFF)
+                    : new Color32(0x6F, 0x7D, 0x8C, 0xFF);
+            }
         }
 
         /// <summary>Đổi trạng thái hiển thị của hai nút chế độ và dấu tích.</summary>
@@ -586,7 +647,7 @@ namespace IronWasteland.UI
         {
             CoopEntry.Mode = MatchMode.Coop;
             CoopEntry.OpenLobby = true;
-            LoadScene(m_GameSceneName);
+            LoadScene(m_CoopLobbySceneName);
         }
 
         private void StartSingle()

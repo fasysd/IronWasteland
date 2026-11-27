@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6470836146409652771}
   - component: {fileID: 4958864791670734754}
   - component: {fileID: 7771632083500882235}
+  - component: {fileID: 3359813996068184902}
   m_Layer: 0
   m_Name: VFX_PhunDungNhamHitbox
   m_TagString: Untagged
@@ -116,6 +117,18 @@ MonoBehaviour:
   beamLength: 16
   beamWidth: 1.2
   duration: 1.2
+--- !u!114 &3359813996068184902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4998747149743137043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost
 --- !u!1 &8207104407650366385
 GameObject:
   m_ObjectHideFlags: 0

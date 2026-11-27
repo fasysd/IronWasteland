@@ -1,6 +1,8 @@
 using System;
 using IronWasteland.Enemies.ElementalReaper.Hitboxes;
 using IronWasteland.Enemies.ElementalReaper.VFX;
+using IronWasteland.Net;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace IronWasteland.Enemies.ElementalReaper
@@ -94,7 +96,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         {
             if (m_ActiveElementalAura == null && elementalAuraPrefab != null)
             {
-                GameObject auraGo = Instantiate(elementalAuraPrefab, transform);
+                GameObject auraGo = SpawnVfx(elementalAuraPrefab, transform);
                 auraGo.transform.localPosition = Vector3.zero;
                 m_ActiveElementalAura = auraGo.GetComponent<ElementalAuraVFX>();
             }
@@ -124,7 +126,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         /// </summary>
         public ThuyTrieuHitbox PlayThuyTrieu(Vector3? targetDirection = null, Action onComplete = null)
         {
-            if (m_Animator != null) m_Animator.SetTrigger("ThuyTrieu");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "ThuyTrieu");
 
             if (thuyTrieuHitboxPrefab == null)
             {
@@ -140,7 +142,7 @@ namespace IronWasteland.Enemies.ElementalReaper
                 rot = Quaternion.Euler(0f, 0f, angle);
             }
 
-            GameObject go = Instantiate(thuyTrieuHitboxPrefab, spawnPos, rot);
+            GameObject go = SpawnVfx(thuyTrieuHitboxPrefab, spawnPos, rot);
             ThuyTrieuHitbox hitbox = go.GetComponent<ThuyTrieuHitbox>();
             if (hitbox != null)
             {
@@ -163,7 +165,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         /// </summary>
         public ThuyLieuVFX PlayThuyLieu(Action onComplete = null)
         {
-            if (m_Animator != null) m_Animator.SetTrigger("ThuyLieu");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "ThuyLieu");
 
             if (thuyLieuVFXPrefab == null)
             {
@@ -171,7 +173,7 @@ namespace IronWasteland.Enemies.ElementalReaper
                 return null;
             }
 
-            GameObject go = Instantiate(thuyLieuVFXPrefab, transform);
+            GameObject go = SpawnVfx(thuyLieuVFXPrefab, transform);
             go.transform.localPosition = Vector3.zero;
             ThuyLieuVFX vfx = go.GetComponent<ThuyLieuVFX>();
             if (vfx != null)
@@ -192,7 +194,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         /// </summary>
         public DocQuatHitbox PlayDocQuat(Vector3? targetDirection = null, Action onComplete = null)
         {
-            if (m_Animator != null) m_Animator.SetTrigger("DocQuat");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "DocQuat");
 
             if (docQuatHitboxPrefab == null)
             {
@@ -212,7 +214,7 @@ namespace IronWasteland.Enemies.ElementalReaper
                 rot = reaperBrain.RotationPivot.rotation;
             }
 
-            GameObject go = Instantiate(docQuatHitboxPrefab, spawnPos, rot);
+            GameObject go = SpawnVfx(docQuatHitboxPrefab, spawnPos, rot);
             DocQuatHitbox hitbox = go.GetComponent<DocQuatHitbox>();
             if (hitbox != null)
             {
@@ -235,7 +237,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         /// </summary>
         public LoanChuyenBurstHitbox PlayLoanChuyenBurst(Vector3 position, Action onComplete = null)
         {
-            if (m_Animator != null) m_Animator.SetTrigger("LoanChuyen");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "LoanChuyen");
 
             if (loanChuyenBurstHitboxPrefab == null)
             {
@@ -243,7 +245,7 @@ namespace IronWasteland.Enemies.ElementalReaper
                 return null;
             }
 
-            GameObject go = Instantiate(loanChuyenBurstHitboxPrefab, position, Quaternion.identity);
+            GameObject go = SpawnVfx(loanChuyenBurstHitboxPrefab, position, Quaternion.identity);
             LoanChuyenBurstHitbox hitbox = go.GetComponent<LoanChuyenBurstHitbox>();
             if (hitbox != null)
             {
@@ -266,7 +268,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         /// </summary>
         public PhunDungNhamHitbox PlayPhunDungNham(Vector3 direction, Action onComplete = null)
         {
-            if (m_Animator != null) m_Animator.SetTrigger("PhunDungNham");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "PhunDungNham");
 
             if (phunDungNhamHitboxPrefab == null)
             {
@@ -277,7 +279,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             Quaternion rot = Quaternion.Euler(0f, 0f, angle);
 
-            GameObject go = Instantiate(phunDungNhamHitboxPrefab, transform.position, rot);
+            GameObject go = SpawnVfx(phunDungNhamHitboxPrefab, transform.position, rot);
             PhunDungNhamHitbox hitbox = go.GetComponent<PhunDungNhamHitbox>();
             if (hitbox != null)
             {
@@ -300,7 +302,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         /// </summary>
         public FireTornadoZone SpawnFireTornado(Vector3 targetPosition, Action onComplete = null)
         {
-            if (m_Animator != null) m_Animator.SetTrigger("HoaToc_Charge");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "HoaToc_Charge");
 
             if (fireTornadoZonePrefab == null)
             {
@@ -308,7 +310,7 @@ namespace IronWasteland.Enemies.ElementalReaper
                 return null;
             }
 
-            GameObject go = Instantiate(fireTornadoZonePrefab, targetPosition, Quaternion.identity);
+            GameObject go = SpawnVfx(fireTornadoZonePrefab, targetPosition, Quaternion.identity);
             FireTornadoZone zone = go.GetComponent<FireTornadoZone>();
             if (zone != null)
             {
@@ -337,7 +339,7 @@ namespace IronWasteland.Enemies.ElementalReaper
                 return null;
             }
 
-            GameObject go = Instantiate(hoaTocFireTrailZonePrefab, Vector3.zero, Quaternion.identity);
+            GameObject go = SpawnVfx(hoaTocFireTrailZonePrefab, Vector3.zero, Quaternion.identity);
             HoaTocFireTrailZone trail = go.GetComponent<HoaTocFireTrailZone>();
             if (trail != null)
             {
@@ -357,11 +359,11 @@ namespace IronWasteland.Enemies.ElementalReaper
         /// </summary>
         public BurstChargingAuraVFX StartBurstCharging(float duration = 2.0f, Action onComplete = null)
         {
-            if (m_Animator != null) m_Animator.SetTrigger("BurstCharging");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "BurstCharging");
 
             if (m_ActiveBurstChargingAura == null && burstChargingAuraPrefab != null)
             {
-                GameObject go = Instantiate(burstChargingAuraPrefab, transform);
+                GameObject go = SpawnVfx(burstChargingAuraPrefab, transform);
                 go.transform.localPosition = Vector3.zero;
                 m_ActiveBurstChargingAura = go.GetComponent<BurstChargingAuraVFX>();
             }
@@ -398,7 +400,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         {
             if (m_ActiveBurstShield == null && burstShieldAndCrystalsPrefab != null)
             {
-                GameObject go = Instantiate(burstShieldAndCrystalsPrefab, transform);
+                GameObject go = SpawnVfx(burstShieldAndCrystalsPrefab, transform);
                 go.transform.localPosition = Vector3.zero;
                 m_ActiveBurstShield = go.GetComponent<BurstShieldVFX>();
             }
@@ -543,8 +545,7 @@ namespace IronWasteland.Enemies.ElementalReaper
 
         public void PlayHoaTocDashAnimation()
         {
-            if (m_Animator != null) m_Animator.SetTrigger("HoaToc_Dash");
-            m_NetState?.BroadcastAnimTrigger("HoaToc_Dash");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "HoaToc_Dash");
         }
 
         /// <summary>
@@ -575,17 +576,32 @@ namespace IronWasteland.Enemies.ElementalReaper
 
         public void PlayStunAnimation()
         {
-            if (m_Animator != null) m_Animator.SetTrigger("Stun");
-            m_NetState?.BroadcastAnimTrigger("Stun");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "Stun");
         }
 
         public void PlayDieAnimation()
         {
-            if (m_Animator != null) m_Animator.SetTrigger("Die");
-            m_NetState?.BroadcastAnimTrigger("Die");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "Die");
         }
 
         #endregion
+
+        /// <summary>Dựng VFX tại vị trí thế giới và phát bản sao visual xuống client qua catalog.</summary>
+        private GameObject SpawnVfx(GameObject prefab, Vector3 position, Quaternion rotation)
+        {
+            GameObject go = Instantiate(prefab, position, rotation);
+            NetVisualSpawn.PlayVfx(prefab, go, GetComponentInParent<NetworkObject>(true));
+            return go;
+        }
+
+        /// <summary>Dựng VFX gắn vào một transform (aura bám boss) và phát bản sao visual xuống client.</summary>
+        private GameObject SpawnVfx(GameObject prefab, Transform parent)
+        {
+            GameObject go = Instantiate(prefab, parent);
+            go.transform.localPosition = Vector3.zero;
+            NetVisualSpawn.PlayVfx(prefab, go, GetComponentInParent<NetworkObject>(true), attachToRoot: true);
+            return go;
+        }
 
         private void OnDestroy()
         {

@@ -9774,6 +9774,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2738892302315441375}
   - component: {fileID: 6646737555126120034}
+  - component: {fileID: 6757382303275660087}
   m_Layer: 0
   m_Name: VFX_DeadlandSlash
   m_TagString: Untagged
@@ -9822,3 +9823,15 @@ MonoBehaviour:
   voidDarkColor: {r: 0.165, g: 0.031, b: 0.271, a: 1}
   voidPurpleColor: {r: 0.29, g: 0.078, b: 0.549, a: 1}
   ghostlyCyanColor: {r: 0, g: 0.898, b: 1, a: 1}
+--- !u!114 &6757382303275660087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8831673778008638128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost

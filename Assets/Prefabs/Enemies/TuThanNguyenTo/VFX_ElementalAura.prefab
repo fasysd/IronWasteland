@@ -9774,6 +9774,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5082766860528245774}
   - component: {fileID: 7930225998482151224}
+  - component: {fileID: 3411188601876712091}
   m_Layer: 0
   m_Name: VFX_ElementalAura
   m_TagString: Untagged
@@ -9820,3 +9821,15 @@ MonoBehaviour:
   poisonSecondaryColor: {r: 0.482, g: 0.122, b: 0.635, a: 0.65}
   firePrimaryColor: {r: 1, g: 0.271, b: 0, a: 0.75}
   fireSecondaryColor: {r: 1, g: 0.6, b: 0, a: 0.65}
+--- !u!114 &3411188601876712091
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8703061181659199425}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost

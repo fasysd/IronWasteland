@@ -102,6 +102,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1038641697363822132}
   - component: {fileID: 1749794966527698687}
+  - component: {fileID: 129473976460980399}
   m_Layer: 0
   m_Name: VFX_D1onkVienBinhSummon
   m_TagString: Untagged
@@ -140,3 +141,15 @@ MonoBehaviour:
   summonDuration: 0.8
   magicCircleSprite: {fileID: 6474662093240517555}
   spiritPillarParticles: {fileID: 0}
+--- !u!114 &129473976460980399
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5266869162677690209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost

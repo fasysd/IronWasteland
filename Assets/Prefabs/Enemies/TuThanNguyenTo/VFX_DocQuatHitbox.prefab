@@ -4940,6 +4940,7 @@ GameObject:
   - component: {fileID: 4473228929012380439}
   - component: {fileID: 1597271108460631427}
   - component: {fileID: 1200822066529653642}
+  - component: {fileID: 8102574900486738870}
   m_Layer: 0
   m_Name: VFX_DocQuatHitbox
   m_TagString: Untagged
@@ -5061,3 +5062,15 @@ MonoBehaviour:
   sparkParticles: {fileID: 0}
   radius: 9
   duration: 0.45
+--- !u!114 &8102574900486738870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9053968721529726173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost

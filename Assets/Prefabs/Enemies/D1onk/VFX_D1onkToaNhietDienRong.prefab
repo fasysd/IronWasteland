@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 808939618065844567}
   - component: {fileID: 7575025307922421058}
+  - component: {fileID: 1513310250289306225}
   m_Layer: 0
   m_Name: VFX_D1onkToaNhietDienRong
   m_TagString: Untagged
@@ -50,6 +51,18 @@ MonoBehaviour:
   knockbackForce: 6
   heatRingSprite: {fileID: 5286409255504456787}
   emberParticles: {fileID: 0}
+--- !u!114 &1513310250289306225
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1009528961256101684}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost
 --- !u!1 &7476165418244621768
 GameObject:
   m_ObjectHideFlags: 0

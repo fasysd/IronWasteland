@@ -10,7 +10,7 @@ namespace IronWasteland.Enemies.ElementalReaper.VFX
     ///   + Hỏa (Fire): Đỏ cam rực lửa (#FF4500), tàn tro than hồng và sóng nhiệt bốc hơi.
     /// </summary>
     [DisallowMultipleComponent]
-    public class ElementalAuraVFX : MonoBehaviour
+    public class ElementalAuraVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Components")]
         [SerializeField] private SpriteRenderer auraGlowSprite;

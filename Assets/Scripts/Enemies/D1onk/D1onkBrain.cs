@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using IronWasteland.Core;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using IronWasteland.Utilities;
 using UnityEngine;
@@ -267,11 +268,7 @@ namespace IronWasteland.Enemies.D1onk
 
         private void TriggerAnimator(int hash)
         {
-            if (m_Animator != null)
-            {
-                m_Animator.SetTrigger(hash);
-                GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastAnimTrigger(hash);
-            }
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, hash);
         }
 
         private void SetAnimatorMoveSpeed(float speed)

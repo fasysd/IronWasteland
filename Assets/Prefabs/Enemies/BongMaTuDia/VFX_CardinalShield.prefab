@@ -286,6 +286,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4489827679492211808}
   - component: {fileID: 5075513878216224348}
+  - component: {fileID: 414928730335564839}
   m_Layer: 0
   m_Name: VFX_CardinalShield
   m_TagString: Untagged
@@ -337,6 +338,18 @@ MonoBehaviour:
   openColor: {r: 0, g: 0.898, b: 1, a: 0.95}
   reflectFlashColor: {r: 1, g: 0.2, b: 0.4, a: 1}
   pulseSpeed: 4
+--- !u!114 &414928730335564839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5656888912672395306}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost
 --- !u!1 &7295414295616747237
 GameObject:
   m_ObjectHideFlags: 0

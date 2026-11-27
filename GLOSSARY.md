@@ -30,6 +30,28 @@ Thuật ngữ dùng thống nhất trong code, tài liệu và hội thoại. Kh
 - **Chưa trang bị / Đã tháo (None)** — `AccessoryLoadout.None = -1`: giá trị lưu cho xe không có phụ kiện nào. Mặc định của xe chưa từng chọn cũng là `None`; `AccessoryLoadout.Has(tank)` trả `false` khi không có phụ kiện.
 - **Tháo phụ kiện (Unequip)** — thao tác bấm hai lần vào thẻ đang trang bị ở màn **CHỌN PHỤ KIỆN TRANG BỊ**: lần một chỉ chốt focus, lần hai gọi `AccessoryLoadout.Clear` (ghi `None`) và bỏ focus. Sau khi tháo, bấm XÁC NHẬN chỉ đóng màn, không trang bị lại; badge `ĐANG DÙNG` chỉ hiện trên thẻ thực sự đang được trang bị.
 
+## Mạng LAN
+
+- **Phòng LAN (LAN room)** — phiên chơi chung do một máy host mở trực tiếp, không qua Relay. Phòng được định danh bằng **IP:port của host** (mặc định `7777`), không có mã phòng. Tên phòng lấy từ tên máy host: `PHÒNG CỦA <tên máy>`. Chi tiết: `docs/adr/0011-lan-only.md`.
+- **Địa chỉ host (Host address)** — địa chỉ để client kết nối, dạng `IP` hoặc `IP:port`; host hiển thị mọi IPv4 nội bộ kèm cổng và nút SAO CHÉP ĐỊA CHỈ. `LanHostAddresses.Primary()` chọn địa chỉ chính, `GetLocalIPv4()` trả toàn bộ (luôn có `127.0.0.1` để test cùng máy).
+- **Cổng host (Host port)** — cổng UDP host mở phòng, ưu tiên `7777`; nếu cổng bị ứng dụng khác chiếm, host tự thử các cổng kế tiếp trong dải `7777–7786` và dùng cổng thực tế trong địa chỉ lẫn gói quảng bá LAN.
+- **Tự dò phòng LAN (LAN discovery)** — `LanDiscoveryService` phát/nhận gói UDP broadcast `IWLAN|1|...` ở cổng **47777**; host phát mỗi 1 giây, phòng hết hạn sau 4,5 giây. Danh sách hiện tối đa 6 phòng, sắp theo tên.
+- **Nhập IP host (Join by address)** — ô nhập tay thay cho mã phòng, nhận IP, `IP:port` hoặc tên máy qua `LanAddress.TryParse`; cổng mặc định 7777. Là phương án dự phòng khi broadcast bị chặn.
+- **ĐANG CHIẾN ĐẤU (In match)** — cờ trong gói quảng bá cho biết host đang trong trận; phòng vẫn hiện trong danh sách và người vào muộn vẫn kết nối được nếu còn chỗ (tối đa 4 người).
+- **Chỉ LAN (LAN-only)** — chế độ chơi chung duy nhất: không Relay, không Lobby, không cần Internet hay tài khoản UGS. Máy host phải cho phép UDP 47777 (dò phòng) và UDP 7777 (trận đấu).
+
+## Đồng bộ kỹ năng quái
+
+- Chi tiết kênh ghost: `docs/adr/0012-dong-bo-visual-ky-nang-quai.md`; animation, scale và script VFX thuần: `docs/adr/0013-dong-bo-animation-quai.md`.
+- **Bóng kỹ năng (Skill ghost)** — bản sao visual-only của child Skill hoặc VFX kỹ năng do host gửi xuống client. Client không mô phỏng AI, không gây sát thương, không quyết định va chạm; chỉ hiển thị đúng thời điểm và vị trí host cast.
+- **Marker bóng kỹ năng (NetVisualGhost)** — component đánh dấu prefab được phép làm ghost. `NetVisualGhost.Sanitize(ghost, allowVisualDrivers)` luôn tắt mọi `Collider2D`; giữ marker và các script đánh dấu `INetVisualGhostDriver` khi cho phép, tắt mọi `MonoBehaviour` còn lại. Animator/ParticleSystem/SpriteRenderer vẫn chạy nhưng logic gameplay bị vô hiệu.
+- **Script VFX thuần hiển thị (INetVisualGhostDriver)** — interface đánh dấu script chỉ diễn hoạt hình ảnh (mở rộng vòng, xoay, fade, pulse), không gây sát thương/summon trong Update hay trigger. Chỉ 15 script đã kiểm tra được đánh dấu; script có `Physics2D.*` hoặc `TakeDamage`/`Instantiate` quái phải để tắt trên client.
+- **Kênh IW.SkillVisual** — named message của NGO: host gửi handle, NetworkObjectId của quái gốc, Id catalog hoặc tên child, offset/góc local, `worldScale`, thời gian sống, cờ attach/animate và velocity/homing. Client dựng bản sao, gắn vào root nếu là aura/cone (scale chia cho `root.lossyScale`), hoặc đặt tại chỗ cast nếu là VFX độc lập; `NetVisualSpawn.End()` gửi lệnh thu hồi.
+- **NetworkAnimator quái** — component NGO đặt trên root prefab quái, trỏ tới Animator child `EnemyModel`; mọi tham số được đồng bộ trừ `MoveSpeed`. Host phát trigger qua `NetEnemyAnimation.Trigger`; client nhận đúng state Idle/Move/đòn đánh/chết.
+- **Đồng bộ pose client (tốc độ + hướng nhìn)** — `EnemyNetState` gửi `m_ModelYaw` mỗi 0,1 giây và client tự suy tốc độ từ delta vị trí `NetworkTransform`, làm mượt rồi gọi `EnemyModel.SetMoveSpeed`; nhờ vậy animation chạy mà không gửi thêm tham số MoveSpeed.
+- **Catalog hình ảnh kỹ năng (NetSkillVisualCatalog)** — ScriptableObject dùng chung ở Assets/Resources/NetSkillVisualCatalog.asset, ánh xạ Id int ổn định sang prefab VFX. Host chỉ gửi Id nên VFX standalone không cần NetworkObject; thêm VFX mới phải chạy menu **Iron Wasteland/Net/Rebuild Skill Visual Catalog**.
+- **Boss probe** — hạ tầng dev-only (BossProbe, cờ -iw-boss/-iw-spawn; BossProbeCatalog chứa 5 boss + 12 quái thường) để spawn một quái trong trận thử mà không sửa StageDefinition. Khi có probe, StageDirector.SuppressEnemyWaves tắt đợt quái gốc; thêm -iw-keep-waves để giữ lại; bấm F8 trên host để spawn lại quái đang chọn, F9 để chuyển và spawn quái kế tiếp trong phòng. Phần code runtime nằm trong #if UNITY_EDITOR || DEVELOPMENT_BUILD nên không vào bản release.
+
 ## Giao diện
 
 - **Builder** (`Assets/Editor/GarageBuilder.cs`) — script Editor dựng scene Garage: bố cục, khung, placeholder, gắn tham chiếu SerializeField. Chạy lại bằng `GarageBuilder.Rebuild()`.
