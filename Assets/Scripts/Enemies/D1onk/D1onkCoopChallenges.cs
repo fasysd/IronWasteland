@@ -109,6 +109,9 @@ namespace IronWasteland.Enemies.D1onk
         private readonly List<GameObject> m_RedObjects = new List<GameObject>();
         private GameObject m_RedBeamObject;
         private SpriteRenderer m_RedBeamRenderer;
+        private bool m_LastSentBeamBlocked;
+        private Vector2 m_LastSentBeamEndPos;
+        private float m_NextBeamSyncTime;
 
         // Yellow Challenge Runtime
         private bool m_YellowActive;
@@ -378,10 +381,33 @@ namespace IronWasteland.Enemies.D1onk
                 m_RedObjects.Add(m_RedBeamObject);
                 UpdateRedBeam(false, m_RedReceiverPos);
             }
+
+            if (isNetServer && m_Boss != null)
+            {
+                m_LastSentBeamBlocked = false;
+                m_LastSentBeamEndPos = m_RedReceiverPos;
+                m_NextBeamSyncTime = Time.time + 0.08f;
+                m_Boss.GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                    "RedElectricBeamStart",
+                    m_RedTransmitterPos,
+                    0f,
+                    m_RedReceiverPos,
+                    beamNormalThickness,
+                    beamBlockedThickness);
+            }
         }
 
         private void CleanupRedVisuals()
         {
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                Unity.Netcode.NetworkManager.Singleton != null &&
+                Unity.Netcode.NetworkManager.Singleton.IsServer &&
+                m_Boss != null)
+            {
+                m_Boss.GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                    "RedElectricBeamStop", m_RedTransmitterPos);
+            }
+
             for (int i = 0; i < m_RedObjects.Count; i++)
             {
                 if (m_RedObjects[i] != null)
@@ -411,6 +437,28 @@ namespace IronWasteland.Enemies.D1onk
             if (m_RedBeamRenderer != null)
             {
                 m_RedBeamRenderer.color = isBlocked ? beamBlockedColor : beamNormalColor;
+            }
+
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                Unity.Netcode.NetworkManager.Singleton != null &&
+                Unity.Netcode.NetworkManager.Singleton.IsServer &&
+                m_Boss != null)
+            {
+                bool stateChanged = isBlocked != m_LastSentBeamBlocked;
+                bool endMoved = (endPos - m_LastSentBeamEndPos).sqrMagnitude > 0.04f;
+                if (stateChanged || (endMoved && Time.time >= m_NextBeamSyncTime))
+                {
+                    m_LastSentBeamBlocked = isBlocked;
+                    m_LastSentBeamEndPos = endPos;
+                    m_NextBeamSyncTime = Time.time + 0.08f;
+                    m_Boss.GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                        "RedElectricBeamUpdate",
+                        endPos,
+                        0f,
+                        m_RedTransmitterPos,
+                        0f,
+                        isBlocked ? 1f : 0f);
+                }
             }
         }
 

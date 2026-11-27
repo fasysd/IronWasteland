@@ -426,12 +426,12 @@ MonoBehaviour:
   model: {fileID: 1805891303938877128}
   displayName: TuThanNguyenTo
   stats:
-    Attack: 250
+    Attack: 200
     Defense: 25
-    MaxHealth: 9500
-    MoveSpeed: 90
+    MaxHealth: 5000
+    MoveSpeed: 550
   currentHealth: 0
-  burstHpThreshold: 0.5
+  burstHpThreshold: 0.45
   burstChargeTime: 2
   burstDuration: 30
   rewardPhaseDuration: 10

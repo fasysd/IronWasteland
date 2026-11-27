@@ -54,10 +54,10 @@ MonoBehaviour:
   model: {fileID: 1805891303938877128}
   displayName: The2Face
   stats:
-    Attack: 350
+    Attack: 250
     Defense: 30
-    MaxHealth: 16000
-    MoveSpeed: 100
+    MaxHealth: 8000
+    MoveSpeed: 450
   currentHealth: 0
   burstHpThreshold: 0.5
   burstChargeTime: 2

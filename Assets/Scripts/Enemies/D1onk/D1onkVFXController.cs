@@ -56,6 +56,9 @@ namespace IronWasteland.Enemies.D1onk
         [Tooltip("Prefab hiệu ứng choáng váng (Stun).")]
         [SerializeField] private GameObject stunVFXPrefab;
 
+        [Tooltip("Prefab tia điện kết nối cột phát - cột thu trong thử thách Đỏ.")]
+        [SerializeField] private GameObject electricBeamPrefab;
+
         [Header("Gun Battery & Emitter Points")]
         [Tooltip("Danh sách toàn bộ 14 nòng súng của D1onk (10 từ Súng 2 nòng, 4 từ Súng 3 nòng).")]
         [SerializeField] private Transform[] gunBarrels;
@@ -634,7 +637,77 @@ namespace IronWasteland.Enemies.D1onk
                     break;
                 case "MothershipCleanup":
                     CleanupClientMothershipFloor();
+                    CleanupClientRedBeam();
                     break;
+                case "RedElectricBeamStart":
+                    StartClientRedBeam(position, dir, duration > 0f ? duration : 0.35f, value > 0f ? value : 0.20f);
+                    break;
+                case "RedElectricBeamUpdate":
+                    UpdateClientRedBeam(dir, position, value > 0.5f);
+                    break;
+                case "RedElectricBeamStop":
+                    CleanupClientRedBeam();
+                    break;
+            }
+        }
+
+        private GameObject m_ClientRedBeamObject;
+        private SpriteRenderer m_ClientRedBeamRenderer;
+        private Vector2 m_ClientRedBeamStart;
+        private float m_ClientBeamNormalThickness = 0.35f;
+        private float m_ClientBeamBlockedThickness = 0.20f;
+
+        private void StartClientRedBeam(Vector2 startPos, Vector2 endPos, float normalThickness, float blockedThickness)
+        {
+            CleanupClientRedBeam();
+            m_ClientRedBeamStart = startPos;
+            m_ClientBeamNormalThickness = normalThickness;
+            m_ClientBeamBlockedThickness = blockedThickness;
+
+            if (electricBeamPrefab != null)
+            {
+                m_ClientRedBeamObject = Instantiate(electricBeamPrefab);
+            }
+            else
+            {
+                m_ClientRedBeamObject = new GameObject("RedElectric_Beam_Client");
+                var sr = m_ClientRedBeamObject.AddComponent<SpriteRenderer>();
+                sr.sprite = IronWasteland.Utilities.SpriteFactory.SoftCircle;
+                sr.sortingOrder = 7;
+            }
+
+            m_ClientRedBeamRenderer = m_ClientRedBeamObject.GetComponent<SpriteRenderer>();
+            UpdateClientRedBeam(startPos, endPos, false);
+        }
+
+        private void UpdateClientRedBeam(Vector2 startPos, Vector2 endPos, bool isBlocked)
+        {
+            if (m_ClientRedBeamObject == null) return;
+            if (startPos.sqrMagnitude > 0.001f) m_ClientRedBeamStart = startPos;
+
+            Vector2 dir = endPos - m_ClientRedBeamStart;
+            float dist = dir.magnitude;
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+            m_ClientRedBeamObject.transform.position = (m_ClientRedBeamStart + endPos) * 0.5f;
+            m_ClientRedBeamObject.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+            m_ClientRedBeamObject.transform.localScale = new Vector3(dist, isBlocked ? m_ClientBeamBlockedThickness : m_ClientBeamNormalThickness, 1f);
+
+            if (m_ClientRedBeamRenderer != null)
+            {
+                m_ClientRedBeamRenderer.color = isBlocked
+                    ? new Color(1f, 0.3f, 0.2f, 0.85f)
+                    : new Color(0.2f, 0.85f, 1f, 0.95f);
+            }
+        }
+
+        private void CleanupClientRedBeam()
+        {
+            if (m_ClientRedBeamObject != null)
+            {
+                Destroy(m_ClientRedBeamObject);
+                m_ClientRedBeamObject = null;
+                m_ClientRedBeamRenderer = null;
             }
         }
 

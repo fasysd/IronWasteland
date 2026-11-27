@@ -147,7 +147,7 @@ namespace IronWasteland.Enemies.The2Face
                 DamageInfo info = new DamageInfo(
                     m_Owner,
                     tank,
-                    damage * 2,
+                    damage,
                     0f,
                     hit.bounds.center,
                     false,

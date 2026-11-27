@@ -120,7 +120,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 15
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f335dc8414f6b0c40a3817313ff98b7b, type: 3}
   m_Color: {r: 1, g: 0.35, b: 0.1, a: 0.95}
   m_FlipX: 0
   m_FlipY: 0
@@ -151,9 +151,9 @@ MonoBehaviour:
   armorPenRatio: 0.25
   armorPenDuration: 3
   lifetime: 12
-  circleSprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  squareSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  triangleSprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
+  circleSprite: {fileID: 21300000, guid: f335dc8414f6b0c40a3817313ff98b7b, type: 3}
+  squareSprite: {fileID: 21300000, guid: 752f27ddbbd98c74686419017e58640f, type: 3}
+  triangleSprite: {fileID: 21300000, guid: b7c05bf706b1bf241b998f6b863294b9, type: 3}
   spriteRenderer: {fileID: 7007937847331800438}
 --- !u!114 &3634816337827093451
 MonoBehaviour:

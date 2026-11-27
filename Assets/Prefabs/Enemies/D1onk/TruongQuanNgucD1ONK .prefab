@@ -1717,10 +1717,10 @@ MonoBehaviour:
   model: {fileID: 1805891303938877128}
   displayName: "Tr\u01B0\u1EDFng Qu\u1EA3n Ng\u1EE5c D1ONK"
   stats:
-    Attack: 1
+    Attack: 300
     Defense: 60
-    MaxHealth: 500
-    MoveSpeed: 70
+    MaxHealth: 10000
+    MoveSpeed: 600
   currentHealth: 0
   burstHpThreshold: 0.6
   burstChargeTime: 2
@@ -1791,6 +1791,7 @@ MonoBehaviour:
   vienBinhSummonVFXPrefab: {fileID: 5266869162677690209, guid: 5106e63399b83ab4896d06d6a51be188, type: 3}
   chargingAuraPrefab: {fileID: 8264617363939735276, guid: 614a9f552da9d1a48a8be1bb7b1c3643, type: 3}
   stunVFXPrefab: {fileID: 7899954895171703830, guid: a3c73039c590e0848af53ade79ebb117, type: 3}
+  electricBeamPrefab: {fileID: 3047113142080506581, guid: ceec2fce8df38cf48bd39a8141c7aa14, type: 3}
   gunBarrels:
   - {fileID: 1506907853983472710}
   - {fileID: 5247022941821319050}
