@@ -37,7 +37,7 @@ MonoBehaviour:
     ArmorPenetration: 0
     MaxHealth: 600
     MaxEnergy: 100
-    MoveSpeed: 100
+    MoveSpeed: 130
     CooldownReduction: 0
   baseStatsLevel90:
     Attack: 999
@@ -46,7 +46,7 @@ MonoBehaviour:
     ArmorPenetration: 0.25
     MaxHealth: 9999999
     MaxEnergy: 300
-    MoveSpeed: 500
+    MoveSpeed: 650
     CooldownReduction: 0
   tankPrefab: {fileID: 2337791876944670423, guid: d7abe239519376749b6303f6197df9d8, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}

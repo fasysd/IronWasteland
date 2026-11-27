@@ -30,7 +30,7 @@ namespace IronWasteland.Stages
     public class EnemySpawner : MonoBehaviour
     {
         [Header("Thiết kế đợt quái của màn")]
-        [Tooltip("Các đợt quái. Thứ tự khai báo không quan trọng — đợt nào tới StartTime trước sẽ bắn trước.")]
+        [Tooltip("Đợt thường bắt đầu theo StartTime. Cửa dùng thứ tự trong danh sách để chọn đợt bị khóa.")]
         [SerializeField] private List<EnemyWave> waves = new List<EnemyWave>();
 
         [Tooltip("Các vùng sinh quái trên map. Đợt nào khai báo ZoneId thì quái rơi trong vùng đó.")]
@@ -54,9 +54,14 @@ namespace IronWasteland.Stages
         private readonly Dictionary<EnemyBrain, EnemyBrain> m_SourcePrefabs = new Dictionary<EnemyBrain, EnemyBrain>();
         private readonly List<EnemyBrain> m_Active = new List<EnemyBrain>();
         private readonly List<int> m_DueWaves = new List<int>();
+        private readonly Dictionary<int, StageWaveGate> m_WaveGates = new Dictionary<int, StageWaveGate>();
+        private readonly HashSet<int> m_StartedWaves = new HashSet<int>();
+        private readonly Dictionary<EnemyBrain, int> m_EnemyWaves = new Dictionary<EnemyBrain, int>();
+        private readonly Dictionary<int, int> m_LivingWaveEnemies = new Dictionary<int, int>();
 
         private WaveTimeline m_Timeline;
         private bool m_WavesRunning;
+        private int m_RemoteWavesFired;
 
         /// <summary>Vua sinh ra 1 quai (da Initialize xong).</summary>
         public event Action<EnemyBrain> EnemySpawned;
@@ -66,6 +71,8 @@ namespace IronWasteland.Stages
 
         /// <summary>Một đợt quái vừa được kích hoạt (index trong list waves, dữ liệu đợt).</summary>
         public event Action<int, EnemyWave> WaveStarted;
+
+        public event Action<int> WaveCleared;
 
         public int AliveCount => m_Active.Count;
         public IReadOnlyList<EnemyBrain> Active => m_Active;
@@ -84,6 +91,47 @@ namespace IronWasteland.Stages
 
         /// <summary>Lịch wave đang chạy hay không.</summary>
         public bool WavesRunning => m_WavesRunning;
+
+        internal bool AllGatedWavesStarted
+        {
+            get
+            {
+                foreach (int index in m_WaveGates.Keys)
+                    if (!m_StartedWaves.Contains(index)) return false;
+
+                return true;
+            }
+        }
+
+        internal bool RegisterWaveGate(StageWaveGate gate)
+        {
+            int index = gate.NextWaveIndex;
+            if (gate.CompletedWaveIndex < 0 || index >= TotalWaves || gate.CompletedWaveIndex >= index ||
+                waves[index] == null || m_WaveGates.ContainsKey(index))
+                return false;
+
+            m_WaveGates.Add(index, gate);
+            return true;
+        }
+
+        internal void UnregisterWaveGate(StageWaveGate gate)
+        {
+            if (m_WaveGates.TryGetValue(gate.NextWaveIndex, out StageWaveGate registered) && registered == gate)
+                m_WaveGates.Remove(gate.NextWaveIndex);
+        }
+
+        internal bool TryStartGatedWave(StageWaveGate gate)
+        {
+            return m_WavesRunning &&
+                m_WaveGates.TryGetValue(gate.NextWaveIndex, out StageWaveGate registered) && registered == gate &&
+                m_LivingWaveEnemies.TryGetValue(gate.CompletedWaveIndex, out int remaining) && remaining == 0 &&
+                SpawnWave(gate.NextWaveIndex);
+        }
+
+        internal void ApplyRemoteWaveCount(int count)
+        {
+            m_RemoteWavesFired = Mathf.Clamp(count, 0, TotalWaves);
+        }
 
         /// <summary>Tổng số quái mà thiết kế của màn sẽ sinh ra.</summary>
         public int TotalEnemyCount
@@ -134,13 +182,14 @@ namespace IronWasteland.Stages
 
             m_WavesRunning = true;
             WaveIndex = -1;
+            foreach (StageWaveGate gate in m_WaveGates.Values) gate.ResetGate();
 
             int count = TotalWaves;
             var startTimes = new List<float>(count);
             for (int i = 0; i < count; i++)
             {
                 EnemyWave wave = waves[i];
-                startTimes.Add(wave != null ? Mathf.Max(0f, wave.StartTime) : 0f);
+                startTimes.Add(wave != null && wave.StartRadar == null ? Mathf.Max(0f, wave.StartTime) : 0f);
             }
 
             m_Timeline = new WaveTimeline(startTimes);
@@ -151,8 +200,8 @@ namespace IronWasteland.Stages
             }
         }
 
-        /// <summary>Số đợt đã bắt đầu (dùng cho HUD khi thứ tự StartTime khác thứ tự khai báo).</summary>
-        public int WavesFired => m_Timeline != null ? m_Timeline.FiredCount : 0;
+        /// <summary>Số đợt đã bắt đầu theo giờ hoặc qua cửa, dùng cho HUD.</summary>
+        public int WavesFired => Mathf.Max(m_StartedWaves.Count, m_RemoteWavesFired);
 
         /// <summary>
         /// Đẩy thời gian cho lịch wave. Tách khỏi Update() để StageDirector (hoặc test)
@@ -162,13 +211,42 @@ namespace IronWasteland.Stages
         {
             if (!m_WavesRunning || m_Timeline == null) return;
 
-            // Client vẫn chạy lịch để HUD/âm thanh biết đợt nào vừa bắt đầu;
-            // Spawn() tự bỏ qua việc sinh quái trên client.
             m_Timeline.Advance(deltaTime);
 
-            m_DueWaves.Clear();
-            int due = m_Timeline.TakeDue(m_DueWaves);
-            for (int i = 0; i < due; i++) SpawnWave(m_DueWaves[i]);
+            m_Timeline.TakeDue(m_DueWaves);
+            for (int i = 0; i < m_DueWaves.Count;)
+            {
+                int index = m_DueWaves[i];
+                if (m_WaveGates.ContainsKey(index))
+                {
+                    m_DueWaves.RemoveAt(i);
+                    continue;
+                }
+
+                RadarStation radar = waves[index]?.StartRadar;
+                if (radar != null && !radar.HasStartedActivation)
+                {
+                    i++;
+                    continue;
+                }
+
+                // Giữ lại đợt đến giờ nếu người chơi chưa đi qua cửa của đợt trước.
+                bool waitingForGate = false;
+                foreach (int gatedIndex in m_WaveGates.Keys)
+                {
+                    if (gatedIndex >= index || m_StartedWaves.Contains(gatedIndex)) continue;
+                    waitingForGate = true;
+                    break;
+                }
+                if (waitingForGate)
+                {
+                    i++;
+                    continue;
+                }
+
+                m_DueWaves.RemoveAt(i);
+                SpawnWave(index);
+            }
         }
 
         /// <summary>Dừng lịch wave (đổi màn / thua).</summary>
@@ -177,17 +255,23 @@ namespace IronWasteland.Stages
             m_WavesRunning = false;
             m_Timeline = null;
             m_DueWaves.Clear();
+            m_StartedWaves.Clear();
+            m_EnemyWaves.Clear();
+            m_LivingWaveEnemies.Clear();
+            m_RemoteWavesFired = 0;
             WaveIndex = -1;
         }
 
-        private void SpawnWave(int index)
+        private bool SpawnWave(int index)
         {
-            if (waves == null || index < 0 || index >= waves.Count) return;
+            if (waves == null || index < 0 || index >= waves.Count) return false;
 
-            EnemyWave wave = waves[index];
+            if (!m_StartedWaves.Add(index)) return false;
             WaveIndex = index;
-            if (wave == null) return;
+            EnemyWave wave = waves[index];
+            if (wave == null) return true;
 
+            int spawned = 0;
             if (wave.Spawns != null)
             {
                 for (int i = 0; i < wave.Spawns.Count; i++)
@@ -200,17 +284,23 @@ namespace IronWasteland.Stages
                     for (int c = 0; c < count; c++)
                     {
                         Vector2 position = zone != null ? zone.RandomPoint() : (Vector2)transform.position;
-                        Spawn(spawn.Enemy, position, spawn.SpeedMultiplier);
+                        EnemyBrain enemy = Spawn(spawn.Enemy, position, spawn.SpeedMultiplier);
+                        if (enemy == null) continue;
+                        m_EnemyWaves[enemy] = index;
+                        spawned++;
                     }
                 }
             }
 
+            if (spawned > 0) m_LivingWaveEnemies[index] = spawned;
             WaveStarted?.Invoke(index, wave);
+            foreach (StageWaveGate gate in m_WaveGates.Values) gate.PublishState();
 
             if (logEvents)
             {
                 Debug.Log($"[EnemySpawner] Đợt {index + 1}/{TotalWaves} '{wave.Label}' - {wave.TotalCount} quái tại {m_Timeline.Elapsed:0.0}s");
             }
+            return true;
         }
 
         private SpawnZone PickZone(string zoneId)
@@ -383,12 +473,19 @@ namespace IronWasteland.Stages
         {
             // EnemyBrain.OnDeathEvent khong co tham so nen handler duoc tao theo tung instance.
             if (enemy == null) return;
+            bool fromWave = m_EnemyWaves.Remove(enemy, out int index);
             EnemyDied?.Invoke(enemy);
             ReturnToPool(enemy);
+            if (fromWave && m_LivingWaveEnemies.TryGetValue(index, out int remaining))
+            {
+                m_LivingWaveEnemies[index] = remaining - 1;
+                if (remaining == 1) WaveCleared?.Invoke(index);
+            }
         }
 
         private void ReturnToPool(EnemyBrain enemy)
         {
+            m_EnemyWaves.Remove(enemy);
             m_Active.Remove(enemy);
             UntrackDeath(enemy);
 

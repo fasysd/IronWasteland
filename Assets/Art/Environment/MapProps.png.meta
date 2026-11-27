@@ -1,0 +1,645 @@
+fileFormatVersion: 2
+guid: 7157e855b44a2af4e933aa285f33e8e6
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 5458335258000164611
+    second: MapProps_0
+  - first:
+      213: -1747070290644647286
+    second: MapProps_1
+  - first:
+      213: 2301083302786693419
+    second: MapProps_2
+  - first:
+      213: -556941205870742495
+    second: MapProps_3
+  - first:
+      213: 2067365434828833186
+    second: MapProps_4
+  - first:
+      213: -6670842917194699529
+    second: MapProps_5
+  - first:
+      213: 3739848908479444252
+    second: MapProps_6
+  - first:
+      213: -3408835165589714581
+    second: MapProps_7
+  - first:
+      213: -644248443748395784
+    second: MapProps_8
+  - first:
+      213: -8992594675880138991
+    second: MapProps_9
+  - first:
+      213: -8117318056776738951
+    second: MapProps_10
+  - first:
+      213: -3377984950461638411
+    second: MapProps_11
+  - first:
+      213: -6958925806125287556
+    second: MapProps_12
+  - first:
+      213: -4087119717988337221
+    second: MapProps_13
+  - first:
+      213: -14502084295377623
+    second: MapProps_14
+  - first:
+      213: 4030773381553152827
+    second: MapProps_15
+  - first:
+      213: 1228231451284318489
+    second: MapProps_16
+  - first:
+      213: -7669985773360688440
+    second: MapProps_17
+  - first:
+      213: -5689907490473914047
+    second: MapProps_18
+  - first:
+      213: 2430551642155620295
+    second: MapProps_19
+  - first:
+      213: 654885413982186956
+    second: MapProps_20
+  - first:
+      213: -2822085767336547935
+    second: MapProps_21
+  - first:
+      213: 1781396337038996973
+    second: MapProps_22
+  - first:
+      213: -3315799264968448261
+    second: MapProps_23
+  - first:
+      213: -7475779225088597602
+    second: MapProps_24
+  - first:
+      213: -2344910378199993050
+    second: MapProps_25
+  - first:
+      213: -8493704107339228014
+    second: MapProps_26
+  - first:
+      213: -7078783055821541968
+    second: MapProps_27
+  - first:
+      213: -4966706805251636106
+    second: MapProps_28
+  - first:
+      213: -3606837094902481231
+    second: MapProps_29
+  - first:
+      213: 1230331931954620619
+    second: MapProps_30
+  - first:
+      213: -5907478014530046085
+    second: MapProps_31
+  - first:
+      213: 8738375604157735176
+    second: MapProps_32
+  - first:
+      213: -4857606862714375714
+    second: MapProps_33
+  - first:
+      213: -1330726073167142987
+    second: MapProps_34
+  - first:
+      213: -6723856390655444545
+    second: MapProps_35
+  - first:
+      213: -1474741895707639153
+    second: MapProps_36
+  - first:
+      213: -1559636956840897003
+    second: MapProps_37
+  - first:
+      213: 5895685092070018299
+    second: MapProps_38
+  - first:
+      213: -8122644580891507238
+    second: MapProps_39
+  - first:
+      213: 4492705142050958999
+    second: MapProps_40
+  - first:
+      213: -5496775613072595498
+    second: MapProps_41
+  - first:
+      213: 8249011688299461571
+    second: MapProps_42
+  - first:
+      213: -312308694869524993
+    second: MapProps_43
+  - first:
+      213: -9193649619553133264
+    second: MapProps_44
+  - first:
+      213: 6789596624084520598
+    second: MapProps_45
+  - first:
+      213: -3007968247891054401
+    second: MapProps_46
+  - first:
+      213: 5105231162049137815
+    second: MapProps_47
+  - first:
+      213: 5171138167249584553
+    second: MapProps_48
+  - first:
+      213: 7823761785494196867
+    second: MapProps_49
+  - first:
+      213: 63527989802137901
+    second: MapProps_50
+  - first:
+      213: -4621139494333882657
+    second: MapProps_51
+  - first:
+      213: -6801848334285887988
+    second: MapProps_52
+  - first:
+      213: -8308187867997346784
+    second: MapProps_53
+  - first:
+      213: 4760290973348052944
+    second: MapProps_54
+  - first:
+      213: -9191548031998384500
+    second: MapProps_55
+  - first:
+      213: 6221339917529672648
+    second: MapProps_56
+  - first:
+      213: -2088235311507672333
+    second: MapProps_57
+  - first:
+      213: 6152882742023624513
+    second: MapProps_58
+  - first:
+      213: -2897626961672654583
+    second: MapProps_59
+  - first:
+      213: 8788371424368990623
+    second: MapProps_60
+  - first:
+      213: 6136724490350146456
+    second: MapProps_61
+  - first:
+      213: -989877178241666139
+    second: MapProps_62
+  - first:
+      213: -1164898410339275774
+    second: MapProps_63
+  - first:
+      213: 6856211693704322001
+    second: MapProps_64
+  - first:
+      213: 2764281917640321280
+    second: MapProps_65
+  - first:
+      213: 8933104863388250148
+    second: MapProps_66
+  - first:
+      213: 1607328349833530602
+    second: MapProps_67
+  - first:
+      213: -7971917690699572946
+    second: MapProps_68
+  - first:
+      213: 4194368809376946113
+    second: MapProps_69
+  - first:
+      213: 4145552051581447196
+    second: MapProps_70
+  - first:
+      213: 8928574653347890977
+    second: MapProps_71
+  - first:
+      213: -452946107507704607
+    second: MapProps_72
+  - first:
+      213: 2594594206359934728
+    second: MapProps_73
+  - first:
+      213: 2261095374007842476
+    second: MapProps_74
+  - first:
+      213: 1975805788015095551
+    second: MapProps_75
+  - first:
+      213: -2780415560400220071
+    second: MapProps_76
+  - first:
+      213: 952749306927129387
+    second: MapProps_77
+  - first:
+      213: 2353074459198163860
+    second: MapProps_78
+  - first:
+      213: -4917102776930440751
+    second: MapProps_79
+  - first:
+      213: -233979033010083337
+    second: MapProps_80
+  - first:
+      213: -5972536945083161156
+    second: MapProps_81
+  - first:
+      213: -4233882990456424828
+    second: MapProps_82
+  - first:
+      213: -302700271344128904
+    second: MapProps_83
+  - first:
+      213: -7348820986881191816
+    second: MapProps_84
+  - first:
+      213: -9036395298638007315
+    second: MapProps_85
+  - first:
+      213: -3078899786284742350
+    second: MapProps_86
+  - first:
+      213: -5168750030651344446
+    second: MapProps_87
+  - first:
+      213: 5715858622627787684
+    second: MapProps_88
+  - first:
+      213: -3030167024090940462
+    second: MapProps_89
+  - first:
+      213: -7340154318003037100
+    second: MapProps_90
+  - first:
+      213: -6690305879629979063
+    second: MapProps_91
+  - first:
+      213: -8347822028654713834
+    second: MapProps_92
+  - first:
+      213: -1093617997114309845
+    second: MapProps_93
+  - first:
+      213: -4209031742393948275
+    second: MapProps_94
+  - first:
+      213: 1114575395857975991
+    second: MapProps_95
+  - first:
+      213: -3150220707939425467
+    second: MapProps_96
+  - first:
+      213: -1449872353559665181
+    second: MapProps_97
+  - first:
+      213: 2710908916788640957
+    second: MapProps_98
+  - first:
+      213: -2375849145433803574
+    second: MapProps_99
+  - first:
+      213: 6997517819186838677
+    second: MapProps_100
+  - first:
+      213: -8917344755154254133
+    second: MapProps_101
+  - first:
+      213: -6443316412812797742
+    second: MapProps_102
+  - first:
+      213: 7854883748989507432
+    second: MapProps_103
+  - first:
+      213: -7375124554972582332
+    second: MapProps_104
+  - first:
+      213: -8856547143342052916
+    second: MapProps_105
+  - first:
+      213: -4755295693692959733
+    second: MapProps_106
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 82
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: CaveRockRidge
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 945
+        width: 382
+        height: 148
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7ded19b3db053034f8c812d0dd78c0c7
+      internalID: 421602368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AmethystBoulder
+      rect:
+        serializedVersion: 2
+        x: 500
+        y: 898
+        width: 261
+        height: 244
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7954792c9ed75614f8c9fc5b70436fc5
+      internalID: 104781270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ArmoredWreck
+      rect:
+        serializedVersion: 2
+        x: 848
+        y: 925
+        width: 365
+        height: 207
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 37eaea6a37b82ae449dafd460b79e041
+      internalID: -166384144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BasaltRidge
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 546
+        width: 392
+        height: 167
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3e2cffd1bad21d04ea5a8facfc1a0add
+      internalID: 99895845
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampBoulder
+      rect:
+        serializedVersion: 2
+        x: 493
+        y: 511
+        width: 270
+        height: 243
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c2f491a6b3ea09c49ad0892304e9a9e7
+      internalID: -987380598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HiraBarricade
+      rect:
+        serializedVersion: 2
+        x: 831
+        y: 567
+        width: 394
+        height: 129
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e9ee6ffc3e3a4d543bb2b989e8fee2b6
+      internalID: -525709852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: PlasmaPylon
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 94
+        width: 244
+        height: 255
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ab0539c7e690d1a43b46f02ab159f81c
+      internalID: 12200136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BlastDoor
+      rect:
+        serializedVersion: 2
+        x: 441
+        y: 138
+        width: 378
+        height: 163
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f6afc1a0b272746488d4b840b2775f25
+      internalID: 658788427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HullCover
+      rect:
+        serializedVersion: 2
+        x: 873
+        y: 128
+        width: 310
+        height: 193
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 102702148296c444e8dfc8a71663c5e4
+      internalID: -1315400126
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 2b63355e648db934bbbb8e0d7000164b
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      AmethystBoulder: 104781270
+      ArmoredWreck: -166384144
+      BasaltRidge: 99895845
+      BlastDoor: 658788427
+      CaveRockRidge: 421602368
+      HiraBarricade: -525709852
+      HullCover: -1315400126
+      PlasmaPylon: 12200136
+      SwampBoulder: -987380598
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

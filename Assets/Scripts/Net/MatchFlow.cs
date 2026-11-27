@@ -974,6 +974,11 @@ namespace IronWasteland.Net
                     {
                         m_SceneReadyClients.Add(senderClientId);
                     }
+                    else if (Phase == MatchPhase.Playing &&
+                        loadedScene.ToString() == UnityEngine.SceneManagement.SceneManager.GetActiveScene().name)
+                    {
+                        NetStageEvents.Instance?.SendWaveGateSnapshot(senderClientId, loadedScene.ToString());
+                    }
                     return;
                 }
 

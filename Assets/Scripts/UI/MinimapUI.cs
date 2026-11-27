@@ -11,8 +11,8 @@ namespace IronWasteland.UI
 {
     /// <summary>
     /// Bàn đồ chiến thuật góc trên-phải: gộp khung + nền bản đồ của màn đang chơi + lưới radar + mũi tên
-    /// vị trí. Nền bản đồ lấy đúng sprite của object "Background" trong scene, nên mỗi màn hiện đúng
-    /// địa hình của mình. Mũi tên xanh = tank người chơi (và đồng đội nếu có), chấm đỏ = quái/boss.
+    /// vị trí. Các tấm nền trên minimap khớp với giới hạn và vị trí các tấm nền trong scene.
+    /// Mũi tên xanh = tank người chơi (và đồng đội nếu có), chấm đỏ = quái/boss.
     /// Bấm M để bật/tắt.
     /// </summary>
     [DisallowMultipleComponent]
@@ -167,11 +167,15 @@ namespace IronWasteland.UI
         {
             if (mapBackground == null) return;
 
-            Sprite stageSprite = FindStageBackgroundSprite();
-            if (stageSprite != null)
+            SpriteRenderer background = FindStageBackground();
+            if (background != null)
             {
-                if (mapBackground.sprite != stageSprite) mapBackground.sprite = stageSprite;
+                SpriteRenderer north = FindNorthernBackground(background);
+                if (north != null && !m_HasBounds) return;
+
+                mapBackground.sprite = background.sprite;
                 mapBackground.color = Color.white;
+                if (north != null) ApplyNorthernBackground(background, north);
                 m_BackgroundApplied = true;
             }
             else if (fallbackBackground != null && mapBackground.sprite != fallbackBackground)
@@ -184,7 +188,7 @@ namespace IronWasteland.UI
             if (mapGrid != null && !mapGrid.gameObject.activeSelf) mapGrid.gameObject.SetActive(true);
         }
 
-        private Sprite FindStageBackgroundSprite()
+        private SpriteRenderer FindStageBackground()
         {
             SpriteRenderer[] renderers = FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None);
             SpriteRenderer best = null;
@@ -192,12 +196,47 @@ namespace IronWasteland.UI
             foreach (SpriteRenderer renderer in renderers)
             {
                 if (renderer == null || renderer.sprite == null) continue;
-                if (renderer.transform.name != "Background" && renderer.sortingOrder > -500) continue;
+                if (renderer.name == "Background" && renderer.gameObject.scene == gameObject.scene) return renderer;
+                if (renderer.sortingOrder > -500) continue;
 
                 if (best == null || renderer.sortingOrder < best.sortingOrder) best = renderer;
             }
 
-            return best != null ? best.sprite : null;
+            return best;
+        }
+
+        private static SpriteRenderer FindNorthernBackground(SpriteRenderer background)
+        {
+            foreach (GameObject root in background.gameObject.scene.GetRootGameObjects())
+            {
+                if (root.name == "Background_North" &&
+                    root.TryGetComponent(out SpriteRenderer north) && north.sprite != null)
+                    return north;
+            }
+            return null;
+        }
+
+        private void ApplyNorthernBackground(SpriteRenderer south, SpriteRenderer north)
+        {
+            var northImage = new GameObject("StageBackground_North", typeof(RectTransform), typeof(Image))
+                .GetComponent<Image>();
+            northImage.transform.SetParent(mapBackground.transform.parent, false);
+            northImage.transform.SetSiblingIndex(mapBackground.transform.GetSiblingIndex() + 1);
+            northImage.sprite = north.sprite;
+            northImage.raycastTarget = false;
+
+            SetBackgroundSlice(mapBackground.rectTransform, south.bounds);
+            SetBackgroundSlice(northImage.rectTransform, north.bounds);
+        }
+
+        private void SetBackgroundSlice(RectTransform image, Bounds bounds)
+        {
+            image.anchorMin = new Vector2(Mathf.InverseLerp(m_Bounds.xMin, m_Bounds.xMax, bounds.min.x),
+                Mathf.InverseLerp(m_Bounds.yMin, m_Bounds.yMax, bounds.min.y));
+            image.anchorMax = new Vector2(Mathf.InverseLerp(m_Bounds.xMin, m_Bounds.xMax, bounds.max.x),
+                Mathf.InverseLerp(m_Bounds.yMin, m_Bounds.yMax, bounds.max.y));
+            image.offsetMin = Vector2.zero;
+            image.offsetMax = Vector2.zero;
         }
 
         private void Draw()

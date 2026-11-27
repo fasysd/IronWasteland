@@ -37,9 +37,12 @@ namespace IronWasteland.Stages
         [Tooltip("Tên hiển thị trong log/HUD, ví dụ W1, Đợt 2...")]
         public string Label = "Wave";
 
-        [Tooltip("Giây thứ mấy kể từ lúc màn bắt đầu thì đợt này xuất hiện.")]
+        [Tooltip("Giây thứ mấy kể từ lúc màn bắt đầu thì đợt thường xuất hiện.")]
         [Min(0f)]
         public float StartTime;
+
+        [Tooltip("Nếu có, đợt này bắt đầu khi tank bắt đầu bật radar được gán.")]
+        public RadarStation StartRadar;
 
         [Tooltip("Các nhóm quái của đợt.")]
         public List<EnemyWaveSpawn> Spawns = new List<EnemyWaveSpawn>();

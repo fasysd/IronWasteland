@@ -389,7 +389,7 @@ namespace IronWasteland.Stages
                 }
             }
 
-            if (allComplete) Clear();
+            if (allComplete && (spawner == null || spawner.AllGatedWavesStarted)) Clear();
         }
 
         private void Clear()

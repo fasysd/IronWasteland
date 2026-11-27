@@ -2,6 +2,7 @@ using IronWasteland.Stages;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace IronWasteland.Net
 {
@@ -29,6 +30,7 @@ namespace IronWasteland.Net
 
         /// <summary>Mã trạng thái: không có ải nào (về lobby / tạo phòng mới) — xoá cache phía client.</summary>
         public const byte StateIdle = 4;
+        private const byte StateWaveGate = 5;
 
         /// <summary>Instance đang hoạt động (mỗi máy chỉ có một).</summary>
         public static NetStageEvents Instance { get; private set; }
@@ -205,11 +207,54 @@ namespace IronWasteland.Net
             ResetState();
         }
 
+        internal void SendWaveGateState(string sceneName, int waveIndex, bool opened, int firedWaves,
+            ulong? targetClientId)
+        {
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsServer || manager.CustomMessagingManager == null) return;
+
+            using FastBufferWriter writer = new FastBufferWriter(80, Allocator.Temp);
+            writer.WriteValueSafe(StateWaveGate);
+            writer.WriteValueSafe((FixedString64Bytes)sceneName);
+            writer.WriteValueSafe(waveIndex);
+            writer.WriteValueSafe(opened);
+            writer.WriteValueSafe(firedWaves);
+            if (targetClientId.HasValue)
+                manager.CustomMessagingManager.SendNamedMessage(MessageName, targetClientId.Value, writer);
+            else
+                manager.CustomMessagingManager.SendNamedMessageToAll(MessageName, writer);
+        }
+
+        internal void SendWaveGateSnapshot(ulong clientId, string sceneName)
+        {
+            foreach (StageWaveGate gate in FindObjectsByType<StageWaveGate>(FindObjectsInactive.Exclude))
+            {
+                if (gate.gameObject.scene.name == sceneName) gate.PublishState(clientId);
+            }
+        }
+
         /// <summary>Client nhận trạng thái ải và ghi log (HUD thật sẽ do nhóm UI làm sau).</summary>
         private void HandleMessage(ulong senderClientId, FastBufferReader reader)
         {
             if (senderClientId != NetworkManager.ServerClientId) return; // chỉ host được gửi trạng thái ải
             reader.ReadValueSafe(out byte state);
+            if (state == StateWaveGate)
+            {
+                reader.ReadValueSafe(out FixedString64Bytes sceneName);
+                reader.ReadValueSafe(out int index);
+                reader.ReadValueSafe(out bool opened);
+                reader.ReadValueSafe(out int firedWaves);
+                Scene scene = SceneManager.GetActiveScene();
+                if (scene.name != sceneName.ToString()) return;
+                foreach (GameObject root in scene.GetRootGameObjects())
+                {
+                    foreach (StageWaveGate gate in root.GetComponentsInChildren<StageWaveGate>())
+                    {
+                        if (gate.NextWaveIndex == index) gate.ApplyRemoteState(opened, firedWaves);
+                    }
+                }
+                return;
+            }
             reader.ReadValueSafe(out int kills);
             reader.ReadValueSafe(out int target);
             reader.ReadValueSafe(out float elapsed);

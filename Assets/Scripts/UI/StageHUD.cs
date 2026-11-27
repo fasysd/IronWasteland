@@ -63,11 +63,22 @@ namespace IronWasteland.UI
 
         /// <summary>Hook cho self-check: Image của thanh máu boss (null nếu prefab chưa nối).</summary>
         internal Image BossFillImage => bossFill;
+        private EscortVehicle m_NamedEscort;
+        private RadarStation[] m_Radars;
 
         private void Awake()
         {
             if (director == null) director = FindAnyObjectByType<StageDirector>();
             if (resultPanel != null) resultPanel.SetActive(false);
+            foreach (EscortVehicle escort in FindObjectsByType<EscortVehicle>(FindObjectsInactive.Exclude))
+            {
+                if (escort.gameObject.scene != gameObject.scene || string.IsNullOrWhiteSpace(escort.DisplayName)) continue;
+                m_NamedEscort = escort;
+                break;
+            }
+            m_Radars = System.Array.FindAll(FindObjectsByType<RadarStation>(FindObjectsInactive.Exclude),
+                radar => radar.gameObject.scene == gameObject.scene && !string.IsNullOrWhiteSpace(radar.DisplayName));
+            System.Array.Sort(m_Radars, (left, right) => string.CompareOrdinal(left.RadarId, right.RadarId));
 
             ResolveBossPanel();
             ResolveSettingsPanel();
@@ -267,7 +278,7 @@ namespace IronWasteland.UI
             {
                 int total = Mathf.Max(1, director.TotalWaves);
                 // WavesFired đếm theo thời gian; WaveIndex là vị trí khai báo nên có thể nhảy ngược.
-                int current = Mathf.Clamp(director.WavesFired, 1, total);
+                int current = Mathf.Min(director.WavesFired, total);
                 waveText.text = $"Đợt {current} / {total}";
             }
 
@@ -375,6 +386,24 @@ namespace IronWasteland.UI
                 StageObjective objective = objectives[i];
                 if (objective == null) continue;
                 if (sb.Length > 0) sb.Append('\n');
+                if (objective is RadarObjective && !objective.IsComplete)
+                {
+                    RadarStation radar = System.Array.Find(m_Radars, station => station != null && !station.IsActivated);
+                    if (radar != null)
+                    {
+                        sb.Append($"{radar.DisplayName} · {radar.Instruction}");
+                        continue;
+                    }
+                }
+                if (objective is EscortObjective && m_NamedEscort != null)
+                {
+                    int health = Mathf.CeilToInt(m_NamedEscort.Health01 * 100f);
+                    if (m_NamedEscort.HasArrived) sb.Append($"{m_NamedEscort.DisplayName}: Đã tới đích");
+                    else if (m_NamedEscort.IsWaitingForRadar) sb.Append($"{m_NamedEscort.DisplayName}: Đang chờ");
+                    else if (m_NamedEscort.IsWaitingForPlayer) sb.Append($"{m_NamedEscort.DisplayName}: Lại gần xe · {health}% HP");
+                    else sb.Append($"{objective.Label} · {health}% HP");
+                    continue;
+                }
                 sb.Append(objective.Label);
                 if (objective.IsComplete) sb.Append("  [x]");
             }

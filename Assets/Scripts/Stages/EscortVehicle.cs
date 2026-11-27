@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using IronWasteland.Enemies;
 using IronWasteland.Tanks;
+using Unity.Netcode;
 
 namespace IronWasteland.Stages
 {
@@ -25,12 +26,17 @@ namespace IronWasteland.Stages
         [Header("Dinh danh")]
         [Tooltip("Trung voi ObjectiveSpec.TargetId cua objective Escort, vi du: mones / ram.")]
         [SerializeField] private string escortId = "mones";
+        [SerializeField] private string displayName;
+        [Tooltip("Nếu có, xe chỉ xuất phát sau khi trạm radar này được kích hoạt.")]
+        [SerializeField] private RadarStation startRadar;
 
         [Header("Lo trinh")]
         [Tooltip("Cac diem can di qua (toa do world). Di tu phan tu 0 den het.")]
         [SerializeField] private List<Vector2> waypoints = new List<Vector2>();
         [SerializeField] private float speed = 2f;
         [SerializeField] private float arriveDistance = 0.15f;
+        [Tooltip("Xe chờ khi người chơi ở quá xa. 0 = xe luôn tiếp tục đi.")]
+        [SerializeField, Min(0f)] private float maxPlayerDistance;
 
         [Header("Sinh menh")]
         [SerializeField] private float maxHealth = 2000f;
@@ -62,6 +68,7 @@ namespace IronWasteland.Stages
         private Transform m_Tank;
 
         public string EscortId => escortId;
+        public string DisplayName => displayName;
         public IReadOnlyList<Vector2> Waypoints => waypoints;
         public float Health01 => maxHealth > 0f ? Mathf.Clamp01(currentHealth / maxHealth) : 0f;
         public float Travelled => m_Travelled;
@@ -69,6 +76,13 @@ namespace IronWasteland.Stages
 
         /// <summary>Xe da di het lo trinh: tu day khong con bi quai pha nua.</summary>
         public bool HasArrived => m_Arrived;
+        public bool IsWaitingForRadar => startRadar != null && !startRadar.IsActivated;
+        public bool IsWaitingForPlayer { get; private set; }
+
+        public string StatusLabel => m_Destroyed ? "BỊ PHÁ HỦY" :
+            m_Arrived ? "ĐÃ TỚI ĐÍCH" :
+            IsWaitingForRadar ? "CHỜ RADAR 1" :
+            IsWaitingForPlayer ? "CHỜ TANK ÁP SÁT" : "ĐANG HỘ TỐNG";
 
         private void Awake()
         {
@@ -94,14 +108,16 @@ namespace IronWasteland.Stages
 
         private void Update()
         {
-            if (m_Destroyed) return;
+            if (m_Destroyed || IsWaitingForRadar) return;
 
-            TickMovement();
+            float playerDistance = DistanceToNearestPlayer();
+            IsWaitingForPlayer = !m_Arrived && maxPlayerDistance > 0f && playerDistance > maxPlayerDistance;
+            if (!IsWaitingForPlayer) TickMovement(playerDistance);
             TickEnemyDamage();
             TickProgressReport();
         }
 
-        private void TickMovement()
+        private void TickMovement(float playerDistance)
         {
             if (m_NextWaypoint >= waypoints.Count)
             {
@@ -127,7 +143,8 @@ namespace IronWasteland.Stages
                 return;
             }
 
-            float step = CurrentSpeed() * Time.deltaTime;
+            float speedMultiplier = playerDistance <= tankBonusRadius ? tankBonusMultiplier : 1f;
+            float step = speed * speedMultiplier * Time.deltaTime;
             Vector2 move = Vector2.ClampMagnitude(delta, step);
             transform.position = pos + move;
             m_Travelled += move.magnitude;
@@ -140,18 +157,27 @@ namespace IronWasteland.Stages
             }
         }
 
-        private float CurrentSpeed()
+        private float DistanceToNearestPlayer()
         {
+            if (maxPlayerDistance > 0f && TankBrain.NetworkSessionActive && NetworkManager.Singleton.IsServer)
+            {
+                float nearest = float.PositiveInfinity;
+                foreach (NetworkClient client in NetworkManager.Singleton.ConnectedClientsList)
+                {
+                    if (client.PlayerObject == null ||
+                        !client.PlayerObject.TryGetComponent(out TankBrain tank) || !tank.IsAlive) continue;
+                    nearest = Mathf.Min(nearest, Vector2.Distance(transform.position, tank.transform.position));
+                }
+                return nearest;
+            }
+
             if (m_Tank == null)
             {
                 GameController gc = FindAnyObjectByType<GameController>();
                 if (gc != null && gc.PlayerTank != null) m_Tank = gc.PlayerTank.transform;
             }
 
-            if (m_Tank == null) return speed;
-
-            float distance = Vector2.Distance(transform.position, m_Tank.position);
-            return distance <= tankBonusRadius ? speed * tankBonusMultiplier : speed;
+            return m_Tank != null ? Vector2.Distance(transform.position, m_Tank.position) : float.PositiveInfinity;
         }
 
         private void TickEnemyDamage()

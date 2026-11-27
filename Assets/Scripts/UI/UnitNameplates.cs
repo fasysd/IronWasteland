@@ -77,11 +77,15 @@ namespace IronWasteland.UI
         private readonly List<Vector2> m_UsedLocal = new List<Vector2>();
         private readonly Dictionary<Component, Entry> m_ByTarget = new Dictionary<Component, Entry>();
         private float m_ScanTimer;
+        private EscortVehicle m_Escort;
+        private RadarStation[] m_Radars;
 
         private void Awake()
         {
             if (container == null) container = transform as RectTransform;
             if (worldCamera == null) worldCamera = Camera.main;
+            m_Radars = System.Array.FindAll(FindObjectsByType<RadarStation>(FindObjectsInactive.Exclude),
+                radar => radar.gameObject.scene == gameObject.scene && !string.IsNullOrWhiteSpace(radar.DisplayName));
         }
 
         private void LateUpdate()
@@ -98,6 +102,8 @@ namespace IronWasteland.UI
 
             m_UsedLocal.Clear();
             PlacePlayer();
+            PlaceEscort();
+            PlaceRadars();
             PlaceEnemies();
             CleanupStaleEntries();
         }
@@ -128,6 +134,40 @@ namespace IronWasteland.UI
             float maxHealth = Mathf.Max(1f, tank.Stats.MaxHealth);
             SetBar(entry, tank.CurrentHealth / maxHealth, allyBarColor);
             Place(entry, tank.transform.position, 1.05f);
+        }
+
+        private void PlaceEscort()
+        {
+            if (IsStaleTarget(m_Escort)) return;
+
+            Entry entry = GetEntry(m_Escort, false);
+            if (entry == null) return;
+            entry.Name.text = m_Escort.DisplayName.ToUpperInvariant();
+            entry.Name.color = allyNameColor;
+            entry.Name.fontSize = nameFontSize;
+            entry.Tag.text = m_Escort.StatusLabel;
+            entry.Tag.color = m_Escort.HasArrived ? allyBarColor : tagColor;
+            SetBar(entry, m_Escort.Health01, m_Escort.Health01 <= .35f ? enemyBarColor : allyBarColor);
+            Place(entry, m_Escort.transform.position, 1.5f);
+        }
+
+        private void PlaceRadars()
+        {
+            foreach (RadarStation radar in m_Radars)
+            {
+                if (IsStaleTarget(radar)) continue;
+
+                Entry entry = GetEntry(radar, false);
+                if (entry == null) continue;
+                entry.Name.text = radar.DisplayName.ToUpperInvariant();
+                entry.Name.color = allyNameColor;
+                entry.Name.fontSize = nameFontSize;
+                entry.Tag.text = radar.IsTankInRange || radar.IsActivated ? radar.Instruction : string.Empty;
+                entry.Tag.color = radar.IsActivated ? allyBarColor : tagColor;
+                entry.HpBg.gameObject.SetActive(radar.IsTankInRange && !radar.IsActivated);
+                SetBar(entry, radar.Hold01, allyBarColor);
+                Place(entry, radar.transform.position, 0.85f);
+            }
         }
 
         private void PlaceEnemies()
@@ -280,7 +320,13 @@ namespace IronWasteland.UI
 
         private void Rescan()
         {
-            // Giữ chỗ cho hook quét định kỳ; việc ẩn entry cũ do CleanupStaleEntries() lo mỗi frame.
+            if (m_Escort != null) return;
+            foreach (EscortVehicle escort in FindObjectsByType<EscortVehicle>(FindObjectsInactive.Exclude))
+            {
+                if (escort.gameObject.scene != gameObject.scene || string.IsNullOrWhiteSpace(escort.DisplayName)) continue;
+                m_Escort = escort;
+                break;
+            }
         }
 
         /// <summary>

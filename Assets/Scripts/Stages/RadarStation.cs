@@ -20,6 +20,9 @@ namespace IronWasteland.Stages
         [Header("Dinh danh")]
         [Tooltip("Trung voi ObjectiveSpec.TargetId cua objective Radar, vi du: radar_1.")]
         [SerializeField] private string radarId = "radar_1";
+        [SerializeField] private string displayName;
+        [Tooltip("Vị trí của trạm để người chơi biết đường tới.")]
+        [SerializeField] private string locationHint;
 
         [Header("Dieu kien kich hoat")]
         [Tooltip("Ban kinh tank phai dung trong (met).")]
@@ -39,7 +42,22 @@ namespace IronWasteland.Stages
         private Transform m_Tank;
 
         public string RadarId => radarId;
+        public string DisplayName => displayName;
+        public bool HasStartedActivation { get; private set; }
+        public bool IsTankInRange { get; private set; }
+        public bool IsBlockedByEnemies { get; private set; }
         public bool IsActivated => m_Activated;
+
+        public string Instruction
+        {
+            get
+            {
+                if (IsActivated) return "Đã bật";
+                if (IsBlockedByEnemies) return "Dọn quái quanh radar";
+                if (IsTankInRange) return $"Giữ vị trí · {Mathf.CeilToInt(Mathf.Max(0f, holdTime - m_Hold))} giây";
+                return $"Đến {locationHint}, đứng yên {Mathf.CeilToInt(holdTime)} giây";
+            }
+        }
 
         /// <summary>0..1 - dung cho thanh tien do tren HUD/gizmo.</summary>
         public float Hold01 => holdTime > 0f ? Mathf.Clamp01(m_Hold / holdTime) : 1f;
@@ -59,19 +77,15 @@ namespace IronWasteland.Stages
                 if (gc != null && gc.PlayerTank != null) m_Tank = gc.PlayerTank.transform;
             }
 
-            if (m_Tank == null)
+            IsTankInRange = m_Tank != null && Vector2.Distance(m_Tank.position, transform.position) <= radius;
+            IsBlockedByEnemies = IsTankInRange && requireNoEnemies && EnemiesNearby();
+            if (!IsTankInRange || IsBlockedByEnemies)
             {
                 m_Hold = 0f;
                 return;
             }
 
-            bool inRange = Vector2.Distance(m_Tank.position, transform.position) <= radius;
-            if (!inRange || (requireNoEnemies && EnemiesNearby()))
-            {
-                m_Hold = 0f;
-                return;
-            }
-
+            HasStartedActivation = true;
             m_Hold += Time.deltaTime;
             if (logEvents && m_Hold > 0f && Mathf.FloorToInt(m_Hold * 2f) != Mathf.FloorToInt((m_Hold - Time.deltaTime) * 2f))
                 Debug.Log($"[RadarStation] {radarId}: giu tram {m_Hold:0.0}/{holdTime:0.0}s");

@@ -7,6 +7,33 @@ namespace IronWasteland.Tests
 {
     public sealed class StageLayoutTests
     {
+        [TestCase("1_2", false)]
+        [TestCase("1_3", true)]
+        [TestCase("1_4", true)]
+        [TestCase("2_1", true)]
+        [TestCase("2_2", false)]
+        [TestCase("2_3", true)]
+        [TestCase("2_4", true)]
+        [TestCase("2_5", false)]
+        public void Stage_gate_matches_the_mission_format(string stage, bool hasGate)
+        {
+            var scene = EditorSceneManager.OpenPreviewScene($"Assets/Scenes/Stage_{stage}.unity");
+            try
+            {
+                var gates = scene.GetRootGameObjects()
+                    .SelectMany(root => root.GetComponentsInChildren<MonoBehaviour>())
+                    .Where(component => component != null && component.GetType().FullName ==
+                        "IronWasteland.Stages.StageWaveGate").ToArray();
+                Assert.That(gates.Length, Is.EqualTo(hasGate ? 1 : 0));
+                if (hasGate)
+                    Assert.That(gates[0].GetComponent<BoxCollider2D>().isTrigger, Is.True);
+            }
+            finally
+            {
+                EditorSceneManager.ClosePreviewScene(scene);
+            }
+        }
+
         [TestCase("1_2")]
         [TestCase("1_3")]
         [TestCase("1_4")]
@@ -23,6 +50,12 @@ namespace IronWasteland.Tests
                 var roots = scene.GetRootGameObjects();
                 var bounds = roots.Single(root => root.name == "Background")
                     .GetComponent<SpriteRenderer>().bounds;
+                var north = roots.SingleOrDefault(root => root.name == "Background_North");
+                Assert.That(north, Is.Not.Null, "The northern playable area has its own background in the scene.");
+                var northBounds = north.GetComponent<SpriteRenderer>().bounds;
+                Assert.That(northBounds.min.y, Is.EqualTo(bounds.max.y).Within(.02f), "The backgrounds must meet.");
+                Assert.That(northBounds.min.x, Is.EqualTo(bounds.min.x).Within(.02f));
+                Assert.That(northBounds.max.x, Is.EqualTo(bounds.max.x).Within(.02f));
                 var controller = roots.SelectMany(root => root.GetComponentsInChildren<MonoBehaviour>())
                     .Single(component => component != null && component.GetType().FullName ==
                         "IronWasteland.Tanks.GameController");

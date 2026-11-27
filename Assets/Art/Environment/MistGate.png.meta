@@ -1,0 +1,284 @@
+fileFormatVersion: 2
+guid: 39679d465ea044844a7bead66b337075
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 836756687214020769
+    second: MistGate_0
+  - first:
+      213: -4691675351631846243
+    second: MistGate_1
+  - first:
+      213: 5532106021315358889
+    second: MistGate_2
+  - first:
+      213: 5243210416083989595
+    second: MistGate_3
+  - first:
+      213: 6496768735235736530
+    second: MistGate_4
+  - first:
+      213: -9132172107782889933
+    second: MistGate_5
+  - first:
+      213: 6372576135096648340
+    second: MistGate_6
+  - first:
+      213: -815572545159650024
+    second: MistGate_7
+  - first:
+      213: -1935226778978050995
+    second: MistGate_8
+  - first:
+      213: -1058148031053475136
+    second: MistGate_9
+  - first:
+      213: -3610123734074356420
+    second: MistGate_10
+  - first:
+      213: 1113211880607922489
+    second: MistGate_11
+  - first:
+      213: 7902444997901900953
+    second: MistGate_12
+  - first:
+      213: 5100522864408663979
+    second: MistGate_13
+  - first:
+      213: -3735195917102536657
+    second: MistGate_14
+  - first:
+      213: 4887003369253555929
+    second: MistGate_15
+  - first:
+      213: -2025851998720750907
+    second: MistGate_16
+  - first:
+      213: -961574288592163241
+    second: MistGate_17
+  - first:
+      213: 6885138436035773711
+    second: MistGate_18
+  - first:
+      213: -3904288718211717626
+    second: MistGate_19
+  - first:
+      213: -2932297940077575334
+    second: MistGate_20
+  - first:
+      213: 6474579897198282449
+    second: MistGate_21
+  - first:
+      213: -5370620388543257901
+    second: MistGate_22
+  - first:
+      213: -9016780819930094799
+    second: MistGate_23
+  - first:
+      213: -5540891337127914574
+    second: MistGate_24
+  - first:
+      213: -6797507161342354204
+    second: MistGate_25
+  - first:
+      213: 5187808038127437430
+    second: MistGate_26
+  - first:
+      213: -6381044415092352107
+    second: MistGate_27
+  - first:
+      213: -8634156619825133107
+    second: MistGate_28
+  - first:
+      213: -2252324946347397271
+    second: MistGate_29
+  - first:
+      213: 5045262588278241588
+    second: MistGate_30
+  - first:
+      213: 8479547277706194337
+    second: MistGate_31
+  - first:
+      213: 4407755395119676093
+    second: MistGate_32
+  - first:
+      213: 3205682974771294470
+    second: MistGate_33
+  - first:
+      213: 2918019565513744766
+    second: MistGate_34
+  - first:
+      213: 1346258593941165097
+    second: MistGate_35
+  - first:
+      213: 8204936680769342229
+    second: MistGate_36
+  - first:
+      213: 8697308762470792167
+    second: MistGate_37
+  - first:
+      213: 5647238136821657492
+    second: MistGate_38
+  - first:
+      213: -9219191478629908459
+    second: MistGate_39
+  - first:
+      213: 2464063618355471756
+    second: MistGate_40
+  - first:
+      213: -6372339244089934702
+    second: MistGate_41
+  - first:
+      213: 7043733346812664404
+    second: MistGate_42
+  - first:
+      213: -7503962542321099351
+    second: MistGate_43
+  - first:
+      213: 6196189391612640662
+    second: MistGate_44
+  - first:
+      213: -536626300159707045
+    second: MistGate_45
+  - first:
+      213: 8504470614458861877
+    second: MistGate_46
+  - first:
+      213: -6840893794644548831
+    second: MistGate_47
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 201.5
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: MistGate
+      rect:
+        serializedVersion: 2
+        x: 78
+        y: 167
+        width: 2015
+        height: 397
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8a84973349221cc43b5e5f7e04ba80a8
+      internalID: -1986550125
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 25ea4ff2f3bc09b4bac572daa7f9f936
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      MistGate: -1986550125
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
