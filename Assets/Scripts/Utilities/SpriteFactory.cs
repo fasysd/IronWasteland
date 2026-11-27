@@ -12,12 +12,66 @@ namespace IronWasteland.Utilities
 
         private static Sprite s_Circle;
         private static Sprite s_SoftCircle;
+        private static Sprite s_Rock;
 
         /// <summary>Hinh tron dac, vien mem (dung cho vung sat thuong).</summary>
         public static Sprite Circle => s_Circle != null ? s_Circle : (s_Circle = BuildCircle(DefaultSize, 0.75f));
 
         /// <summary>Hinh tron mo dan ra vien (dung cho vet lua / aura).</summary>
         public static Sprite SoftCircle => s_SoftCircle != null ? s_SoftCircle : (s_SoftCircle = BuildCircle(DefaultSize, 0f));
+
+        /// <summary>
+        /// Khoi da loi lom (blob) dung lam vat can tam thoi khi chua co art moi truong.
+        /// Tra ve sprite trang de SpriteRenderer tu nhuom mau theo tung man.
+        /// </summary>
+        public static Sprite Rock => s_Rock != null ? s_Rock : (s_Rock = BuildRock(DefaultSize));
+
+        private static Sprite BuildRock(int size)
+        {
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                name = "GeneratedRock_" + size,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp,
+                hideFlags = HideFlags.HideAndDontSave,
+            };
+
+            float center = (size - 1) * 0.5f;
+            float maxRadius = size * 0.5f;
+            Color32[] pixels = new Color32[size * size];
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = (x - center) / maxRadius;
+                    float dy = (y - center) / maxRadius;
+                    float distance = Mathf.Sqrt(dx * dx + dy * dy);
+                    float angle = Mathf.Atan2(dy, dx);
+
+                    // Bien do 3 nhip + nhap nhô nho tao hinh da thay vi hinh tron hoan hao.
+                    float edge = 0.82f + 0.10f * Mathf.Sin(angle * 3f + 1.2f) + 0.05f * Mathf.Sin(angle * 7f - 0.4f);
+                    float alpha = Mathf.Clamp01((edge - distance) / 0.08f);
+
+                    pixels[y * size + x] = new Color32(255, 255, 255, (byte)Mathf.RoundToInt(alpha * 255f));
+                }
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply(false, false);
+
+            Sprite sprite = Sprite.Create(
+                texture,
+                new Rect(0f, 0f, size, size),
+                new Vector2(0.5f, 0.5f),
+                size,
+                0,
+                SpriteMeshType.FullRect);
+
+            sprite.name = "GeneratedRock_" + size;
+            sprite.hideFlags = HideFlags.HideAndDontSave;
+            return sprite;
+        }
 
         private static Sprite BuildCircle(int size, float solidRadius)
         {

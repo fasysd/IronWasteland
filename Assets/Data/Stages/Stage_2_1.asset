@@ -16,45 +16,6 @@ MonoBehaviour:
   stageName: "V\xE0nh \u0110ai B\xE3o L\u1EEDa"
   killTarget: 50
   timeLimitSeconds: 120
-  waves:
-  - Label: W1 - kien lua tran vao
-    StartTime: 0
-    Spawns:
-    - Enemy: {fileID: 3360813821543528772, guid: 97e171ca3a01b3d40a49e4a3727b3bae, type: 3}
-      Count: 8
-      SpeedMultiplier: 1
-      ZoneId: A
-    - Enemy: {fileID: 805287383237241067, guid: dd67fd1da0bc9f34eb67cc48121a0809, type: 3}
-      Count: 5
-      SpeedMultiplier: 1
-      ZoneId: A
-    - Enemy: {fileID: 3360813821543528772, guid: 97e171ca3a01b3d40a49e4a3727b3bae, type: 3}
-      Count: 7
-      SpeedMultiplier: 1
-      ZoneId: B
-    - Enemy: {fileID: 805287383237241067, guid: dd67fd1da0bc9f34eb67cc48121a0809, type: 3}
-      Count: 5
-      SpeedMultiplier: 1
-      ZoneId: B
-  - Label: W2 - tiep vien
-    StartTime: 45
-    Spawns:
-    - Enemy: {fileID: 3360813821543528772, guid: 97e171ca3a01b3d40a49e4a3727b3bae, type: 3}
-      Count: 8
-      SpeedMultiplier: 1
-      ZoneId: A
-    - Enemy: {fileID: 805287383237241067, guid: dd67fd1da0bc9f34eb67cc48121a0809, type: 3}
-      Count: 5
-      SpeedMultiplier: 1
-      ZoneId: A
-    - Enemy: {fileID: 3360813821543528772, guid: 97e171ca3a01b3d40a49e4a3727b3bae, type: 3}
-      Count: 7
-      SpeedMultiplier: 1
-      ZoneId: B
-    - Enemy: {fileID: 805287383237241067, guid: dd67fd1da0bc9f34eb67cc48121a0809, type: 3}
-      Count: 5
-      SpeedMultiplier: 1
-      ZoneId: B
   objectives:
   - Type: 0
     Count: 50

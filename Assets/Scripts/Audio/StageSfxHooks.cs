@@ -37,7 +37,7 @@ namespace IronWasteland.Audio
             director.StageFailed -= HandleStageFailed;
         }
 
-        private void HandleWaveStarted(int index, StageDefinition.Wave wave)
+        private void HandleWaveStarted(int index, EnemyWave wave)
         {
             if (!playWaveStart) return;
             AudioManager.Play(SfxCategory.EnemySpawn, 0.8f);

@@ -204,9 +204,8 @@ namespace IronWasteland.UI
             MakeText(go.transform, "Name", def.StageName, 26f, new Vector2(18f, -42f), new Vector2(cardWidth - 36f, 34f),
                 unlocked ? Color.white : new Color(0.55f, 0.55f, 0.6f), TextAlignmentOptions.Left);
 
-            // Dong 3: so dot quai + do kho
-            int waves = def.Waves != null ? def.Waves.Count : 0;
-            MakeText(go.transform, "Info", $"{waves} đợt quái • Độ khó: {Difficulty(def.StageCode)}", 16f,
+            // Dong 3: do kho (so dot quai nam trong scene, StageSelect khong doc duoc)
+            MakeText(go.transform, "Info", $"Độ khó: {Difficulty(def.StageCode)}", 16f,
                 new Vector2(18f, -88f), new Vector2(cardWidth - 36f, 24f), new Color(0.72f, 0.76f, 0.84f), TextAlignmentOptions.Left);
 
             var button = go.GetComponent<Button>();

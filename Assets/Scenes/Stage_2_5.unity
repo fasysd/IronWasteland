@@ -235,9 +235,6 @@ MonoBehaviour:
   definition: {fileID: 11400000, guid: 26b57bab665633744a1cf3e3522f1747, type: 2}
   gameController: {fileID: 1241495291}
   spawner: {fileID: 1493952789}
-  spawnZones:
-  - {fileID: 1183980472}
-  - {fileID: 1740843148}
   autoStart: 1
   coopMode: 0
   failOnPlayerDeath: 1
@@ -896,6 +893,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1493952790}
   - component: {fileID: 1493952789}
+  - component: {fileID: 880000000}
   m_Layer: 0
   m_Name: EnemySpawner
   m_TagString: Untagged
@@ -919,6 +917,24 @@ MonoBehaviour:
   container: {fileID: 0}
   coopMode: 0
   logEvents: 1
+  waves:
+  - Label: W1
+    StartTime: 0
+    Spawns:
+    - Enemy: {fileID: 8420907976510360087, guid: dd03dff10e04c7847a6ca5bc5d1dae1d, type: 3}
+      Count: 8
+      SpeedMultiplier: 1
+      ZoneId: 
+  - Label: W2
+    StartTime: 90
+    Spawns:
+    - Enemy: {fileID: 2837244264739505214, guid: fa914b93d15fd4d41920d832034cf707, type: 3}
+      Count: 6
+      SpeedMultiplier: 1
+      ZoneId: 
+  spawnZones:
+  - {fileID: 1183980472}
+  - {fileID: 1740843148}
 --- !u!4 &1493952790
 Transform:
   m_ObjectHideFlags: 0
@@ -2489,6 +2505,22 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &880000000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1493952788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4a7f0a52e6b4d9f1a8c3e5b0f2d7a46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stageCode: 2-5
+  obstacleCount: 7
+  obstacleColor: {r: 0.26, g: 0.27, b: 0.3, a: 1}
+  logBuild: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

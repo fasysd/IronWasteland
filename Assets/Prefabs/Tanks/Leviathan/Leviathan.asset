@@ -69,3 +69,4 @@ MonoBehaviour:
   - WATER ARMOR
   - TIDAL RETURN
   skillGlyphs: []
+  portrait: {fileID: 21300000, guid: b6781ac235a9e9143a2ed65159624e6d, type: 3}

@@ -62,6 +62,7 @@ namespace IronWasteland.Stages
         private Transform m_Tank;
 
         public string EscortId => escortId;
+        public IReadOnlyList<Vector2> Waypoints => waypoints;
         public float Health01 => maxHealth > 0f ? Mathf.Clamp01(currentHealth / maxHealth) : 0f;
         public float Travelled => m_Travelled;
         public bool IsDestroyed => m_Destroyed;

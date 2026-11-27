@@ -61,6 +61,9 @@ namespace IronWasteland.UI
         [Tooltip("Định dạng đồng hồ: phút:giây.")]
         [SerializeField] private bool showTimer = true;
 
+        /// <summary>Hook cho self-check: Image của thanh máu boss (null nếu prefab chưa nối).</summary>
+        internal Image BossFillImage => bossFill;
+
         private void Awake()
         {
             if (director == null) director = FindAnyObjectByType<StageDirector>();
@@ -263,7 +266,8 @@ namespace IronWasteland.UI
             if (waveText != null)
             {
                 int total = Mathf.Max(1, director.TotalWaves);
-                int current = Mathf.Clamp(director.WaveIndex + 1, 1, total);
+                // WavesFired đếm theo thời gian; WaveIndex là vị trí khai báo nên có thể nhảy ngược.
+                int current = Mathf.Clamp(director.WavesFired, 1, total);
                 waveText.text = $"Đợt {current} / {total}";
             }
 

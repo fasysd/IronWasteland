@@ -27,8 +27,11 @@ namespace IronWasteland.Stages
     public class StageManager : MonoBehaviour
     {
         [Header("Data")]
-        [Tooltip("Du lieu ai (dot quai, dieu kien thang).")]
+        [Tooltip("Du lieu ai (dieu kien thang).")]
         [SerializeField] private StageDefinition definition;
+
+        [Tooltip("Dot quai cua ai. Ban cu (StageManager) tu giu danh sach nay; man moi dung EnemySpawner.")]
+        [SerializeField] private List<EnemyWave> waves = new List<EnemyWave>();
 
         [Tooltip("GameController de lay tank nguoi choi. De trong se tu tim trong scene.")]
         [SerializeField] private GameController gameController;
@@ -62,7 +65,7 @@ namespace IronWasteland.Stages
             set => coopMode = value;
         }
 
-        public event Action<int, StageDefinition.Wave> WaveStarted;
+        public event Action<int, EnemyWave> WaveStarted;
         public event Action<int> KillsChanged;
         public event Action<StageManager> StageCleared;
         public event Action<StageManager> StageFailed;
@@ -89,7 +92,7 @@ namespace IronWasteland.Stages
             }
         }
 
-        private readonly List<StageDefinition.Wave> m_PendingWaves = new List<StageDefinition.Wave>();
+        private readonly List<EnemyWave> m_PendingWaves = new List<EnemyWave>();
         private readonly List<EnemyBrain> m_Spawned = new List<EnemyBrain>();
 
         // Danh sách tank người chơi (4 người khi chơi mạng). Với chơi mạng, host nhìn thấy
@@ -181,11 +184,11 @@ namespace IronWasteland.Stages
             m_Players.Clear();
             m_RosterTimer = 0f;
 
-            if (definition.Waves != null)
+            if (waves != null)
             {
-                for (int i = 0; i < definition.Waves.Count; i++)
+                for (int i = 0; i < waves.Count; i++)
                 {
-                    if (definition.Waves[i] != null) m_PendingWaves.Add(definition.Waves[i]);
+                    if (waves[i] != null) m_PendingWaves.Add(waves[i]);
                 }
             }
 
@@ -199,7 +202,7 @@ namespace IronWasteland.Stages
             {
                 Debug.Log($"[Stage] Bat dau ai {definition.StageCode} - {definition.StageName}: " +
                           $"tieu diet {definition.KillTarget} quai, du kien {definition.TimeLimitSeconds:0}s, " +
-                          $"{m_TotalWaves} dot / {definition.TotalEnemies} quai.");
+                          $"{m_TotalWaves} dot.");
             }
 
             KillsChanged?.Invoke(Kills);
@@ -271,7 +274,7 @@ namespace IronWasteland.Stages
         {
             while (m_PendingWaves.Count > 0)
             {
-                StageDefinition.Wave wave = m_PendingWaves[0];
+                EnemyWave wave = m_PendingWaves[0];
                 if (wave.StartTime > Elapsed) break;
 
                 m_PendingWaves.RemoveAt(0);
@@ -279,7 +282,7 @@ namespace IronWasteland.Stages
             }
         }
 
-        private void SpawnWave(StageDefinition.Wave wave)
+        private void SpawnWave(EnemyWave wave)
         {
             WaveIndex++;
 
@@ -287,7 +290,7 @@ namespace IronWasteland.Stages
             {
                 for (int i = 0; i < wave.Spawns.Count; i++)
                 {
-                    StageDefinition.EnemySpawn spawn = wave.Spawns[i];
+                    EnemyWaveSpawn spawn = wave.Spawns[i];
                     if (spawn == null || spawn.Enemy == null)
                     {
                         Debug.LogWarning($"[Stage] Dot {WaveIndex + 1} co entry quai rong, bo qua.", this);
@@ -307,7 +310,7 @@ namespace IronWasteland.Stages
             WaveStarted?.Invoke(WaveIndex, wave);
         }
 
-        private void SpawnEnemy(StageDefinition.EnemySpawn spawn)
+        private void SpawnEnemy(EnemyWaveSpawn spawn)
         {
             Vector2 position = RandomSpawnPoint();
 

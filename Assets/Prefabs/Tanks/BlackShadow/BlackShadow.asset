@@ -71,3 +71,4 @@ MonoBehaviour:
   - SHADOW PREDATOR
   - SHADOW AMBUSH
   skillGlyphs: []
+  portrait: {fileID: 21300000, guid: d526ead32178ba4428bd9331b77ac8c0, type: 3}

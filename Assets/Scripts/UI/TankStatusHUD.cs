@@ -102,16 +102,8 @@ namespace IronWasteland.UI
 
             ApplyDefinitionUi();
 
-            float maxHealth = Mathf.Max(1f, m_Tank.Stats.MaxHealth);
-            float health = Mathf.Clamp(m_Tank.CurrentHealth, 0f, maxHealth);
-            SetBar(healthFill, health / maxHealth);
-            if (healthText != null) healthText.text = $"{Mathf.CeilToInt(health)} / {Mathf.CeilToInt(maxHealth)}";
-
-            float maxEnergy = Mathf.Max(1f, m_Tank.Stats.MaxEnergy);
-            float energy = Mathf.Clamp(m_Tank.CurrentEnergy, 0f, maxEnergy);
-            SetBar(energyFill, energy / maxEnergy);
-            if (energyText != null) energyText.text = $"{Mathf.FloorToInt(energy)} / {Mathf.FloorToInt(maxEnergy)}";
-
+            ApplyHealth(m_Tank.CurrentHealth, m_Tank.Stats.MaxHealth);
+            ApplyEnergy(m_Tank.CurrentEnergy, m_Tank.Stats.MaxEnergy);
             RefreshStatsLine();
 
             int count = Mathf.Min(skillFills != null ? skillFills.Length : 0, TankBrain.SkillCount);
@@ -247,6 +239,15 @@ namespace IronWasteland.UI
         {
             TankDefinition definition = gameController != null ? gameController.TankDefinition : null;
             if (definition == m_UiDefinition) return;
+            ApplyTankIdentity(definition);
+        }
+
+        /// <summary>
+        /// Áp thông tin nhận dạng của xe đang chơi lên panel người chơi:
+        /// tên xe, ảnh đại diện và huy hiệu phím của ô kỹ năng.
+        /// </summary>
+        public void ApplyTankIdentity(TankDefinition definition)
+        {
             m_UiDefinition = definition;
 
             bool showBadges = definition == null || !definition.SkillIconsIncludeLabels;
@@ -263,6 +264,48 @@ namespace IronWasteland.UI
             {
                 tankNameText.text = definition.TankName.ToUpperInvariant();
             }
+
+            if (portraitImage != null)
+            {
+                Sprite portrait = definition != null ? definition.Portrait : null;
+                if (portrait != null)
+                {
+                    portraitImage.sprite = portrait;
+                    portraitImage.preserveAspect = true;
+                    portraitImage.enabled = true;
+                }
+                else if (definition != null)
+                {
+                    Debug.LogWarning($"[{nameof(TankStatusHUD)}] Xe '{definition.name}' chưa có portrait nên HUD giữ ảnh đại diện cũ.", this);
+                }
+            }
+        }
+
+        /// <summary>Ảnh đại diện HUD đang hiển thị (null khi chưa có).</summary>
+        public Sprite PortraitSprite => portraitImage != null ? portraitImage.sprite : null;
+
+        /// <summary>Tỉ lệ đầy của thanh máu đang hiển thị (0..1).</summary>
+        public float HealthFillAmount => healthFill != null ? healthFill.fillAmount : 0f;
+
+        /// <summary>Sprite của thanh máu; null nghĩa là Image không vẽ được gì.</summary>
+        public Sprite HealthFillSprite => healthFill != null ? healthFill.sprite : null;
+
+        /// <summary>Tô thanh máu + số máu theo giá trị hiện tại.</summary>
+        public void ApplyHealth(float current, float maxHealth)
+        {
+            float max = Mathf.Max(1f, maxHealth);
+            float health = Mathf.Clamp(current, 0f, max);
+            SetBar(healthFill, health / max);
+            if (healthText != null) healthText.text = $"{Mathf.CeilToInt(health)} / {Mathf.CeilToInt(max)}";
+        }
+
+        /// <summary>Tô thanh năng lượng + số năng lượng theo giá trị hiện tại.</summary>
+        public void ApplyEnergy(float current, float maxEnergy)
+        {
+            float max = Mathf.Max(1f, maxEnergy);
+            float energy = Mathf.Clamp(current, 0f, max);
+            SetBar(energyFill, energy / max);
+            if (energyText != null) energyText.text = $"{Mathf.FloorToInt(energy)} / {Mathf.FloorToInt(max)}";
         }
 
         private TankBrain ResolveTank()
