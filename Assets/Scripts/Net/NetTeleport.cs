@@ -40,6 +40,42 @@ namespace IronWasteland.Net
             ApplyLocal(tank, position);
         }
 
+        /// <summary>Tạo hình chữ nhật bao quanh một vùng tròn để truyền cho StageBounds/CameraFollow2D.</summary>
+        public static Rect CreateCircleAreaRect(Vector2 center, float radius)
+        {
+            float r = Mathf.Max(0.5f, radius);
+            return new Rect(center.x - r, center.y - r, r * 2f, r * 2f);
+        }
+
+        /// <summary>
+        /// Cập nhật vùng giới hạn StageBounds và CameraFollow2D cho đúng Tank bị dịch chuyển
+        /// (Offline hoặc Co-op Host/Client sở hữu Tank đó).
+        /// </summary>
+        public static void SetTankAreaBounds(TankBrain tank, bool useOverride, Rect area)
+        {
+            if (tank == null)
+                return;
+
+            if (TankBrain.NetworkSessionActive)
+            {
+                NetPlayerController controller = tank.GetComponent<NetPlayerController>();
+                if (controller != null && controller.IsSpawned)
+                {
+                    controller.ServerSetAreaBounds(useOverride, area);
+                    return;
+                }
+            }
+
+            if (useOverride)
+            {
+                IronWasteland.Core.StageBounds.ApplyOverrideBounds(area, snapCamera: true);
+            }
+            else
+            {
+                IronWasteland.Core.StageBounds.ResetToDefaultBounds(snapCamera: true);
+            }
+        }
+
         private static void ApplyLocal(TankBrain tank, Vector3 position)
         {
             Vector3 fixedPosition = new Vector3(position.x, position.y, tank.transform.position.z);

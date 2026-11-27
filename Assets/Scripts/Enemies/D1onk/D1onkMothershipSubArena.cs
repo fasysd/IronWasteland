@@ -280,6 +280,8 @@ namespace IronWasteland.Enemies.D1onk
             int idx = m_TrappedTanks.IndexOf(tank);
             float xOffset = (idx % 2 == 0) ? -tankTrappedSpacing.x : tankTrappedSpacing.x;
             float yOffset = tankTrappedBaseYOffset - (idx / 2) * tankTrappedSpacing.y;
+            IronWasteland.Net.NetTeleport.SetTankAreaBounds(
+                tank, true, IronWasteland.Net.NetTeleport.CreateCircleAreaRect(arenaCenter, arenaRadius));
             IronWasteland.Net.NetTeleport.Move(tank, arenaCenter + new Vector2(xOffset, yOffset));
         }
 
@@ -406,6 +408,7 @@ namespace IronWasteland.Enemies.D1onk
                 TankBrain tank = m_TrappedTanks[i];
                 if (tank != null && m_SavedTankPositions.TryGetValue(tank, out var pos))
                 {
+                    IronWasteland.Net.NetTeleport.SetTankAreaBounds(tank, false, default);
                     IronWasteland.Net.NetTeleport.Move(tank, pos);
                 }
             }

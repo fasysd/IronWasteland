@@ -214,6 +214,8 @@ namespace IronWasteland.Enemies.ElementalReaper
             {
                 altar.trappedTank = tank;
                 altar.savedTankPosition = tank.transform.position;
+                IronWasteland.Net.NetTeleport.SetTankAreaBounds(
+                    tank, true, IronWasteland.Net.NetTeleport.CreateCircleAreaRect(altar.center, altarRadius));
                 IronWasteland.Net.NetTeleport.Move(tank, altar.center + tankSpawnOffset);
             }
 
@@ -272,6 +274,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             // Giải phóng Tank của tế đàn này về sân chính
             if (altar.trappedTank != null && altar.trappedTank.IsAlive)
             {
+                IronWasteland.Net.NetTeleport.SetTankAreaBounds(altar.trappedTank, false, default);
                 IronWasteland.Net.NetTeleport.Move(altar.trappedTank, altar.savedTankPosition);
                 altar.trappedTank = null;
             }
@@ -445,6 +448,7 @@ namespace IronWasteland.Enemies.ElementalReaper
                 ElementalAltarData altar = m_AllAltars[i];
                 if (altar.trappedTank != null)
                 {
+                    IronWasteland.Net.NetTeleport.SetTankAreaBounds(altar.trappedTank, false, default);
                     IronWasteland.Net.NetTeleport.Move(altar.trappedTank, altar.savedTankPosition);
                     altar.trappedTank = null;
                 }

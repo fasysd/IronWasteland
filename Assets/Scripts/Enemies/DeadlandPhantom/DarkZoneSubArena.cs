@@ -86,7 +86,13 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             m_SavedTankPosition = tank.transform.position;
             m_IsTankTrapped = true;
 
-            // 1. Dịch chuyển Tank vào buồng tối
+            // 1. Mở vùng giới hạn sang Sub-Arena rồi dịch chuyển Tank vào buồng tối
+            Rect subArenaBounds = new Rect(
+                arenaCenter.x - arenaRadius,
+                arenaCenter.y - arenaRadius,
+                arenaRadius * 2f,
+                arenaRadius * 2f);
+            ApplyTankAreaBounds(tank, true, subArenaBounds);
             IronWasteland.Net.NetTeleport.Move(tank, arenaCenter + tankSpawnOffset);
 
             if (IronWasteland.Tanks.TankBrain.NetworkSessionActive && m_Boss != null)
@@ -155,6 +161,8 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             {
                 m_TrappedTank.OnDeathEvent -= HandleTrappedTankDied;
 
+                ApplyTankAreaBounds(m_TrappedTank, false, default);
+
                 if (m_TrappedTank.IsAlive)
                 {
                     IronWasteland.Net.NetTeleport.Move(m_TrappedTank, m_SavedTankPosition);
@@ -162,6 +170,11 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             }
 
             m_IsTankTrapped = false;
+        }
+
+        private static void ApplyTankAreaBounds(TankBrain tank, bool useOverride, Rect area)
+        {
+            IronWasteland.Net.NetTeleport.SetTankAreaBounds(tank, useOverride, area);
         }
 
         /// <summary>
@@ -202,6 +215,11 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             if (m_TrappedTank != null)
             {
                 m_TrappedTank.OnDeathEvent -= HandleTrappedTankDied;
+                if (m_IsTankTrapped)
+                {
+                    ApplyTankAreaBounds(m_TrappedTank, false, default);
+                    m_IsTankTrapped = false;
+                }
             }
         }
     }

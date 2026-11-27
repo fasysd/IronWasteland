@@ -210,6 +210,47 @@ namespace IronWasteland.Net
             TeleportOwnerClientRpc(fixedPosition, target);
         }
 
+        /// <summary>
+        /// Server gọi khi dịch chuyển Tank sang một khu vực riêng (hoặc trả về map chính)
+        /// để chỉ máy sở hữu Tank đó cập nhật StageBounds và CameraFollow2D.
+        /// </summary>
+        public void ServerSetAreaBounds(bool useOverride, Rect area)
+        {
+            if (!IsServer || !IsSpawned)
+                return;
+
+            if (OwnerClientId == NetworkManager.ServerClientId)
+            {
+                ApplyLocalAreaBounds(useOverride, area);
+                return;
+            }
+
+            ClientRpcParams target = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams { TargetClientIds = new[] { OwnerClientId } }
+            };
+            SetAreaBoundsClientRpc(useOverride, area.position, area.size, target);
+        }
+
+        [ClientRpc]
+        private void SetAreaBoundsClientRpc(bool useOverride, Vector2 min, Vector2 size, ClientRpcParams rpcParams = default)
+        {
+            if (IsServer) return;
+            ApplyLocalAreaBounds(useOverride, new Rect(min, size));
+        }
+
+        private static void ApplyLocalAreaBounds(bool useOverride, Rect area)
+        {
+            if (useOverride)
+            {
+                IronWasteland.Core.StageBounds.ApplyOverrideBounds(area, snapCamera: true);
+            }
+            else
+            {
+                IronWasteland.Core.StageBounds.ResetToDefaultBounds(snapCamera: true);
+            }
+        }
+
         [ClientRpc]
         private void TeleportOwnerClientRpc(Vector3 position, ClientRpcParams rpcParams = default)
         {
@@ -225,6 +266,11 @@ namespace IronWasteland.Net
 
             // Bỏ qua các hiệu chỉnh vị trí bắn tới ngay sau lệnh teleport này.
             m_ClientTeleportGraceUntil = Time.time + 0.35f;
+
+            if (IsOwner)
+            {
+                FindAnyObjectByType<IronWasteland.Core.CameraFollow2D>()?.SnapToTarget();
+            }
         }
 
         private void BindLocalInput()

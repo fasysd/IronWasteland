@@ -42,11 +42,15 @@ namespace IronWasteland.Core
         [SerializeField] private bool logEvents;
 
         private Rect m_Bounds;
+        private Rect m_DefaultBounds;
+        private bool m_DefaultAvoidHudCorner;
+        private bool m_UsingOverrideBounds;
         private GameController m_GameController;
         private Rigidbody2D m_Body;
         private CameraFollow2D m_Follow;
 
         public Rect Bounds => m_Bounds;
+        public bool IsUsingOverrideBounds => m_UsingOverrideBounds;
 
         /// <summary>Tao component nay mot lan cho moi scene (khong can gan tay).</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -65,7 +69,65 @@ namespace IronWasteland.Core
                 m_Bounds = new Rect(-18.8f, -10.5f, 37.6f, 21f);
             }
 
+            m_DefaultBounds = m_Bounds;
+            m_DefaultAvoidHudCorner = avoidHudCorner;
+
             if (logEvents) Debug.Log($"[StageBounds] bien = {m_Bounds}");
+        }
+
+        /// <summary>Chuyen tam thoi gioi han Tank va Camera sang khu vuc moi (vd DarkZoneSubArena).</summary>
+        public void SetOverrideBounds(Rect area, bool snapCamera = true)
+        {
+            if (area.width <= 0.01f || area.height <= 0.01f) return;
+
+            m_Bounds = area;
+            m_UsingOverrideBounds = true;
+            avoidHudCorner = false;
+
+            if (m_Follow == null) m_Follow = FindAnyObjectByType<CameraFollow2D>();
+            if (clampCamera && m_Follow != null)
+            {
+                m_Follow.SetBounds(new Bounds(m_Bounds.center, new Vector3(m_Bounds.width, m_Bounds.height, 0f)));
+                if (snapCamera) m_Follow.SnapToTarget();
+            }
+            else if (snapCamera && m_Follow != null)
+            {
+                m_Follow.SnapToTarget();
+            }
+        }
+
+        /// <summary>Khoi phuc gioi han Tank va Camera ve map chinh ban dau.</summary>
+        public void RestoreDefaultBounds(bool snapCamera = true)
+        {
+            if (m_DefaultBounds.width > 0.01f && m_DefaultBounds.height > 0.01f)
+            {
+                m_Bounds = m_DefaultBounds;
+            }
+            m_UsingOverrideBounds = false;
+            avoidHudCorner = m_DefaultAvoidHudCorner;
+
+            if (m_Follow == null) m_Follow = FindAnyObjectByType<CameraFollow2D>();
+            if (clampCamera && m_Follow != null)
+            {
+                m_Follow.SetBounds(new Bounds(m_Bounds.center, new Vector3(m_Bounds.width, m_Bounds.height, 0f)));
+                if (snapCamera) m_Follow.SnapToTarget();
+            }
+            else if (snapCamera && m_Follow != null)
+            {
+                m_Follow.SnapToTarget();
+            }
+        }
+
+        public static void ApplyOverrideBounds(Rect area, bool snapCamera = true)
+        {
+            StageBounds instance = FindAnyObjectByType<StageBounds>();
+            if (instance != null) instance.SetOverrideBounds(area, snapCamera);
+        }
+
+        public static void ResetToDefaultBounds(bool snapCamera = true)
+        {
+            StageBounds instance = FindAnyObjectByType<StageBounds>();
+            if (instance != null) instance.RestoreDefaultBounds(snapCamera);
         }
 
         private void Start()

@@ -54,6 +54,16 @@ namespace IronWasteland.Core
             useBounds = false;
         }
 
+        /// <summary>Dua camera ngay lap tuc toi vi tri muc tieu (dung khi Tank vua dich chuyen xa).</summary>
+        public void SnapToTarget()
+        {
+            if (target == null) ResolveTarget();
+            if (target == null) return;
+
+            m_Velocity = Vector3.zero;
+            transform.position = DesiredPosition();
+        }
+
         public Transform Target
         {
             get => target;
