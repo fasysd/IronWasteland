@@ -69,7 +69,7 @@ namespace IronWasteland.Net
             if (m_GameController == null) m_GameController = FindAnyObjectByType<GameController>();
 
             if (m_Root == null) m_Root = GetComponent<CanvasGroup>();
-            if (m_Root != null) m_Root.alpha = 0f;
+            SetRootVisible(false);
 
             if (flow != null) flow.Changed += OnFlowChanged;
             NetRelayService.LobbyChanged += OnLobbyChanged;
@@ -130,7 +130,7 @@ namespace IronWasteland.Net
             m_Shown = true;
             m_JoinCodeFocused = false;
             RefreshJoinCode();
-            if (m_Root != null) m_Root.alpha = 1f;
+            SetRootVisible(true);
             SetView(true);
             if (m_LegacyPanel != null) m_LegacyPanel.PanelVisible = false;
             SetStageCaption();
@@ -147,7 +147,7 @@ namespace IronWasteland.Net
         {
             m_Shown = true;
             m_JoinCodeFocused = false;
-            if (m_Root != null) m_Root.alpha = 1f;
+            SetRootVisible(true);
             SetView(false);
             if (m_LegacyPanel != null) m_LegacyPanel.PanelVisible = false;
             SetStatus("PHÒNG ĐÃ MỞ  ·  CHỜ ĐỒNG ĐỘI");
@@ -161,8 +161,16 @@ namespace IronWasteland.Net
             m_GarageOpen = false;
             m_GarageLoading = false;
             GarageFlow.OpenedFromLobby = false;
-            if (m_Root != null) m_Root.alpha = 0f;
+            SetRootVisible(false);
             if (m_LegacyPanel != null) m_LegacyPanel.PanelVisible = false;
+        }
+
+        private void SetRootVisible(bool visible)
+        {
+            if (m_Root == null) return;
+            m_Root.alpha = visible ? 1f : 0f;
+            m_Root.interactable = visible;
+            m_Root.blocksRaycasts = visible;
         }
 
         private void StartSingle()
@@ -462,12 +470,7 @@ namespace IronWasteland.Net
             m_GarageLoading = true;
             m_PickerScenePrepared = false;
             GarageFlow.OpenedFromLobby = true;
-            if (m_Root != null)
-            {
-                m_Root.alpha = 0f;
-                m_Root.blocksRaycasts = false;
-                m_Root.interactable = false;
-            }
+            SetRootVisible(false);
 
             SceneManager.LoadSceneAsync("Garage", LoadSceneMode.Additive);
         }
@@ -504,12 +507,7 @@ namespace IronWasteland.Net
 
             m_GarageOpen = false;
             GarageFlow.OpenedFromLobby = false;
-            if (m_Root != null)
-            {
-                m_Root.alpha = 1f;
-                m_Root.blocksRaycasts = false;
-                m_Root.interactable = false;
-            }
+            SetRootVisible(true);
 
             PrepareLocalLoadout();
             if (flow != null && SaveSystem.Instance != null)
