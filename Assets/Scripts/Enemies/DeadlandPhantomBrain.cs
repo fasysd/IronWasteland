@@ -533,6 +533,7 @@ namespace IronWasteland.Enemies
 
             TriggerGlobalSkillCooldown();
             SpawnSlashHitbox();
+            IronWasteland.UI.BossActionAnnouncer.Announce("NHÁT CHÉM TỬ ĐỊA", "Bóng Ma Tử Địa tung nhát chém diện rộng!");
         }
 
         private void SpawnSlashHitbox()
@@ -572,6 +573,7 @@ namespace IronWasteland.Enemies
             }
 
             NetEnemyAnimation.Trigger(gameObject, m_Animator, "SoulSummon");
+            IronWasteland.UI.BossActionAnnouncer.Announce("TRIỆU HỒI LINH HỒN", "Làm chậm và phóng đạn linh hồn truy kích!");
 
             if (m_VfxController != null)
             {
@@ -736,6 +738,7 @@ namespace IronWasteland.Enemies
 
             TriggerGlobalSkillCooldown();
             CreateSpatialRift(spawnPos);
+            IronWasteland.UI.BossActionAnnouncer.Announce("VẾT NỨT KHÔNG GIAN", "Mở vết nứt kéo Tank lại gần!");
         }
 
         public SpatialRift CreateSpatialRift(Vector2 worldPos)
@@ -868,6 +871,12 @@ namespace IronWasteland.Enemies
             // 1. Tạo Khiên Tứ Hướng
             m_MaxCardinalShield = MaxHealth * cardinalShieldRatio;
             m_CurrentCardinalShield = m_MaxCardinalShield;
+
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "BÙNG NỔ NĂNG LƯỢNG",
+                "Phá Khiên Tứ Hướng và hạ Bản Sao trong Buồng Tối!",
+                IronWasteland.UI.BossAnnouncementType.BurstStart,
+                3.2f);
             m_CardinalShieldActive = true;
             m_CardinalShieldDirIndex = 0; // Hướng Đông (0°)
             m_ShieldRotationTimer = 0f;
@@ -888,6 +897,11 @@ namespace IronWasteland.Enemies
             if (nearestTank != null && m_DarkZoneArena != null)
             {
                 m_DarkZoneArena.TrapTank(nearestTank, clonePrefab);
+                IronWasteland.UI.BossActionAnnouncer.Announce(
+                    "GIAM CẦM BUỒNG TỐI",
+                    $"{IronWasteland.UI.BossActionAnnouncer.FormatName(nearestTank)} bị kéo vào Vùng Tăm Tối!",
+                    IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                    2.4f);
             }
         }
 
@@ -1017,18 +1031,34 @@ namespace IronWasteland.Enemies
             m_CumulativeShieldLost += actualDamageDealt;
             float healThreshold = m_MaxCardinalShield * darkZoneHealShieldLossThreshold;
 
+            bool healedDarkZone = false;
             while (m_CumulativeShieldLost >= healThreshold)
             {
                 m_CumulativeShieldLost -= healThreshold;
                 if (m_DarkZoneArena != null)
                 {
                     m_DarkZoneArena.HealTrappedTank(darkZoneHealRatio);
+                    healedDarkZone = true;
                 }
+            }
+
+            if (healedDarkZone)
+            {
+                IronWasteland.UI.BossActionAnnouncer.Announce(
+                    "CỨU TRỢ BUỒNG TỐI",
+                    "Khiên suy giảm: hồi máu cho đồng đội bị giam!",
+                    IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                    2.0f);
             }
 
             if (m_CurrentCardinalShield <= 0f)
             {
                 DeactivateCardinalShieldAll();
+                IronWasteland.UI.BossActionAnnouncer.Announce(
+                    "KHIÊN TỨ HƯỚNG BỊ PHÁ",
+                    "Khiên bảo vệ của Bóng Ma Tử Địa đã vỡ!",
+                    IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                    2.2f);
                 CompleteBurstSuccess();
             }
         }
@@ -1112,6 +1142,12 @@ namespace IronWasteland.Enemies
                 m_DarkZoneArena.CleanupArena();
                 m_DarkZoneArena = null;
             }
+
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "PHÁ GIẢI THÀNH CÔNG",
+                "Boss mất máu, giảm phòng thủ | Tank được hồi máu & +ATK!",
+                IronWasteland.UI.BossAnnouncementType.BurstSuccess,
+                3.2f);
         }
 
         private IEnumerator RemoveTankAtkBuffAfterDelay(TankBrain tank, float delay)
@@ -1135,6 +1171,11 @@ namespace IronWasteland.Enemies
 
             // 1. Nổ trừng phạt toàn map và làm chậm Tank
             float penaltyDamage = Stats.Attack * penaltyDamageMultiplier;
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "PHÁ GIẢI THẤT BẠI",
+                "Nổ trừng phạt toàn sân và làm chậm toàn bộ Tank!",
+                IronWasteland.UI.BossAnnouncementType.BurstFailure,
+                3.2f);
             TankBrain[] allTanks = FindObjectsByType<TankBrain>();
 
             for (int i = 0; i < allTanks.Length; i++)
@@ -1162,6 +1203,12 @@ namespace IronWasteland.Enemies
                 m_DarkZoneArena.CleanupArena();
                 m_DarkZoneArena = null;
             }
+
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "PHÁ GIẢI THÀNH CÔNG",
+                "Boss mất máu, giảm phòng thủ | Tank được hồi máu & +ATK!",
+                IronWasteland.UI.BossAnnouncementType.BurstSuccess,
+                3.2f);
         }
 
         protected override void OnBurstEnded()

@@ -526,6 +526,7 @@ namespace IronWasteland.Enemies
             if (forward.sqrMagnitude < 0.0001f) forward = Vector2.right;
 
             PlayFireCone(forward);
+            IronWasteland.UI.BossActionAnnouncer.Announce("PHUN LỬA", "SeauBearus đang phun lửa hình nón!");
 
             float damage = Stats.Attack * flameDamageRatio;
 
@@ -669,6 +670,7 @@ namespace IronWasteland.Enemies
             }
 
             m_RoarRoutine = StartCoroutine(RoarFollowUp());
+            IronWasteland.UI.BossActionAnnouncer.Announce("GẦM THÉT", "Làm chậm Tank xung quanh và triệu hồi cột lửa!");
 
             Debug.Log("[SeauBearus] gầm thét: làm chậm " + affected.Count + " tank " + (roarSlowPercent * 100f).ToString("0") + "% trong " + roarSlowDuration.ToString("0.0") + "s");
         }
@@ -780,6 +782,7 @@ namespace IronWasteland.Enemies
             }
             GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
                 "SpikeShield", transform.position, value: 1f);
+            IronWasteland.UI.BossActionAnnouncer.Announce("KHIÊN GAI", "Tăng phòng thủ và phản sát thương khi bị đánh!");
 
             Debug.Log("[SeauBearus] bật Khiên Gai: +" + (spikeDefenseBonus * 100f).ToString("0") + "% DEF, phản " + (spikeReflectRatio * 100f).ToString("0") + "% ATK");
         }
@@ -934,6 +937,12 @@ namespace IronWasteland.Enemies
                 Debug.LogWarning("[SeauBearus] Chưa gắn BlackMoonRunner prefab, sẽ không triệu hồi Mặt Trăng Đen!");
             }
 
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "BÙNG NỔ NĂNG LƯỢNG",
+                "Phá hủy Khiên Đỏ & Khiên Xanh, chặn Mặt Trăng Đen!",
+                IronWasteland.UI.BossAnnouncementType.BurstStart,
+                3.2f);
+
             Debug.Log("[SeauBearus] năng lượng hủy diệt: Khiên Đỏ " + m_RedShieldMax.ToString("0") + " HP, Khiên Xanh " + m_BlueShieldRemaining.ToString("0.0") + "s");
         }
 
@@ -948,6 +957,11 @@ namespace IronWasteland.Enemies
                     SetShieldVisualActive(blueShieldVisual, false);
                     UpdateShieldVisuals();
                     BroadcastBurstShieldsState();
+                    IronWasteland.UI.BossActionAnnouncer.Announce(
+                        "KHIÊN XANH ĐÃ TẮT",
+                        m_RedShieldActive ? "Hãy phá hủy Khiên Đỏ!" : "Cả 2 khiên đã bị phá!",
+                        IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                        2.2f);
                     TryCompleteBurst();
                     if (!IsBurstActive) return;
                 }
@@ -1016,6 +1030,12 @@ namespace IronWasteland.Enemies
                 tank.ResetAllSkillCooldowns();
             }
 
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "PHÁ GIẢI THÀNH CÔNG",
+                "Boss bị choáng & -90% DEF | Tank nhận bùa lợi & hồi chiêu!",
+                IronWasteland.UI.BossAnnouncementType.BurstSuccess,
+                3.2f);
+
             Debug.Log("[SeauBearus] phá cả 2 khiên: -90% DEF, choáng " + rewardStunDuration.ToString("0.0") + "s, toàn bộ Tank được buff!");
         }
 
@@ -1034,6 +1054,11 @@ namespace IronWasteland.Enemies
             m_SparkTimer = 0f;
 
             float damage = Stats.Attack * penaltyDamageMultiplier;
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "PHÁ GIẢI THẤT BẠI",
+                "Năng lượng hủy diệt bùng nổ sát thương toàn sân!",
+                IronWasteland.UI.BossAnnouncementType.BurstFailure,
+                3.2f);
             TankBrain[] tanks = FindObjectsByType<TankBrain>();
 
             for (int i = 0; i < tanks.Length; i++)
@@ -1234,6 +1259,11 @@ namespace IronWasteland.Enemies
                 m_RedShieldActive = false;
                 SetShieldVisualActive(redShieldVisual, false);
                 BroadcastBurstShieldsState();
+                IronWasteland.UI.BossActionAnnouncer.Announce(
+                    "KHIÊN ĐỎ BỊ PHÁ VỠ",
+                    m_BlueShieldActive ? "Còn lại Khiên Xanh!" : "Cả 2 khiên đã bị phá!",
+                    IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                    2.2f);
                 TryCompleteBurst();
             }
             else
@@ -1360,6 +1390,12 @@ namespace IronWasteland.Enemies
 
             m_BlueShieldLocked = true;
             m_MoonSpawning = false;
+
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "KHIÊN XANH BỊ KHÓA",
+                "Mặt Trăng Đen chạm Boss: thời gian Khiên Xanh bị đóng băng!",
+                IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                2.4f);
 
             Debug.Log("[SeauBearus] Mặt Trăng Đen chạm Boss: Khiên Xanh bị khóa, ngừng triệu hồi!");
         }

@@ -164,6 +164,15 @@ namespace IronWasteland.Enemies.ElementalReaper
                 fireAltar.isActive = true;
                 poisonAltar.isActive = false;
                 waterAltar.isActive = false;
+
+                if (soloTank != null)
+                {
+                    IronWasteland.UI.BossActionAnnouncer.Announce(
+                        "PHÂN TÁCH TẾ ĐÀN",
+                        $"Hỏa: {IronWasteland.UI.BossActionAnnouncer.FormatName(soloTank)}",
+                        IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                        2.4f);
+                }
             }
             else
             {
@@ -173,14 +182,17 @@ namespace IronWasteland.Enemies.ElementalReaper
                 livingTanks.Sort((a, b) =>
                     Vector2.Distance(a.transform.position, bossPos).CompareTo(Vector2.Distance(b.transform.position, bossPos)));
 
+                var altarNotes = new List<string>();
                 TankBrain nearestTank = livingTanks[0];
                 SetupAltar(fireAltar, nearestTank, cloneStats);
                 fireAltar.isActive = true;
+                altarNotes.Add($"Hỏa: {IronWasteland.UI.BossActionAnnouncer.FormatName(nearestTank)}");
 
                 // 2. Tank xa nhất vào Độc
                 TankBrain furthestTank = livingTanks[livingTanks.Count - 1];
                 SetupAltar(poisonAltar, furthestTank, cloneStats);
                 poisonAltar.isActive = true;
+                altarNotes.Add($"Độc: {IronWasteland.UI.BossActionAnnouncer.FormatName(furthestTank)}");
 
                 // 3. Tank thứ 3 vào Thủy (nếu có)
                 if (livingTanks.Count >= 3)
@@ -188,11 +200,18 @@ namespace IronWasteland.Enemies.ElementalReaper
                     TankBrain thirdTank = livingTanks[1]; // vị trí ở giữa
                     SetupAltar(waterAltar, thirdTank, cloneStats);
                     waterAltar.isActive = true;
+                    altarNotes.Add($"Thủy: {IronWasteland.UI.BossActionAnnouncer.FormatName(thirdTank)}");
                 }
                 else
                 {
                     waterAltar.isActive = false;
                 }
+
+                IronWasteland.UI.BossActionAnnouncer.Announce(
+                    "PHÂN TÁCH TẾ ĐÀN",
+                    string.Join(" | ", altarNotes),
+                    IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                    2.6f);
             }
 
             // Sinh ngay đợt tinh thể đầu tiên khi bước vào tế đàn để người chơi có thể tương tác ngay
@@ -271,12 +290,35 @@ namespace IronWasteland.Enemies.ElementalReaper
             if (altar == null) return;
             altar.isCloneDefeated = true;
 
+            string elementName = altar.element switch
+            {
+                ElementalType.Fire => "Hỏa",
+                ElementalType.Poison => "Độc",
+                ElementalType.Water => "Thủy",
+                _ => altar.element.ToString()
+            };
+
             // Giải phóng Tank của tế đàn này về sân chính
             if (altar.trappedTank != null && altar.trappedTank.IsAlive)
             {
+                string tankName = IronWasteland.UI.BossActionAnnouncer.FormatName(altar.trappedTank);
                 IronWasteland.Net.NetTeleport.SetTankAreaBounds(altar.trappedTank, false, default);
                 IronWasteland.Net.NetTeleport.Move(altar.trappedTank, altar.savedTankPosition);
                 altar.trappedTank = null;
+
+                IronWasteland.UI.BossActionAnnouncer.Announce(
+                    $"HẠ BẢN SAO {elementName.ToUpperInvariant()}",
+                    $"{tankName} được giải phóng khỏi Tế Đàn {elementName}!",
+                    IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                    2.2f);
+            }
+            else
+            {
+                IronWasteland.UI.BossActionAnnouncer.Announce(
+                    $"HẠ BẢN SAO {elementName.ToUpperInvariant()}",
+                    $"Tế Đàn {elementName} đã được giải phóng!",
+                    IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                    2.2f);
             }
         }
 

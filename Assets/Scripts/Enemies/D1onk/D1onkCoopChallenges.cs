@@ -540,6 +540,12 @@ namespace IronWasteland.Enemies.D1onk
             m_CompletedChallengesCount++;
 
             Debug.Log($"[D1onkCoopChallenges] Thử thách {color} HOÀN THÀNH! ({m_CompletedChallengesCount}/2)");
+            string colorName = color == D1onkPillarColor.White ? "Trắng" : "Đỏ";
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "HOÀN THÀNH THỬ THÁCH",
+                $"Đã hoàn thành thử thách Cột {colorName}! ({m_CompletedChallengesCount}/2)",
+                IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                2.2f);
             OnChallengeCompleted?.Invoke(color);
 
             if (IsWhiteCompleted && IsRedCompleted)

@@ -539,6 +539,13 @@ namespace IronWasteland.Enemies.The2Face
                     "VortexZone", targetPosition, 0f, default, vortexDuration, (int)mode);
             }
 
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "TỤ NHIỆT",
+                mode == The2FaceVortexMode.Sad
+                    ? "Vùng xoáy Buồn Bã: -20% SPD, -10% ATK/DEF"
+                    : "Vùng xoáy Tức Giận: 40% ATK/s, -20% Năng lượng",
+                IronWasteland.UI.BossAnnouncementType.Skill);
+
             Debug.Log($"[The2Face] TuNhiet ({mode}): tạo vùng xoáy tại {targetPosition}. Sát thương: {(damageRatio * 100f):0}% ATK/s.");
         }
 
@@ -580,6 +587,11 @@ namespace IronWasteland.Enemies.The2Face
             float netIdValue = target.TryGetComponent(out Unity.Netcode.NetworkObject targetNetObj) ? targetNetObj.NetworkObjectId : 0f;
             GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
                 "CamLangSilence", target.transform.position, 0f, default, camLangSilenceDuration, netIdValue);
+
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "CÂM LẶNG",
+                $"Khóa kỹ năng thường của {target.name} trong {camLangSilenceDuration:0.#}s",
+                IronWasteland.UI.BossAnnouncementType.Skill);
 
             Debug.Log("[The2Face] CamLang khóa kỹ năng thường của " + target.name + " trong " + camLangSilenceDuration + " giây.");
         }
@@ -638,6 +650,10 @@ namespace IronWasteland.Enemies.The2Face
 
             m_PullRoutine = StartCoroutine(PullTanksRoutine());
             SpawnRocks();
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "HÚT & ĐÁ",
+                "Boss hút toàn bộ Tank và triệu hồi 8 viên đá!",
+                IronWasteland.UI.BossAnnouncementType.Skill);
             Debug.Log("[The2Face] HutVaDa: kéo Tank và bắn " + rockCount + " viên đá.");
         }
 
@@ -730,6 +746,12 @@ namespace IronWasteland.Enemies.The2Face
             SpawnRandomEnemiesAroundLights();
             RefreshUnlockedSkills();
 
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "BÙNG NỔ NĂNG LƯỢNG",
+                "Bảo vệ các Điểm Sáng để giải câm lặng!",
+                IronWasteland.UI.BossAnnouncementType.BurstStart,
+                3.2f);
+
             Debug.Log("[The2Face] Bắt đầu bùng nổ: " + m_TotalLightPoints + " Điểm Sáng, sinh " + m_BurstRandomEnemies.Count + " quái thường quanh Điểm Sáng.");
         }
 
@@ -790,6 +812,12 @@ namespace IronWasteland.Enemies.The2Face
                 tank.ResetAllSkillCooldowns();
             }
 
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "PHÁ GIẢI THÀNH CÔNG",
+                "Boss giảm 50% ATK/DEF (8s) | Tank +50% ATK & hồi chiêu!",
+                IronWasteland.UI.BossAnnouncementType.BurstSuccess,
+                3.2f);
+
             Debug.Log("[The2Face] Phá giải thành công: Boss suy yếu, Tank được cường hóa.");
         }
 
@@ -815,6 +843,12 @@ namespace IronWasteland.Enemies.The2Face
                     MoveSpeed = -penaltySpeedReduction,
                 });
             }
+
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "PHÁ GIẢI THẤT BẠI",
+                "Bức xạ toàn sân: Tank bị giảm ATK, DEF, SPD!",
+                IronWasteland.UI.BossAnnouncementType.BurstFailure,
+                3.2f);
 
             Debug.Log("[The2Face] Phá giải thất bại: toàn bộ Tank bị suy yếu vĩnh viễn.");
         }
@@ -972,6 +1006,15 @@ namespace IronWasteland.Enemies.The2Face
             if (unlocked == m_UnlockedSlotCount) return;
             m_UnlockedSlotCount = unlocked;
 
+            if (fullOpen)
+            {
+                IronWasteland.UI.BossActionAnnouncer.Announce(
+                    "TOÀN BỘ ĐÈN ĐÃ SÁNG",
+                    "Toàn bộ kỹ năng Tank đã được giải câm lặng!",
+                    IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                    2.2f);
+            }
+
             byte lockMask = 0;
             for (int slot = unlocked; slot < TankBrain.SkillCount; slot++)
             {
@@ -1101,7 +1144,18 @@ namespace IronWasteland.Enemies.The2Face
         public void OnLightPointDestroyed(The2FaceLightPoint point)
         {
             if (point != null) m_LightPoints.Remove(point);
-            if (m_BurstMechanicActive) RefreshUnlockedSkills();
+            if (m_BurstMechanicActive)
+            {
+                int alive = CountAliveLights();
+                IronWasteland.UI.BossActionAnnouncer.Announce(
+                    "ĐIỂM SÁNG BỊ PHÁ",
+                    alive > 0
+                        ? $"Còn {alive}/{m_TotalLightPoints} Điểm Sáng trên sân!"
+                        : "Toàn bộ Điểm Sáng đã bị phá hủy!",
+                    IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                    2.2f);
+                RefreshUnlockedSkills();
+            }
         }
 
         private Vector2 ResolveArenaCenter()

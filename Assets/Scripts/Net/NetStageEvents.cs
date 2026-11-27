@@ -18,6 +18,9 @@ namespace IronWasteland.Net
         /// <summary>Tên kênh named message dùng để gửi trạng thái ải.</summary>
         public const string MessageName = "IW.StageEvent";
 
+        /// <summary>Tên kênh named message dùng để gửi thông báo hành động Boss.</summary>
+        public const string BossAnnouncementMessageName = "IW.BossAnnouncement";
+
         /// <summary>Mã trạng thái: ải vừa bắt đầu.</summary>
         public const byte StateStarted = 0;
 
@@ -121,11 +124,13 @@ namespace IronWasteland.Net
             if (manager.IsListening && !m_Registered)
             {
                 messaging.RegisterNamedMessageHandler(MessageName, HandleMessage);
+                messaging.RegisterNamedMessageHandler(BossAnnouncementMessageName, HandleBossAnnouncementMessage);
                 m_Registered = true;
             }
             else if (!manager.IsListening && m_Registered)
             {
                 messaging.UnregisterNamedMessageHandler(MessageName);
+                messaging.UnregisterNamedMessageHandler(BossAnnouncementMessageName);
                 m_Registered = false;
             }
         }
@@ -421,6 +426,75 @@ namespace IronWasteland.Net
             };
 
             Debug.Log($"[Stage][Client] {label} - {kills}/{target} mạng sau {elapsed:0.0}s.");
+        }
+
+        /// <summary>Host gửi thông báo hành động của Boss tới toàn bộ client và hiển thị tại Host.</summary>
+        public void BroadcastBossAnnouncement(string title, string subtitle, byte type, float duration)
+        {
+            if (string.IsNullOrWhiteSpace(title)) return;
+
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager != null && manager.IsListening && manager.IsServer)
+            {
+                CustomMessagingManager messaging = manager.CustomMessagingManager;
+                if (messaging != null)
+                {
+                    byte[] titleBytes = ClampUtf8Bytes(title, 96);
+                    byte[] subBytes = ClampUtf8Bytes(subtitle ?? string.Empty, 160);
+                    int capacity = 16 + titleBytes.Length + subBytes.Length;
+
+                    using FastBufferWriter writer = new FastBufferWriter(capacity, Allocator.Temp);
+                    writer.WriteValueSafe(m_MatchId);
+                    writer.WriteValueSafe(type);
+                    writer.WriteValueSafe(duration);
+                    writer.WriteValueSafe((byte)titleBytes.Length);
+                    for (int i = 0; i < titleBytes.Length; i++) writer.WriteValueSafe(titleBytes[i]);
+                    writer.WriteValueSafe((byte)subBytes.Length);
+                    for (int i = 0; i < subBytes.Length; i++) writer.WriteValueSafe(subBytes[i]);
+
+                    messaging.SendNamedMessageToAll(BossAnnouncementMessageName, writer);
+                }
+            }
+
+            IronWasteland.UI.BossActionAnnouncer.HandleNetworkAnnouncement(title, subtitle, type, duration);
+        }
+
+        private void HandleBossAnnouncementMessage(ulong senderClientId, FastBufferReader reader)
+        {
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer) return;
+            if (reader.Length - reader.Position < 11) return;
+
+            reader.ReadValueSafe(out uint matchId);
+            reader.ReadValueSafe(out byte type);
+            reader.ReadValueSafe(out float duration);
+            reader.ReadValueSafe(out byte titleLen);
+            if (reader.Length - reader.Position < titleLen + 1) return;
+
+            byte[] titleBytes = new byte[titleLen];
+            for (int i = 0; i < titleLen; i++) reader.ReadValueSafe(out titleBytes[i]);
+
+            reader.ReadValueSafe(out byte subLen);
+            if (reader.Length - reader.Position < subLen) return;
+
+            byte[] subBytes = new byte[subLen];
+            for (int i = 0; i < subLen; i++) reader.ReadValueSafe(out subBytes[i]);
+
+            if (m_HasCurrentMatchId && matchId != m_CurrentMatchId) return;
+
+            string title = Encoding.UTF8.GetString(titleBytes);
+            string subtitle = subLen > 0 ? Encoding.UTF8.GetString(subBytes) : string.Empty;
+            IronWasteland.UI.BossActionAnnouncer.HandleNetworkAnnouncement(title, subtitle, type, duration);
+        }
+
+        private static byte[] ClampUtf8Bytes(string text, int maxBytes)
+        {
+            if (string.IsNullOrEmpty(text)) return Array.Empty<byte>();
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
+            if (bytes.Length <= maxBytes) return bytes;
+
+            byte[] clipped = new byte[maxBytes];
+            Array.Copy(bytes, clipped, maxBytes);
+            return clipped;
         }
 
         /// <summary>Ghi nhớ trạng thái ải mới nhất để HUD/debug đọc lại.</summary>

@@ -573,6 +573,7 @@ namespace IronWasteland.Enemies.D1onk
 
             // Bị động: Tạo 5 đạn truy đuổi
             FirePassiveMissiles(5);
+            IronWasteland.UI.BossActionAnnouncer.Announce("TRỪNG PHẠT", "Gây sát thương mạnh mục tiêu gần nhất và giảm chỉ số!");
         }
 
         /// <summary>
@@ -600,6 +601,7 @@ namespace IronWasteland.Enemies.D1onk
 
             // Bị động: Tạo 5 đạn truy đuổi
             FirePassiveMissiles(5);
+            IronWasteland.UI.BossActionAnnouncer.Announce("LAZE NGUYÊN TỐ", "Bắn tia laser thiêu đốt mục tiêu xa nhất!");
         }
 
         private IEnumerator LaserDamageTicks(TankBrain target, float duration, float interval)
@@ -656,6 +658,7 @@ namespace IronWasteland.Enemies.D1onk
 
             // Bị động: Tạo 5 đạn truy đuổi
             FirePassiveMissiles(5);
+            IronWasteland.UI.BossActionAnnouncer.Announce("TỎA NHIỆT DIỆN RỘNG", "Phát sóng nhiệt tấn công toàn bản đồ!");
         }
 
         /// <summary>
@@ -683,6 +686,7 @@ namespace IronWasteland.Enemies.D1onk
 
             // Bị động: Tạo 5 đạn truy đuổi
             FirePassiveMissiles(5);
+            IronWasteland.UI.BossActionAnnouncer.Announce("VIỆN BINH TINH LINH", $"Triệu hồi {count} quái thường tiếp viện!");
         }
 
         #endregion
@@ -703,6 +707,11 @@ namespace IronWasteland.Enemies.D1onk
 
             // 1. Hồi 100% HP theo GDD
             Heal(MaxHealth);
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "BÙNG NỔ NĂNG LƯỢNG",
+                "Phá hủy Cột Năng Lượng và Trái Tim Pháo Hạm!",
+                IronWasteland.UI.BossAnnouncementType.BurstStart,
+                3.2f);
 
             // 2. Tăng 30% ATK, tăng 100% DEF đã được áp dụng tự động qua burstAttackMultiplier & burstDefenseMultiplier trong base TransitionToState
 
@@ -780,6 +789,7 @@ namespace IronWasteland.Enemies.D1onk
 
             m_RewardInsideTanks.Clear();
             m_RewardOutsideTanks.Clear();
+            var trappedNames = new List<string>();
 
             for (int i = 0; i < totalTanks; i++)
             {
@@ -787,11 +797,21 @@ namespace IronWasteland.Enemies.D1onk
                 {
                     m_SubArena.TrapTank(aliveTanks[i]);
                     m_RewardInsideTanks.Add(aliveTanks[i]);
+                    trappedNames.Add(IronWasteland.UI.BossActionAnnouncer.FormatName(aliveTanks[i]));
                 }
                 else
                 {
                     m_RewardOutsideTanks.Add(aliveTanks[i]);
                 }
+            }
+
+            if (trappedNames.Count > 0)
+            {
+                IronWasteland.UI.BossActionAnnouncer.Announce(
+                    "ĐƯA VÀO BÊN TRONG",
+                    $"Tank bị giam giữ: {string.Join(", ", trappedNames)}",
+                    IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                    2.4f);
             }
 
             // 8. Xóa tạo 2 Clone khi vào Bùng nổ năng lượng, thay vào đó là sử dụng 2 lần kỹ năng Viên binh tinh linh để triệu hồi quái thường
@@ -841,6 +861,11 @@ namespace IronWasteland.Enemies.D1onk
             // 2. Phạt Boss: Trừ 30% Max HP
             float hpLoss = MaxHealth * 0.30f;
             TakeDamage(new DamageInfo(this, this, hpLoss, 1.0f, transform.position, isDirectToHealth: true));
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "PHÁ GIẢI THÀNH CÔNG",
+                "Phá hủy Trái Tim: Boss -30% HP | Toàn bộ Tank nhận buff!",
+                IronWasteland.UI.BossAnnouncementType.BurstSuccess,
+                3.2f);
 
             // Hoàn trả Burst Stat Modifiers trước để đưa Attack & Defense về chỉ số trước Burst
             RevertBurstStatModifiers();
@@ -929,6 +954,11 @@ namespace IronWasteland.Enemies.D1onk
 
             // 2. Diễn hoạt xả đại pháo hủy diệt (hàng trăm đạn pháo / toàn bộ nòng súng)
             TriggerAnimator(HashPhaoHamDaNong);
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "PHÁ GIẢI THẤT BẠI",
+                "Pháo Hạm Đả Nóng: Xả đại pháo hủy diệt toàn sân!",
+                IronWasteland.UI.BossAnnouncementType.BurstFailure,
+                3.2f);
             if (m_VfxController != null)
             {
                 m_VfxController.FireMultiBarrelSalvo(null, 999999f);

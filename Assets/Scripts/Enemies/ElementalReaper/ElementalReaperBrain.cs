@@ -423,6 +423,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             {
                 m_VfxController.PlayThuyTrieu(dir);
             }
+            IronWasteland.UI.BossActionAnnouncer.Announce("THỦY TRIỀU", "Phóng sóng thủy triều đẩy lùi và gây sát thương!");
         }
 
         public void CastThuyLieu()
@@ -443,6 +444,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             {
                 m_VfxController.PlayThuyLieu();
             }
+            IronWasteland.UI.BossActionAnnouncer.Announce("THỦY LIỆU", "Boss hồi máu và tăng 25% phòng thủ!");
         }
 
         public void CastDocQuat()
@@ -459,6 +461,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             {
                 m_VfxController.PlayDocQuat(dir);
             }
+            IronWasteland.UI.BossActionAnnouncer.Announce("ĐỘC QUẠT", "Phóng luồng độc diện rộng!");
         }
 
         public void CastLoanChuyen()
@@ -484,6 +487,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             {
                 m_VfxController.PlayLoanChuyenBurst(targetPos);
             }
+            IronWasteland.UI.BossActionAnnouncer.Announce("LOẠN CHUYỂN", "Dịch chuyển tới Tank và bùng nổ!");
         }
 
         public void CastPhunDungNham()
@@ -499,6 +503,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             {
                 m_VfxController.PlayPhunDungNham(dir);
             }
+            IronWasteland.UI.BossActionAnnouncer.Announce("PHUN DUNG NHAM", "Phóng luồng dung nham thiêu đốt!");
         }
 
         public void CastHoaToc()
@@ -517,6 +522,7 @@ namespace IronWasteland.Enemies.ElementalReaper
 
             Vector2 targetPos = furthestTank.transform.position;
             StartCoroutine(RoutineHoaToc(targetPos));
+            IronWasteland.UI.BossActionAnnouncer.Announce("HỎA TỐC", "Lao nhanh tới mục tiêu xa nhất!");
         }
 
         private IEnumerator RoutineHoaToc(Vector2 targetPos)
@@ -643,6 +649,11 @@ namespace IronWasteland.Enemies.ElementalReaper
 
             // 4. Reset toàn bộ timer kỹ năng để Boss có thể tung chiêu ngay lập tức ngoài sân
             ResetAllSkillTimersReady();
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "BÙNG NỔ NĂNG LƯỢNG",
+                "Tiêu diệt các Bản Sao Nguyên Tố trong Tế Đàn!",
+                IronWasteland.UI.BossAnnouncementType.BurstStart,
+                3.2f);
         }
 
         protected override void OnBurstTick(float deltaTime)
@@ -675,6 +686,11 @@ namespace IronWasteland.Enemies.ElementalReaper
 
             // 4. Bùa lợi cho toàn bộ Tank: +25% ATK trong 10s và hồi 20% HP
             BuffAllTanksReward();
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "PHÁ GIẢI THÀNH CÔNG",
+                "Boss bị choáng 3s | Toàn bộ Tank +25% ATK & hồi 20% HP!",
+                IronWasteland.UI.BossAnnouncementType.BurstSuccess,
+                3.2f);
 
             // 5. Reset timer kỹ năng để sẵn sàng sau khi hết Stun
             ResetAllSkillTimersReady();
@@ -747,6 +763,11 @@ namespace IronWasteland.Enemies.ElementalReaper
 
             // 4. Nổ trừng phạt toàn bản đồ: 100% ATK (GDD)
             float penaltyDamage = Stats != null ? Stats.Attack : 250f;
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                "PHÁ GIẢI THẤT BẠI",
+                "Nổ trừng phạt toàn bản đồ!",
+                IronWasteland.UI.BossAnnouncementType.BurstFailure,
+                3.2f);
             var allTanks = FindObjectsByType<TankBrain>(FindObjectsSortMode.None);
             for (int i = 0; i < allTanks.Length; i++)
             {
@@ -784,6 +805,11 @@ namespace IronWasteland.Enemies.ElementalReaper
                 {
                     m_ElementalShieldAmount = 0f;
                     m_VfxController?.DeactivateBurstShield();
+                    IronWasteland.UI.BossActionAnnouncer.Announce(
+                        "KHIÊN NGUYÊN TỐ VỠ",
+                        "Có thể gây sát thương trực tiếp lên Tử Thần Nguyên Tố!",
+                        IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                        2.2f);
                 }
 
                 float remaining = resolved - absorbed;

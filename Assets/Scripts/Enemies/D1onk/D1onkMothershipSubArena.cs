@@ -292,6 +292,13 @@ namespace IronWasteland.Enemies.D1onk
             m_DestroyedPillars.Add(pillar.PillarColor);
             Debug.Log($"[D1onkMothershipSubArena] Cột năng lượng {pillar.PillarColor} bị phá hủy! (Tổng: {m_DestroyedPillars.Count}/2)");
 
+            string colorName = pillar.PillarColor == D1onkPillarColor.White ? "Trắng" : "Đỏ";
+            IronWasteland.UI.BossActionAnnouncer.Announce(
+                $"CỘT {colorName.ToUpperInvariant()} BỊ PHÁ",
+                $"Kích hoạt thử thách Cột {colorName} ({m_DestroyedPillars.Count}/2)",
+                IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                2.2f);
+
             // Ở cả 2 chế độ (Solo và Co-op), phá cột kích hoạt thử thách tương ứng (Trắng hoặc Đỏ)
             if (m_CoopChallenges != null)
             {
@@ -305,6 +312,11 @@ namespace IronWasteland.Enemies.D1onk
             {
                 Debug.Log("[D1onkMothershipSubArena] Hoàn thành 2 thử thách cột Trắng và Đỏ! Gỡ bỏ Khiên Bất Hoại của Trái Tim!");
                 m_Heart.RemoveInvincibleShield();
+                IronWasteland.UI.BossActionAnnouncer.Announce(
+                    "KHIÊN TRÁI TIM ĐÃ GỠ",
+                    "Có thể tấn công trực tiếp Trái Tim Pháo Hạm!",
+                    IronWasteland.UI.BossAnnouncementType.PhaseEvent,
+                    2.4f);
             }
         }
 
