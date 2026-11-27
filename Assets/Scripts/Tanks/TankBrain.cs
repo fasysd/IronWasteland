@@ -620,7 +620,7 @@ namespace IronWasteland.Tanks
         public virtual void NotifySupportedAlly(TankBrain ally)
         {
             if (ally == null || ally == this) return;
-            m_EquippedAccessory?.OnOwnerSupportedAlly(ally);
+            if (HasGameplayAuthority) m_EquippedAccessory?.OnOwnerSupportedAlly(ally);
         }
 
         public virtual void ClearShield()
@@ -780,7 +780,7 @@ namespace IronWasteland.Tanks
                 skillCooldowns[index] = GetCooldown(index);
 
                 OnSkillUsedEvent?.Invoke(index);
-                m_EquippedAccessory?.OnOwnerUsedSkill(index);
+                if (HasGameplayAuthority) m_EquippedAccessory?.OnOwnerUsedSkill(index);
             }
 
             // Chụp điểm ngắm trước khi skill kịp đổi look target, để relay dùng đúng hướng đã bắn.
@@ -1117,7 +1117,7 @@ namespace IronWasteland.Tanks
             }
 
             OnTakeDamageEvent?.Invoke(info);
-            m_EquippedAccessory?.OnOwnerTookDamage(info);
+            if (HasGameplayAuthority) m_EquippedAccessory?.OnOwnerTookDamage(info);
 
             if (currentHealth <= 0f)
             {
@@ -1135,7 +1135,7 @@ namespace IronWasteland.Tanks
         public virtual void NotifyDealtDamage(DamageInfo info)
         {
             OnDealDamageEvent?.Invoke(info);
-            m_EquippedAccessory?.OnOwnerDealtDamage(info);
+            if (HasGameplayAuthority) m_EquippedAccessory?.OnOwnerDealtDamage(info);
         }
 
         public virtual void Heal(float amount)
@@ -1151,7 +1151,7 @@ namespace IronWasteland.Tanks
             }
 
             OnHealEvent?.Invoke(amount);
-            m_EquippedAccessory?.OnOwnerHealed(amount);
+            if (HasGameplayAuthority) m_EquippedAccessory?.OnOwnerHealed(amount);
         }
 
         public virtual void GainEnergy(float amount)
@@ -1163,7 +1163,7 @@ namespace IronWasteland.Tanks
         {
             if (!HasGameplayAuthority) return;
             currentEnergy = Mathf.Min(currentEnergy + amount, m_FinalStats.MaxEnergy);
-            m_EquippedAccessory?.OnOwnerGainedEnergy(amount, skillIndex);
+            if (HasGameplayAuthority) m_EquippedAccessory?.OnOwnerGainedEnergy(amount, skillIndex);
         }
 
         public virtual void SpendEnergy(float amount)
@@ -1243,7 +1243,7 @@ namespace IronWasteland.Tanks
             TickCrowdControl(dt);
             TickStatusEffects(dt);
 
-            m_EquippedAccessory?.OnBrainTick(dt);
+            if (HasGameplayAuthority) m_EquippedAccessory?.OnBrainTick(dt);
         }
 
         private void FixedUpdate()

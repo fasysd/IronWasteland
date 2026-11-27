@@ -20,12 +20,12 @@ MonoBehaviour:
   - Label: W1
     StartTime: 0
     Spawns:
-    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
-      Count: 15
+    - Enemy: {fileID: 4382231180120962163, guid: 3d3c6e517857da448ada899477541f30, type: 3}
+      Count: 1
       SpeedMultiplier: 1
       ZoneId: 
   - Label: W2
-    StartTime: 30
+    StartTime: 999
     Spawns:
     - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
       Count: 15
@@ -36,7 +36,7 @@ MonoBehaviour:
       SpeedMultiplier: 1
       ZoneId: 
   - Label: W3
-    StartTime: 60
+    StartTime: 9999
     Spawns:
     - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
       Count: 10

@@ -270,6 +270,7 @@ namespace IronWasteland.Enemies.D1onk
             if (m_Animator != null)
             {
                 m_Animator.SetTrigger(hash);
+                GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastAnimTrigger(hash);
             }
         }
 

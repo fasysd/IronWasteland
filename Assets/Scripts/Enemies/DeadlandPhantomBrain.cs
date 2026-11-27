@@ -34,7 +34,7 @@ namespace IronWasteland.Enemies
     ///   + Thưởng / Phạt: Chuẩn hóa theo thiết kế GDD.
     /// </summary>
     [DisallowMultipleComponent]
-    public class DeadlandPhantomBrain : EliteEnemyBrain
+    public class DeadlandPhantomBrain : EliteEnemyBrain, IronWasteland.Net.INetVfxReceiver
     {
         [Header("Movement & Speed")]
         [Tooltip("Khoảng cách dừng tiếp cận Tank mục tiêu (m).")]
@@ -501,6 +501,12 @@ namespace IronWasteland.Enemies
             }
         }
 
+        private void TriggerAnim(string triggerName)
+        {
+            if (m_Animator != null) m_Animator.SetTrigger(triggerName);
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastAnimTrigger(triggerName);
+        }
+
         /// <summary>
         /// Kỹ năng 1: Vết Chém Tử Địa (DeadlandSlash).
         /// Tự động xoay về hướng Tank mục tiêu và chém 360 độ.
@@ -516,12 +522,13 @@ namespace IronWasteland.Enemies
                 RotateToZero(instant: true);
             }
 
-            if (m_Animator != null) m_Animator.SetTrigger("DeadlandSlash");
+            TriggerAnim("DeadlandSlash");
 
             if (m_VfxController != null)
             {
                 m_VfxController.PlayDeadlandSlash(transform.position);
             }
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx("DeadlandSlash", transform.position);
 
             TriggerGlobalSkillCooldown();
             SpawnSlashHitbox();
@@ -563,12 +570,13 @@ namespace IronWasteland.Enemies
                 RotateToZero(instant: true);
             }
 
-            if (m_Animator != null) m_Animator.SetTrigger("SoulSummon");
+            TriggerAnim("SoulSummon");
 
             if (m_VfxController != null)
             {
                 m_VfxController.PlaySoulSummonPulse(transform.position);
             }
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx("SoulSummonPulse", transform.position);
 
             TriggerGlobalSkillCooldown();
 
@@ -586,6 +594,7 @@ namespace IronWasteland.Enemies
                 float angleStep = soulProjectileCount > 1 ? soulSpreadArc / (soulProjectileCount - 1) : 0f;
                 float startAngle = baseAngle - soulSpreadArc * 0.5f;
 
+                var netState = GetComponent<IronWasteland.Net.EnemyNetState>();
                 for (int i = 0; i < soulProjectileCount; i++)
                 {
                     float currentAngle = (startAngle + angleStep * i) * Mathf.Deg2Rad;
@@ -608,7 +617,82 @@ namespace IronWasteland.Enemies
                     {
                         SpawnFallbackSoulProjectile(target, dir, projDamage);
                     }
+
+                    netState?.BroadcastVfx("SoulProjectile", transform.position, 0f, dir, soulProjectileSpeed, 0f);
                 }
+            }
+        }
+
+        public void OnClientNetVfx(string key, Vector2 position, float rotationZ, Vector2 dir, float duration, float value)
+        {
+            switch (key)
+            {
+                case "DeadlandSlash":
+                    m_VfxController?.PlayDeadlandSlash(position);
+                    break;
+                case "SoulSummonPulse":
+                    m_VfxController?.PlaySoulSummonPulse(position);
+                    break;
+                case "SoulProjectile":
+                    if (m_VfxController != null)
+                    {
+                        m_VfxController.SpawnSoulProjectile(position, null, dir, speed: duration > 0f ? duration : soulProjectileSpeed, damage: 0f, owner: null);
+                    }
+                    else if (soulProjectilePrefab != null)
+                    {
+                        GameObject go = Instantiate(soulProjectilePrefab, position, Quaternion.identity);
+                        DeadlandSoulProjectile proj = go.GetComponent<DeadlandSoulProjectile>();
+                        proj?.Initialize(null, dir, speed: duration > 0f ? duration : soulProjectileSpeed, damage: 0f, owner: null);
+                    }
+                    break;
+                case "BurstChargingStart":
+                    m_VfxController?.StartBurstCharging(duration > 0f ? duration : burstChargeTime);
+                    break;
+                case "BurstChargingStop":
+                    m_VfxController?.StopBurstCharging();
+                    break;
+                case "CardinalShieldActivate":
+                    m_VfxController?.ActivateCardinalShield((CardinalDirection)(int)value);
+                    break;
+                case "CardinalShieldDir":
+                    m_VfxController?.SetCardinalShieldDirection((CardinalDirection)(int)value);
+                    break;
+                case "CardinalShieldDeactivate":
+                    m_VfxController?.DeactivateCardinalShield();
+                    break;
+                case "CardinalReflect":
+                    m_VfxController?.PlayCardinalReflect(position);
+                    break;
+                case "DarkZoneFloor":
+                    EnsureClientDarkZoneFloor(position, duration > 0f ? duration : 12f);
+                    break;
+                case "DarkZoneCleanup":
+                    CleanupClientDarkZoneFloor();
+                    break;
+            }
+        }
+
+        private GameObject m_ClientDarkZoneFloor;
+
+        private void EnsureClientDarkZoneFloor(Vector2 center, float radius)
+        {
+            if (m_ClientDarkZoneFloor != null) return;
+            GameObject floorGo = new GameObject("DarkZone_Floor_Client");
+            floorGo.transform.position = center;
+            SpriteRenderer sr = floorGo.AddComponent<SpriteRenderer>();
+            sr.sprite = SpriteFactory.SoftCircle;
+            sr.color = new Color(0.06f, 0.01f, 0.12f, 0.95f);
+            sr.transform.localScale = Vector3.one * (radius * 2f);
+            sr.sortingOrder = -10;
+            m_ClientDarkZoneFloor = floorGo;
+        }
+
+        private void CleanupClientDarkZoneFloor()
+        {
+            if (m_ClientDarkZoneFloor != null)
+            {
+                Destroy(m_ClientDarkZoneFloor);
+                m_ClientDarkZoneFloor = null;
             }
         }
 
@@ -647,7 +731,7 @@ namespace IronWasteland.Enemies
 
             RotateTowardsTarget(spawnPos, instant: true);
 
-            if (m_Animator != null) m_Animator.SetTrigger("CastRift");
+            TriggerAnim("CastRift");
 
             TriggerGlobalSkillCooldown();
             CreateSpatialRift(spawnPos);
@@ -677,6 +761,12 @@ namespace IronWasteland.Enemies
             }
 
             GameObject riftObj = Instantiate(spatialRiftPrefab, worldPos, Quaternion.identity);
+            if (TankBrain.NetworkSessionActive &&
+                riftObj.TryGetComponent(out Unity.Netcode.NetworkObject riftNetObj) && !riftNetObj.IsSpawned)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager != null && manager.IsServer) riftNetObj.Spawn(true);
+            }
             SpatialRift rift = riftObj.GetComponent<SpatialRift>();
             if (rift == null)
             {
@@ -722,12 +812,14 @@ namespace IronWasteland.Enemies
             // Vận sức là kỹ năng bản thân, không cần mục tiêu -> Đặt góc quay về 0
             RotateToZero(instant: true);
 
-            if (m_Animator != null) m_Animator.SetTrigger("Charging");
+            TriggerAnim("Charging");
 
             if (m_VfxController != null)
             {
                 m_VfxController.StartBurstCharging(burstChargeTime);
             }
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                "BurstChargingStart", transform.position, duration: burstChargeTime);
 
             InitializeDarkZoneSubArena();
         }
@@ -759,6 +851,7 @@ namespace IronWasteland.Enemies
             {
                 m_VfxController.StopBurstCharging();
             }
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx("BurstChargingStop", transform.position);
 
             if (m_DarkZoneArena == null)
             {
@@ -783,6 +876,8 @@ namespace IronWasteland.Enemies
             {
                 m_VfxController.ActivateCardinalShield(CurrentShieldDirection);
             }
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                "CardinalShieldActivate", transform.position, value: (int)CurrentShieldDirection);
 
             // 2. Kéo Tank gần nhất vào Sub-Arena DarkZone
             TankBrain nearestTank = m_SensorArea != null
@@ -816,6 +911,8 @@ namespace IronWasteland.Enemies
             {
                 m_VfxController.SetCardinalShieldDirection(newDir);
             }
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                "CardinalShieldDir", transform.position, value: (int)newDir);
 
             if (m_DarkZoneArena != null && m_DarkZoneArena.Clone != null)
             {
@@ -882,6 +979,7 @@ namespace IronWasteland.Enemies
                 {
                     HealCardinalShield(m_MaxCardinalShield * wrongAngleShieldHealRatio);
                     if (m_VfxController != null) m_VfxController.PlayCardinalReflect(hitPoint);
+                    GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx("CardinalReflect", hitPoint);
                     return;
                 }
                 else
@@ -929,13 +1027,19 @@ namespace IronWasteland.Enemies
 
             if (m_CurrentCardinalShield <= 0f)
             {
-                m_CardinalShieldActive = false;
-                if (m_VfxController != null) m_VfxController.DeactivateCardinalShield();
-                if (m_DarkZoneArena != null && m_DarkZoneArena.Clone != null)
-                {
-                    m_DarkZoneArena.Clone.DeactivateShield();
-                }
+                DeactivateCardinalShieldAll();
                 CompleteBurstSuccess();
+            }
+        }
+
+        private void DeactivateCardinalShieldAll()
+        {
+            m_CardinalShieldActive = false;
+            if (m_VfxController != null) m_VfxController.DeactivateCardinalShield();
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx("CardinalShieldDeactivate", transform.position);
+            if (m_DarkZoneArena != null && m_DarkZoneArena.Clone != null)
+            {
+                m_DarkZoneArena.Clone.DeactivateShield();
             }
         }
 
@@ -956,12 +1060,7 @@ namespace IronWasteland.Enemies
 
         protected override void OnBurstSuccess()
         {
-            m_CardinalShieldActive = false;
-            if (m_VfxController != null) m_VfxController.DeactivateCardinalShield();
-            if (m_DarkZoneArena != null && m_DarkZoneArena.Clone != null)
-            {
-                m_DarkZoneArena.Clone.DeactivateShield();
-            }
+            DeactivateCardinalShieldAll();
 
             RevertBurstStatModifiers();
 
@@ -1025,12 +1124,7 @@ namespace IronWasteland.Enemies
 
         protected override void OnBurstFail()
         {
-            m_CardinalShieldActive = false;
-            if (m_VfxController != null) m_VfxController.DeactivateCardinalShield();
-            if (m_DarkZoneArena != null && m_DarkZoneArena.Clone != null)
-            {
-                m_DarkZoneArena.Clone.DeactivateShield();
-            }
+            DeactivateCardinalShieldAll();
 
             //Thiết lập lại thời gian hồi
             m_SlashTimer = slashCooldown;
@@ -1085,10 +1179,7 @@ namespace IronWasteland.Enemies
                 m_DarkZoneArena = null;
             }
 
-            if (m_VfxController != null)
-            {
-                m_VfxController.DeactivateCardinalShield();
-            }
+            DeactivateCardinalShieldAll();
         }
 
         public override void ResetBurstManual()
@@ -1099,8 +1190,7 @@ namespace IronWasteland.Enemies
                 Stats.Defense = m_OriginalDefenseBeforeReward;
                 m_OriginalDefenseBeforeReward = -1f;
             }
-            m_CardinalShieldActive = false;
-            if (m_VfxController != null) m_VfxController.DeactivateCardinalShield();
+            DeactivateCardinalShieldAll();
         }
 
         #endregion

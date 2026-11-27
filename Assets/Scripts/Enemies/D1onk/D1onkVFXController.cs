@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using IronWasteland.Core;
 using IronWasteland.Enemies;
 using IronWasteland.Enemies.D1onk.VFX;
+using IronWasteland.Net;
 using UnityEngine;
 
 namespace IronWasteland.Enemies.D1onk
@@ -24,7 +25,7 @@ namespace IronWasteland.Enemies.D1onk
     /// - ColliderRef ở VFX prefab hoặc đạn prefab TUYỆT ĐỐI KHÔNG được lấy EliteEnemyBrain của D1onk làm owner.
     /// </summary>
     [DisallowMultipleComponent]
-    public class D1onkVFXController : MonoBehaviour
+    public class D1onkVFXController : MonoBehaviour, INetVfxReceiver
     {
         [Header("VFX Prefabs")]
         [Tooltip("Prefab tên lửa bắn từ 14 nòng súng.")]
@@ -76,6 +77,7 @@ namespace IronWasteland.Enemies.D1onk
         private D1onkStunVFX m_ActiveStunVFX;
         private D1onkLazeNguyenToVFX m_ActiveLaserVFX;
         private EnemyBrain m_OwnerBrain;
+        private EnemyNetState m_NetState;
 
         // Public getters for Inspector wiring verification
         public GameObject MissileProjectilePrefab => missileProjectilePrefab;
@@ -100,6 +102,7 @@ namespace IronWasteland.Enemies.D1onk
         private void Awake()
         {
             m_OwnerBrain = GetComponent<EnemyBrain>();
+            m_NetState = GetComponent<EnemyNetState>();
         }
 
         private void Start()
@@ -223,6 +226,7 @@ namespace IronWasteland.Enemies.D1onk
             {
                 float angle = Mathf.Atan2(fireDir.y, fireDir.x) * Mathf.Rad2Deg;
                 Instantiate(muzzleFlashPrefab, spawnPos, Quaternion.Euler(0f, 0f, angle));
+                m_NetState?.BroadcastVfx("MuzzleFlash", spawnPos, angle);
             }
 
             if (missileProjectilePrefab == null)
@@ -237,6 +241,7 @@ namespace IronWasteland.Enemies.D1onk
             {
                 projectile.Initialize(fireDir, target, 12f, damage, m_OwnerBrain);
             }
+            m_NetState?.BroadcastVfx("Missile", spawnPos, 0f, fireDir, 12f, 0f);
             return projectile;
         }
 
@@ -262,6 +267,7 @@ namespace IronWasteland.Enemies.D1onk
             {
                 vfx.Initialize(targetPosition, damage, m_OwnerBrain, onComplete);
             }
+            m_NetState?.BroadcastVfx("TrungPhat", targetPosition);
             return vfx;
         }
 
@@ -289,6 +295,7 @@ namespace IronWasteland.Enemies.D1onk
                     vfx.Initialize(pos, damage, m_OwnerBrain, i == count - 1 ? onComplete : null);
                     list.Add(vfx);
                 }
+                m_NetState?.BroadcastVfx("TrungPhat", pos);
             }
 
             return list;
@@ -328,6 +335,7 @@ namespace IronWasteland.Enemies.D1onk
                     onComplete?.Invoke();
                 });
             }
+            m_NetState?.BroadcastVfx("LazeNguyenTo", spawnPos, 0f, direction, duration, 0f);
             return vfx;
         }
 
@@ -353,6 +361,7 @@ namespace IronWasteland.Enemies.D1onk
             {
                 vfx.Initialize(damage, m_OwnerBrain, onComplete);
             }
+            m_NetState?.BroadcastVfx("ToaNhietDienRong", transform.position);
             return vfx;
         }
 
@@ -409,6 +418,7 @@ namespace IronWasteland.Enemies.D1onk
                     summonVFX.Initialize(enemyPrefab, onEnemySpawned);
                     spawnedSummonVFXList.Add(summonVFX);
                 }
+                m_NetState?.BroadcastVfx("VienBinhSummon", spawnPos);
             }
 
             return spawnedSummonVFXList;
@@ -434,6 +444,7 @@ namespace IronWasteland.Enemies.D1onk
             {
                 m_ActiveChargingAura.Play();
             }
+            m_NetState?.BroadcastVfx("StartCharging", transform.position);
             return m_ActiveChargingAura;
         }
 
@@ -447,6 +458,7 @@ namespace IronWasteland.Enemies.D1onk
                 m_ActiveChargingAura.Stop();
                 m_ActiveChargingAura = null;
             }
+            m_NetState?.BroadcastVfx("StopCharging", transform.position);
         }
 
         #endregion
@@ -479,6 +491,7 @@ namespace IronWasteland.Enemies.D1onk
             {
                 onComplete?.Invoke();
             }
+            m_NetState?.BroadcastVfx("StartStun", transform.position, duration: duration);
             return m_ActiveStunVFX;
         }
 
@@ -492,6 +505,7 @@ namespace IronWasteland.Enemies.D1onk
                 m_ActiveStunVFX.Stop();
                 m_ActiveStunVFX = null;
             }
+            m_NetState?.BroadcastVfx("StopStun", transform.position);
         }
 
         /// <summary>
@@ -526,6 +540,129 @@ namespace IronWasteland.Enemies.D1onk
         }
 
         #endregion
+
+        public void OnClientNetVfx(string key, Vector2 position, float rotationZ, Vector2 dir, float duration, float value)
+        {
+            switch (key)
+            {
+                case "MuzzleFlash":
+                    if (muzzleFlashPrefab != null)
+                    {
+                        Instantiate(muzzleFlashPrefab, position, Quaternion.Euler(0f, 0f, rotationZ));
+                    }
+                    break;
+                case "Missile":
+                    if (missileProjectilePrefab != null)
+                    {
+                        GameObject go = Instantiate(missileProjectilePrefab, position, Quaternion.identity);
+                        D1onkMissileProjectile projectile = go.GetComponent<D1onkMissileProjectile>();
+                        projectile?.Initialize(dir, null, duration > 0f ? duration : 12f, 0f, null);
+                    }
+                    break;
+                case "TrungPhat":
+                    if (trungPhatLightningPrefab != null)
+                    {
+                        GameObject go = Instantiate(trungPhatLightningPrefab, position, Quaternion.identity);
+                        D1onkTrungPhatVFX vfx = go.GetComponent<D1onkTrungPhatVFX>();
+                        vfx?.Initialize(position, 0f, null, null);
+                    }
+                    break;
+                case "LazeNguyenTo":
+                    if (lazeNguyenToPrefab != null)
+                    {
+                        Vector3 spawnPos = laserEmitterPoint != null ? laserEmitterPoint.position : (Vector3)position;
+                        GameObject go = Instantiate(lazeNguyenToPrefab, spawnPos, Quaternion.identity);
+                        if (laserEmitterPoint != null)
+                        {
+                            go.transform.SetParent(laserEmitterPoint);
+                            go.transform.localPosition = Vector3.zero;
+                        }
+                        D1onkLazeNguyenToVFX vfx = go.GetComponent<D1onkLazeNguyenToVFX>();
+                        vfx?.Initialize(dir, duration > 0f ? duration : 2.5f, 0f, null, null);
+                    }
+                    break;
+                case "ToaNhietDienRong":
+                    if (toaNhietDienRongPrefab != null)
+                    {
+                        GameObject go = Instantiate(toaNhietDienRongPrefab, position, Quaternion.identity);
+                        D1onkToaNhietDienRongVFX vfx = go.GetComponent<D1onkToaNhietDienRongVFX>();
+                        vfx?.Initialize(0f, null, null);
+                    }
+                    break;
+                case "VienBinhSummon":
+                    if (vienBinhSummonVFXPrefab != null)
+                    {
+                        GameObject go = Instantiate(vienBinhSummonVFXPrefab, position, Quaternion.identity);
+                        D1onkVienBinhSummonVFX vfx = go.GetComponent<D1onkVienBinhSummonVFX>();
+                        // Client chỉ diễn hoạt vòng ma pháp, không tự spawn quái (Host sẽ spawn qua NetSpawnService).
+                        vfx?.Initialize(null, null);
+                    }
+                    break;
+                case "StartCharging":
+                    if (m_ActiveChargingAura == null && chargingAuraPrefab != null)
+                    {
+                        GameObject go = Instantiate(chargingAuraPrefab, transform);
+                        go.transform.localPosition = Vector3.zero;
+                        m_ActiveChargingAura = go.GetComponent<D1onkChargingAuraVFX>();
+                    }
+                    m_ActiveChargingAura?.Play();
+                    break;
+                case "StopCharging":
+                    if (m_ActiveChargingAura != null)
+                    {
+                        m_ActiveChargingAura.Stop();
+                        m_ActiveChargingAura = null;
+                    }
+                    break;
+                case "StartStun":
+                    if (m_ActiveStunVFX == null && stunVFXPrefab != null)
+                    {
+                        Vector3 headPos = headPoint != null ? headPoint.position : transform.position + new Vector3(0f, 2.5f, 0f);
+                        GameObject go = Instantiate(stunVFXPrefab, headPos, Quaternion.identity);
+                        if (headPoint != null) go.transform.SetParent(headPoint);
+                        m_ActiveStunVFX = go.GetComponent<D1onkStunVFX>();
+                    }
+                    m_ActiveStunVFX?.Play(duration > 0f ? duration : 3f, () => { m_ActiveStunVFX = null; });
+                    break;
+                case "StopStun":
+                    if (m_ActiveStunVFX != null)
+                    {
+                        m_ActiveStunVFX.Stop();
+                        m_ActiveStunVFX = null;
+                    }
+                    break;
+                case "MothershipFloor":
+                    EnsureClientMothershipFloor(position, duration > 0f ? duration : 15f);
+                    break;
+                case "MothershipCleanup":
+                    CleanupClientMothershipFloor();
+                    break;
+            }
+        }
+
+        private GameObject m_ClientMothershipFloor;
+
+        private void EnsureClientMothershipFloor(Vector2 center, float radius)
+        {
+            if (m_ClientMothershipFloor != null) return;
+            GameObject floorGo = new GameObject("Mothership_Floor_Client");
+            floorGo.transform.position = center;
+            SpriteRenderer sr = floorGo.AddComponent<SpriteRenderer>();
+            sr.sprite = IronWasteland.Utilities.SpriteFactory.SoftCircle;
+            sr.color = new Color(0.08f, 0.04f, 0.14f, 0.92f);
+            sr.transform.localScale = Vector3.one * (radius * 2f);
+            sr.sortingOrder = -10;
+            m_ClientMothershipFloor = floorGo;
+        }
+
+        private void CleanupClientMothershipFloor()
+        {
+            if (m_ClientMothershipFloor != null)
+            {
+                Destroy(m_ClientMothershipFloor);
+                m_ClientMothershipFloor = null;
+            }
+        }
 
 #if UNITY_EDITOR
         private void OnValidate()

@@ -38,6 +38,9 @@ namespace IronWasteland.Net
         /// <summary>Tên message client gửi yêu cầu lên host.</summary>
         public const string RequestMessage = "IW.MatchRequest";
 
+        /// <summary>Tên message host yêu cầu client chuyển sang scene màn chơi / lobby.</summary>
+        public const string SceneSyncMessage = "IW.Scene";
+
         public const byte OpSetTank = 0;
         public const byte OpSetReady = 1;
         public const byte OpStart = 2;
@@ -45,6 +48,7 @@ namespace IronWasteland.Net
         public const byte OpSetOption1 = 4;
         public const byte OpSetOption2 = 5;
         public const byte OpSetLoadout = 7;
+        public const byte OpSceneLoaded = 8;
 
         public const int MaxPlayers = 4;
 
@@ -66,8 +70,11 @@ namespace IronWasteland.Net
         private bool m_Registered;
         private bool m_HostHooked;
         private bool m_StageHooked;
-        private bool m_SceneEventHooked;
         private string m_PendingTargetScene;
+        private bool m_WaitingForSceneLoad;
+        private Coroutine m_SceneLoadCoroutine;
+        private Coroutine m_ClientSceneLoadCoroutine;
+        private readonly HashSet<ulong> m_SceneReadyClients = new HashSet<ulong>();
         private StageDirector m_Director;
 
         /// <summary>Giai đoạn hiện tại của phiên.</summary>
@@ -111,7 +118,7 @@ namespace IronWasteland.Net
             {
                 if (m_Registered) Unregister();
                 if (m_HostHooked) UnhookHost();
-                UnhookSceneManager();
+                StopSceneLoadCoroutines();
                 return;
             }
 
@@ -122,13 +129,13 @@ namespace IronWasteland.Net
             {
                 messaging.RegisterNamedMessageHandler(SnapshotMessage, HandleSnapshot);
                 messaging.RegisterNamedMessageHandler(RequestMessage, HandleRequest);
+                messaging.RegisterNamedMessageHandler(SceneSyncMessage, HandleSceneSync);
                 m_Registered = true;
             }
 
             if (IsServer && !m_HostHooked)
             {
                 HookHost();
-                HookSceneManager();
             }
         }
 
@@ -138,44 +145,24 @@ namespace IronWasteland.Net
             UnhookHost();
             UnhookStage();
             UnhookDirector();
-            UnhookSceneManager();
+            StopSceneLoadCoroutines();
         }
 
-        private void HookSceneManager()
+        private void StopSceneLoadCoroutines()
         {
-            if (m_SceneEventHooked || Manager == null || Manager.SceneManager == null) return;
-            Manager.SceneManager.OnSceneEvent += HandleSceneEvent;
-            m_SceneEventHooked = true;
-        }
-
-        private void UnhookSceneManager()
-        {
-            if (!m_SceneEventHooked || Manager == null || Manager.SceneManager == null) return;
-            Manager.SceneManager.OnSceneEvent -= HandleSceneEvent;
-            m_SceneEventHooked = false;
-        }
-
-        private void HandleSceneEvent(SceneEvent sceneEvent)
-        {
-            if (!IsServer) return;
-
-            if (sceneEvent.SceneEventType == SceneEventType.LoadEventCompleted)
+            if (m_SceneLoadCoroutine != null)
             {
-                if (!string.IsNullOrEmpty(m_PendingTargetScene) && sceneEvent.SceneName == m_PendingTargetScene)
-                {
-                    m_PendingTargetScene = null;
-                    StartCoroutine(DeferredStageSceneLoaded());
-                }
+                StopCoroutine(m_SceneLoadCoroutine);
+                m_SceneLoadCoroutine = null;
             }
-        }
-
-        private System.Collections.IEnumerator DeferredStageSceneLoaded()
-        {
-            yield return null;
-            if (IsServer && Listening)
+            if (m_ClientSceneLoadCoroutine != null)
             {
-                OnStageSceneLoaded();
+                StopCoroutine(m_ClientSceneLoadCoroutine);
+                m_ClientSceneLoadCoroutine = null;
             }
+            m_WaitingForSceneLoad = false;
+            m_PendingTargetScene = null;
+            m_SceneReadyClients.Clear();
         }
 
         /// <summary>
@@ -235,6 +222,7 @@ namespace IronWasteland.Net
 
             messaging.RegisterNamedMessageHandler(SnapshotMessage, HandleSnapshot);
             messaging.RegisterNamedMessageHandler(RequestMessage, HandleRequest);
+            messaging.RegisterNamedMessageHandler(SceneSyncMessage, HandleSceneSync);
             m_Registered = true;
         }
 
@@ -245,6 +233,7 @@ namespace IronWasteland.Net
             {
                 messaging.UnregisterNamedMessageHandler(SnapshotMessage);
                 messaging.UnregisterNamedMessageHandler(RequestMessage);
+                messaging.UnregisterNamedMessageHandler(SceneSyncMessage);
             }
 
             m_Registered = false;
@@ -408,7 +397,9 @@ namespace IronWasteland.Net
             string lobbyScene = Application.CanStreamedLevelBeLoaded("CoopLobby") ? "CoopLobby" : "SampleScene";
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != lobbyScene && Application.CanStreamedLevelBeLoaded(lobbyScene))
             {
-                Manager.SceneManager.LoadScene(lobbyScene, UnityEngine.SceneManagement.LoadSceneMode.Single);
+                StopSceneLoadCoroutines();
+                SendSceneSyncToAll(lobbyScene);
+                UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(lobbyScene, UnityEngine.SceneManagement.LoadSceneMode.Single);
             }
         }
 
@@ -427,7 +418,7 @@ namespace IronWasteland.Net
             }
 
             UnhookDirector();
-            UnhookSceneManager();
+            StopSceneLoadCoroutines();
             bootstrap?.Shutdown();
             ResetLocal();
             Changed?.Invoke();
@@ -455,14 +446,61 @@ namespace IronWasteland.Net
             string sceneName = SaveSystem.SceneNameFor(stage.StageCode);
             if (IsServer && !string.IsNullOrEmpty(sceneName) && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != sceneName && Application.CanStreamedLevelBeLoaded(sceneName))
             {
-                m_PendingTargetScene = sceneName;
-                HookSceneManager();
+                if (m_SceneLoadCoroutine != null) StopCoroutine(m_SceneLoadCoroutine);
                 Debug.Log($"[MatchFlow] Chuyển cả phòng sang scene '{sceneName}' cho màn {stage.StageCode}...");
-                Manager.SceneManager.LoadScene(sceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+                m_SceneLoadCoroutine = StartCoroutine(LoadSceneForMatchRoutine(sceneName));
                 return;
             }
 
             OnStageSceneLoaded();
+        }
+
+        private System.Collections.IEnumerator LoadSceneForMatchRoutine(string sceneName)
+        {
+            m_PendingTargetScene = sceneName;
+            m_WaitingForSceneLoad = true;
+            m_SceneReadyClients.Clear();
+
+            SendSceneSyncToAll(sceneName);
+
+            AsyncOperation op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(
+                sceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+            while (op != null && !op.isDone)
+            {
+                yield return null;
+            }
+
+            m_SceneReadyClients.Add(NetBootstrap.ServerClientId);
+
+            // Chờ toàn bộ client đang kết nối load xong scene (tối đa 10s để tránh kẹt nếu client rớt).
+            float elapsed = 0f;
+            const float timeout = 10f;
+            while (elapsed < timeout && IsServer && Listening && !AllConnectedClientsSceneReady())
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            m_WaitingForSceneLoad = false;
+            m_PendingTargetScene = null;
+            m_SceneLoadCoroutine = null;
+
+            yield return null;
+            if (IsServer && Listening)
+            {
+                OnStageSceneLoaded();
+            }
+        }
+
+        private bool AllConnectedClientsSceneReady()
+        {
+            if (Manager == null) return true;
+            IReadOnlyList<ulong> ids = Manager.ConnectedClientsIds;
+            for (int i = 0; i < ids.Count; i++)
+            {
+                if (!m_SceneReadyClients.Contains(ids[i])) return false;
+            }
+            return true;
         }
 
         private void OnStageSceneLoaded()
@@ -603,9 +641,11 @@ namespace IronWasteland.Net
                 return false;
             }
 
-            // Người vào giữa trận: spawn xe ngay với tank đã chọn để không bị đứng ngoài.
+            // Người vào giữa trận: báo client chuyển sang scene màn chơi và spawn xe ngay.
             if (Phase == MatchPhase.Playing)
             {
+                string activeScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+                SendSceneSyncToClient(clientId, activeScene);
                 bootstrap?.SpawnTankFor(clientId, tankIndex, loadout.OptionSkill1, loadout.OptionSkill2);
             }
 
@@ -638,7 +678,7 @@ namespace IronWasteland.Net
             }
 
             UnhookDirector();
-            UnhookSceneManager();
+            StopSceneLoadCoroutines();
             ResetLocal();
             Changed?.Invoke();
 
@@ -927,6 +967,16 @@ namespace IronWasteland.Net
                     return;
                 }
 
+                if (op == OpSceneLoaded)
+                {
+                    reader.ReadValueSafe(out FixedString64Bytes loadedScene);
+                    if (m_WaitingForSceneLoad && loadedScene.ToString() == m_PendingTargetScene)
+                    {
+                        m_SceneReadyClients.Add(senderClientId);
+                    }
+                    return;
+                }
+
                 reader.ReadValueSafe(out byte value);
 
                 switch (op)
@@ -954,6 +1004,80 @@ namespace IronWasteland.Net
             {
                 Debug.LogWarning($"[MatchFlow] Yêu cầu từ client {senderClientId} không hợp lệ: {exception.Message}");
             }
+        }
+
+        private void SendSceneSyncToAll(string sceneName)
+        {
+            if (!IsServer || string.IsNullOrEmpty(sceneName)) return;
+            CustomMessagingManager messaging = Manager != null ? Manager.CustomMessagingManager : null;
+            if (messaging == null) return;
+
+            using FastBufferWriter writer = new FastBufferWriter(128, Allocator.Temp);
+            writer.WriteValueSafe((FixedString64Bytes)sceneName);
+            messaging.SendNamedMessageToAll(SceneSyncMessage, writer);
+        }
+
+        private void SendSceneSyncToClient(ulong clientId, string sceneName)
+        {
+            if (!IsServer || string.IsNullOrEmpty(sceneName) || clientId == NetBootstrap.ServerClientId) return;
+            CustomMessagingManager messaging = Manager != null ? Manager.CustomMessagingManager : null;
+            if (messaging == null) return;
+
+            using FastBufferWriter writer = new FastBufferWriter(128, Allocator.Temp);
+            writer.WriteValueSafe((FixedString64Bytes)sceneName);
+            messaging.SendNamedMessage(SceneSyncMessage, clientId, writer);
+        }
+
+        private void HandleSceneSync(ulong senderClientId, FastBufferReader reader)
+        {
+            if (senderClientId != NetBootstrap.ServerClientId || IsServer) return;
+
+            string sceneName;
+            try
+            {
+                reader.ReadValueSafe(out FixedString64Bytes rawScene);
+                sceneName = rawScene.ToString();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[MatchFlow] Thông điệp chuyển scene không hợp lệ: " + exception.Message);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(sceneName) || !Application.CanStreamedLevelBeLoaded(sceneName)) return;
+
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == sceneName)
+            {
+                SendSceneLoadedAck(sceneName);
+                return;
+            }
+
+            if (m_ClientSceneLoadCoroutine != null) StopCoroutine(m_ClientSceneLoadCoroutine);
+            m_ClientSceneLoadCoroutine = StartCoroutine(ClientLoadSceneRoutine(sceneName));
+        }
+
+        private System.Collections.IEnumerator ClientLoadSceneRoutine(string sceneName)
+        {
+            AsyncOperation op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(
+                sceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+            while (op != null && !op.isDone)
+            {
+                yield return null;
+            }
+
+            m_ClientSceneLoadCoroutine = null;
+            SendSceneLoadedAck(sceneName);
+        }
+
+        private void SendSceneLoadedAck(string sceneName)
+        {
+            CustomMessagingManager messaging = Manager != null ? Manager.CustomMessagingManager : null;
+            if (messaging == null || IsServer) return;
+
+            using FastBufferWriter writer = new FastBufferWriter(128, Allocator.Temp);
+            writer.WriteValueSafe(OpSceneLoaded);
+            writer.WriteValueSafe((FixedString64Bytes)sceneName);
+            messaging.SendNamedMessage(RequestMessage, NetBootstrap.ServerClientId, writer);
         }
 
         #endregion

@@ -89,15 +89,30 @@ namespace IronWasteland.Enemies.D1onk.VFX
         {
             m_HasSpawned = true;
 
-            if (m_EnemyPrefabToSpawn != null)
-            {
-                m_SpawnedEnemy = Instantiate(m_EnemyPrefabToSpawn, transform.position, Quaternion.identity);
-                m_OnSpawnedCallback?.Invoke(m_SpawnedEnemy);
-            }
-            else
+            if (m_EnemyPrefabToSpawn == null)
             {
                 Debug.LogWarning("[D1onkVienBinhSummonVFX] enemyPrefabToSpawn is null!");
+                return;
             }
+
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager == null || !manager.IsServer) return;
+
+                if (m_EnemyPrefabToSpawn.TryGetComponent(out EnemyBrain enemyPrefab) &&
+                    IronWasteland.Net.NetSpawnService.Instance != null)
+                {
+                    EnemyBrain spawned = IronWasteland.Net.NetSpawnService.Instance.SpawnEnemy(
+                        enemyPrefab, transform.position, enemyPrefab.Stats);
+                    m_SpawnedEnemy = spawned != null ? spawned.gameObject : null;
+                    m_OnSpawnedCallback?.Invoke(m_SpawnedEnemy);
+                    return;
+                }
+            }
+
+            m_SpawnedEnemy = Instantiate(m_EnemyPrefabToSpawn, transform.position, Quaternion.identity);
+            m_OnSpawnedCallback?.Invoke(m_SpawnedEnemy);
         }
     }
 }

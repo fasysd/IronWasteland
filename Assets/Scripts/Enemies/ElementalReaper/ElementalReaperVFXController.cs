@@ -20,7 +20,7 @@ namespace IronWasteland.Enemies.ElementalReaper
     /// 10. Khiên Nguyên Tố 25% HP & Tinh Thể (VFX_BurstShieldAndCrystals)
     /// </summary>
     [DisallowMultipleComponent]
-    public class ElementalReaperVFXController : MonoBehaviour
+    public class ElementalReaperVFXController : MonoBehaviour, IronWasteland.Net.INetVfxReceiver
     {
         [Header("VFX Prefabs")]
         [Tooltip("Prefab VFX 1: Hào quang quanh Boss đổi màu 3 hệ Thủy/Độc/Hỏa.")]
@@ -63,6 +63,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         private BurstShieldVFX m_ActiveBurstShield;
         private Animator m_Animator;
         private EnemyBrain m_OwnerBrain;
+        private IronWasteland.Net.EnemyNetState m_NetState;
 
         public ElementalAuraVFX ActiveElementalAura => m_ActiveElementalAura;
         public BurstChargingAuraVFX ActiveBurstChargingAura => m_ActiveBurstChargingAura;
@@ -85,6 +86,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         {
             m_Animator = GetComponentInChildren<Animator>();
             m_OwnerBrain = GetComponent<EnemyBrain>();
+            m_NetState = GetComponent<IronWasteland.Net.EnemyNetState>();
             InitializeAura();
         }
 
@@ -110,6 +112,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             {
                 m_ActiveElementalAura.SetElement(type);
             }
+            m_NetState?.BroadcastVfx("ElementalAura", transform.position, value: (int)type);
         }
 
         #endregion
@@ -144,6 +147,8 @@ namespace IronWasteland.Enemies.ElementalReaper
                 float atk = m_OwnerBrain != null ? m_OwnerBrain.Stats.Attack : 250f;
                 hitbox.Initialize(m_OwnerBrain, atk);
             }
+            m_NetState?.BroadcastAnimTrigger("ThuyTrieu");
+            m_NetState?.BroadcastVfx("ThuyTrieu", spawnPos, rot.eulerAngles.z);
 
             onComplete?.Invoke();
             return hitbox;
@@ -173,6 +178,8 @@ namespace IronWasteland.Enemies.ElementalReaper
             {
                 vfx.Play(onComplete);
             }
+            m_NetState?.BroadcastAnimTrigger("ThuyLieu");
+            m_NetState?.BroadcastVfx("ThuyLieu", transform.position);
             return vfx;
         }
 
@@ -212,6 +219,8 @@ namespace IronWasteland.Enemies.ElementalReaper
                 float atk = m_OwnerBrain != null ? m_OwnerBrain.Stats.Attack : 250f;
                 hitbox.Initialize(m_OwnerBrain, atk);
             }
+            m_NetState?.BroadcastAnimTrigger("DocQuat");
+            m_NetState?.BroadcastVfx("DocQuat", spawnPos, rot.eulerAngles.z);
 
             onComplete?.Invoke();
             return hitbox;
@@ -241,6 +250,8 @@ namespace IronWasteland.Enemies.ElementalReaper
                 float atk = m_OwnerBrain != null ? m_OwnerBrain.Stats.Attack : 250f;
                 hitbox.Initialize(m_OwnerBrain, atk);
             }
+            m_NetState?.BroadcastAnimTrigger("LoanChuyen");
+            m_NetState?.BroadcastVfx("LoanChuyen", position);
 
             onComplete?.Invoke();
             return hitbox;
@@ -273,6 +284,8 @@ namespace IronWasteland.Enemies.ElementalReaper
                 float atk = m_OwnerBrain != null ? m_OwnerBrain.Stats.Attack : 250f;
                 hitbox.Initialize(m_OwnerBrain, atk);
             }
+            m_NetState?.BroadcastAnimTrigger("PhunDungNham");
+            m_NetState?.BroadcastVfx("PhunDungNham", transform.position, angle);
 
             onComplete?.Invoke();
             return hitbox;
@@ -302,6 +315,8 @@ namespace IronWasteland.Enemies.ElementalReaper
                 float atk = m_OwnerBrain != null ? m_OwnerBrain.Stats.Attack : 250f;
                 zone.Initialize(m_OwnerBrain, atk);
             }
+            m_NetState?.BroadcastAnimTrigger("HoaToc_Charge");
+            m_NetState?.BroadcastVfx("FireTornado", targetPosition);
 
             onComplete?.Invoke();
             return zone;
@@ -329,6 +344,7 @@ namespace IronWasteland.Enemies.ElementalReaper
                 float atk = m_OwnerBrain != null ? m_OwnerBrain.Stats.Attack : 250f;
                 trail.SetupTrail(startPos, endPos, m_OwnerBrain, atk);
             }
+            m_NetState?.BroadcastVfx("HoaTocFireTrail", startPos, 0f, endPos);
             return trail;
         }
 
@@ -354,6 +370,8 @@ namespace IronWasteland.Enemies.ElementalReaper
             {
                 m_ActiveBurstChargingAura.StartCharging(duration, onComplete);
             }
+            m_NetState?.BroadcastAnimTrigger("BurstCharging");
+            m_NetState?.BroadcastVfx("BurstChargingStart", transform.position, duration: duration);
             return m_ActiveBurstChargingAura;
         }
 
@@ -366,6 +384,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             {
                 m_ActiveBurstChargingAura.StopCharging();
             }
+            m_NetState?.BroadcastVfx("BurstChargingStop", transform.position);
         }
 
         #endregion
@@ -388,6 +407,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             {
                 m_ActiveBurstShield.SetActiveState(true);
             }
+            m_NetState?.BroadcastVfx("BurstShieldActivate", transform.position);
             return m_ActiveBurstShield;
         }
 
@@ -403,6 +423,118 @@ namespace IronWasteland.Enemies.ElementalReaper
                 else DestroyImmediate(m_ActiveBurstShield.gameObject);
                 m_ActiveBurstShield = null;
             }
+            m_NetState?.BroadcastVfx("BurstShieldDeactivate", transform.position);
+        }
+
+        private readonly System.Collections.Generic.List<GameObject> m_ClientAltarFloors =
+            new System.Collections.Generic.List<GameObject>();
+
+        public void OnClientNetVfx(string key, Vector2 position, float rotationZ, Vector2 dir, float duration, float value)
+        {
+            Quaternion rot = Quaternion.Euler(0f, 0f, rotationZ);
+            switch (key)
+            {
+                case "ThuyTrieu":
+                    if (thuyTrieuHitboxPrefab != null)
+                    {
+                        var go = Instantiate(thuyTrieuHitboxPrefab, position, rot);
+                        go.GetComponent<ThuyTrieuHitbox>()?.Initialize(null, 0f);
+                    }
+                    break;
+                case "ThuyLieu":
+                    if (thuyLieuVFXPrefab != null)
+                    {
+                        var go = Instantiate(thuyLieuVFXPrefab, transform);
+                        go.transform.localPosition = Vector3.zero;
+                        go.GetComponent<ThuyLieuVFX>()?.Play(null);
+                    }
+                    break;
+                case "DocQuat":
+                    if (docQuatHitboxPrefab != null)
+                    {
+                        var go = Instantiate(docQuatHitboxPrefab, position, rot);
+                        go.GetComponent<DocQuatHitbox>()?.Initialize(null, 0f);
+                    }
+                    break;
+                case "LoanChuyen":
+                    if (loanChuyenBurstHitboxPrefab != null)
+                    {
+                        var go = Instantiate(loanChuyenBurstHitboxPrefab, position, Quaternion.identity);
+                        go.GetComponent<LoanChuyenBurstHitbox>()?.Initialize(null, 0f);
+                    }
+                    break;
+                case "PhunDungNham":
+                    if (phunDungNhamHitboxPrefab != null)
+                    {
+                        var go = Instantiate(phunDungNhamHitboxPrefab, position, rot);
+                        go.GetComponent<PhunDungNhamHitbox>()?.Initialize(null, 0f);
+                    }
+                    break;
+                case "FireTornado":
+                    if (fireTornadoZonePrefab != null)
+                    {
+                        var go = Instantiate(fireTornadoZonePrefab, position, Quaternion.identity);
+                        go.GetComponent<FireTornadoZone>()?.Initialize(null, 0f);
+                    }
+                    break;
+                case "HoaTocFireTrail":
+                    if (hoaTocFireTrailZonePrefab != null)
+                    {
+                        var go = Instantiate(hoaTocFireTrailZonePrefab, Vector3.zero, Quaternion.identity);
+                        go.GetComponent<HoaTocFireTrailZone>()?.SetupTrail(position, dir, null, 0f);
+                    }
+                    break;
+                case "BurstChargingStart":
+                    if (m_ActiveBurstChargingAura == null && burstChargingAuraPrefab != null)
+                    {
+                        var go = Instantiate(burstChargingAuraPrefab, transform);
+                        go.transform.localPosition = Vector3.zero;
+                        m_ActiveBurstChargingAura = go.GetComponent<BurstChargingAuraVFX>();
+                    }
+                    m_ActiveBurstChargingAura?.StartCharging(duration > 0f ? duration : 2f, null);
+                    break;
+                case "BurstChargingStop":
+                    m_ActiveBurstChargingAura?.StopCharging();
+                    break;
+                case "BurstShieldActivate":
+                    if (m_ActiveBurstShield == null && burstShieldAndCrystalsPrefab != null)
+                    {
+                        var go = Instantiate(burstShieldAndCrystalsPrefab, transform);
+                        go.transform.localPosition = Vector3.zero;
+                        m_ActiveBurstShield = go.GetComponent<BurstShieldVFX>();
+                    }
+                    m_ActiveBurstShield?.SetActiveState(true);
+                    break;
+                case "BurstShieldDeactivate":
+                    if (m_ActiveBurstShield != null)
+                    {
+                        m_ActiveBurstShield.SetActiveState(false);
+                        Destroy(m_ActiveBurstShield.gameObject);
+                        m_ActiveBurstShield = null;
+                    }
+                    break;
+                case "AltarFloor":
+                    var floorGo = new GameObject("AltarFloor_Client");
+                    floorGo.transform.position = position;
+                    var sr = floorGo.AddComponent<SpriteRenderer>();
+                    sr.sprite = IronWasteland.Utilities.SpriteFactory.SoftCircle;
+                    sr.color = new Color(0.12f, 0.06f, 0.16f, 0.9f);
+                    sr.transform.localScale = Vector3.one * ((duration > 0f ? duration : 10f) * 2f);
+                    sr.sortingOrder = -10;
+                    m_ClientAltarFloors.Add(floorGo);
+                    break;
+                case "AltarCleanup":
+                    for (int i = 0; i < m_ClientAltarFloors.Count; i++)
+                    {
+                        if (m_ClientAltarFloors[i] != null) Destroy(m_ClientAltarFloors[i]);
+                    }
+                    m_ClientAltarFloors.Clear();
+                    break;
+                case "ElementalAura":
+                    if (m_ActiveElementalAura == null) InitializeAura();
+                    m_ActiveElementalAura?.SetElement((ElementalType)(int)value);
+                    break;
+            }
         }
 
         #endregion
@@ -412,6 +544,7 @@ namespace IronWasteland.Enemies.ElementalReaper
         public void PlayHoaTocDashAnimation()
         {
             if (m_Animator != null) m_Animator.SetTrigger("HoaToc_Dash");
+            m_NetState?.BroadcastAnimTrigger("HoaToc_Dash");
         }
 
         /// <summary>
@@ -443,11 +576,13 @@ namespace IronWasteland.Enemies.ElementalReaper
         public void PlayStunAnimation()
         {
             if (m_Animator != null) m_Animator.SetTrigger("Stun");
+            m_NetState?.BroadcastAnimTrigger("Stun");
         }
 
         public void PlayDieAnimation()
         {
             if (m_Animator != null) m_Animator.SetTrigger("Die");
+            m_NetState?.BroadcastAnimTrigger("Die");
         }
 
         #endregion

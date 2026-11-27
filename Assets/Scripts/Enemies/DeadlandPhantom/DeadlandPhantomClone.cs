@@ -16,7 +16,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
     /// - Khi thi triển kỹ năng: tự động xoay mặt về hướng Tank mục tiêu; nếu không có mục tiêu thì đặt góc quay về 0.
     /// </summary>
     [DisallowMultipleComponent]
-    public class DeadlandPhantomClone : EnemyBrain
+    public class DeadlandPhantomClone : EnemyBrain, IronWasteland.Net.INetVfxReceiver
     {
         [Header("Clone Abilities & Multipliers")]
         [Tooltip("Chu kỳ thi triển Soul Summon trong buồng tối (giây). GDD: 3s.")]
@@ -105,6 +105,8 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             if (m_Boss != null && m_Boss.IsCardinalShieldActive)
             {
                 m_VfxController?.ActivateCardinalShield(m_Boss.CurrentShieldDirection);
+                GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                    "CardinalShieldActivate", transform.position, value: (int)m_Boss.CurrentShieldDirection);
             }
         }
 
@@ -112,12 +114,41 @@ namespace IronWasteland.Enemies.DeadlandPhantom
         {
             if (m_VfxController == null) m_VfxController = GetComponent<BongMaTuDiaVFXController>();
             m_VfxController?.SetCardinalShieldDirection(dir);
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                "CardinalShieldDir", transform.position, value: (int)dir);
         }
 
         public void DeactivateShield()
         {
             if (m_VfxController == null) m_VfxController = GetComponent<BongMaTuDiaVFXController>();
             m_VfxController?.DeactivateCardinalShield();
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                "CardinalShieldDeactivate", transform.position);
+        }
+
+        public void OnClientNetVfx(string key, Vector2 position, float rotationZ, Vector2 dir, float duration, float value)
+        {
+            if (m_VfxController == null) m_VfxController = GetComponent<BongMaTuDiaVFXController>();
+            if (m_VfxController == null) return;
+
+            switch (key)
+            {
+                case "CardinalShieldActivate":
+                    m_VfxController.ActivateCardinalShield((CardinalDirection)(int)value);
+                    break;
+                case "CardinalShieldDir":
+                    m_VfxController.SetCardinalShieldDirection((CardinalDirection)(int)value);
+                    break;
+                case "CardinalShieldDeactivate":
+                    m_VfxController.DeactivateCardinalShield();
+                    break;
+                case "SoulSummonPulse":
+                    m_VfxController.PlaySoulSummonPulse(position);
+                    break;
+                case "SoulProjectile":
+                    m_VfxController.SpawnSoulProjectile(position, null, dir, speed: duration > 0f ? duration : projectileSpeed, damage: 0f, owner: null);
+                    break;
+            }
         }
 
         protected override void OnBrainTick(float deltaTime)
@@ -223,10 +254,12 @@ namespace IronWasteland.Enemies.DeadlandPhantom
                 return;
             }
 
+            var netState = GetComponent<IronWasteland.Net.EnemyNetState>();
             if (m_Animator == null) m_Animator = GetComponentInChildren<Animator>();
             if (m_Animator != null)
             {
                 m_Animator.SetTrigger("SoulSummon");
+                netState?.BroadcastAnimTrigger("SoulSummon");
             }
 
             if (m_VfxController == null) m_VfxController = GetComponent<BongMaTuDiaVFXController>();
@@ -240,6 +273,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             {
                 Instantiate(soulSummonPulsePrefab, transform.position, Quaternion.identity);
             }
+            netState?.BroadcastVfx("SoulSummonPulse", transform.position);
 
             // 2. Làm chậm Tank
             TankSlowDebuff.Apply(targetTank, slowRatio, slowDuration);
@@ -277,6 +311,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
                 {
                     Debug.LogWarning($"[DeadlandPhantomClone] soulProjectilePrefab is unassigned and BongMaTuDiaVFXController is missing on '{gameObject.name}'. Cannot spawn soul projectile.");
                 }
+                netState?.BroadcastVfx("SoulProjectile", transform.position, 0f, dir, projectileSpeed, 0f);
             }
         }
 

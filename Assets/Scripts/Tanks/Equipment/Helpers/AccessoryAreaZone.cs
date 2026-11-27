@@ -36,6 +36,15 @@ namespace IronWasteland.Tanks.Equipment
 
         public static AccessoryAreaZone Spawn(Vector2 position, ZoneEffectType type, float zoneRadius, float zoneDuration, Color zoneColor)
         {
+            if (TankBrain.NetworkSessionActive)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager == null || !manager.IsServer) return null;
+
+                IronWasteland.Net.NetVisual.SpawnPrimitive(
+                    position, Vector2.zero, zoneRadius, zoneDuration, fade: true, sortingOrder: -1, color: zoneColor);
+            }
+
             GameObject go = new GameObject($"AccessoryZone_{type}");
             go.transform.position = position;
 

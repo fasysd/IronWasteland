@@ -13,10 +13,6 @@ namespace IronWasteland.Enemies.SeauBearus
     [DisallowMultipleComponent]
     public class BlackMoonRunner : EnemyBrain
     {
-        [Header("Di chuyển")]
-        [Tooltip("Tốc độ di chuyển về phía Boss (unit/giây).")]
-        [SerializeField, Min(0.1f)] private float moveSpeed = 2.2f;
-
         [Tooltip("Khoảng cách tới Boss được tính là đã chạm (m).")]
         [SerializeField, Min(0.05f)] private float reachDistance = 1.4f;
 
@@ -86,7 +82,7 @@ namespace IronWasteland.Enemies.SeauBearus
             }
 
             Vector2 direction = toBoss / Mathf.Max(0.0001f, distance);
-            float speed = moveSpeed * (1f - Mathf.Clamp01(m_SlowPercent));
+            float speed = (this.Stats.MoveSpeed / 100f) * (1f - Mathf.Clamp01(m_SlowPercent));
             Vector2 targetVelocity = direction * speed;
 
             if (terrainMask.value != 0)

@@ -86,12 +86,24 @@ namespace IronWasteland.Enemies
             }
         }
 
+        private IronWasteland.Net.EnemyNetState m_NetState;
+
+        private IronWasteland.Net.EnemyNetState NetState
+        {
+            get
+            {
+                if (m_NetState == null) m_NetState = GetComponentInParent<IronWasteland.Net.EnemyNetState>();
+                return m_NetState;
+            }
+        }
+
         /// <summary>Kich hoat animation nhan sat thuong (TakeDamage).</summary>
         public void PlayTakeDamage()
         {
             if (Animator != null)
             {
                 Animator.SetTrigger(HashTakeDamage);
+                NetState?.BroadcastAnimTrigger(HashTakeDamage);
             }
         }
 
@@ -102,6 +114,8 @@ namespace IronWasteland.Enemies
             {
                 Animator.SetTrigger(HashTakedDamage);
                 Animator.SetTrigger(HashTakedDamageAlt);
+                NetState?.BroadcastAnimTrigger(HashTakedDamage);
+                NetState?.BroadcastAnimTrigger(HashTakedDamageAlt);
             }
         }
 

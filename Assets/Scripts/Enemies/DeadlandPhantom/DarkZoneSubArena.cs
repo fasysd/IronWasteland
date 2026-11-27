@@ -87,7 +87,13 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             m_IsTankTrapped = true;
 
             // 1. Dịch chuyển Tank vào buồng tối
-            tank.transform.position = arenaCenter + tankSpawnOffset;
+            IronWasteland.Net.NetTeleport.Move(tank, arenaCenter + tankSpawnOffset);
+
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive && m_Boss != null)
+            {
+                m_Boss.GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                    "DarkZoneFloor", arenaCenter, 0f, default, arenaRadius, 0f);
+            }
 
             // 2. Spawn Bản sao tại vị trí chỉ định
             Vector2 clonePos = arenaCenter + cloneSpawnOffset;
@@ -98,6 +104,12 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             }
 
             GameObject cloneObj = Instantiate(clonePrefab, clonePos, Quaternion.identity);
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                cloneObj.TryGetComponent(out Unity.Netcode.NetworkObject cloneNetObj) && !cloneNetObj.IsSpawned)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager != null && manager.IsServer) cloneNetObj.Spawn(true);
+            }
             m_Clone = cloneObj.GetComponent<DeadlandPhantomClone>();
             if (m_Clone == null)
             {
@@ -145,7 +157,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
 
                 if (m_TrappedTank.IsAlive)
                 {
-                    m_TrappedTank.transform.position = m_SavedTankPosition;
+                    IronWasteland.Net.NetTeleport.Move(m_TrappedTank, m_SavedTankPosition);
                 }
             }
 
@@ -162,9 +174,21 @@ namespace IronWasteland.Enemies.DeadlandPhantom
 
             ReleaseTank();
 
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive && m_Boss != null)
+            {
+                m_Boss.GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                    "DarkZoneCleanup", arenaCenter);
+            }
+
             if (m_Clone != null)
             {
-                if (Application.isPlaying) Destroy(m_Clone.gameObject);
+                if (IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                    m_Clone.TryGetComponent(out Unity.Netcode.NetworkObject cloneNetObj) && cloneNetObj.IsSpawned)
+                {
+                    var manager = Unity.Netcode.NetworkManager.Singleton;
+                    if (manager != null && manager.IsServer) cloneNetObj.Despawn(true);
+                }
+                else if (Application.isPlaying) Destroy(m_Clone.gameObject);
                 else DestroyImmediate(m_Clone.gameObject);
                 m_Clone = null;
             }

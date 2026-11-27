@@ -145,6 +145,7 @@ namespace IronWasteland.Net
             }
 
             networkManager.NetworkConfig.TickRate = TickRate;
+            networkManager.NetworkConfig.EnableSceneManagement = false;
             // Bắt buộc bật cờ này thì NGO mới gọi ConnectionApprovalCallback.
             // Thiếu nó, loadout client gửi qua ConnectionData bị bỏ qua và mọi người vào phòng
             // đều nhận xe mặc định (TankIndex 0, Level 1), đồng thời không chặn được payload sai.

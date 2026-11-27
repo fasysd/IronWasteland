@@ -260,8 +260,25 @@ namespace IronWasteland.Enemies.D1onk
                 float radius = m_IsSolo ? whiteSpawnRadiusSolo : whiteSpawnRadiusCoop;
                 Vector2 spawnPos = center + new Vector2(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius);
 
-                GameObject go = Instantiate(tinhLinhSamSetPrefab, spawnPos, Quaternion.identity);
-                EnemyBrain minion = go.GetComponent<EnemyBrain>();
+                EnemyBrain minion = null;
+                if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+                {
+                    var manager = Unity.Netcode.NetworkManager.Singleton;
+                    if (manager == null || !manager.IsServer) continue;
+
+                    if (tinhLinhSamSetPrefab.TryGetComponent(out EnemyBrain enemyPrefab) &&
+                        IronWasteland.Net.NetSpawnService.Instance != null)
+                    {
+                        minion = IronWasteland.Net.NetSpawnService.Instance.SpawnEnemy(
+                            enemyPrefab, spawnPos, enemyPrefab.Stats);
+                    }
+                }
+                else
+                {
+                    GameObject go = Instantiate(tinhLinhSamSetPrefab, spawnPos, Quaternion.identity);
+                    minion = go.GetComponent<EnemyBrain>();
+                }
+
                 if (minion != null)
                 {
                     m_WhiteMinions.Add(minion);
@@ -329,10 +346,16 @@ namespace IronWasteland.Enemies.D1onk
             m_RedReceiverPos = center + new Vector2(spread, 0f);
 
             CleanupRedVisuals();
-            GameObject tx = Instantiate(electricTransmitterPrefab, m_RedTransmitterPos, Quaternion.identity, transform);
+            bool isNetServer = IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                Unity.Netcode.NetworkManager.Singleton != null &&
+                Unity.Netcode.NetworkManager.Singleton.IsServer;
+
+            GameObject tx = Instantiate(electricTransmitterPrefab, m_RedTransmitterPos, Quaternion.identity, isNetServer ? null : transform);
+            if (isNetServer && tx.TryGetComponent(out Unity.Netcode.NetworkObject txNet) && !txNet.IsSpawned) txNet.Spawn(true);
             m_RedObjects.Add(tx);
 
-            GameObject rx = Instantiate(electricReceiverPrefab, m_RedReceiverPos, Quaternion.identity, transform);
+            GameObject rx = Instantiate(electricReceiverPrefab, m_RedReceiverPos, Quaternion.identity, isNetServer ? null : transform);
+            if (isNetServer && rx.TryGetComponent(out Unity.Netcode.NetworkObject rxNet) && !rxNet.IsSpawned) rxNet.Spawn(true);
             m_RedObjects.Add(rx);
 
             // Bổ sung tia điện kết nối giữa cột phát và cột thu

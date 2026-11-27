@@ -214,7 +214,13 @@ namespace IronWasteland.Enemies.ElementalReaper
             {
                 altar.trappedTank = tank;
                 altar.savedTankPosition = tank.transform.position;
-                tank.transform.position = altar.center + tankSpawnOffset;
+                IronWasteland.Net.NetTeleport.Move(tank, altar.center + tankSpawnOffset);
+            }
+
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive && m_Boss != null)
+            {
+                m_Boss.GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                    "AltarFloor", altar.center, 0f, default, altarRadius, (int)altar.element);
             }
 
             // 3. Sinh Bản sao
@@ -222,6 +228,12 @@ namespace IronWasteland.Enemies.ElementalReaper
             if (clonePrefab != null)
             {
                 GameObject cloneGo = Instantiate(clonePrefab, clonePos, Quaternion.identity);
+                if (IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                    cloneGo.TryGetComponent(out Unity.Netcode.NetworkObject cloneNetObj) && !cloneNetObj.IsSpawned)
+                {
+                    var manager = Unity.Netcode.NetworkManager.Singleton;
+                    if (manager != null && manager.IsServer) cloneNetObj.Spawn(true);
+                }
                 altar.clone = cloneGo.GetComponent<ElementalReaperClone>();
                 if (altar.clone != null)
                 {
@@ -260,7 +272,7 @@ namespace IronWasteland.Enemies.ElementalReaper
             // Giải phóng Tank của tế đàn này về sân chính
             if (altar.trappedTank != null && altar.trappedTank.IsAlive)
             {
-                altar.trappedTank.transform.position = altar.savedTankPosition;
+                IronWasteland.Net.NetTeleport.Move(altar.trappedTank, altar.savedTankPosition);
                 altar.trappedTank = null;
             }
         }
@@ -353,6 +365,12 @@ namespace IronWasteland.Enemies.ElementalReaper
         private void SpawnSingleCrystal(Vector2 position, CrystalShape shape, ElementalType element, ElementalReaperClone targetClone)
         {
             GameObject crystalGo = Instantiate(crystalPrefab, position, Quaternion.identity);
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                crystalGo.TryGetComponent(out Unity.Netcode.NetworkObject crystalNetObj) && !crystalNetObj.IsSpawned)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager != null && manager.IsServer) crystalNetObj.Spawn(true);
+            }
             ElementalCrystal crystal = crystalGo.GetComponent<ElementalCrystal>();
             if (crystal != null)
             {
@@ -400,6 +418,20 @@ namespace IronWasteland.Enemies.ElementalReaper
             return count;
         }
 
+        private static void DestroyOrDespawn(GameObject go)
+        {
+            if (go == null) return;
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                go.TryGetComponent(out Unity.Netcode.NetworkObject netObj) && netObj.IsSpawned)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager != null && manager.IsServer) netObj.Despawn(true);
+                return;
+            }
+            if (Application.isPlaying) Destroy(go);
+            else DestroyImmediate(go);
+        }
+
         /// <summary>
         /// Dọn dẹp Sub-Arena: hoàn trả toàn bộ Tank còn lại về sân chính và xóa các đối tượng sinh ra.
         /// </summary>
@@ -413,14 +445,13 @@ namespace IronWasteland.Enemies.ElementalReaper
                 ElementalAltarData altar = m_AllAltars[i];
                 if (altar.trappedTank != null)
                 {
-                    altar.trappedTank.transform.position = altar.savedTankPosition;
+                    IronWasteland.Net.NetTeleport.Move(altar.trappedTank, altar.savedTankPosition);
                     altar.trappedTank = null;
                 }
 
                 if (altar.clone != null)
                 {
-                    if (Application.isPlaying) Destroy(altar.clone.gameObject);
-                    else DestroyImmediate(altar.clone.gameObject);
+                    DestroyOrDespawn(altar.clone.gameObject);
                     altar.clone = null;
                 }
 
@@ -438,13 +469,14 @@ namespace IronWasteland.Enemies.ElementalReaper
             // 2. Dọn dẹp tinh thể
             for (int i = 0; i < m_ActiveCrystals.Count; i++)
             {
-                if (m_ActiveCrystals[i] != null)
-                {
-                    if (Application.isPlaying) Destroy(m_ActiveCrystals[i].gameObject);
-                    else DestroyImmediate(m_ActiveCrystals[i].gameObject);
-                }
+                if (m_ActiveCrystals[i] != null) DestroyOrDespawn(m_ActiveCrystals[i].gameObject);
             }
             m_ActiveCrystals.Clear();
+
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive && m_Boss != null)
+            {
+                m_Boss.GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx("AltarCleanup", Vector2.zero);
+            }
         }
 
         private void OnDestroy()

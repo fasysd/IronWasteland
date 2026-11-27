@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7030698593428381277}
   - component: {fileID: 7007937847331800438}
   - component: {fileID: 6890865115284928783}
+  - component: {fileID: 3624205058026604798}
   m_Layer: 0
   m_Name: The2FaceLightPoint
   m_TagString: Untagged
@@ -146,3 +147,30 @@ MonoBehaviour:
   litColor: {r: 1, g: 0.83, b: 0.25, a: 1}
   unlitColor: {r: 0.34, g: 0.38, b: 0.5, a: 0.9}
   pulseSpeed: 2.2
+--- !u!114 &3624205058026604798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6832236212718609908}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 0
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  m_InScenePlacedDisabledByDefault: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  m_InScenePlaced: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0

@@ -116,12 +116,7 @@ namespace IronWasteland.Enemies.ElementalReaper.Hitboxes
 
             if (tank != null)
             {
-                if (rb != null)
-                {
-                    rb.linearVelocity = Vector2.zero;
-                    rb.position = targetPos;
-                }
-                tank.transform.position = targetPos;
+                IronWasteland.Net.NetTeleport.Move(tank, targetPos);
             }
         }
 

@@ -123,6 +123,12 @@ namespace IronWasteland.Enemies.DeadlandPhantom
 
         private void Update()
         {
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager == null || !manager.IsServer) return;
+            }
+
             if (m_Triggered || m_IsDestroyed) return;
 
             float dt = Time.deltaTime;
@@ -169,6 +175,12 @@ namespace IronWasteland.Enemies.DeadlandPhantom
 
         private void HandleTriggerEnter(Collider2D other)
         {
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager == null || !manager.IsServer) return;
+            }
+
             if (m_Triggered || m_IsDestroyed || other == null) return;
             TankBrain tank = ResolveTank(other);
             if (tank != null && tank.IsAlive)
@@ -196,7 +208,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             // 1. Dịch chuyển Tank tới vị trí của Boss
             if (m_Boss != null && m_Boss.gameObject != null)
             {
-                tank.transform.position = m_Boss.transform.position;
+                IronWasteland.Net.NetTeleport.Move(tank, m_Boss.transform.position);
             }
 
             // 2. Gây 100% ATK sát thương lên Tank
@@ -241,6 +253,20 @@ namespace IronWasteland.Enemies.DeadlandPhantom
                 return null;
             }
 
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager == null || !manager.IsServer) return null;
+
+                if (prefab.TryGetComponent(out EnemyBrain enemyPrefab) &&
+                    IronWasteland.Net.NetSpawnService.Instance != null)
+                {
+                    EnemyBrain spawned = IronWasteland.Net.NetSpawnService.Instance.SpawnEnemy(
+                        enemyPrefab, transform.position, enemyPrefab.Stats);
+                    return spawned != null ? spawned.gameObject : null;
+                }
+            }
+
             return Instantiate(prefab, transform.position, Quaternion.identity);
         }
 
@@ -250,6 +276,17 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             m_IsDestroyed = true;
 
             OnRiftDestroyed?.Invoke(this);
+
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                TryGetComponent(out Unity.Netcode.NetworkObject netObj) && netObj.IsSpawned)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager != null && manager.IsServer)
+                {
+                    netObj.Despawn(true);
+                }
+                return;
+            }
 
             if (Application.isPlaying)
             {

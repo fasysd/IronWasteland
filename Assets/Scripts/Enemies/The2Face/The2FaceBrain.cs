@@ -15,7 +15,7 @@ namespace IronWasteland.Enemies.The2Face
     /// - Bộ kỹ năng TuNhiet / CamLang / HutVaDa.
     /// - Bùng nổ tạo các Điểm Sáng, mở khóa kỹ năng Tank theo số đèn đang bật.
     /// </summary>
-    public class The2FaceBrain : EliteEnemyBrain
+    public class The2FaceBrain : EliteEnemyBrain, IronWasteland.Net.INetVfxReceiver
     {
         private const string ShieldEffectId = "The2Face_Shield";
         private const string RewardAttackKey = "The2Face_Reward_Atk";
@@ -197,6 +197,7 @@ namespace IronWasteland.Enemies.The2Face
         private float m_HutVaDaTimer;
         private DamageInterceptEffect m_ShieldEffect;
         private float m_ShieldFlashUntil;
+        private bool m_SentShieldVisualActive;
         private Vector3 m_ShieldBaseScale = Vector3.one;
 
         private readonly List<TankBrain> m_LockedTanks = new List<TankBrain>();
@@ -419,6 +420,12 @@ namespace IronWasteland.Enemies.The2Face
             {
                 bool active = (m_ShieldEffect != null && !m_ShieldEffect.IsExpired) || Time.time < m_ShieldFlashUntil;
                 SetVisualActive(shieldVisual, active);
+                if (active != m_SentShieldVisualActive)
+                {
+                    m_SentShieldVisualActive = active;
+                    GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                        "The2FaceShield", transform.position, value: active ? 1f : 0f);
+                }
 
                 if (active)
                 {
@@ -537,9 +544,30 @@ namespace IronWasteland.Enemies.The2Face
                     sadDefenseReduction,
                     sadDuration,
                     angerEnergyDrainRatio);
+                GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                    "VortexZone", targetPosition, 0f, default, vortexDuration, (int)mode);
             }
 
             Debug.Log($"[The2Face] TuNhiet ({mode}): tạo vùng xoáy tại {targetPosition}. Sát thương: {(damageRatio * 100f):0}% ATK/s.");
+        }
+
+        public void OnClientNetVfx(string key, Vector2 position, float rotationZ, Vector2 dir, float duration, float value)
+        {
+            if (key == "VortexZone" && vortexPrefab != null)
+            {
+                GameObject instance = Instantiate(vortexPrefab, position, Quaternion.identity);
+                The2FaceVortexZone zone = instance.GetComponent<The2FaceVortexZone>();
+                zone?.Initialize(
+                    null,
+                    (The2FaceVortexMode)(int)value,
+                    vortexRadius,
+                    duration > 0f ? duration : vortexDuration,
+                    0f, 0f, 0f, 0f, 0f, 0f);
+            }
+            else if (key == "The2FaceShield")
+            {
+                SetVisualActive(shieldVisual, value > 0.5f);
+            }
         }
 
         private void CastCamLang()
@@ -590,7 +618,11 @@ namespace IronWasteland.Enemies.The2Face
 
                     Vector2 current = tank.transform.position;
                     Vector2 next = Vector2.MoveTowards(current, destination, pullSpeed * Time.deltaTime);
-                    if (bodies[i] != null)
+                    if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+                    {
+                        IronWasteland.Net.NetTeleport.Move(tank, next);
+                    }
+                    else if (bodies[i] != null)
                     {
                         bodies[i].MovePosition(next);
                     }
@@ -615,6 +647,12 @@ namespace IronWasteland.Enemies.The2Face
                 Vector2 spawnPosition = (Vector2)transform.position + direction * rockSpawnRadius;
 
                 GameObject instance = Instantiate(rockPrefab, spawnPosition, Quaternion.identity);
+                if (IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                    instance.TryGetComponent(out Unity.Netcode.NetworkObject rockNetObj) && !rockNetObj.IsSpawned)
+                {
+                    var manager = Unity.Netcode.NetworkManager.Singleton;
+                    if (manager != null && manager.IsServer) rockNetObj.Spawn(true);
+                }
                 The2FaceRock rock = instance.GetComponent<The2FaceRock>();
                 rock?.Initialize(this, transform.position, Stats.Attack * rockDamageRatio, rockStunDuration, rockSpeed);
             }
@@ -769,6 +807,12 @@ namespace IronWasteland.Enemies.The2Face
                 float angle = Mathf.PI * 2f * i / count;
                 Vector2 position = m_ArenaCenter + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * lightPointSpawnRadius;
                 GameObject instance = Instantiate(lightPointPrefab, position, Quaternion.identity);
+                if (IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                    instance.TryGetComponent(out Unity.Netcode.NetworkObject lpNetObj) && !lpNetObj.IsSpawned)
+                {
+                    var manager = Unity.Netcode.NetworkManager.Singleton;
+                    if (manager != null && manager.IsServer) lpNetObj.Spawn(true);
+                }
                 The2FaceLightPoint point = instance.GetComponent<The2FaceLightPoint>();
                 if (point == null)
                 {
@@ -781,6 +825,33 @@ namespace IronWasteland.Enemies.The2Face
             }
         }
 
+        private GameObject SpawnNetworkOrLocalMinion(GameObject prefab, Vector2 position)
+        {
+            if (prefab == null) return null;
+
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager == null || !manager.IsServer) return null;
+
+                if (prefab.TryGetComponent(out EnemyBrain enemyPrefab) &&
+                    IronWasteland.Net.NetSpawnService.Instance != null)
+                {
+                    EnemyBrain spawned = IronWasteland.Net.NetSpawnService.Instance.SpawnEnemy(
+                        enemyPrefab, position, enemyPrefab.Stats);
+                    return spawned != null ? spawned.gameObject : null;
+                }
+            }
+
+            GameObject instance = Instantiate(prefab, position, Quaternion.identity);
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                instance.TryGetComponent(out Unity.Netcode.NetworkObject netObj) && !netObj.IsSpawned)
+            {
+                netObj.Spawn(true);
+            }
+            return instance;
+        }
+
         private void SpawnCrawlers()
         {
             ClearCrawlers();
@@ -791,8 +862,8 @@ namespace IronWasteland.Enemies.The2Face
             {
                 float angle = Mathf.PI * 2f * i / Mathf.Max(1, count);
                 Vector2 position = m_ArenaCenter + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * crawlerSpawnRadius;
-                GameObject instance = Instantiate(swampCrawlerPrefab, position, Quaternion.identity);
-                m_Crawlers.Add(instance);
+                GameObject instance = SpawnNetworkOrLocalMinion(swampCrawlerPrefab, position);
+                if (instance != null) m_Crawlers.Add(instance);
             }
         }
 
@@ -806,8 +877,8 @@ namespace IronWasteland.Enemies.The2Face
             {
                 float angle = Mathf.PI * 2f * i / Mathf.Max(1, count) + Mathf.PI * 0.25f;
                 Vector2 position = m_ArenaCenter + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * lightningSpawnRadius;
-                GameObject instance = Instantiate(lightningMinionPrefab, position, Quaternion.identity);
-                m_LightningMinions.Add(instance);
+                GameObject instance = SpawnNetworkOrLocalMinion(lightningMinionPrefab, position);
+                if (instance != null) m_LightningMinions.Add(instance);
             }
         }
 

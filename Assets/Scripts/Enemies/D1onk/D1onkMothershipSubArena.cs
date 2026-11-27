@@ -180,7 +180,21 @@ namespace IronWasteland.Enemies.D1onk
                 return;
             }
 
-            GameObject heartObj = Instantiate(heartPrefab, arenaCenter, Quaternion.identity, transform);
+            bool isNetServer = IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                Unity.Netcode.NetworkManager.Singleton != null &&
+                Unity.Netcode.NetworkManager.Singleton.IsServer;
+
+            if (isNetServer && m_Boss != null)
+            {
+                m_Boss.GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                    "MothershipFloor", arenaCenter, 0f, default, arenaRadius, 0f);
+            }
+
+            GameObject heartObj = Instantiate(heartPrefab, arenaCenter, Quaternion.identity, isNetServer ? null : transform);
+            if (isNetServer && heartObj.TryGetComponent(out Unity.Netcode.NetworkObject heartNetObj) && !heartNetObj.IsSpawned)
+            {
+                heartNetObj.Spawn(true);
+            }
             m_Heart = heartObj.GetComponent<D1onkHeart>();
             if (m_Heart != null)
             {
@@ -226,7 +240,15 @@ namespace IronWasteland.Enemies.D1onk
                     continue;
                 }
 
-                GameObject pillarObj = Instantiate(cfg.prefab, spawnPos, Quaternion.identity, transform);
+                bool isNetServer = IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                    Unity.Netcode.NetworkManager.Singleton != null &&
+                    Unity.Netcode.NetworkManager.Singleton.IsServer;
+
+                GameObject pillarObj = Instantiate(cfg.prefab, spawnPos, Quaternion.identity, isNetServer ? null : transform);
+                if (isNetServer && pillarObj.TryGetComponent(out Unity.Netcode.NetworkObject pillarNetObj) && !pillarNetObj.IsSpawned)
+                {
+                    pillarNetObj.Spawn(true);
+                }
                 D1onkEnergyPillar pillar = pillarObj.GetComponent<D1onkEnergyPillar>();
                 if (pillar != null)
                 {
@@ -258,7 +280,7 @@ namespace IronWasteland.Enemies.D1onk
             int idx = m_TrappedTanks.IndexOf(tank);
             float xOffset = (idx % 2 == 0) ? -tankTrappedSpacing.x : tankTrappedSpacing.x;
             float yOffset = tankTrappedBaseYOffset - (idx / 2) * tankTrappedSpacing.y;
-            tank.transform.position = arenaCenter + new Vector2(xOffset, yOffset);
+            IronWasteland.Net.NetTeleport.Move(tank, arenaCenter + new Vector2(xOffset, yOffset));
         }
 
         public void OnPillarDestroyed(D1onkEnergyPillar pillar)
@@ -316,7 +338,7 @@ namespace IronWasteland.Enemies.D1onk
                     float maxR = Mathf.Max(1f, arenaRadius - boundaryMargin);
                     if (offset.sqrMagnitude > maxR * maxR)
                     {
-                        t.transform.position = arenaCenter + offset.normalized * maxR;
+                        IronWasteland.Net.NetTeleport.Move(t, arenaCenter + offset.normalized * maxR);
                     }
                 }
             }
@@ -349,8 +371,24 @@ namespace IronWasteland.Enemies.D1onk
             GameObject prefab = normalEnemyPrefabs[rndIdx];
             if (prefab != null)
             {
-                GameObject go = Instantiate(prefab, spawnPos, Quaternion.identity, transform);
-                EnemyBrain monster = go.GetComponent<EnemyBrain>();
+                EnemyBrain monster = null;
+                if (IronWasteland.Tanks.TankBrain.NetworkSessionActive)
+                {
+                    var manager = Unity.Netcode.NetworkManager.Singleton;
+                    if (manager != null && manager.IsServer &&
+                        prefab.TryGetComponent(out EnemyBrain enemyPrefab) &&
+                        IronWasteland.Net.NetSpawnService.Instance != null)
+                    {
+                        monster = IronWasteland.Net.NetSpawnService.Instance.SpawnEnemy(
+                            enemyPrefab, spawnPos, enemyPrefab.Stats);
+                    }
+                }
+                else
+                {
+                    GameObject go = Instantiate(prefab, spawnPos, Quaternion.identity, transform);
+                    monster = go.GetComponent<EnemyBrain>();
+                }
+
                 if (monster != null)
                 {
                     m_SpawnedMinionsInside.Add(monster);
@@ -368,16 +406,36 @@ namespace IronWasteland.Enemies.D1onk
                 TankBrain tank = m_TrappedTanks[i];
                 if (tank != null && m_SavedTankPositions.TryGetValue(tank, out var pos))
                 {
-                    tank.transform.position = pos;
+                    IronWasteland.Net.NetTeleport.Move(tank, pos);
                 }
             }
             m_TrappedTanks.Clear();
             m_SavedTankPositions.Clear();
         }
 
+        private static void DestroyOrDespawn(GameObject go)
+        {
+            if (go == null) return;
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive &&
+                go.TryGetComponent(out Unity.Netcode.NetworkObject netObj) && netObj.IsSpawned)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager != null && manager.IsServer) netObj.Despawn(true);
+                return;
+            }
+            if (Application.isPlaying) Destroy(go);
+            else DestroyImmediate(go);
+        }
+
         public void CleanupArena()
         {
             m_IsArenaActive = false;
+
+            if (IronWasteland.Tanks.TankBrain.NetworkSessionActive && m_Boss != null)
+            {
+                m_Boss.GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                    "MothershipCleanup", arenaCenter);
+            }
 
             if (m_CoopChallenges != null)
             {
@@ -388,28 +446,19 @@ namespace IronWasteland.Enemies.D1onk
 
             for (int i = 0; i < m_Pillars.Count; i++)
             {
-                if (m_Pillars[i] != null)
-                {
-                    if (Application.isPlaying) Destroy(m_Pillars[i].gameObject);
-                    else DestroyImmediate(m_Pillars[i].gameObject);
-                }
+                if (m_Pillars[i] != null) DestroyOrDespawn(m_Pillars[i].gameObject);
             }
             m_Pillars.Clear();
 
             for (int i = 0; i < m_SpawnedMinionsInside.Count; i++)
             {
-                if (m_SpawnedMinionsInside[i] != null)
-                {
-                    if (Application.isPlaying) Destroy(m_SpawnedMinionsInside[i].gameObject);
-                    else DestroyImmediate(m_SpawnedMinionsInside[i].gameObject);
-                }
+                if (m_SpawnedMinionsInside[i] != null) DestroyOrDespawn(m_SpawnedMinionsInside[i].gameObject);
             }
             m_SpawnedMinionsInside.Clear();
 
             if (m_Heart != null)
             {
-                if (Application.isPlaying) Destroy(m_Heart.gameObject);
-                else DestroyImmediate(m_Heart.gameObject);
+                DestroyOrDespawn(m_Heart.gameObject);
                 m_Heart = null;
             }
 

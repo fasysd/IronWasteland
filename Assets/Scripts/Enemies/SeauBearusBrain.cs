@@ -23,7 +23,7 @@ namespace IronWasteland.Enemies
     ///   mỗi 0.5s và triệu hồi Mặt Trăng Đen mỗi 10s.
     /// </summary>
     [DisallowMultipleComponent]
-    public class SeauBearusBrain : EliteEnemyBrain
+    public class SeauBearusBrain : EliteEnemyBrain, IronWasteland.Net.INetVfxReceiver
     {
         private const string RewardAttackKey = "SeauReward_AtkBuff";
 
@@ -591,6 +591,8 @@ namespace IronWasteland.Enemies
             }
 
             m_FireConeRoutine = StartCoroutine(FireConeRoutine(forward));
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                "FireCone", transform.position, 0f, forward);
         }
 
         private IEnumerator FireConeRoutine(Vector2 forward)
@@ -776,6 +778,8 @@ namespace IronWasteland.Enemies
             {
                 spikeShieldVisual.gameObject.SetActive(true);
             }
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                "SpikeShield", transform.position, value: 1f);
 
             Debug.Log("[SeauBearus] bật Khiên Gai: +" + (spikeDefenseBonus * 100f).ToString("0") + "% DEF, phản " + (spikeReflectRatio * 100f).ToString("0") + "% ATK");
         }
@@ -794,6 +798,8 @@ namespace IronWasteland.Enemies
             {
                 spikeShieldVisual.gameObject.SetActive(false);
             }
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                "SpikeShield", transform.position, value: 0f);
         }
 
         private void ReflectSpikeDamage(DamageInfo info)
@@ -920,6 +926,8 @@ namespace IronWasteland.Enemies
             SetShieldVisualActive(redShieldVisual, m_RedShieldActive);
             SetShieldVisualActive(blueShieldVisual, m_BlueShieldActive);
             UpdateShieldVisuals();
+            BroadcastBurstShieldsState();
+            SpawnMoon();
 
             if (blackMoonRunnerPrefab == null)
             {
@@ -939,6 +947,7 @@ namespace IronWasteland.Enemies
                     m_BlueShieldActive = false;
                     SetShieldVisualActive(blueShieldVisual, false);
                     UpdateShieldVisuals();
+                    BroadcastBurstShieldsState();
                     TryCompleteBurst();
                     if (!IsBurstActive) return;
                 }
@@ -1097,6 +1106,16 @@ namespace IronWasteland.Enemies
 
             SetShieldVisualActive(redShieldVisual, false);
             SetShieldVisualActive(blueShieldVisual, false);
+            BroadcastBurstShieldsState();
+        }
+
+        private void BroadcastBurstShieldsState()
+        {
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                "BurstShields",
+                transform.position,
+                duration: m_RedShieldActive ? 1f : 0f,
+                value: m_BlueShieldActive ? 1f : 0f);
         }
 
         private void UpdateShieldVisuals()
@@ -1130,6 +1149,7 @@ namespace IronWasteland.Enemies
             SetShieldVisualActive(redShieldVisual, false);
             SetShieldVisualActive(blueShieldVisual, false);
             SetShieldVisualActive(spikeShieldVisual, false);
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx("HideAllShields", transform.position);
         }
 
         public override void TakeDamage(DamageInfo info)
@@ -1213,6 +1233,7 @@ namespace IronWasteland.Enemies
             {
                 m_RedShieldActive = false;
                 SetShieldVisualActive(redShieldVisual, false);
+                BroadcastBurstShieldsState();
                 TryCompleteBurst();
             }
             else
@@ -1252,6 +1273,9 @@ namespace IronWasteland.Enemies
                 if (renderer == null) continue;
                 renderer.color = new Color(1f, 0.55f, 0.12f, renderer.color.a);
             }
+
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                "SparkProjectile", origin, 0f, direction, sparkSpeed, 0f);
         }
 
         private void SpawnMoon()
@@ -1263,8 +1287,68 @@ namespace IronWasteland.Enemies
             Vector2 spawnPosition = m_BurstCenter + moonSpawnOffset;
             BlackMoonRunner runner = Instantiate(blackMoonRunnerPrefab, spawnPosition, Quaternion.identity);
             runner.name = "BlackMoonRunner";
+            if (TankBrain.NetworkSessionActive &&
+                runner.TryGetComponent(out Unity.Netcode.NetworkObject moonNetObj) && !moonNetObj.IsSpawned)
+            {
+                var manager = Unity.Netcode.NetworkManager.Singleton;
+                if (manager != null && manager.IsServer) moonNetObj.Spawn(true);
+            }
             runner.InitializeRunner(this, moonLifetime);
             m_ActiveMoons.Add(runner);
+        }
+
+        public void OnClientNetVfx(string key, Vector2 position, float rotationZ, Vector2 dir, float duration, float value)
+        {
+            if (key == "SparkProjectile" && sparkProjectilePrefab != null)
+            {
+                DeadlandSoulProjectile projectile = Instantiate(sparkProjectilePrefab, position, Quaternion.identity);
+                projectile.Initialize(null, dir, duration > 0f ? duration : sparkSpeed, 0f, null);
+                SpriteRenderer[] renderers = projectile.GetComponentsInChildren<SpriteRenderer>();
+                for (int i = 0; i < renderers.Length; i++)
+                {
+                    if (renderers[i] != null)
+                        renderers[i].color = new Color(1f, 0.55f, 0.12f, renderers[i].color.a);
+                }
+            }
+            else if (key == "BlackMoonRunner" && blackMoonRunnerPrefab != null)
+            {
+                BlackMoonRunner runner = Instantiate(blackMoonRunnerPrefab, position, Quaternion.identity);
+                runner.name = "BlackMoonRunner";
+                runner.InitializeRunner(this, duration > 0f ? duration : moonLifetime);
+            }
+            else if (key == "FireCone" && fireConeVisual != null)
+            {
+                if (m_FireConeRoutine != null)
+                {
+                    StopCoroutine(m_FireConeRoutine);
+                    m_FireConeRoutine = null;
+                }
+                m_FireConeRoutine = StartCoroutine(FireConeRoutine(dir));
+            }
+            else if (key == "SpikeShield")
+            {
+                bool active = value > 0.5f;
+                SetShieldVisualActive(spikeShieldVisual, active);
+                if (active && spikeShieldVisual != null)
+                {
+                    spikeShieldVisual.color = SpikeShieldColor;
+                }
+            }
+            else if (key == "BurstShields")
+            {
+                bool redActive = duration > 0.5f;
+                bool blueActive = value > 0.5f;
+                SetShieldVisualActive(redShieldVisual, redActive);
+                SetShieldVisualActive(blueShieldVisual, blueActive);
+                if (redActive && redShieldVisual != null) redShieldVisual.color = RedShieldColor;
+                if (blueActive && blueShieldVisual != null) blueShieldVisual.color = BlueShieldColor;
+            }
+            else if (key == "HideAllShields")
+            {
+                SetShieldVisualActive(redShieldVisual, false);
+                SetShieldVisualActive(blueShieldVisual, false);
+                SetShieldVisualActive(spikeShieldVisual, false);
+            }
         }
 
         public void OnBlackMoonReached(BlackMoonRunner runner)

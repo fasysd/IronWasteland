@@ -380,6 +380,8 @@ GameObject:
   - component: {fileID: 4382231180120962163}
   - component: {fileID: 4556977129910709487}
   - component: {fileID: 3937118122432078874}
+  - component: {fileID: 759285694885550852}
+  - component: {fileID: 1809748227535492101}
   m_Layer: 7
   m_Name: SEAUBEARUS
   m_TagString: Untagged
@@ -466,7 +468,7 @@ MonoBehaviour:
   spikeReflectRatio: 0.25
   lifestealInterval: 10
   lifestealPercent: 0.1
-  stopDistance: 1.5
+  stopDistance: 7
   turnSharpness: 14
   moveSpeedDivisor: 100
   rotationOffset: 90
@@ -476,12 +478,12 @@ MonoBehaviour:
   redShieldVisual: {fileID: 7010000000000000013}
   blueShieldVisual: {fileID: 7020000000000000013}
   spikeShieldVisual: {fileID: 7030000000000000013}
-  sparkProjectilePrefab: {fileID: 3270993308417055693, guid: 8447bb1bc6335bc45b7299ef48206cb8, type: 3}
+  sparkProjectilePrefab: {fileID: 3270993308417055693, guid: 97ffdba0cbdd81a419ae738b832eb710, type: 3}
   sparkInterval: 0.5
   sparkDamageRatio: 0.25
   sparkSpeed: 11
   blackMoonRunnerPrefab: {fileID: 8420907976510360087, guid: ac22ce1764d6a0de4d84b7f7dacae67a, type: 3}
-  moonSpawnOffset: {x: -14, y: 0}
+  moonSpawnOffset: {x: -15, y: 0}
   moonSpawnInterval: 10
   moonLifetime: 10
   rewardDefenseMultiplier: 0.1
@@ -530,21 +532,80 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2135058714
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  GlobalObjectIdHash: 2039872638
+  InScenePlacedSourceGlobalObjectIdHash: 2135058714
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
-  m_InScenePlaced: 0
+  m_InScenePlaced: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!114 &759285694885550852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2997488555990479441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkTransform
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AutoOwnerAuthorityTickOffset: 1
+  PositionInterpolationType: 0
+  RotationInterpolationType: 0
+  ScaleInterpolationType: 0
+  PositionLerpSmoothing: 1
+  PositionMaxInterpolationTime: 0.1
+  RotationLerpSmoothing: 1
+  RotationMaxInterpolationTime: 0.1
+  ScaleLerpSmoothing: 1
+  ScaleMaxInterpolationTime: 0.1
+  AuthorityMode: 0
+  TickSyncChildren: 0
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 0
+--- !u!114 &1809748227535492101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2997488555990479441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f9d0284542bf5d469d7c9d7b9bd0d3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.EnemyNetState
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &3193148996931209423
 GameObject:
   m_ObjectHideFlags: 0
@@ -1354,7 +1415,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
