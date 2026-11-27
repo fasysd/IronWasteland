@@ -14,14 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.StageDefinition
   stageCode: 1-1
   stageName: "S\u01B0\u01A1ng M\xF9 T\xEDm"
-  killTarget: 40
-  timeLimitSeconds: 900
-  objectives:
-  - Type: 0
-    Count: 40
-    Duration: 0
-    Distance: 0
-    TargetId: 
+  winConditionDescription: "Ti\xeau di\u1ec7t 40 qu\xe1i"
   rewardGems: 20
   rewardAccessoryCount: 1
   guaranteeAccessories: 0

@@ -1,86 +1,52 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace IronWasteland.Stages
 {
     /// <summary>
-    /// Du lieu cua 1 man choi (1 ai): dieu kien thang, thoi luong du kien va phan thuong.
+    /// Thông tin metadata của 1 màn chơi (1 ải): mã ải, tên, mô tả điều kiện thắng và phần thưởng.
     ///
-    /// Thiet ke cac dot quai (wave) KHONG con nam o day: tu 2026-11, wave thuoc ve
-    /// component <see cref="EnemySpawner"/> trong scene cua man do. Ly do: wave la
-    /// thu designer chinh lien tuc khi can bang man, de chung voi vung spawn (SpawnZone)
-    /// tren cung 1 component thi sua nhanh hon la mo asset roi doi chieu scene.
+    /// Thiết kế các đợt quái (wave) nằm trên <see cref="EnemySpawner"/>, còn điều kiện thắng
+    /// (<see cref="StageObjectiveSpec"/>, killTarget, timeLimitSeconds) nằm trên
+    /// <see cref="StageDirector"/> ngay trong scene của màn đó.
     ///
-    /// Designer tao asset tu menu chuot phai: Create > Iron Wasteland > Stage > Stage Definition.
-    /// Logic chay nam o <see cref="StageDirector"/> - asset nay chi la du lieu.
+    /// Designer tạo asset từ menu chuột phải: Create > Iron Wasteland > Stage > Stage Definition.
     /// </summary>
     [CreateAssetMenu(fileName = "Stage_New", menuName = "Iron Wasteland/Stage/Stage Definition")]
     public class StageDefinition : ScriptableObject
     {
-        /// <summary>
-        /// Mo ta 1 dieu kien thang. Nhieu spec tren cung 1 man = phai thoa TAT CA.
-        /// </summary>
-        [Serializable]
-        public class ObjectiveSpec
-        {
-            [Tooltip("Loai dieu kien.")]
-            public StageObjectiveType Type = StageObjectiveType.Eliminate;
-
-            [Tooltip("So luong can dat: so quai (Eliminate), so vat the (DestroyTargets), so radar (Radar).")]
-            [Min(1)] public int Count = 40;
-
-            [Tooltip("Thoi gian can song (giay) - chi dung cho Survive.")]
-            [Min(0f)] public float Duration = 100f;
-
-            [Tooltip("Quang duong can ho tong (met) - chi dung cho Escort.")]
-            [Min(0f)] public float Distance = 150f;
-
-            [Tooltip("Id cua vat the / xe ho tong / radar tren map (khong dung cho Eliminate, Survive).")]
-            public string TargetId = string.Empty;
-        }
-
-        [Header("Thong tin ai")]
-        [Tooltip("Ma ai, vi du 1-1.")]
+        [Header("Thông tin ải")]
+        [Tooltip("Mã ải, ví dụ 1-1.")]
         [SerializeField] private string stageCode = "1-1";
 
-        [Tooltip("Ten ai, vi du Suong Mu Tim.")]
-        [SerializeField] private string stageName = "Ai moi";
+        [Tooltip("Tên ải, ví dụ Sương Mù Tím.")]
+        [SerializeField] private string stageName = "Ải mới";
 
-        [Header("Dieu kien thang (kieu cu - chi dung khi Objectives rong)")]
-        [Tooltip("So quai phai tieu diet de thang.")]
-        [SerializeField, Min(1)] private int killTarget = 40;
+        [Header("Mô tả hiển thị")]
+        [Tooltip("Mô tả điều kiện thắng hiển thị trên UI ngoài trận (chọn ải / sảnh Co-op).")]
+        [SerializeField, TextArea(1, 3)] private string winConditionDescription = string.Empty;
 
-        [Tooltip("Thoi luong du kien (giay) - dung de hien thi, khong phai dieu kien thua.")]
-        [SerializeField, Min(1f)] private float timeLimitSeconds = 90f;
-
-        [Header("Dieu kien thang (moi)")]
-        [Tooltip("Danh sach dieu kien phai thoa HET de thang. Rong = dung killTarget cu.")]
-        [SerializeField] private List<ObjectiveSpec> objectives = new List<ObjectiveSpec>();
-
-        [Header("Thuong")]
-        [Tooltip("Ngoc nhan duoc khi thang (theo bang ai trong GDD).")]
+        [Header("Thưởng")]
+        [Tooltip("Ngọc nhận được khi thắng (theo bảng ải trong GDD).")]
         [SerializeField, Min(0)] private int rewardGems = 20;
 
-        [Tooltip("So mon phu kien toi da roi ra.")]
+        [Tooltip("Số món phụ kiện tối đa rơi ra.")]
         [SerializeField, Min(0)] private int rewardAccessoryCount = 0;
 
-        [Tooltip("Boss man: chac chan du so mon, khong roll 20%.")]
+        [Tooltip("Boss màn: chắc chắn đủ số món, không roll 20%.")]
         [SerializeField] private bool guaranteeAccessories = false;
 
-        [Tooltip("Danh sach index phu kien (0..19) co the roi trong man nay theo GDD.")]
+        [Tooltip("Danh sách index phụ kiện (0..19) có thể rơi trong màn này theo GDD.")]
         [SerializeField] private List<int> rewardAccessoryPool = new List<int>();
 
-        [Tooltip("Ma ai tiep theo, vi du 1-2 (rong = khong tu chuyen).")]
+        [Tooltip("Mã ải tiếp theo, ví dụ 1-2 (rỗng = không tự chuyển).")]
         [SerializeField] private string nextStageCode = string.Empty;
 
         public string StageCode => stageCode;
         public string StageName => stageName;
-        public int KillTarget => killTarget;
-        public float TimeLimitSeconds => timeLimitSeconds;
 
-        /// <summary>Cac dieu kien thang khai bao trong asset (co the rong).</summary>
-        public IReadOnlyList<ObjectiveSpec> Objectives => objectives;
+        /// <summary>Mô tả điều kiện thắng để hiển thị ở UI ngoài trận.</summary>
+        public string WinConditionDescription => winConditionDescription;
 
         public int RewardGems => rewardGems;
         public int RewardAccessoryCount => rewardAccessoryCount;

@@ -14,14 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.StageDefinition
   stageCode: 1-4
   stageName: "V\xF2ng Xoay Kh\xF4ng Gian"
-  killTarget: 0
-  timeLimitSeconds: 900
-  objectives:
-  - Type: 2
-    Count: 3
-    Duration: 0
-    Distance: 0
-    TargetId: core
+  winConditionDescription: "Ph\xe1 3 l\xf5i n\u0103ng l\u01b0\u1ee3ng"
   rewardGems: 60
   rewardAccessoryCount: 3
   guaranteeAccessories: 0

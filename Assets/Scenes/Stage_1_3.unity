@@ -270,6 +270,19 @@ MonoBehaviour:
   coopMode: 0
   failOnPlayerDeath: 1
   logEvents: 1
+  killTarget: 0
+  timeLimitSeconds: 900
+  objectives:
+  - Type: 4
+    Count: 2
+    Duration: 0
+    Distance: 0
+    TargetId: radar
+  - Type: 3
+    Count: 0
+    Duration: 0
+    Distance: 30
+    TargetId: mones
 --- !u!4 &544057728
 Transform:
   m_ObjectHideFlags: 0

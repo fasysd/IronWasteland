@@ -251,8 +251,10 @@ namespace IronWasteland.Net
             StageDefinition stage = flow.SelectedStage;
             if (stage != null)
             {
-                GUILayout.Label("Man: " + stage.StageCode + " - " + stage.StageName +
-                                " (" + stage.KillTarget + " mang)");
+                string desc = string.IsNullOrEmpty(stage.WinConditionDescription)
+                    ? string.Empty
+                    : " (" + stage.WinConditionDescription + ")";
+                GUILayout.Label("Man: " + stage.StageCode + " - " + stage.StageName + desc);
             }
 
             if (IsHost() && GUILayout.Button("Doi man")) flow.CycleStage();

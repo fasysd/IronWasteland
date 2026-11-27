@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.StageDefinition
   stageCode: Test
   stageName: Man Test Nhanh
-  killTarget: 1
-  timeLimitSeconds: 120
+  winConditionDescription: "Ti\xeau di\u1ec7t 1 qu\xe1i (Test)"
   waves:
   - Label: W1
     StartTime: 0
@@ -24,7 +23,6 @@ MonoBehaviour:
       Count: 15
       SpeedMultiplier: 1
       ZoneId: 
-  objectives: []
   rewardGems: 50
   rewardAccessoryCount: 1
   guaranteeAccessories: 1

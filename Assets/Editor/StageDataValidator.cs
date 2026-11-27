@@ -59,7 +59,14 @@ public static class StageDataValidator
         var obstacles = Object.FindAnyObjectByType<StageObstacleField>(FindObjectsInactive.Include);
 
         if (director == null) problems.Add("thieu StageDirector");
-        else if (director.Definition == null) problems.Add("StageDirector chua gan Definition");
+        else
+        {
+            if (director.Definition == null) problems.Add("StageDirector chua gan Definition");
+            if ((director.ObjectiveSpecs == null || director.ObjectiveSpecs.Count == 0) && director.KillTarget <= 0)
+            {
+                problems.Add("StageDirector chua khai bao dieu kien thang");
+            }
+        }
 
         if (spawner == null)
         {

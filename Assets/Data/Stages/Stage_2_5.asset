@@ -14,14 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.StageDefinition
   stageCode: 2-5
   stageName: "Chi\u1EBFn H\u1EA1m D1ONK"
-  killTarget: 0
-  timeLimitSeconds: 900
-  objectives:
-  - Type: 2
-    Count: 3
-    Duration: 0
-    Distance: 0
-    TargetId: core
+  winConditionDescription: "Ph\xe1 h\u1ee7y \u0110\u1ea1i Boss Chi\u1ebfn H\u1ea1m Kh\u1ea3i Huy\u1ec1n"
   rewardGems: 120
   rewardAccessoryCount: 3
   guaranteeAccessories: 0

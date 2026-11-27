@@ -14,14 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.StageDefinition
   stageCode: 2-4
   stageName: "Phi Thuy\u1EC1n Hai M\u1EB7t"
-  killTarget: 0
-  timeLimitSeconds: 900
-  objectives:
-  - Type: 2
-    Count: 2
-    Duration: 0
-    Distance: 0
-    TargetId: core
+  winConditionDescription: "Ph\xe1 h\u1ee7y Boss H\u1eafc Nguy\u1ec7t"
   rewardGems: 90
   rewardAccessoryCount: 2
   guaranteeAccessories: 0

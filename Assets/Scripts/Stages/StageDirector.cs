@@ -43,6 +43,16 @@ namespace IronWasteland.Stages
         [Tooltip("Spawner sở hữu lịch đợt quái và các vùng spawn của màn này.")]
         [SerializeField] private EnemySpawner spawner;
 
+        [Header("Điều kiện thắng của màn")]
+        [Tooltip("Số quái phải tiêu diệt (chỉ dùng khi danh sách Objectives rỗng, hoặc hiển thị HUD).")]
+        [SerializeField, Min(0)] private int killTarget = 40;
+
+        [Tooltip("Thời lượng dự kiến (giây) - dùng để hiển thị, không phải điều kiện thua.")]
+        [SerializeField, Min(1f)] private float timeLimitSeconds = 90f;
+
+        [Tooltip("Danh sách điều kiện phải thỏa HẾT để thắng. Rỗng = dùng killTarget.")]
+        [SerializeField] private List<StageObjectiveSpec> objectives = new List<StageObjectiveSpec>();
+
         [Header("Tuỳ chọn")]
         [Tooltip("Tự động bắt đầu khi scene chạy.")]
         [SerializeField] private bool autoStart = true;
@@ -91,6 +101,9 @@ namespace IronWasteland.Stages
         public StageRunState State => m_State;
         public float Elapsed => m_Elapsed;
         public int Kills => m_Kills;
+        public int KillTarget => killTarget;
+        public float TimeLimitSeconds => timeLimitSeconds;
+        public IReadOnlyList<StageObjectiveSpec> ObjectiveSpecs => objectives;
         public int AliveCount => spawner != null ? spawner.AliveCount : 0;
         public IReadOnlyList<StageObjective> Objectives => m_Objectives;
         public int WaveIndex => spawner != null ? spawner.WaveIndex : -1;
@@ -316,12 +329,12 @@ namespace IronWasteland.Stages
         {
             m_Objectives.Clear();
 
-            IReadOnlyList<StageDefinition.ObjectiveSpec> specs = definition.Objectives;
+            IReadOnlyList<StageObjectiveSpec> specs = objectives;
             if (specs != null)
             {
                 for (int i = 0; i < specs.Count; i++)
                 {
-                    StageDefinition.ObjectiveSpec spec = specs[i];
+                    StageObjectiveSpec spec = specs[i];
                     if (spec == null) continue;
 
                     switch (spec.Type)
@@ -346,9 +359,9 @@ namespace IronWasteland.Stages
             }
 
             // Ai cu khong khai bao objective -> mac dinh diet du KillTarget.
-            if (m_Objectives.Count == 0 && definition.KillTarget > 0)
+            if (m_Objectives.Count == 0 && killTarget > 0)
             {
-                m_Objectives.Add(new EliminateObjective(definition.KillTarget));
+                m_Objectives.Add(new EliminateObjective(killTarget));
             }
         }
 

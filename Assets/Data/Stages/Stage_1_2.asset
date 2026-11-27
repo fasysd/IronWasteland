@@ -14,14 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.StageDefinition
   stageCode: 1-2
   stageName: "Hang \u0110\xE1 Gai"
-  killTarget: 0
-  timeLimitSeconds: 120
-  objectives:
-  - Type: 1
-    Count: 0
-    Duration: 100
-    Distance: 150
-    TargetId: 
+  winConditionDescription: "Ti\xeau di\u1ec7t 40 qu\xe1i & 1 Boss"
   rewardGems: 30
   rewardAccessoryCount: 1
   guaranteeAccessories: 0

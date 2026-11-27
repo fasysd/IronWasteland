@@ -481,6 +481,14 @@ MonoBehaviour:
   coopMode: 0
   failOnPlayerDeath: 1
   logEvents: 1
+  killTarget: 0
+  timeLimitSeconds: 900
+  objectives:
+  - Type: 2
+    Count: 3
+    Duration: 0
+    Distance: 0
+    TargetId: core
 --- !u!4 &544057728
 Transform:
   m_ObjectHideFlags: 0

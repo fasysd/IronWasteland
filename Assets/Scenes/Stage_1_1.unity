@@ -157,6 +157,14 @@ MonoBehaviour:
   coopMode: 0
   failOnPlayerDeath: 1
   logEvents: 1
+  killTarget: 40
+  timeLimitSeconds: 900
+  objectives:
+  - Type: 0
+    Count: 40
+    Duration: 0
+    Distance: 0
+    TargetId: 
 --- !u!4 &544057728
 Transform:
   m_ObjectHideFlags: 0

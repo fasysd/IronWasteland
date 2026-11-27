@@ -27,11 +27,15 @@ namespace IronWasteland.Stages
     public class StageManager : MonoBehaviour
     {
         [Header("Data")]
-        [Tooltip("Du lieu ai (dieu kien thang).")]
+        [Tooltip("Thong tin ai (ma, ten, phan thuong).")]
         [SerializeField] private StageDefinition definition;
 
         [Tooltip("Dot quai cua ai. Ban cu (StageManager) tu giu danh sach nay; man moi dung EnemySpawner.")]
         [SerializeField] private List<EnemyWave> waves = new List<EnemyWave>();
+
+        [Header("Dieu kien thang")]
+        [SerializeField, Min(1)] private int killTarget = 40;
+        [SerializeField, Min(1f)] private float timeLimitSeconds = 90f;
 
         [Tooltip("GameController de lay tank nguoi choi. De trong se tu tim trong scene.")]
         [SerializeField] private GameController gameController;
@@ -74,8 +78,8 @@ namespace IronWasteland.Stages
         public StageState State { get; private set; } = StageState.Idle;
         public float Elapsed { get; private set; }
         public int Kills { get; private set; }
-        public int KillTarget => definition != null ? definition.KillTarget : 0;
-        public float TimeLimitSeconds => definition != null ? definition.TimeLimitSeconds : 0f;
+        public int KillTarget => killTarget;
+        public float TimeLimitSeconds => timeLimitSeconds;
         public int WaveIndex { get; private set; } = -1;
         public int SpawnedCount => m_SpawnedCount;
         public int AliveCount
@@ -201,7 +205,7 @@ namespace IronWasteland.Stages
             if (logEvents)
             {
                 Debug.Log($"[Stage] Bat dau ai {definition.StageCode} - {definition.StageName}: " +
-                          $"tieu diet {definition.KillTarget} quai, du kien {definition.TimeLimitSeconds:0}s, " +
+                          $"tieu diet {KillTarget} quai, du kien {TimeLimitSeconds:0}s, " +
                           $"{m_TotalWaves} dot.");
             }
 

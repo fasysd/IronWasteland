@@ -273,9 +273,8 @@ namespace IronWasteland.UI
 
             if (killsText != null)
             {
-                StageDefinition def = director.Definition;
-                if (def != null && def.KillTarget > 0)
-                    killsText.text = $"Đã diệt: {director.Kills}/{def.KillTarget}";
+                if (director.KillTarget > 0)
+                    killsText.text = $"Đã diệt: {director.Kills}/{director.KillTarget}";
                 else
                     killsText.text = $"Đã diệt: {director.Kills}";
             }

@@ -14,19 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.StageDefinition
   stageCode: 1-3
   stageName: "D\u1EA5u V\u1EBFt T\u1EED Binh"
-  killTarget: 0
-  timeLimitSeconds: 900
-  objectives:
-  - Type: 4
-    Count: 2
-    Duration: 0
-    Distance: 0
-    TargetId: radar
-  - Type: 3
-    Count: 0
-    Duration: 0
-    Distance: 30
-    TargetId: mones
+  winConditionDescription: "K\xedch ho\u1ea1t 2 tr\u1ea1m radar & h\u1ed9 t\u1ed1ng xe Mones 30m"
   rewardGems: 40
   rewardAccessoryCount: 1
   guaranteeAccessories: 0

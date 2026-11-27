@@ -14,19 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.StageDefinition
   stageCode: 2-2
   stageName: "\u0110\u1EA7m L\u1EA7y \u0110\u1ED9c Kh\xED"
-  killTarget: 0
-  timeLimitSeconds: 900
-  objectives:
-  - Type: 2
-    Count: 4
-    Duration: 0
-    Distance: 0
-    TargetId: nest
-  - Type: 1
-    Count: 0
-    Duration: 120
-    Distance: 0
-    TargetId: 
+  winConditionDescription: "Sinh t\u1ed3n 120 gi\xe2y"
   rewardGems: 60
   rewardAccessoryCount: 1
   guaranteeAccessories: 0
