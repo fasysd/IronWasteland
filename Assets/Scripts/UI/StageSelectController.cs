@@ -184,14 +184,6 @@ namespace IronWasteland.UI
         [Tooltip("Chữ trạng thái động của chín thẻ ải.")]
         private TextMeshProUGUI[] m_StatusTexts = new TextMeshProUGUI[9];
 
-        [SerializeField]
-        [Tooltip("Nền che dòng mục tiêu hoặc trạng thái tĩnh ở chân chín thẻ ải.")]
-        private Image[] m_CardFooterCovers = new Image[9];
-
-        [SerializeField]
-        [Tooltip("Chữ mục tiêu động ở chân thẻ khi ải đã mở khoá.")]
-        private TextMeshProUGUI[] m_CardFooterTexts = new TextMeshProUGUI[9];
-
         [Header("Chọn chế độ chơi")]
         [SerializeField]
         [Tooltip("Ảnh nút CHƠI ĐƠN.")]
@@ -563,50 +555,6 @@ namespace IronWasteland.UI
                     text.text = value;
                     text.color = color;
                 }
-            }
-
-            int footerCount = m_Stages != null ? m_Stages.Length : 0;
-            if (m_CardFooterCovers == null || m_CardFooterTexts == null)
-            {
-                footerCount = 0;
-            }
-
-            if (m_CardFooterTexts != null && m_CardFooterTexts.Length < footerCount)
-            {
-                footerCount = m_CardFooterTexts.Length;
-            }
-
-            if (m_CardFooterCovers != null && m_CardFooterCovers.Length < footerCount)
-            {
-                footerCount = m_CardFooterCovers.Length;
-            }
-
-            for (int i = 0; i < footerCount; i++)
-            {
-                StageEntry entry = m_Stages != null && i < m_Stages.Length ? m_Stages[i] : null;
-                bool cleared = entry != null && SaveSystem.Instance.IsStageCleared(entry.Code);
-                bool unlocked = entry != null && entry.Unlocked;
-                bool showFooter = cleared || unlocked;
-
-                Image footerCover = m_CardFooterCovers[i];
-                if (footerCover != null)
-                {
-                    footerCover.enabled = showFooter;
-                }
-
-                TextMeshProUGUI footerText = m_CardFooterTexts[i];
-                if (footerText == null) continue;
-
-                footerText.enabled = showFooter;
-                if (!showFooter) continue;
-
-                string footerValue = cleared
-                    ? "ĐÃ HOÀN THÀNH"
-                    : !string.IsNullOrEmpty(entry.Objective) ? entry.Objective : "ĐÃ MỞ KHÓA";
-                footerText.text = footerValue;
-                footerText.color = cleared
-                    ? new Color32(0x2F, 0xE8, 0xE0, 0xFF)
-                    : new Color32(0x6F, 0x7D, 0x8C, 0xFF);
             }
         }
 
