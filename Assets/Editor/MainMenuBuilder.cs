@@ -23,7 +23,7 @@ namespace IronWasteland.EditorTools
         private const string FontDir = "Assets/Art/Fonts";
         private const string GeneratedFontDir = "Assets/Art/Fonts/Generated";
         private const string ScenePath = "Assets/Scenes/MainMenu.unity";
-        private const string RosterPath = "Assets/Data/Tanks/TankRoster.asset";
+        private const string RosterPath = "Assets/Resources/TankRoster.asset";
         private const float DesignWidth = 1920f;
         private const float DesignHeight = 1080f;
 

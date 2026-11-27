@@ -452,6 +452,11 @@ namespace IronWasteland.UI
         {
             if (m_Roster == null)
             {
+                m_Roster = Resources.Load<TankRoster>("TankRoster");
+            }
+
+            if (m_Roster == null)
+            {
                 return;
             }
 
