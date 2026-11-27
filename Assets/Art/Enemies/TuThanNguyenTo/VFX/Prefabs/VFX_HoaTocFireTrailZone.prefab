@@ -4847,6 +4847,7 @@ GameObject:
   - component: {fileID: 4612691674655354719}
   - component: {fileID: 8948066988750709990}
   - component: {fileID: 8377350294050180175}
+  - component: {fileID: 953757860780654166}
   m_Layer: 0
   m_Name: VFX_HoaTocFireTrailZone
   m_TagString: Untagged
@@ -4935,6 +4936,18 @@ MonoBehaviour:
   damagePerTickRatio: 0.2
   tickInterval: 0.5
   duration: 10
+--- !u!114 &953757860780654166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3470967951959175526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost
 --- !u!1 &8653592527498096263
 GameObject:
   m_ObjectHideFlags: 0

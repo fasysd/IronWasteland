@@ -7,7 +7,7 @@ namespace IronWasteland.Enemies.D1onk.VFX
     /// Vòng xoáy năng lượng cao thế, các hạt plasma hút ngược về tâm tàu chiến.
     /// </summary>
     [DisallowMultipleComponent]
-    public class D1onkChargingAuraVFX : MonoBehaviour
+    public class D1onkChargingAuraVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Components")]
         [SerializeField] private SpriteRenderer swirlSpriteOuter;

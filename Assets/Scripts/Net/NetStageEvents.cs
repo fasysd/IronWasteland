@@ -1,3 +1,5 @@
+using System;
+using System.Text;
 using IronWasteland.Stages;
 using Unity.Collections;
 using Unity.Netcode;
@@ -50,6 +52,27 @@ namespace IronWasteland.Net
 
         private bool m_Registered;
 
+        // Mã trận tăng dần ở host, gắn vào mọi gói trạng thái ải. Client dùng mã này để bỏ qua
+        // gói của trận cũ còn tới muộn sau khi đã sang trận mới (named message không có thứ tự
+        // xuyên phiên nên chỉ dựa vào thứ tự gói là không đủ).
+        private const int MaxFailReasonBytes = 120;
+        private uint m_MatchId;
+        private uint m_CurrentMatchId;
+        private bool m_HasCurrentMatchId;
+
+        /// <summary>Mã trận hiện tại của host; client dùng để lọc gói trạng thái cũ.</summary>
+        public uint MatchId => m_MatchId;
+
+        /// <summary>
+        /// Host bắt đầu một trận mới: tăng mã trận để client phân biệt gói của trận trước.
+        /// Gọi một lần cho mỗi trận, trước khi gửi StateStarted.
+        /// </summary>
+        public void BeginMatch()
+        {
+            m_MatchId++;
+            if (m_MatchId == 0) m_MatchId = 1;
+        }
+
         /// <summary>Xoá trạng thái ải đã nhớ (dùng khi tạo phòng mới để HUD không còn hiện THẮNG/THUA cũ).</summary>
         public void ResetState()
         {
@@ -62,6 +85,13 @@ namespace IronWasteland.Net
 
         private void Awake()
         {
+            // Giữ Instance của object persistent khi scene PHÒNG LAN bị nạp lại lúc chơi lại.
+            if (Instance != null && Instance != this)
+            {
+                enabled = false;
+                return;
+            }
+
             Instance = this;
         }
 
@@ -98,8 +128,11 @@ namespace IronWasteland.Net
             }
         }
 
-        /// <summary>Host gửi trạng thái ải hiện tại cho toàn bộ client từ StageDirector.</summary>
-        public void Broadcast(StageDirector director, byte state)
+        /// <summary>
+        /// Host gửi trạng thái ải hiện tại cho toàn bộ client từ StageDirector.
+        /// Với trạng thái thua, gửi kèm lý do thật để hai máy hiện cùng một thông báo.
+        /// </summary>
+        public void Broadcast(StageDirector director, byte state, string reason = null)
         {
             if (director == null) return;
 
@@ -109,14 +142,42 @@ namespace IronWasteland.Net
             CustomMessagingManager messaging = manager.CustomMessagingManager;
             if (messaging == null) return;
 
-            using FastBufferWriter writer = new FastBufferWriter(16, Allocator.Temp);
+            int target = director.Definition != null ? director.Definition.KillTarget : 0;
+            byte[] reasonBytes = state == StateFailed ? EncodeFailReason(director, reason) : null;
+
+            int capacity = 16 + 4 + (reasonBytes != null ? 1 + reasonBytes.Length : 0);
+            using FastBufferWriter writer = new FastBufferWriter(capacity, Allocator.Temp);
             writer.WriteValueSafe(state);
             writer.WriteValueSafe(director.Kills);
-            writer.WriteValueSafe(0);
+            writer.WriteValueSafe(target);
             writer.WriteValueSafe(director.Elapsed);
+            writer.WriteValueSafe(m_MatchId);
+            if (reasonBytes != null)
+            {
+                writer.WriteValueSafe((byte)reasonBytes.Length);
+                for (int i = 0; i < reasonBytes.Length; i++)
+                {
+                    writer.WriteValueSafe(reasonBytes[i]);
+                }
+            }
+
             messaging.SendNamedMessageToAll(MessageName, writer);
 
-            ApplyState(state, director.Kills, 0, director.Elapsed);
+            ApplyState(state, director.Kills, target, director.Elapsed);
+        }
+
+        /// <summary>Chọn lý do thua ngắn gọn, tối đa 120 byte UTF-8 để vừa một gói tin.</summary>
+        private static byte[] EncodeFailReason(StageDirector director, string reason)
+        {
+            string text = !string.IsNullOrEmpty(reason) ? reason : director.FailReason;
+            if (string.IsNullOrEmpty(text)) text = "Thất bại";
+
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
+            if (bytes.Length <= MaxFailReasonBytes) return bytes;
+
+            byte[] clipped = new byte[MaxFailReasonBytes];
+            Array.Copy(bytes, clipped, MaxFailReasonBytes);
+            return clipped;
         }
 
         /// <summary>Host gửi trạng thái thắng ải kèm phần thưởng đã roll cho toàn bộ client.</summary>
@@ -132,12 +193,13 @@ namespace IronWasteland.Net
 
             int[] indices = reward.DroppedAccessoryIndices ?? System.Array.Empty<int>();
             int dropLen = Mathf.Min(indices.Length, 32);
-            int capacity = 32 + dropLen * 4;
+            int capacity = 36 + dropLen * 4;
+            int target = director.Definition != null ? director.Definition.KillTarget : 0;
 
             using FastBufferWriter writer = new FastBufferWriter(capacity, Allocator.Temp);
             writer.WriteValueSafe(StateCleared);
             writer.WriteValueSafe(director.Kills);
-            writer.WriteValueSafe(0);
+            writer.WriteValueSafe(target);
             writer.WriteValueSafe(director.Elapsed);
             writer.WriteValueSafe(reward.Gems);
             writer.WriteValueSafe(reward.AccessoryCount);
@@ -146,10 +208,11 @@ namespace IronWasteland.Net
             {
                 writer.WriteValueSafe(indices[i]);
             }
+            writer.WriteValueSafe(m_MatchId);
 
             messaging.SendNamedMessageToAll(MessageName, writer);
 
-            ApplyState(StateCleared, director.Kills, 0, director.Elapsed);
+            ApplyState(StateCleared, director.Kills, target, director.Elapsed);
         }
 
         /// <summary>Host gửi trạng thái ải hiện tại cho toàn bộ client.</summary>
@@ -163,11 +226,12 @@ namespace IronWasteland.Net
             CustomMessagingManager messaging = manager.CustomMessagingManager;
             if (messaging == null) return;
 
-            using FastBufferWriter writer = new FastBufferWriter(16, Allocator.Temp);
+            using FastBufferWriter writer = new FastBufferWriter(20, Allocator.Temp);
             writer.WriteValueSafe(state);
             writer.WriteValueSafe(stage.Kills);
             writer.WriteValueSafe(stage.KillTarget);
             writer.WriteValueSafe(stage.Elapsed);
+            writer.WriteValueSafe(m_MatchId);
             messaging.SendNamedMessageToAll(MessageName, writer);
 
             // Host cũng cần trạng thái mới nhất để HUD đọc (SendNamedMessageToAll không gửi cho chính host).
@@ -195,11 +259,12 @@ namespace IronWasteland.Net
             CustomMessagingManager messaging = manager.CustomMessagingManager;
             if (messaging == null) return;
 
-            using FastBufferWriter writer = new FastBufferWriter(16, Allocator.Temp);
+            using FastBufferWriter writer = new FastBufferWriter(20, Allocator.Temp);
             writer.WriteValueSafe(StateIdle);
             writer.WriteValueSafe(0);
             writer.WriteValueSafe(0);
             writer.WriteValueSafe(0f);
+            writer.WriteValueSafe(m_MatchId);
             messaging.SendNamedMessageToAll(MessageName, writer);
 
             ResetState();
@@ -231,6 +296,54 @@ namespace IronWasteland.Net
                 hasReward = true;
             }
 
+            // Host mới ghi mã trận ngay sau phần thưởng (nếu có). Host cũ không có trường này:
+            // khi đó coi như không lọc được và giữ hành vi cũ.
+            bool hasMatchId = false;
+            uint matchId = 0;
+            if (reader.Length - reader.Position >= 4)
+            {
+                reader.ReadValueSafe(out matchId);
+                hasMatchId = true;
+            }
+
+            // Lý do thua do host gửi kèm; host cũ không có thì dùng câu chung.
+            string failReason = null;
+            if (state == StateFailed && reader.Length - reader.Position >= 1)
+            {
+                reader.ReadValueSafe(out byte reasonLength);
+                if (reasonLength > 0 && reader.Length - reader.Position >= reasonLength)
+                {
+                    byte[] reasonBytes = new byte[reasonLength];
+                    for (int i = 0; i < reasonLength; i++)
+                    {
+                        reader.ReadValueSafe(out reasonBytes[i]);
+                    }
+                    failReason = Encoding.UTF8.GetString(reasonBytes);
+                }
+            }
+
+            // Bỏ qua gói của trận cũ: named message của phiên trước có thể tới muộn sau khi
+            // client đã vào trận mới, làm hiện nhầm bảng THUA/BẮT ĐẦU.
+            if (state == StateIdle)
+            {
+                m_HasCurrentMatchId = false;
+            }
+            else if (state == StateStarted)
+            {
+                m_CurrentMatchId = matchId;
+                m_HasCurrentMatchId = hasMatchId;
+            }
+            else if (!m_HasCurrentMatchId)
+            {
+                m_CurrentMatchId = matchId;
+                m_HasCurrentMatchId = hasMatchId;
+            }
+            else if (hasMatchId && matchId != m_CurrentMatchId)
+            {
+                Debug.Log($"[Stage][Client] Bỏ qua trạng thái {state} của trận cũ (mã {matchId}, đang ở trận {m_CurrentMatchId}).");
+                return;
+            }
+
             ApplyState(state, kills, target, elapsed);
 
             StageDirector director = FindAnyObjectByType<StageDirector>();
@@ -248,7 +361,7 @@ namespace IronWasteland.Net
                 }
                 else if (state == StateFailed)
                 {
-                    director.ForceFail("Thất bại");
+                    director.ForceFail(string.IsNullOrEmpty(failReason) ? "Thất bại" : failReason);
                 }
             }
 

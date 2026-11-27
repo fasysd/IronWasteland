@@ -9,7 +9,7 @@ namespace IronWasteland.Enemies.ElementalReaper.VFX
     /// Vòng tròn ma pháp tam sắc (Lam - Lục - Đỏ) xoay tròn hội tụ dưới chân Boss khi vận sức bùng nổ.
     /// </summary>
     [DisallowMultipleComponent]
-    public class BurstChargingAuraVFX : MonoBehaviour
+    public class BurstChargingAuraVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Components")]
         [SerializeField] private SpriteRenderer magicCircleOuter;

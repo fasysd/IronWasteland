@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using TMPro;
 using UnityEngine.UI;
 
 namespace IronWasteland.Tests
@@ -72,22 +74,29 @@ namespace IronWasteland.Tests
 
             Assert.That(FindInScene<EventSystem>(scene), Is.Not.Null, "Scene thiếu EventSystem");
             Assert.That(canvas.GetComponent<GraphicRaycaster>(), Is.Not.Null, "Canvas thiếu GraphicRaycaster");
-            Assert.That(FindAllInScene<Button>(scene).FindAll(b => b.transform.IsChildOf(root)).Count, Is.EqualTo(15), "Số Button của lobby");
+            Assert.That(FindAllInScene<Button>(scene).FindAll(b => b.transform.IsChildOf(root)).Count, Is.EqualTo(16), "Số Button của lobby");
 
             AssertZone(root, "HitBack", 72f, 72f, 168f, 50f, "PressBack");
             AssertZone(root, "ButtonCreate", 140f, 866f, 320f, 68f, "PressCreate");
             AssertZone(root, "ButtonRefresh", 482f, 866f, 240f, 68f, "PressRefresh");
-            AssertZone(root, "JoinCodeBox", 740f, 866f, 332f, 68f, "PressJoinCodeField");
-            AssertZone(root, "ButtonJoinCode", 1092f, 866f, 180f, 68f, "PressJoinCode");
+            AssertZone(root, "JoinCodeBox", 740f, 866f, 332f, 68f, "PressAddressField");
+            AssertZone(root, "ButtonJoinCode", 1092f, 866f, 180f, 68f, "PressJoinAddress");
             AssertZone(root, "ButtonReady", 140f, 690f, 300f, 62f, "PressReady");
             AssertZone(root, "ButtonGarage", 520f, 690f, 300f, 62f, "PressGarage");
             AssertZone(root, "ButtonStart", 140f, 770f, 420f, 76f, "PressStart");
             AssertZone(root, "ButtonLeave", 140f, 862f, 260f, 54f, "PressLeave");
+            AssertZone(root, "ButtonCopyAddress", 1316f, 540f, 300f, 44f, "PressCopyAddress");
 
             for (int i = 0; i < 6; i++)
             {
                 AssertZone(root, "RoomRow" + (i + 1), 96f, 304f + i * 88f, 1140f, 74f, "PressRoom");
             }
+
+            Assert.That(FindByName<TextMeshProUGUI>(root, "TextLobbyTitle").text, Is.EqualTo("PHÒNG LAN"));
+            Assert.That(FindByName<TextMeshProUGUI>(root, "TextLobbySub").text, Does.Contain("MẠNG LAN"));
+            Assert.That(FindByName<TextMeshProUGUI>(root, "TextJoinCode").text, Is.EqualTo("NHẬP IP HOST"));
+            Assert.That(FindByName<TextMeshProUGUI>(root, "TextRoomCodeLabel").text, Is.EqualTo("PHÒNG LAN / IP HOST"));
+            Assert.That(FindByName<TextMeshProUGUI>(root, "TextFlowStep3").text, Is.EqualTo("CHIA SẺ ĐỊA CHỈ HOST CHO ĐỒNG ĐỘI"));
         }
 
 
@@ -140,6 +149,22 @@ namespace IronWasteland.Tests
             Assert.That(canvas.GetComponent<GraphicRaycaster>(), Is.Not.Null, "Canvas thiếu GraphicRaycaster");
             Assert.That(FindAllInScene<Button>(scene).FindAll(b => b.transform.IsChildOf(root)).Count, Is.EqualTo(13), "Số Button của màn chọn ải");
 
+            TextMeshProUGUI modeCoop = FindByName<TextMeshProUGUI>(root, "TextModeCoop");
+            Assert.That(modeCoop, Is.Not.Null, "Thiếu nhãn chế độ coop");
+            Assert.That(modeCoop.text, Is.EqualTo("CHƠI LAN"), "Nhãn chế độ phải là CHƠI LAN");
+
+            bool foundController = false;
+            foreach (MonoBehaviour behaviour in canvas.GetComponents<MonoBehaviour>())
+            {
+                SerializedObject serialized = new SerializedObject(behaviour);
+                SerializedProperty lobbyScene = serialized.FindProperty("m_CoopLobbySceneName");
+                if (lobbyScene == null) continue;
+                foundController = true;
+                Assert.That(lobbyScene.stringValue, Is.EqualTo("CoopLobby"), "CHƠI LAN phải mở scene CoopLobby");
+            }
+
+            Assert.That(foundController, Is.True, "Thiếu StageSelectController trên canvas");
+
             AssertZone(root, "HitBack", 72f, 94f, 168f, 50f, "PressBack");
             AssertZone(root, "HitStart", 1293f, 939f, 536f, 136f, "PressStart");
             AssertZone(root, "HitModeSingle", 1295f, 472f, 253f, 48f, "PressModeSingle");
@@ -160,6 +185,89 @@ namespace IronWasteland.Tests
             for (int i = 0; i < 9; i++)
             {
                 AssertZone(root, "HitCard" + (i + 1).ToString("00"), cards[i * 4], cards[i * 4 + 1], cards[i * 4 + 2], cards[i * 4 + 3], "SelectStage");
+            }
+        }
+
+        [Test]
+        public void StageSelect_du_9_nhan_trang_thai_dong()
+        {
+            Scene scene = OpenScene("Assets/Scenes/StageSelect.unity");
+            Canvas canvas = FindByName<Canvas>(scene, "StageSelectCanvas");
+            Assert.That(canvas, Is.Not.Null, "Thiếu canvas StageSelectCanvas");
+
+            SerializedObject controller = null;
+            SerializedProperty covers = null;
+            SerializedProperty texts = null;
+            foreach (MonoBehaviour behaviour in canvas.GetComponents<MonoBehaviour>())
+            {
+                SerializedObject serialized = new SerializedObject(behaviour);
+                SerializedProperty candidate = serialized.FindProperty("m_StatusCovers");
+                if (candidate == null) continue;
+                controller = serialized;
+                covers = candidate;
+                texts = serialized.FindProperty("m_StatusTexts");
+                break;
+            }
+
+            Assert.That(controller, Is.Not.Null, "Thiếu StageSelectController trên canvas");
+            Assert.That(covers, Is.Not.Null, "Thiếu mảng m_StatusCovers");
+            Assert.That(texts, Is.Not.Null, "Thiếu mảng m_StatusTexts");
+            Assert.That(covers.arraySize, Is.EqualTo(9), "Phải có đủ 9 nền trạng thái");
+            Assert.That(texts.arraySize, Is.EqualTo(9), "Phải có đủ 9 nhãn trạng thái");
+
+            HashSet<Image> coverIds = new HashSet<Image>();
+            HashSet<TextMeshProUGUI> textIds = new HashSet<TextMeshProUGUI>();
+            for (int i = 0; i < 9; i++)
+            {
+                Image cover = covers.GetArrayElementAtIndex(i).objectReferenceValue as Image;
+                TextMeshProUGUI text = texts.GetArrayElementAtIndex(i).objectReferenceValue as TextMeshProUGUI;
+                Assert.That(cover, Is.Not.Null, "Thiếu nền trạng thái thẻ " + (i + 1));
+                Assert.That(text, Is.Not.Null, "Thiếu nhãn trạng thái thẻ " + (i + 1));
+                Assert.That(coverIds.Add(cover), Is.True, "Nền trạng thái bị trùng ở thẻ " + (i + 1));
+                Assert.That(textIds.Add(text), Is.True, "Nhãn trạng thái bị trùng ở thẻ " + (i + 1));
+                Assert.That(text.rectTransform.anchoredPosition.x, Is.EqualTo(cover.rectTransform.anchoredPosition.x).Within(0.1f), "Nhãn và nền lệch trục X ở thẻ " + (i + 1));
+            }
+        }
+
+        [Test]
+        public void StageSelect_du_9_nhan_muc_tieu_dong()
+        {
+            Scene scene = OpenScene("Assets/Scenes/StageSelect.unity");
+            Canvas canvas = FindByName<Canvas>(scene, "StageSelectCanvas");
+            Assert.That(canvas, Is.Not.Null, "Thiếu canvas StageSelectCanvas");
+
+            SerializedObject controller = null;
+            SerializedProperty covers = null;
+            SerializedProperty texts = null;
+            foreach (MonoBehaviour behaviour in canvas.GetComponents<MonoBehaviour>())
+            {
+                SerializedObject serialized = new SerializedObject(behaviour);
+                SerializedProperty candidate = serialized.FindProperty("m_CardFooterCovers");
+                if (candidate == null) continue;
+                controller = serialized;
+                covers = candidate;
+                texts = serialized.FindProperty("m_CardFooterTexts");
+                break;
+            }
+
+            Assert.That(controller, Is.Not.Null, "Thiếu StageSelectController trên canvas");
+            Assert.That(covers, Is.Not.Null, "Thiếu mảng m_CardFooterCovers");
+            Assert.That(texts, Is.Not.Null, "Thiếu mảng m_CardFooterTexts");
+            Assert.That(covers.arraySize, Is.EqualTo(9), "Phải có đủ 9 nền chân thẻ");
+            Assert.That(texts.arraySize, Is.EqualTo(9), "Phải có đủ 9 nhãn chân thẻ");
+
+            HashSet<Image> coverIds = new HashSet<Image>();
+            HashSet<TextMeshProUGUI> textIds = new HashSet<TextMeshProUGUI>();
+            for (int i = 0; i < 9; i++)
+            {
+                Image cover = covers.GetArrayElementAtIndex(i).objectReferenceValue as Image;
+                TextMeshProUGUI text = texts.GetArrayElementAtIndex(i).objectReferenceValue as TextMeshProUGUI;
+                Assert.That(cover, Is.Not.Null, "Thiếu nền chân thẻ " + (i + 1));
+                Assert.That(text, Is.Not.Null, "Thiếu nhãn chân thẻ " + (i + 1));
+                Assert.That(coverIds.Add(cover), Is.True, "Nền chân thẻ bị trùng ở thẻ " + (i + 1));
+                Assert.That(textIds.Add(text), Is.True, "Nhãn chân thẻ bị trùng ở thẻ " + (i + 1));
+                Assert.That(text.rectTransform.anchoredPosition.x, Is.EqualTo(cover.rectTransform.anchoredPosition.x).Within(0.1f), "Nhãn và nền chân thẻ lệch trục X ở thẻ " + (i + 1));
+                Assert.That(text.rectTransform.anchoredPosition.y, Is.EqualTo(cover.rectTransform.anchoredPosition.y + 24.4f).Within(0.1f), "Nhãn chân thẻ không nằm trong nền ở thẻ " + (i + 1));
             }
         }
 

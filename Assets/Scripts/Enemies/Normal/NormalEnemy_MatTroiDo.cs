@@ -28,6 +28,9 @@ namespace IronWasteland.Enemies.Normal
         [Tooltip("Template Ký Sinh Thiên Thạch riêng (nằm trong Children của MatTroiDo Prefab, KHÔNG dùng Prefab Asset ngoài).")]
         [SerializeField] private NormalEnemy_KySinhThienThach kySinhThienThachTemplate;
 
+        [Tooltip("Prefab Ký Sinh Thiên Thạch độc lập có NetworkObject, dùng khi chơi mạng để host spawn qua NGO. Để trống thì quái con chỉ sinh ở chế độ offline.")]
+        [SerializeField] private NormalEnemy_KySinhThienThach kySinhThienThachNetworkPrefab;
+
         [Tooltip("Thời gian hồi kỹ năng giữa các lần triệu hồi vùng nổ (giây).")]
         [SerializeField, Min(1f)] private float skillCooldown = 8.0f;
 
@@ -241,14 +244,21 @@ namespace IronWasteland.Enemies.Normal
                 if (TankBrain.NetworkSessionActive)
                 {
                     // Chơi mạng: quái con phải do host spawn qua NGO, nếu Instantiate thường thì
-                    // client không thấy và số mạng bị lệch.
+                    // client không thấy và số mạng bị lệch. Template con không có NetworkObject nên
+                    // phải dùng prefab độc lập đã đăng ký trong DefaultNetworkPrefabs.
                     IronWasteland.Net.NetSpawnService spawnService = FindAnyObjectByType<IronWasteland.Net.NetSpawnService>();
-                    EnemyStats childStats = kySinhThienThachTemplate.Stats != null
-                        ? kySinhThienThachTemplate.Stats.Clone()
+                    if (kySinhThienThachNetworkPrefab == null)
+                    {
+                        Debug.LogError($"[{name}] Chưa gán kySinhThienThachNetworkPrefab — không thể sinh Ký Sinh Thiên Thạch qua mạng.");
+                        return;
+                    }
+
+                    EnemyStats childStats = kySinhThienThachNetworkPrefab.Stats != null
+                        ? kySinhThienThachNetworkPrefab.Stats.Clone()
                         : new EnemyStats();
                     childStats.MaxHealth *= 2f;
                     ksttInstance = spawnService != null
-                        ? spawnService.SpawnEnemy(kySinhThienThachTemplate, spawnPos, childStats) as NormalEnemy_KySinhThienThach
+                        ? spawnService.SpawnEnemy(kySinhThienThachNetworkPrefab, spawnPos, childStats) as NormalEnemy_KySinhThienThach
                         : null;
                 }
                 else

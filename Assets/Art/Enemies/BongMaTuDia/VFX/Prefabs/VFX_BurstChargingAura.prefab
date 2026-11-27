@@ -4846,6 +4846,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8447953072277109899}
   - component: {fileID: 5861066159853367953}
+  - component: {fileID: 2082636945304821122}
   m_Layer: 0
   m_Name: VFX_BurstChargingAura
   m_TagString: Untagged
@@ -4893,6 +4894,18 @@ MonoBehaviour:
   burstReleaseExplosionPrefab: {fileID: 5950168081622924102, guid: e1448d3f4b25cc6429ae28b8ae2e9d67, type: 3}
   warningRedPurple: {r: 0.85, g: 0.11, b: 0.38, a: 0.85}
   voidCorePurple: {r: 0.29, g: 0.078, b: 0.549, a: 0.9}
+--- !u!114 &2082636945304821122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7032942883382488858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost
 --- !u!1 &7168134863117674285
 GameObject:
   m_ObjectHideFlags: 0

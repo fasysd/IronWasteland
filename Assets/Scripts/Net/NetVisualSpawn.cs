@@ -21,6 +21,9 @@ namespace IronWasteland.Net
 
         /// <summary>Kênh dựng visual thủ tục (vệt lửa, gai đá) — các object này không có template trong prefab.</summary>
         private const string PrimitiveMessageName = "IW.VisualPrimitive";
+
+        /// <summary>Kênh visual kỹ năng quái: bản sao bám theo root NetworkObject hoặc đứng tại vị trí cast.</summary>
+        private const string SkillMessageName = "IW.SkillVisual";
         private const int MaxNameLength = 64;
 
         /// <summary>Instance duy nhất trên root Network.</summary>
@@ -72,6 +75,9 @@ namespace IronWasteland.Net
 
             /// <summary>Cửa sổ bẻ lái; trong cửa sổ này tốc độ xoay giảm dần về 0.</summary>
             public float HomingDuration;
+
+            /// <summary>True: ghost được parent vào root NetworkObject và bám theo quái (aura, cone, skill con).</summary>
+            public bool Attached;
         }
 
         /// <summary>Số bản sao visual client đang giữ (dùng cho log/kiểm chứng).</summary>
@@ -79,6 +85,13 @@ namespace IronWasteland.Net
 
         private void Awake()
         {
+            // Bản sao trên object của scene mới không được cướp Instance persistent.
+            if (Instance != null && Instance != this)
+            {
+                enabled = false;
+                return;
+            }
+
             Instance = this;
         }
 
@@ -93,6 +106,7 @@ namespace IronWasteland.Net
                 manager.CustomMessagingManager.UnregisterNamedMessageHandler(MessageName);
                 manager.CustomMessagingManager.UnregisterNamedMessageHandler(EndMessageName);
                 manager.CustomMessagingManager.UnregisterNamedMessageHandler(PrimitiveMessageName);
+                manager.CustomMessagingManager.UnregisterNamedMessageHandler(SkillMessageName);
             }
 
             m_Registered = false;
@@ -113,6 +127,7 @@ namespace IronWasteland.Net
                 messaging.RegisterNamedMessageHandler(MessageName, HandleMessage);
                 messaging.RegisterNamedMessageHandler(EndMessageName, HandleEndMessage);
                 messaging.RegisterNamedMessageHandler(PrimitiveMessageName, HandlePrimitiveMessage);
+                messaging.RegisterNamedMessageHandler(SkillMessageName, HandleSkillMessage);
                 m_Registered = true;
             }
             else if (!listening && m_Registered)
@@ -122,6 +137,7 @@ namespace IronWasteland.Net
                     messaging.UnregisterNamedMessageHandler(MessageName);
                     messaging.UnregisterNamedMessageHandler(EndMessageName);
                     messaging.UnregisterNamedMessageHandler(PrimitiveMessageName);
+                    messaging.UnregisterNamedMessageHandler(SkillMessageName);
                 }
 
                 m_Registered = false;
@@ -271,6 +287,137 @@ namespace IronWasteland.Net
             return handle;
         }
 
+        /// <summary>
+        /// Host gửi bản sao của một object con (ví dụ "Skill" đang inactive) xuống client.
+        /// Bản sao được parent vào root NetworkObject và giữ offset local, nên aura/cone bám đúng quái.
+        /// </summary>
+        public int BroadcastSkillVisual(GameObject template, NetworkObject root, Vector3 localOffset,
+            float localRotationZ, float lifetime = 0f, bool attachToRoot = true, bool animate = false,
+            Vector2 velocity = default(Vector2), ulong homingTargetId = 0UL, float turnSpeed = 0f,
+            float homingDelay = 0f, float homingDuration = 0f)
+        {
+            if (template == null) return 0;
+            return BroadcastSkillPayload(root, template.name, 0, localOffset, localRotationZ,
+                template.transform.lossyScale, lifetime, attachToRoot, animate, velocity, homingTargetId,
+                turnSpeed, homingDelay, homingDuration);
+        }
+
+        /// <summary>
+        /// Host gửi visual kỹ năng theo Id trong catalog dùng chung (VFX standalone không có NetworkObject).
+        /// </summary>
+        public int BroadcastSkillVfx(int visualId, NetworkObject root, Vector3 localOffset, float localRotationZ,
+            Vector3 worldScale, float lifetime = 0f, bool attachToRoot = false, bool animate = false,
+            Vector2 velocity = default(Vector2), ulong homingTargetId = 0UL, float turnSpeed = 0f,
+            float homingDelay = 0f, float homingDuration = 0f)
+        {
+            if (visualId == 0) return 0;
+            return BroadcastSkillPayload(root, string.Empty, visualId, localOffset, localRotationZ,
+                worldScale, lifetime, attachToRoot, animate, velocity, homingTargetId, turnSpeed,
+                homingDelay, homingDuration);
+        }
+
+        private int BroadcastSkillPayload(NetworkObject root, string templateName, int visualId,
+            Vector3 localOffset, float localRotationZ, Vector3 worldScale, float lifetime,
+            bool attachToRoot, bool animate, Vector2 velocity, ulong homingTargetId, float turnSpeed,
+            float homingDelay, float homingDuration)
+        {
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsServer || root == null) return 0;
+            if (manager.CustomMessagingManager == null) return 0;
+            if (visualId == 0 && string.IsNullOrEmpty(templateName)) return 0;
+
+            if (templateName == null) templateName = string.Empty;
+            if (templateName.Length > maxNameLength) templateName = templateName.Substring(0, maxNameLength);
+
+            int handle = m_NextHandle++;
+            if (m_NextHandle <= 0) m_NextHandle = 1;
+
+            using FastBufferWriter writer = new FastBufferWriter(200, Allocator.Temp);
+            writer.WriteValueSafe(handle);
+            writer.WriteValueSafe(root.NetworkObjectId);
+            writer.WriteValueSafe(visualId);
+            writer.WriteValueSafe(templateName);
+            writer.WriteValueSafe(localOffset);
+            writer.WriteValueSafe(localRotationZ);
+            writer.WriteValueSafe(worldScale);
+            writer.WriteValueSafe(lifetime);
+            writer.WriteValueSafe(attachToRoot);
+            writer.WriteValueSafe(animate);
+            writer.WriteValueSafe(velocity);
+            writer.WriteValueSafe(homingTargetId);
+            writer.WriteValueSafe(turnSpeed);
+            writer.WriteValueSafe(homingDelay);
+            writer.WriteValueSafe(homingDuration);
+            manager.CustomMessagingManager.SendNamedMessageToAll(SkillMessageName, writer);
+
+            return handle;
+        }
+
+        /// <summary>
+        /// Host phát visual của một object con đang active (skill quái). Tự tính offset local so với root
+        /// và ghi nhớ handle để <see cref="End"/> thu hồi khi skill kết thúc.
+        /// </summary>
+        public static int PlaySkillVisual(GameObject template, float lifetime = 0f, bool animate = false,
+            bool attachToRoot = true, Vector2 velocity = default(Vector2), ulong homingTargetId = 0UL,
+            float turnSpeed = 0f, float homingDelay = 0f, float homingDuration = 0f)
+        {
+            if (template == null) return 0;
+            if (!TankBrain.NetworkSessionActive || NetworkManager.Singleton == null ||
+                !NetworkManager.Singleton.IsServer || Instance == null) return 0;
+
+            NetworkObject root = template.GetComponentInParent<NetworkObject>(true);
+            if (root == null)
+            {
+                Debug.LogWarning("[NetVisualSpawn] Skill visual không nằm trong NetworkObject: " + template.name, template);
+                return 0;
+            }
+
+            Vector3 localOffset = root.transform.InverseTransformPoint(template.transform.position);
+            float localRotationZ = Mathf.DeltaAngle(root.transform.eulerAngles.z, template.transform.eulerAngles.z);
+            int handle = Instance.BroadcastSkillVisual(template, root, localOffset, localRotationZ, lifetime,
+                attachToRoot, animate, velocity, homingTargetId, turnSpeed, homingDelay, homingDuration);
+            Remember(template, handle);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log("[NetVisual] host skill ghost " + template.name + " handle=" + handle + " root=" + root.name);
+#endif
+            return handle;
+        }
+
+        /// <summary>
+        /// Host phát một VFX standalone (không có NetworkObject) theo catalog Id.
+        /// Client dựng bản sao visual-only tại offset local của boss.
+        /// </summary>
+        public static int PlayVfx(GameObject prefab, GameObject instance, NetworkObject root, float lifetime = 0f,
+            bool attachToRoot = false, Vector2 velocity = default(Vector2), ulong homingTargetId = 0UL,
+            float turnSpeed = 0f, float homingDelay = 0f, float homingDuration = 0f)
+        {
+            if (prefab == null || instance == null) return 0;
+            if (!TankBrain.NetworkSessionActive || NetworkManager.Singleton == null ||
+                !NetworkManager.Singleton.IsServer || Instance == null) return 0;
+
+            if (root == null) root = instance.GetComponentInParent<NetworkObject>(true);
+            if (root == null) return 0;
+
+            int visualId = NetSkillVisualCatalog.FindId(prefab);
+            if (visualId == 0)
+            {
+                Debug.LogWarning("[NetVisualSpawn] VFX chưa có trong NetSkillVisualCatalog: " + prefab.name, prefab);
+                return 0;
+            }
+
+            float configuredLifetime = lifetime > 0f ? lifetime : NetSkillVisualCatalog.GetLifetime(prefab);
+            Vector3 localOffset = root.transform.InverseTransformPoint(instance.transform.position);
+            float localRotationZ = Mathf.DeltaAngle(root.transform.eulerAngles.z, instance.transform.eulerAngles.z);
+            int handle = Instance.BroadcastSkillVfx(visualId, root, localOffset, localRotationZ,
+                instance.transform.lossyScale, configuredLifetime, attachToRoot, false, velocity,
+                homingTargetId, turnSpeed, homingDelay, homingDuration);
+            Remember(instance, handle);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log("[NetVisual] host vfx ghost " + prefab.name + " id=" + visualId + " handle=" + handle + " root=" + root.name);
+#endif
+            return handle;
+        }
+
         /// <summary>Host gửi lệnh thu hồi một bản sao visual đã gửi trước đó.</summary>
         public void BroadcastDespawn(int handle)
         {
@@ -405,6 +552,99 @@ namespace IronWasteland.Net
             });
         }
 
+        /// <summary>
+        /// Client dựng bản sao skill/VFX do host gửi. Bản gắn root được parent để bám quái;
+        /// bản standalone (VFX) đứng tại vị trí cast. Mọi bản sao đều bị tắt collider + script gameplay.
+        /// </summary>
+        private void HandleSkillMessage(ulong senderClientId, FastBufferReader reader)
+        {
+            if (senderClientId != NetworkManager.ServerClientId) return; // chỉ host được gửi ghost
+            NetworkManager manager = NetworkManager.Singleton;
+            if (manager == null || manager.IsServer) return;
+
+            reader.ReadValueSafe(out int handle);
+            reader.ReadValueSafe(out ulong rootId);
+            reader.ReadValueSafe(out int visualId);
+            reader.ReadValueSafe(out string templateName);
+            reader.ReadValueSafe(out Vector3 localOffset);
+            reader.ReadValueSafe(out float localRotationZ);
+            reader.ReadValueSafe(out Vector3 worldScale);
+            reader.ReadValueSafe(out float lifetime);
+            reader.ReadValueSafe(out bool attachToRoot);
+            reader.ReadValueSafe(out bool animate);
+            reader.ReadValueSafe(out Vector2 velocity);
+            reader.ReadValueSafe(out ulong homingTargetId);
+            reader.ReadValueSafe(out float turnSpeed);
+            reader.ReadValueSafe(out float homingDelay);
+            reader.ReadValueSafe(out float homingDuration);
+
+            if (m_Ghosts.Count >= maxGhosts) RemoveOldestGhost();
+            if (manager.SpawnManager == null || !manager.SpawnManager.SpawnedObjects.TryGetValue(rootId, out NetworkObject root)) return;
+
+            GameObject prefab = null;
+            float configuredLifetime = 0f;
+            if (visualId != 0)
+            {
+                if (!NetSkillVisualCatalog.TryGet(visualId, out prefab, out configuredLifetime))
+                {
+                    Debug.LogWarning("[NetVisualSpawn] Client thiếu VFX Id " + visualId + " trong NetSkillVisualCatalog.");
+                    return;
+                }
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(templateName)) return;
+                Transform template = FindChildByName(root.transform, templateName);
+                if (template == null) return;
+                prefab = template.gameObject;
+            }
+
+            if (prefab == null) return;
+
+            GameObject ghost;
+            if (attachToRoot)
+            {
+                ghost = Instantiate(prefab, root.transform, false);
+                ghost.transform.localPosition = localOffset;
+                ghost.transform.localRotation = Quaternion.Euler(0f, 0f, localRotationZ);
+                ghost.transform.localScale = DivideScale(worldScale, root.transform.lossyScale);
+            }
+            else
+            {
+                Vector3 worldPosition = root.transform.TransformPoint(localOffset);
+                Quaternion worldRotation = Quaternion.Euler(0f, 0f, root.transform.eulerAngles.z + localRotationZ);
+                ghost = Instantiate(prefab, worldPosition, worldRotation);
+                ghost.transform.localScale = worldScale;
+            }
+
+            ghost.name = prefab.name + " (Skill Ghost)";
+            ghost.SetActive(true);
+            NetVisualGhost.Sanitize(ghost, true);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            SpriteRenderer ghostRenderer = ghost.GetComponentInChildren<SpriteRenderer>(true);
+            Debug.Log("[NetVisual] client skill ghost " + ghost.name + " attached=" + attachToRoot + " root=" + root.name +
+                      " scale=" + ghost.transform.lossyScale.ToString("F2") + " sorting=" +
+                      (ghostRenderer != null ? ghostRenderer.sortingOrder : -999) +
+                      " localPos=" + ghost.transform.localPosition.ToString("F2"));
+#endif
+
+            float ghostLifetime = lifetime > 0f ? lifetime : configuredLifetime;
+            m_Ghosts.Add(new Ghost
+            {
+                Instance = ghost,
+                Handle = handle,
+                DestroyAt = ghostLifetime > 0f ? Time.time + ghostLifetime : Time.time + DefaultGhostLifetime,
+                Velocity = attachToRoot ? Vector2.zero : velocity,
+                SpawnTime = Time.time,
+                Lifetime = ghostLifetime,
+                TargetId = attachToRoot ? 0UL : homingTargetId,
+                TurnSpeed = turnSpeed,
+                HomingDelay = homingDelay,
+                HomingDuration = homingDuration,
+                Attached = attachToRoot
+            });
+        }
+
         /// <summary>Tìm transform của NetworkObject theo id (dùng cho ghost đạn đuổi mục tiêu).</summary>
         private static Transform ResolveNetworkTransform(ulong networkObjectId)
         {
@@ -490,6 +730,15 @@ namespace IronWasteland.Net
                 SpawnTime = Time.time,
                 Lifetime = ghostLifetime
             });
+        }
+
+        /// <summary>Chia scale từng trục để bản ghost gắn root giữ đúng kích thước thế giới của host.</summary>
+        private static Vector3 DivideScale(Vector3 value, Vector3 divisor)
+        {
+            return new Vector3(
+                Mathf.Abs(divisor.x) > 0.0001f ? value.x / divisor.x : value.x,
+                Mathf.Abs(divisor.y) > 0.0001f ? value.y / divisor.y : value.y,
+                Mathf.Abs(divisor.z) > 0.0001f ? value.z / divisor.z : value.z);
         }
 
         private static Transform FindChildByName(Transform root, string name)

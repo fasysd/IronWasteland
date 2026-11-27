@@ -8,7 +8,7 @@ namespace IronWasteland.Enemies.D1onk.VFX
     /// Gồm các ngôi sao năng lượng / hồ quang điện quay quanh theo quỹ đạo elip.
     /// </summary>
     [DisallowMultipleComponent]
-    public class D1onkStunVFX : MonoBehaviour
+    public class D1onkStunVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Components")]
         [SerializeField] private Transform star1;

@@ -4939,6 +4939,7 @@ GameObject:
   - component: {fileID: 9011524400689258307}
   - component: {fileID: 5565115479254568361}
   - component: {fileID: 4637366807851035562}
+  - component: {fileID: 7049314797988759996}
   m_Layer: 0
   m_Name: VFX_SoulSummonPulse
   m_TagString: Untagged
@@ -5025,6 +5026,18 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 10
+--- !u!114 &7049314797988759996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4174546941761670337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost
 --- !u!1 &5294115772389508526
 GameObject:
   m_ObjectHideFlags: 0

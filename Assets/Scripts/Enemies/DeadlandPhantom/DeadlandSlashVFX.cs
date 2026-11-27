@@ -10,7 +10,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
     /// kèm tàn khói đen hư không và particle phát nổ khi chém trúng.
     /// </summary>
     [DisallowMultipleComponent]
-    public class DeadlandSlashVFX : MonoBehaviour
+    public class DeadlandSlashVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Slash Arc Configuration")]
         [Tooltip("Bán kính vết chém (m). Chuẩn GDD là 4m.")]

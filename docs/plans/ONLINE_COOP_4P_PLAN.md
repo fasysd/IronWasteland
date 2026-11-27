@@ -4,6 +4,8 @@
 > **Phiên bản:** 4.1 (thay bản 4 ngày 2026-11-16; chốt 5 câu hỏi ở §6.2: host mô phỏng 100%, reconnect ngoài MVP, lobby overlay, 30 quái/wave mặc định, không scale HP quái). Bản 4 sửa 5 lỗi chặn của vòng 3 (aim khi host cast, hai cờ proxy, collider tank proxy, guard `Awake`, cổng quyền phá offline), sửa số liệu sai (35 call site damage, 42 chỗ `Show`, 14 file `Destroy`, 6 prefab tank) và cắt phần chưa cần cho MVP (bỏ scene Lobby riêng, đưa reconnect ra backlog, gộp state khiên/effect).
 > **Ngày lập:** 2026-11-15
 > **Phạm vi:** Unity 6000.5.6f1, 2D URP, NGO 2.x + Relay/Lobby + UTP.
+>
+> **Cập nhật 2026-11-27:** phần Relay/Lobby (GĐ 7) đã bị thay bằng chế độ chỉ LAN — xem `docs/adr/0011-lan-only.md`. Các mục Relay bên dưới chỉ còn là lịch sử.
 
 ---
 

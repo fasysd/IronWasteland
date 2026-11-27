@@ -4,6 +4,7 @@ using IronWasteland.Enemies;
 using IronWasteland.Tanks;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace IronWasteland.Net
 {
@@ -13,7 +14,7 @@ namespace IronWasteland.Net
     /// -iw-host            : chạy làm host.
     /// -iw-join &lt;địa chỉ&gt; : chạy làm client và kết nối tới địa chỉ đó (ví dụ 127.0.0.1).
     /// -iw-port &lt;cổng&gt;   : đổi cổng kết nối (mặc định 7777).
-    /// Không truyền tham số nào thì component im lặng, lobby IMGUI vẫn dùng bình thường.
+    /// Không truyền tham số nào thì component im lặng, màn PHÒNG LAN vẫn dùng bình thường.
     /// </summary>
     [DefaultExecutionOrder(-50)]
     public sealed class NetAutoConnect : MonoBehaviour
@@ -63,7 +64,7 @@ namespace IronWasteland.Net
                 Debug.Log("[NetAutoConnect] bat log chi tiet NGO (Developer).");
             }
 
-            // Giữ xe luôn sống khi test tương tác thật, áp dụng cho cả đường host IP lẫn host Relay.
+            // Giữ xe luôn sống khi test tương tác thật.
             if (HasFlag(args, "-iw-godmode")) StartCoroutine(GodModeRoutine());
 
             // Dọn sạch quái và tắt màn chơi để có sân test yên tĩnh (dùng kèm -iw-godmode khi test input).
@@ -78,39 +79,39 @@ namespace IronWasteland.Net
                 Debug.Log($"[NetAutoConnect] start host ok={ok}");
                 if (ok) ApplyHostFlow(boot, args);
 
+                // -iw-spawn nhận tên bất kỳ prefab trong BossProbeCatalog (5 boss + 12 quái thường).
+                // -iw-boss giữ làm bí danh cũ để các script test hiện có không phải sửa.
+                string spawnProbe = ReadValue(args, "-iw-spawn");
+                if (string.IsNullOrEmpty(spawnProbe)) spawnProbe = ReadValue(args, "-iw-boss");
+                if (!string.IsNullOrEmpty(spawnProbe))
+                {
+                    // Sân test chỉ còn quái được chọn; bỏ qua để giữ đợt quái gốc của ải.
+                    if (!HasFlag(args, "-iw-keep-waves"))
+                    {
+                        IronWasteland.Stages.StageDirector.SuppressEnemyWaves = true;
+                        Debug.Log("[NetAutoConnect] solo spawn: da tat dot quai cua man.");
+                    }
+
+                    if (BossProbe.Request(spawnProbe))
+                    {
+                        StartCoroutine(BossProbe.AutoStartRoutine(boot));
+                        StartCoroutine(SpawnProbeHotkeyRoutine(boot, spawnProbe));
+                    }
+                    else Debug.LogWarning("[NetAutoConnect] khong tim thay probe: " + spawnProbe);
+                }
+
+                string killEnemy = ReadValue(args, "-iw-kill");
+                if (!string.IsNullOrEmpty(killEnemy)) StartCoroutine(KillEnemyRoutine(killEnemy));
+
                 if (HasFlag(args, "-iw-selftest-enemy")) StartCoroutine(EnemySelfTestRoutine());
                 if (HasFlag(args, "-iw-selftest-visual")) StartCoroutine(VisualSelfTestRoutine());
                 if (HasFlag(args, "-iw-selftest-stage")) StartCoroutine(StageSelfTestRoutine());
                 if (HasFlag(args, "-iw-selftest-win")) StartCoroutine(WinSelfTestRoutine());
+
                 if (HasFlag(args, "-iw-rehost-after")) StartCoroutine(RehostRoutine(boot, ReadFloat(args, "-iw-rehost-after", 10f)));
-            }
-            else if (HasFlag(args, "-iw-relay-host"))
-            {
-                boot.StartHostWithRelay();
-                Debug.Log("[NetAutoConnect] start relay host");
-                StartCoroutine(RelayHostFlowRoutine(boot, args));
             }
             else
             {
-                string relayJoin = ReadValue(args, "-iw-relay-join");
-                string lobbyJoin = ReadValue(args, "-iw-lobby-join");
-                string lobbyQuery = ReadValue(args, "-iw-lobby-query");
-                if (!string.IsNullOrEmpty(lobbyQuery))
-                {
-                    StartCoroutine(QueryLobbyRoutine(lobbyQuery, boot));
-                    Debug.Log($"[NetAutoConnect] query lobby {lobbyQuery}");
-                }
-                else if (!string.IsNullOrEmpty(lobbyJoin))
-                {
-                    StartCoroutine(JoinLobbyRoutine(lobbyJoin, boot));
-                    Debug.Log($"[NetAutoConnect] join lobby {lobbyJoin}");
-                }
-                else if (!string.IsNullOrEmpty(relayJoin))
-                {
-                    boot.StartClientWithRelay(relayJoin);
-                    Debug.Log($"[NetAutoConnect] join relay {relayJoin}");
-                }
-                else
                 {
                     string join = ReadValue(args, "-iw-join");
                     if (string.IsNullOrEmpty(join)) return;
@@ -171,6 +172,14 @@ namespace IronWasteland.Net
             MatchFlow flow = boot.Flow;
             if (flow == null) return;
 
+            // Cho phép chọn màn trực tiếp khi test tự động (ví dụ -iw-stage 2-3).
+            string stageCode = ReadValue(args, "-iw-stage");
+            if (!string.IsNullOrEmpty(stageCode))
+            {
+                if (flow.SelectStageByCode(stageCode)) Debug.Log("[NetAutoConnect] chon man " + stageCode);
+                else Debug.LogWarning("[NetAutoConnect] khong tim thay man " + stageCode);
+            }
+
             string mode = ReadValue(args, "-iw-flow");
             if (!string.IsNullOrEmpty(mode) && mode.ToLowerInvariant() == "coop")
             {
@@ -181,14 +190,6 @@ namespace IronWasteland.Net
 
             flow.StartSingle();
             Debug.Log("[NetAutoConnect] che do choi don: vao tran ngay");
-        }
-
-        /// <summary>Chờ Relay host mở xong rồi áp luồng chơi (StartHostWithRelay là async).</summary>
-        private IEnumerator RelayHostFlowRoutine(NetBootstrap boot, string[] args)
-        {
-            float deadline = Time.time + 20f;
-            while (Time.time < deadline && !boot.IsRunning) yield return null;
-            if (boot.IsRunning) ApplyHostFlow(boot, args);
         }
 
         /// <summary>Client tự bấm sẵn sàng khi đã thấy danh sách phòng (test tự động).</summary>
@@ -571,6 +572,69 @@ namespace IronWasteland.Net
         }
 
         /// <summary>
+        /// Host bấm F8 để spawn lại quái probe đang chọn ngay trong phòng hiện tại,
+        /// không cần thoát/restart. Chỉ bật khi có -iw-spawn hoặc -iw-boss.
+        /// </summary>
+        private IEnumerator SpawnProbeHotkeyRoutine(NetBootstrap boot, string token)
+        {
+            yield return null;
+            string current = token;
+            Debug.Log("[NetAutoConnect] F8: spawn lai probe '" + current + "', F9: chon va spawn probe ke tiep.");
+
+            while (true)
+            {
+                MatchFlow flow = boot != null ? boot.Flow : null;
+                bool playing = flow != null && flow.Phase == MatchPhase.Playing;
+                if (playing && Keyboard.current != null)
+                {
+                    if (Keyboard.current[Key.F9].wasPressedThisFrame)
+                    {
+                        current = NextProbeToken(current);
+                        Debug.Log("[NetAutoConnect] F9: chon probe '" + current + "'.");
+                        TrySpawnProbe(current, "F9");
+                    }
+                    else if (Keyboard.current[Key.F8].wasPressedThisFrame)
+                    {
+                        TrySpawnProbe(current, "F8");
+                    }
+                }
+
+                yield return null;
+            }
+        }
+
+        private static void TrySpawnProbe(string token, string source)
+        {
+            if (!BossProbe.Request(token))
+            {
+                Debug.LogWarning("[NetAutoConnect] " + source + ": khong tim thay probe " + token);
+                return;
+            }
+
+            if (!BossProbe.TrySpawn(new Vector3(0f, 6f, 0f)))
+                Debug.LogWarning("[NetAutoConnect] " + source + ": spawn that bai (host chua san sang?).");
+        }
+
+        private static string NextProbeToken(string current)
+        {
+            BossProbeCatalog catalog = Resources.Load<BossProbeCatalog>("BossProbeCatalog");
+            if (catalog == null || catalog.Prefabs == null || catalog.Prefabs.Length == 0) return current;
+
+            int index = 0;
+            for (int i = 0; i < catalog.Prefabs.Length; i++)
+            {
+                if (catalog.Prefabs[i] != null && catalog.Prefabs[i].name == current)
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            int next = (index + 1) % catalog.Prefabs.Length;
+            return catalog.Prefabs[next] != null ? catalog.Prefabs[next].name : current;
+        }
+
+        /// <summary>
         /// Host tự spawn một quái, đánh nó rồi despawn để kiểm tra client nhận đúng máu và sự kiện huỷ.
         /// Chỉ chạy khi có tham số -iw-selftest-enemy.
         /// </summary>
@@ -672,47 +736,6 @@ namespace IronWasteland.Net
         }
 
         /// <summary>
-        /// Tìm phòng công khai theo mã rồi lấy mã Relay (không join phòng) — dùng để test trên cùng một máy
-        /// vì hai tiến trình dùng chung danh tính Unity Services nên không thể join phòng của chính mình.
-        /// Chỉ dùng cho test tự động: -iw-lobby-query &lt;mã phòng&gt;.
-        /// </summary>
-        private IEnumerator QueryLobbyRoutine(string lobbyCode, NetBootstrap boot)
-        {
-            var task = NetRelayService.FindLobbyRelayCodeAsync(lobbyCode);
-            while (!task.IsCompleted) yield return null;
-
-            string relayCode = task.Status == System.Threading.Tasks.TaskStatus.RanToCompletion ? task.Result : null;
-            if (string.IsNullOrEmpty(relayCode))
-            {
-                Debug.LogWarning($"[NetAutoConnect] lobby {lobbyCode} -> khong tim thay ma relay ({NetRelayService.LastError})");
-                yield break;
-            }
-
-            boot.StartClientWithRelay(relayCode);
-            Debug.Log($"[NetAutoConnect] lobby {lobbyCode} -> relay {relayCode} (qua query)");
-        }
-
-        /// <summary>
-        /// Vào phòng bằng mã Lobby: tra mã Relay trong dữ liệu phòng rồi mới kết nối.
-        /// Chỉ dùng cho test tự động: -iw-lobby-join &lt;mã phòng&gt;.
-        /// </summary>
-        private IEnumerator JoinLobbyRoutine(string lobbyCode, NetBootstrap boot)
-        {
-            var task = NetRelayService.JoinLobbyAndGetRelayCodeAsync(lobbyCode);
-            while (!task.IsCompleted) yield return null;
-
-            string relayCode = task.Status == System.Threading.Tasks.TaskStatus.RanToCompletion ? task.Result : null;
-            if (string.IsNullOrEmpty(relayCode))
-            {
-                Debug.LogWarning($"[NetAutoConnect] lobby {lobbyCode} -> khong lay duoc ma relay ({NetRelayService.LastError})");
-                yield break;
-            }
-
-            boot.StartClientWithRelay(relayCode);
-            Debug.Log($"[NetAutoConnect] lobby {lobbyCode} -> relay {relayCode}");
-        }
-
-        /// <summary>
         /// Giết sạch quái trên host cho tới khi đạt mục tiêu để kiểm chứng nhánh THẮNG của ải.
         /// Giữ xe host còn sống trong lúc test (batchmode không điều khiển được) để ải không thua trước.
         /// Chỉ dùng cho test tự động: -iw-selftest-win.
@@ -751,6 +774,28 @@ namespace IronWasteland.Net
             }
 
             Debug.Log($"[NetSelfTest] win -> state={stage.State} kills={stage.Kills}/{stage.KillTarget}");
+        }
+
+        /// <summary>
+        /// Giết quái theo tên để kích hoạt kỹ năng nổ khi chết (chỉ dùng cho test tự động).
+        /// </summary>
+        private IEnumerator KillEnemyRoutine(string prefix)
+        {
+            yield return new WaitForSeconds(5f);
+
+            while (true)
+            {
+                EnemyBrain[] enemies = FindObjectsByType<EnemyBrain>(FindObjectsInactive.Exclude);
+                for (int i = 0; i < enemies.Length; i++)
+                {
+                    EnemyBrain enemy = enemies[i];
+                    if (enemy == null || !enemy.IsAlive) continue;
+                    if (!enemy.name.StartsWith(prefix, StringComparison.Ordinal)) continue;
+                    enemy.TakeDamage(999999f);
+                }
+
+                yield return new WaitForSeconds(1f);
+            }
         }
 
         private IEnumerator LogStateRoutine()
@@ -822,7 +867,7 @@ namespace IronWasteland.Net
         private static ushort ReadPort(string[] args)
         {
             string raw = ReadValue(args, "-iw-port");
-            return ushort.TryParse(raw, out ushort port) && port > 0 ? port : (ushort)7777;
+            return ushort.TryParse(raw, out ushort port) && port > 0 ? port : NetBootstrap.DefaultHostPort;
         }
 
         private static float ReadFloat(string[] args, string flag, float fallback)

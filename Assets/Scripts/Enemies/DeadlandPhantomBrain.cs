@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using IronWasteland.Core;
 using IronWasteland.Enemies.DeadlandPhantom;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using IronWasteland.Utilities;
 using UnityEngine;
@@ -516,7 +517,7 @@ namespace IronWasteland.Enemies
                 RotateToZero(instant: true);
             }
 
-            if (m_Animator != null) m_Animator.SetTrigger("DeadlandSlash");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "DeadlandSlash");
 
             if (m_VfxController != null)
             {
@@ -563,7 +564,7 @@ namespace IronWasteland.Enemies
                 RotateToZero(instant: true);
             }
 
-            if (m_Animator != null) m_Animator.SetTrigger("SoulSummon");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "SoulSummon");
 
             if (m_VfxController != null)
             {
@@ -647,7 +648,7 @@ namespace IronWasteland.Enemies
 
             RotateTowardsTarget(spawnPos, instant: true);
 
-            if (m_Animator != null) m_Animator.SetTrigger("CastRift");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "CastRift");
 
             TriggerGlobalSkillCooldown();
             CreateSpatialRift(spawnPos);
@@ -722,7 +723,7 @@ namespace IronWasteland.Enemies
             // Vận sức là kỹ năng bản thân, không cần mục tiêu -> Đặt góc quay về 0
             RotateToZero(instant: true);
 
-            if (m_Animator != null) m_Animator.SetTrigger("Charging");
+            NetEnemyAnimation.Trigger(gameObject, m_Animator, "Charging");
 
             if (m_VfxController != null)
             {

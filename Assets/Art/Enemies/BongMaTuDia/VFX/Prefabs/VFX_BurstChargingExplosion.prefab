@@ -102,6 +102,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5887033993598228511}
   - component: {fileID: 4682623164254829758}
+  - component: {fileID: 1150261943013645267}
   m_Layer: 0
   m_Name: VFX_BurstChargingExplosion
   m_TagString: Untagged
@@ -139,6 +140,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.DeadlandPhantom.SimpleVFXAutoCleanup
   lifetime: 1
+--- !u!114 &1150261943013645267
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5950168081622924102}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost
 --- !u!1 &8794297858539490950
 GameObject:
   m_ObjectHideFlags: 0

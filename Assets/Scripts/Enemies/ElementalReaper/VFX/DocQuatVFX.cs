@@ -9,7 +9,7 @@ namespace IronWasteland.Enemies.ElementalReaper.VFX
     /// Lưỡi trăng khuyết bán nguyệt 180° bán kính khớp chính xác với radius của Collider.
     /// </summary>
     [DisallowMultipleComponent]
-    public class DocQuatVFX : MonoBehaviour
+    public class DocQuatVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Components")]
         [SerializeField] private SpriteRenderer crescentSprite;

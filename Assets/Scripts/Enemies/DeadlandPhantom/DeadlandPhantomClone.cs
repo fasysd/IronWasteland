@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using IronWasteland.Core;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -226,7 +227,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
             if (m_Animator == null) m_Animator = GetComponentInChildren<Animator>();
             if (m_Animator != null)
             {
-                m_Animator.SetTrigger("SoulSummon");
+                NetEnemyAnimation.Trigger(gameObject, m_Animator, "SoulSummon");
             }
 
             if (m_VfxController == null) m_VfxController = GetComponent<BongMaTuDiaVFXController>();

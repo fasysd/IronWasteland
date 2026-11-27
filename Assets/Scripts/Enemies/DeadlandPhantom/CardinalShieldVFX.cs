@@ -17,7 +17,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
     /// và mũi tên chỉ hướng hở, kèm hiệu ứng phát sáng phản đòn khi bị bắn trúng góc đóng.
     /// </summary>
     [DisallowMultipleComponent]
-    public class CardinalShieldVFX : MonoBehaviour
+    public class CardinalShieldVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Quadrants (4 Cung Khiên)")]
         [Tooltip("Cung Đông (0 độ - Phải)")]

@@ -286,6 +286,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1247947074892526933}
   - component: {fileID: 5625496056960572139}
+  - component: {fileID: 7049278240717005595}
   m_Layer: 0
   m_Name: VFX_D1onkStun
   m_TagString: Untagged
@@ -330,3 +331,15 @@ MonoBehaviour:
   orbitSpeed: 240
   orbitRadiusX: 1.2
   orbitRadiusY: 0.4
+--- !u!114 &7049278240717005595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7899954895171703830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost

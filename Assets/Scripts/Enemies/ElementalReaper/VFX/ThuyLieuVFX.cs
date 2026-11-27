@@ -9,7 +9,7 @@ namespace IronWasteland.Enemies.ElementalReaper.VFX
     /// Vòng xoáy nước bao bọc Boss kèm bong bóng ngọc bích hồi phục.
     /// </summary>
     [DisallowMultipleComponent]
-    public class ThuyLieuVFX : MonoBehaviour
+    public class ThuyLieuVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Components")]
         [SerializeField] private ParticleSystem waterSwirlParticles;

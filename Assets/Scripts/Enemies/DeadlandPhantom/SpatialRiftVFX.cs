@@ -11,7 +11,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
     /// các hạt hư không xoay hút vào tâm và hiệu ứng nổ xoáy khi Tank chạm vào hoặc kích hoạt.
     /// </summary>
     [DisallowMultipleComponent]
-    public class SpatialRiftVFX : MonoBehaviour
+    public class SpatialRiftVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Fissure & Suction Settings")]
         [Tooltip("Bán kính vùng ảnh hưởng vết nứt (m).")]

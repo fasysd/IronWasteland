@@ -1,4 +1,6 @@
 using System;
+using IronWasteland.Net;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace IronWasteland.Enemies.DeadlandPhantom
@@ -56,8 +58,6 @@ namespace IronWasteland.Enemies.DeadlandPhantom
         /// </summary>
         public DeadlandSlashVFX PlayDeadlandSlash(Vector3? centerPosition = null, Action onComplete = null)
         {
-            if (m_Animator != null) m_Animator.SetTrigger("DeadlandSlash");
-
             Vector3 spawnPos = centerPosition ?? transform.position;
             if (deadlandSlashPrefab == null)
             {
@@ -65,7 +65,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
                 return null;
             }
 
-            GameObject go = Instantiate(deadlandSlashPrefab, spawnPos, Quaternion.identity);
+            GameObject go = SpawnVfx(deadlandSlashPrefab, spawnPos, Quaternion.identity);
             DeadlandSlashVFX slash = go.GetComponent<DeadlandSlashVFX>();
             if (slash != null)
             {
@@ -83,8 +83,6 @@ namespace IronWasteland.Enemies.DeadlandPhantom
         /// </summary>
         public SoulSummonPulseVFX PlaySoulSummonPulse(Vector3? centerPosition = null, Action onComplete = null)
         {
-            if (m_Animator != null) m_Animator.SetTrigger("SoulSummon");
-
             Vector3 spawnPos = centerPosition ?? transform.position;
             if (soulSummonPulsePrefab == null)
             {
@@ -92,7 +90,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
                 return null;
             }
 
-            GameObject go = Instantiate(soulSummonPulsePrefab, spawnPos, Quaternion.identity);
+            GameObject go = SpawnVfx(soulSummonPulsePrefab, spawnPos, Quaternion.identity);
             SoulSummonPulseVFX pulse = go.GetComponent<SoulSummonPulseVFX>();
             if (pulse != null)
             {
@@ -116,7 +114,8 @@ namespace IronWasteland.Enemies.DeadlandPhantom
                 return null;
             }
 
-            GameObject go = Instantiate(deadlandSoulProjectilePrefab, startPosition, Quaternion.identity);
+            Vector2 direction = initialDirection.sqrMagnitude > 0.0001f ? initialDirection.normalized : Vector2.down;
+            GameObject go = SpawnProjectileVfx(deadlandSoulProjectilePrefab, startPosition, Quaternion.identity, direction * speed, target, 180f);
             DeadlandSoulProjectile proj = go.GetComponent<DeadlandSoulProjectile>();
             if (proj != null)
             {
@@ -134,15 +133,13 @@ namespace IronWasteland.Enemies.DeadlandPhantom
         /// </summary>
         public SpatialRiftVFX SpawnSpatialRift(Vector3 position, Action<SpatialRiftVFX, Tanks.TankBrain> onTankEntered = null)
         {
-            if (m_Animator != null) m_Animator.SetTrigger("CastRift");
-
             if (spatialRiftPrefab == null)
             {
                 Debug.LogWarning("[BongMaTuDiaVFX] spatialRiftPrefab is missing!");
                 return null;
             }
 
-            GameObject go = Instantiate(spatialRiftPrefab, position, Quaternion.identity);
+            GameObject go = SpawnVfx(spatialRiftPrefab, position, Quaternion.identity);
             SpatialRiftVFX rift = go.GetComponent<SpatialRiftVFX>();
             if (rift != null && onTankEntered != null)
             {
@@ -172,7 +169,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
                 return null;
             }
 
-            GameObject go = Instantiate(cardinalShieldPrefab, transform);
+            GameObject go = SpawnVfx(cardinalShieldPrefab, transform);
             go.transform.localPosition = Vector3.zero;
             m_ActiveCardinalShield = go.GetComponent<CardinalShieldVFX>();
             if (m_ActiveCardinalShield != null)
@@ -233,8 +230,6 @@ namespace IronWasteland.Enemies.DeadlandPhantom
         /// </summary>
         public BurstChargingAuraVFX StartBurstCharging(float duration = 2f, float maxRadius = 8f, Action onComplete = null)
         {
-            if (m_Animator != null) m_Animator.SetTrigger("Charging");
-
             if (m_ActiveBurstChargingAura == null)
             {
                 if (burstChargingAuraPrefab == null)
@@ -243,7 +238,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
                     return null;
                 }
 
-                GameObject go = Instantiate(burstChargingAuraPrefab, transform);
+                GameObject go = SpawnVfx(burstChargingAuraPrefab, transform);
                 go.transform.localPosition = Vector3.zero;
                 m_ActiveBurstChargingAura = go.GetComponent<BurstChargingAuraVFX>();
             }
@@ -265,6 +260,40 @@ namespace IronWasteland.Enemies.DeadlandPhantom
         }
 
         #endregion
+
+        /// <summary>Dựng VFX tại vị trí thế giới và phát bản sao visual xuống client qua catalog.</summary>
+        private GameObject SpawnVfx(GameObject prefab, Vector3 position, Quaternion rotation)
+        {
+            GameObject go = Instantiate(prefab, position, rotation);
+            NetVisualSpawn.PlayVfx(prefab, go, GetComponentInParent<NetworkObject>(true));
+            return go;
+        }
+
+        /// <summary>Dựng VFX gắn vào một transform (aura bám boss) và phát bản sao visual xuống client.</summary>
+        private GameObject SpawnVfx(GameObject prefab, Transform parent)
+        {
+            GameObject go = Instantiate(prefab, parent);
+            go.transform.localPosition = Vector3.zero;
+            NetVisualSpawn.PlayVfx(prefab, go, GetComponentInParent<NetworkObject>(true), attachToRoot: true);
+            return go;
+        }
+
+        /// <summary>Dựng đạn VFX và gửi vận tốc/bám mục tiêu để client tự bay giống host.</summary>
+        private GameObject SpawnProjectileVfx(GameObject prefab, Vector3 position, Quaternion rotation,
+            Vector2 velocity, Transform target, float turnSpeed)
+        {
+            GameObject go = Instantiate(prefab, position, rotation);
+            NetworkObject targetNetwork = target != null ? target.GetComponentInParent<NetworkObject>() : null;
+            NetVisualSpawn.PlayVfx(
+                prefab,
+                go,
+                GetComponentInParent<NetworkObject>(true),
+                attachToRoot: false,
+                velocity: velocity,
+                homingTargetId: targetNetwork != null ? targetNetwork.NetworkObjectId : 0UL,
+                turnSpeed: turnSpeed);
+            return go;
+        }
 
         private void OnDestroy()
         {

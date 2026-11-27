@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8656121749351655917}
   - component: {fileID: 6034113170671189242}
   - component: {fileID: 1569257524488761395}
+  - component: {fileID: 8025671644265879463}
   m_Layer: 0
   m_Name: VFX_D1onkMuzzleFlash
   m_TagString: Untagged
@@ -108,3 +109,15 @@ MonoBehaviour:
   lifetime: 0.12
   fadeOut: 1
   scaleUp: 0
+--- !u!114 &8025671644265879463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2878022181906116093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost

@@ -9,7 +9,7 @@ namespace IronWasteland.Enemies.ElementalReaper.VFX
     /// Tự động đồng bộ kích thước hiển thị của WaveCone khớp 100% với bán kính (radius) và góc mở (coneAngle) của Collider.
     /// </summary>
     [DisallowMultipleComponent]
-    public class ThuyTrieuVFX : MonoBehaviour
+    public class ThuyTrieuVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Components")]
         [SerializeField] private SpriteRenderer waveConeSprite;

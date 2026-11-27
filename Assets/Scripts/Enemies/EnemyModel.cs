@@ -1,4 +1,5 @@
 using System;
+using IronWasteland.Net;
 using UnityEngine;
 
 namespace IronWasteland.Enemies
@@ -89,10 +90,9 @@ namespace IronWasteland.Enemies
         /// <summary>Kich hoat animation nhan sat thuong (TakeDamage).</summary>
         public void PlayTakeDamage()
         {
-            if (Animator != null)
-            {
-                Animator.SetTrigger(HashTakeDamage);
-            }
+            if (Animator == null) return;
+
+            NetEnemyAnimation.Trigger(gameObject, Animator, HashTakeDamage);
         }
 
         /// <summary>Kich hoat animation chet / bi ha guc (TakedDamage).</summary>

@@ -5032,6 +5032,7 @@ GameObject:
   - component: {fileID: 7157229543640643338}
   - component: {fileID: 566632459684234247}
   - component: {fileID: 4518313195648919493}
+  - component: {fileID: 5305570289337944005}
   m_Layer: 0
   m_Name: VFX_SpatialRift
   m_TagString: Untagged
@@ -5129,3 +5130,15 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 1.5
+--- !u!114 &5305570289337944005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9181232242175674489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: daf98c76594910a41982646358744646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Net.NetVisualGhost

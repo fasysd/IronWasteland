@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 922041840453551573}
   - component: {fileID: 6685580872320893248}
   - component: {fileID: 1709830519180184876}
+  - component: {fileID: 7670908173917205119}
   m_Layer: 7
   m_Name: XenNuoc
   m_TagString: Untagged
@@ -251,6 +252,38 @@ MonoBehaviour:
   playDeath: 1
   playCrowdControl: 1
   hitCooldown: 0.1
+--- !u!114 &7670908173917205119
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2191416951487824985}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkAnimator
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkAnimatorExpanded: 0
+  AuthorityMode: 0
+  m_Animator: {fileID: 2594644945956437722}
+  TransitionStateInfoList: []
+  AnimatorParameterEntries:
+    ParameterEntries:
+    - name: MoveSpeed
+      NameHash: 526065662
+      Synchronize: 0
+      ParameterType: 1
+    - name: TakeDamage
+      NameHash: -339413771
+      Synchronize: 1
+      ParameterType: 9
+    - name: TakedDamege
+      NameHash: 78573937
+      Synchronize: 1
+      ParameterType: 9
+  AnimatorParametersExpanded: 0
 --- !u!1 &2215390785097099234
 GameObject:
   m_ObjectHideFlags: 0

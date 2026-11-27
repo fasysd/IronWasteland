@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using IronWasteland.Net;
 using IronWasteland.Tanks;
 using UnityEngine;
 
@@ -65,6 +66,7 @@ namespace IronWasteland.Enemies.Normal
             }
 
             gameObject.SetActive(true);
+            NetVisualSpawn.PlaySkillVisual(gameObject, detonationDelay + hitCheckDelay + 0.2f, false);
             m_CastCoroutine = StartCoroutine(CastRoutine(onCompleted));
         }
 
@@ -76,6 +78,7 @@ namespace IronWasteland.Enemies.Normal
                 m_CastCoroutine = null;
             }
 
+            NetVisualSpawn.End(gameObject);
             gameObject.SetActive(false);
         }
 
@@ -108,6 +111,7 @@ namespace IronWasteland.Enemies.Normal
             OnFound?.Invoke(this, result);
 
             m_CastCoroutine = null;
+            NetVisualSpawn.End(gameObject);
             gameObject.SetActive(false);
             onCompleted?.Invoke();
         }

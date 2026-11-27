@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Text;
+using IronWasteland.Net.Models;
 using IronWasteland.Save;
 using IronWasteland.Tanks;
 using IronWasteland.UI;
@@ -10,8 +12,8 @@ using UnityEngine.UI;
 namespace IronWasteland.Net
 {
     /// <summary>
-    /// Giao diện lobby co-op mới: danh sách phòng lọc theo đúng ải đang chọn, phòng chờ 4 người,
-    /// sẵn sàng và bắt đầu trận. Chỉ điều khiển hiển thị; dữ liệu phiên vẫn lấy từ MatchFlow.
+    /// Giao diện phòng LAN: tự dò phòng bằng UDP broadcast, vào bằng IP host thủ công,
+    /// phòng chờ 4 người, sẵn sàng và bắt đầu trận. Dữ liệu phiên vẫn lấy từ MatchFlow.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class CoopLobbyController : MonoBehaviour
@@ -22,16 +24,27 @@ namespace IronWasteland.Net
         [SerializeField] private CanvasGroup m_Root;
         [SerializeField] private GameObject m_BrowserView;
         [SerializeField] private GameObject m_RoomView;
-        [SerializeField] private NetLobbyUI m_LegacyPanel;
+        [Tooltip("Dịch vụ tự dò phòng LAN; để trống sẽ tự tìm trong scene.")]
+        [SerializeField] private LanDiscoveryService discovery;
 
         [Header("Nội dung chung")]
+        [Tooltip("Dòng chữ ải đang chọn ở đầu màn.")]
         [SerializeField] private TextMeshProUGUI m_StageCaption;
+        [Tooltip("Dòng trạng thái dưới danh sách phòng.")]
         [SerializeField] private TextMeshProUGUI m_Status;
-        [SerializeField] private TextMeshProUGUI m_RoomCode;
+        [Tooltip("Địa chỉ IP host hiện trong phòng chờ.")]
+        [SerializeField] private TextMeshProUGUI m_RoomAddress;
+        [Tooltip("Ghi chú hướng dẫn chia sẻ địa chỉ host.")]
+        [SerializeField] private TextMeshProUGUI m_RoomNote;
 
         [Header("Danh sách phòng")]
+        [Tooltip("Tên phòng trên 6 dòng danh sách.")]
         [SerializeField] private TextMeshProUGUI[] m_RoomNames = new TextMeshProUGUI[6];
+        [Tooltip("Thông tin người/ải trên 6 dòng danh sách.")]
         [SerializeField] private TextMeshProUGUI[] m_RoomDetails = new TextMeshProUGUI[6];
+        [Tooltip("Object gốc của 6 dòng phòng, bật/tắt theo số phòng tìm thấy.")]
+        [SerializeField] private GameObject[] m_RoomRows = new GameObject[6];
+        [Tooltip("Khối gợi ý khi chưa tìm thấy phòng LAN nào.")]
         [SerializeField] private GameObject m_EmptyHint;
 
         [Header("Phòng chờ")]
@@ -41,22 +54,24 @@ namespace IronWasteland.Net
         [SerializeField] private TextMeshProUGUI m_StartLabel;
         [SerializeField] private TextMeshProUGUI m_RoomHint;
 
-        [Header("Nhập mã phòng")]
-        [SerializeField] private TextMeshProUGUI m_JoinCodeText;
+        [Header("Nhập IP host")]
+        [Tooltip("Chữ hiển thị trong ô nhập IP host.")]
+        [SerializeField] private TextMeshProUGUI m_AddressText;
 
         [Header("Scene")]
         [SerializeField] private string m_BackSceneName = "StageSelect";
 
         private const float DesignHeight = 1080f;
 
-        private readonly List<NetRelayService.LobbyRoom> m_Rooms = new List<NetRelayService.LobbyRoom>();
+        private readonly List<LanRoomInfo> m_Rooms = new List<LanRoomInfo>();
         private GameController m_GameController;
         private bool m_Busy;
         private float m_LastQueryTime;
         private bool m_Shown;
         private bool m_StartSingleRequested;
-        private string m_JoinCode = string.Empty;
-        private bool m_JoinCodeFocused;
+        private string m_AddressInput = string.Empty;
+        private string m_JoinedHostAddress = string.Empty;
+        private bool m_AddressFocused;
         private bool m_GarageOpen;
         private bool m_GarageLoading;
         private bool m_PickerScenePrepared;
@@ -65,14 +80,13 @@ namespace IronWasteland.Net
         {
             if (bootstrap == null) bootstrap = FindAnyObjectByType<NetBootstrap>();
             if (flow == null) flow = FindAnyObjectByType<MatchFlow>();
-            if (m_LegacyPanel == null) m_LegacyPanel = FindAnyObjectByType<NetLobbyUI>();
+            if (discovery == null) discovery = FindAnyObjectByType<LanDiscoveryService>();
             if (m_GameController == null) m_GameController = FindAnyObjectByType<GameController>();
 
             if (m_Root == null) m_Root = GetComponent<CanvasGroup>();
-            if (m_Root != null) m_Root.alpha = 0f;
+            SetRootVisible(false);
 
             if (flow != null) flow.Changed += OnFlowChanged;
-            NetRelayService.LobbyChanged += OnLobbyChanged;
             NetBootstrap.HostDisconnected += OnHostDisconnected;
 
             SetStageCaption();
@@ -96,17 +110,62 @@ namespace IronWasteland.Net
             {
                 m_StartSingleRequested = false;
                 StartSingle();
+                return;
             }
+
+            // Chơi lại: Netcode load lại scene này khi phiên vẫn chạy. Bản NetBootstrap trong
+            // scene mới bị huỷ vì đã có Instance DontDestroyOnLoad, nên phải trỏ lại instance thật
+            // rồi mới mở phòng chờ; nếu không CanvasGroup vẫn ẩn và cả màn chỉ còn nền xanh.
+            ResolvePersistentSession();
+
+            if (!m_Shown && bootstrap != null && bootstrap.IsRunning)
+            {
+                ShowRoom();
+            }
+            else if (!m_Shown)
+            {
+                ShowBrowser();
+            }
+        }
+
+        /// <summary>Trỏ lại NetBootstrap/MatchFlow đang sống sau khi scene CoopLobby được load lại.</summary>
+        private void ResolvePersistentSession()
+        {
+            NetBootstrap persistent = NetBootstrap.Instance;
+            if (persistent == null) return;
+
+            bootstrap = persistent;
+            if (persistent.Manager != null && !persistent.Manager.IsServer && string.IsNullOrEmpty(m_JoinedHostAddress))
+            {
+                m_JoinedHostAddress = persistent.JoinAddress;
+            }
+
+            MatchFlow persistentFlow = persistent.GetComponent<MatchFlow>();
+            if (persistentFlow == null || persistentFlow == flow) return;
+
+            if (flow != null) flow.Changed -= OnFlowChanged;
+            flow = persistentFlow;
+            flow.Changed += OnFlowChanged;
         }
 
         private void OnDestroy()
         {
             if (flow != null) flow.Changed -= OnFlowChanged;
-            NetRelayService.LobbyChanged -= OnLobbyChanged;
             NetBootstrap.HostDisconnected -= OnHostDisconnected;
         }
 
-        /// <summary>Áp mã ải của phòng vừa tham gia và tra tên ải tương ứng để caption luôn đúng.</summary>
+        /// <summary>Dịch vụ quảng bá phòng LAN; tự lấy từ NetBootstrap nếu builder chưa gán.</summary>
+        private LanDiscoveryService Discovery
+        {
+            get
+            {
+                if (discovery == null && bootstrap != null) discovery = bootstrap.GetComponent<LanDiscoveryService>();
+                if (discovery == null) discovery = FindAnyObjectByType<LanDiscoveryService>();
+                return discovery;
+            }
+        }
+
+        /// <summary>Áp mã ải của phòng LAN vừa tham gia và tra tên ải tương ứng để caption luôn đúng.</summary>
         private void ApplyStageCode(string stageCode)
         {
             if (string.IsNullOrWhiteSpace(stageCode)) return;
@@ -128,11 +187,10 @@ namespace IronWasteland.Net
         private void ShowBrowser()
         {
             m_Shown = true;
-            m_JoinCodeFocused = false;
-            RefreshJoinCode();
-            if (m_Root != null) m_Root.alpha = 1f;
+            m_AddressFocused = false;
+            RefreshAddressInput();
+            SetRootVisible(true);
             SetView(true);
-            if (m_LegacyPanel != null) m_LegacyPanel.PanelVisible = false;
             SetStageCaption();
             RefreshRooms();
         }
@@ -143,13 +201,21 @@ namespace IronWasteland.Net
             if (m_RoomView != null) m_RoomView.SetActive(!browser);
         }
 
+        /// <summary>Bật/tắt cả khung lobby; phải bật raycast thì Button mới nhận được chuột.</summary>
+        private void SetRootVisible(bool visible)
+        {
+            if (m_Root == null) return;
+            m_Root.alpha = visible ? 1f : 0f;
+            m_Root.blocksRaycasts = visible;
+            m_Root.interactable = visible;
+        }
+
         private void ShowRoom()
         {
             m_Shown = true;
-            m_JoinCodeFocused = false;
-            if (m_Root != null) m_Root.alpha = 1f;
+            m_AddressFocused = false;
+            SetRootVisible(true);
             SetView(false);
-            if (m_LegacyPanel != null) m_LegacyPanel.PanelVisible = false;
             SetStatus("PHÒNG ĐÃ MỞ  ·  CHỜ ĐỒNG ĐỘI");
             RefreshRoom();
         }
@@ -157,12 +223,11 @@ namespace IronWasteland.Net
         private void HideAll()
         {
             m_Shown = false;
-            m_JoinCodeFocused = false;
+            m_AddressFocused = false;
             m_GarageOpen = false;
             m_GarageLoading = false;
             GarageFlow.OpenedFromLobby = false;
-            if (m_Root != null) m_Root.alpha = 0f;
-            if (m_LegacyPanel != null) m_LegacyPanel.PanelVisible = false;
+            SetRootVisible(false);
         }
 
         private void StartSingle()
@@ -171,7 +236,8 @@ namespace IronWasteland.Net
 
             PrepareLocalLoadout();
             PrepareOfflineTank();
-            if (!bootstrap.StartHost())
+            bootstrap.SetLanStageCode(CoopEntry.StageCode);
+            if (!bootstrap.StartHost(false))
             {
                 HideAll();
                 return;
@@ -237,6 +303,12 @@ namespace IronWasteland.Net
             if (m_GarageOpen)
             {
                 TickGarage();
+                return;
+            }
+
+            if (m_BrowserView != null && m_BrowserView.activeSelf)
+            {
+                RefreshRooms();
             }
         }
 
@@ -247,7 +319,7 @@ namespace IronWasteland.Net
             Event current = Event.current;
             if (current == null || current.type != EventType.KeyDown) return;
 
-            if (m_JoinCodeFocused && HandleJoinCodeKey(current))
+            if (m_AddressFocused && HandleAddressKey(current))
             {
                 current.Use();
                 return;
@@ -267,8 +339,8 @@ namespace IronWasteland.Net
         public void PressCreate()
         {
             if (!m_Shown || m_Busy) return;
-            m_JoinCodeFocused = false;
-            RefreshJoinCode();
+            m_AddressFocused = false;
+            RefreshAddressInput();
             CreateRoom();
         }
 
@@ -276,24 +348,24 @@ namespace IronWasteland.Net
         public void PressRefresh()
         {
             if (!m_Shown) return;
-            m_JoinCodeFocused = false;
-            RefreshJoinCode();
+            m_AddressFocused = false;
+            RefreshAddressInput();
             RefreshRooms();
         }
 
-        /// <summary>Ô nhập mã phòng: bấm để bật chế độ gõ phím.</summary>
-        public void PressJoinCodeField()
+        /// <summary>Ô nhập IP host: bấm để bật chế độ gõ phím.</summary>
+        public void PressAddressField()
         {
             if (!m_Shown || m_BrowserView == null || !m_BrowserView.activeSelf) return;
-            m_JoinCodeFocused = true;
-            RefreshJoinCode();
+            m_AddressFocused = true;
+            RefreshAddressInput();
         }
 
-        /// <summary>Nút VÀO PHÒNG bằng mã.</summary>
-        public void PressJoinCode()
+        /// <summary>Nút VÀO PHÒNG bằng IP host.</summary>
+        public void PressJoinAddress()
         {
             if (!m_Shown || m_Busy) return;
-            TryJoinByCode();
+            TryJoinByAddress();
         }
 
         /// <summary>Bấm một dòng phòng trong danh sách để vào phòng đó.</summary>
@@ -332,40 +404,38 @@ namespace IronWasteland.Net
             LeaveRoom();
         }
 
-        private void TryJoinByCode()
+        /// <summary>Nút SAO CHÉP ĐỊA CHỈ trong phòng chờ.</summary>
+        public void PressCopyAddress()
+        {
+            if (!m_Shown) return;
+
+            bool isHost = bootstrap != null && bootstrap.Manager != null && bootstrap.Manager.IsServer;
+            string address = isHost ? BuildHostAddressList() : m_JoinedHostAddress;
+            if (string.IsNullOrEmpty(address)) address = BuildHostAddressList();
+            GUIUtility.systemCopyBuffer = address;
+            SetStatus(isHost ? "ĐÃ SAO CHÉP TẤT CẢ ĐỊA CHỈ HOST" : "ĐÃ SAO CHÉP ĐỊA CHỈ: " + address);
+        }
+
+        private void TryJoinByAddress()
         {
             if (m_Busy) return;
 
-            string code = m_JoinCode.Trim().ToUpperInvariant();
-            if (code.Length < 4)
+            ushort defaultPort = bootstrap != null ? bootstrap.HostPort : NetBootstrap.DefaultHostPort;
+            if (!LanAddress.TryParse(m_AddressInput, defaultPort, out string host, out ushort port))
             {
-                SetStatus("NHẬP MÃ PHÒNG (ÍT NHẤT 4 KÝ TỰ)");
+                SetStatus("NHẬP IP HOST, VÍ DỤ 192.168.1.10:7777");
                 return;
             }
 
             m_Busy = true;
-            m_JoinCodeFocused = false;
-            RefreshJoinCode();
+            m_AddressFocused = false;
+            RefreshAddressInput();
             SetStatus("ĐANG VÀO PHÒNG…");
-            JoinByCodeAsync(code);
+            JoinByAddress(host, port);
         }
 
-        private async void JoinByCodeAsync(string code)
+        private void JoinByAddress(string host, ushort port)
         {
-            string relayCode = await NetRelayService.JoinLobbyAndGetRelayCodeAsync(code);
-            if (string.IsNullOrEmpty(relayCode))
-            {
-                m_Busy = false;
-                SetStatus("KHÔNG VÀO ĐƯỢC PHÒNG: " + (NetRelayService.LastError ?? "LỖI KHÔNG XÁC ĐỊNH"));
-                return;
-            }
-
-            ApplyStageCode(NetRelayService.LobbyStageCode);
-
-            SetStageCaption();
-            PrepareLocalLoadout();
-            PrepareOfflineTank();
-
             if (bootstrap == null)
             {
                 m_Busy = false;
@@ -373,80 +443,114 @@ namespace IronWasteland.Net
                 return;
             }
 
-            bootstrap.StartClientWithRelay(relayCode);
+            SetStageCaption();
+            PrepareLocalLoadout();
+            PrepareOfflineTank();
+            m_JoinedHostAddress = host + ":" + port;
+            bootstrap.SetJoinTarget(host, port);
+
+            if (!bootstrap.StartClient())
+            {
+                m_Busy = false;
+                SetStatus("KHÔNG KẾT NỐI ĐƯỢC. KIỂM TRA IP HOST VÀ MẠNG LAN.");
+                return;
+            }
+
             StartCoroutine(WaitForSession(false));
         }
 
-        private bool HandleJoinCodeKey(Event current)
+        /// <summary>Địa chỉ chính của máy host để hiện và sao chép.</summary>
+        private string BuildHostAddress()
+        {
+            ushort port = bootstrap != null ? bootstrap.HostPort : NetBootstrap.DefaultHostPort;
+            return LanHostAddresses.Primary() + ":" + port;
+        }
+
+        /// <summary>Liệt kê mọi IPv4 nội bộ kèm cổng để host đọc cho đồng đội.</summary>
+        private string BuildHostAddressList()
+        {
+            ushort port = bootstrap != null ? bootstrap.HostPort : NetBootstrap.DefaultHostPort;
+            IReadOnlyList<string> addresses = LanHostAddresses.GetLocalIPv4();
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < addresses.Count; i++)
+            {
+                if (i > 0) builder.Append('\n');
+                builder.Append(addresses[i]).Append(':').Append(port);
+            }
+
+            return builder.ToString();
+        }
+
+        private bool HandleAddressKey(Event current)
         {
             if (current.keyCode == KeyCode.Backspace)
             {
-                if (m_JoinCode.Length > 0)
+                if (m_AddressInput.Length > 0)
                 {
-                    m_JoinCode = m_JoinCode.Substring(0, m_JoinCode.Length - 1);
+                    m_AddressInput = m_AddressInput.Substring(0, m_AddressInput.Length - 1);
                 }
 
-                RefreshJoinCode();
+                RefreshAddressInput();
                 return true;
             }
 
             if (current.keyCode == KeyCode.Return || current.keyCode == KeyCode.KeypadEnter)
             {
-                TryJoinByCode();
+                TryJoinByAddress();
                 return true;
             }
 
             if (current.keyCode == KeyCode.Escape)
             {
-                m_JoinCodeFocused = false;
-                RefreshJoinCode();
+                m_AddressFocused = false;
+                RefreshAddressInput();
                 return true;
             }
 
             if (current.control && current.keyCode == KeyCode.V)
             {
-                AppendJoinCode(GUIUtility.systemCopyBuffer);
+                AppendAddress(GUIUtility.systemCopyBuffer);
                 return true;
             }
 
             if (current.character != '\0' && !char.IsControl(current.character))
             {
-                AppendJoinCode(current.character.ToString());
+                AppendAddress(current.character.ToString());
                 return true;
             }
 
             return false;
         }
 
-        private void AppendJoinCode(string value)
+        private void AppendAddress(string value)
         {
             if (string.IsNullOrEmpty(value)) return;
 
-            for (int i = 0; i < value.Length && m_JoinCode.Length < 8; i++)
+            for (int i = 0; i < value.Length && m_AddressInput.Length < 64; i++)
             {
-                char c = char.ToUpperInvariant(value[i]);
-                if (char.IsLetterOrDigit(c))
+                char c = value[i];
+                if (char.IsLetterOrDigit(c) || c == '.' || c == ':' || c == '-')
                 {
-                    m_JoinCode += c;
+                    m_AddressInput += c;
                 }
             }
 
-            RefreshJoinCode();
+            RefreshAddressInput();
         }
 
-        private void RefreshJoinCode()
+        private void RefreshAddressInput()
         {
-            if (m_JoinCodeText == null) return;
+            if (m_AddressText == null) return;
 
-            if (string.IsNullOrEmpty(m_JoinCode))
+            if (string.IsNullOrEmpty(m_AddressInput))
             {
-                m_JoinCodeText.text = m_JoinCodeFocused ? "|" : "NHẬP MÃ PHÒNG";
-                m_JoinCodeText.color = new Color32(0x6F, 0x7D, 0x8C, 0xFF);
+                m_AddressText.text = m_AddressFocused ? "|" : "NHẬP IP HOST";
+                m_AddressText.color = new Color32(0x6F, 0x7D, 0x8C, 0xFF);
                 return;
             }
 
-            m_JoinCodeText.text = m_JoinCodeFocused ? m_JoinCode + "|" : m_JoinCode;
-            m_JoinCodeText.color = new Color32(0xE6, 0xED, 0xF5, 0xFF);
+            m_AddressText.text = m_AddressFocused ? m_AddressInput + "|" : m_AddressInput;
+            m_AddressText.color = new Color32(0xE6, 0xED, 0xF5, 0xFF);
         }
 
         private void OpenGarage()
@@ -462,12 +566,7 @@ namespace IronWasteland.Net
             m_GarageLoading = true;
             m_PickerScenePrepared = false;
             GarageFlow.OpenedFromLobby = true;
-            if (m_Root != null)
-            {
-                m_Root.alpha = 0f;
-                m_Root.blocksRaycasts = false;
-                m_Root.interactable = false;
-            }
+            SetRootVisible(false);
 
             SceneManager.LoadSceneAsync("Garage", LoadSceneMode.Additive);
         }
@@ -504,12 +603,7 @@ namespace IronWasteland.Net
 
             m_GarageOpen = false;
             GarageFlow.OpenedFromLobby = false;
-            if (m_Root != null)
-            {
-                m_Root.alpha = 1f;
-                m_Root.blocksRaycasts = false;
-                m_Root.interactable = false;
-            }
+            SetRootVisible(true);
 
             PrepareLocalLoadout();
             if (flow != null && SaveSystem.Instance != null)
@@ -580,34 +674,40 @@ namespace IronWasteland.Net
             SetStatus("ĐANG TẠO PHÒNG…");
             PrepareLocalLoadout();
             PrepareOfflineTank();
-            bootstrap.StartHostWithRelay(null, CoopEntry.StageCode);
-            StartCoroutine(WaitForSession(true));
-        }
+            bootstrap.SetLanStageCode(CoopEntry.StageCode);
 
-        private void JoinRoom(NetRelayService.LobbyRoom room)
-        {
-            if (m_Busy || room == null) return;
-            JoinRoomAsync(room);
-        }
-
-        private async void JoinRoomAsync(NetRelayService.LobbyRoom room)
-        {
-            m_Busy = true;
-            SetStatus("ĐANG VÀO PHÒNG…");
-
-            string relayCode = await NetRelayService.JoinLobbyByIdAndGetRelayCodeAsync(room.Id);
-            if (string.IsNullOrEmpty(relayCode))
+            if (!bootstrap.StartHost())
             {
                 m_Busy = false;
-                SetStatus("KHÔNG VÀO ĐƯỢC PHÒNG: " + (NetRelayService.LastError ?? "LỖI KHÔNG XÁC ĐỊNH"));
+                ushort firstPort = bootstrap.HostPort;
+                ushort lastPort = (ushort)Mathf.Min(ushort.MaxValue, firstPort + NetBootstrap.HostPortFallbackCount - 1);
+                SetStatus("KHÔNG MỞ ĐƯỢC PHÒNG. CÁC CỔNG " + firstPort + "–" + lastPort + " ĐỀU BẬN.");
                 return;
             }
 
+            StartCoroutine(WaitForSession(true));
+        }
+
+        private void JoinRoom(LanRoomInfo room)
+        {
+            if (m_Busy || bootstrap == null) return;
+
+            m_Busy = true;
+            SetStatus("ĐANG VÀO PHÒNG…");
             ApplyStageCode(room.StageCode);
             SetStageCaption();
             PrepareLocalLoadout();
             PrepareOfflineTank();
-            bootstrap.StartClientWithRelay(relayCode);
+            m_JoinedHostAddress = room.DisplayAddress;
+            bootstrap.SetJoinTarget(room.Address, (ushort)room.Port);
+
+            if (!bootstrap.StartClient())
+            {
+                m_Busy = false;
+                SetStatus("KHÔNG KẾT NỐI ĐƯỢC TỚI " + room.DisplayAddress + ".");
+                return;
+            }
+
             StartCoroutine(WaitForSession(false));
         }
 
@@ -638,7 +738,7 @@ namespace IronWasteland.Net
             }
 
             m_Busy = false;
-            SetStatus("KHÔNG KẾT NỐI ĐƯỢC PHÒNG. KIỂM TRA MẠNG RỒI THỬ LẠI.");
+            SetStatus("KHÔNG KẾT NỐI ĐƯỢC PHÒNG LAN. KIỂM TRA IP HOST VÀ MẠNG.");
         }
 
         private void RefreshRooms()
@@ -646,59 +746,57 @@ namespace IronWasteland.Net
             if (m_Busy) return;
             if (Time.unscaledTime - m_LastQueryTime < 1f) return;
             m_LastQueryTime = Time.unscaledTime;
-            RefreshRoomsAsync();
-        }
-
-        private async void RefreshRoomsAsync()
-        {
-            SetStatus("ĐANG TẢI DANH SÁCH PHÒNG…");
-            List<NetRelayService.LobbyRoom> rooms = await NetRelayService.QueryEligibleRoomsAsync(CoopEntry.StageCode);
-            if (rooms == null)
-            {
-                SetStatus("KHÔNG TẢI ĐƯỢC PHÒNG: " + (NetRelayService.LastError ?? "LỖI KHÔNG XÁC ĐỊNH"));
-                return;
-            }
 
             m_Rooms.Clear();
-            m_Rooms.AddRange(rooms);
+            LanDiscoveryService service = Discovery;
+            if (service != null)
+            {
+                IReadOnlyList<LanRoomInfo> live = service.Rooms;
+                for (int i = 0; i < live.Count; i++) m_Rooms.Add(live[i]);
+            }
+
+            IReadOnlyList<LanRoomRow> rows = LanRoomListModel.Build(m_Rooms);
             for (int i = 0; i < 6; i++)
             {
-                bool has = i < m_Rooms.Count;
+                bool has = i < rows.Count;
+                if (m_RoomRows != null && i < m_RoomRows.Length && m_RoomRows[i] != null)
+                {
+                    m_RoomRows[i].SetActive(has);
+                }
+
                 if (m_RoomNames != null && i < m_RoomNames.Length && m_RoomNames[i] != null)
                 {
-                    Transform row = m_RoomNames[i].transform.parent;
-                    if (row != null && row.name.StartsWith("RoomRowGroup"))
-                    {
-                        row.gameObject.SetActive(has);
-                    }
-
-                    m_RoomNames[i].text = has ? m_Rooms[i].Name : "—";
+                    m_RoomNames[i].text = has ? rows[i].Name : "—";
                     m_RoomNames[i].color = has ? new Color32(0xE6, 0xED, 0xF5, 0xFF) : new Color32(0x3B, 0x46, 0x54, 0xFF);
                 }
 
                 if (m_RoomDetails != null && i < m_RoomDetails.Length && m_RoomDetails[i] != null)
                 {
-                    m_RoomDetails[i].text = has
-                        ? m_Rooms[i].Players + "/" + m_Rooms[i].MaxPlayers + " NGƯỜI  ·  " + m_Rooms[i].StageCode
-                        : string.Empty;
+                    m_RoomDetails[i].text = has ? rows[i].Details : string.Empty;
                 }
             }
 
             if (m_EmptyHint != null)
             {
-                m_EmptyHint.SetActive(m_Rooms.Count == 0);
+                m_EmptyHint.SetActive(rows.Count == 0);
             }
 
-            SetStatus(m_Rooms.Count == 0 ? "CHƯA CÓ PHÒNG NÀO CHO ẢI NÀY" : "TÌM THẤY " + m_Rooms.Count + " PHÒNG");
+            SetStatus(LanRoomListModel.Status(rows.Count));
         }
 
         private void RefreshRoom()
         {
             if (flow == null || bootstrap == null) return;
 
-            if (m_RoomCode != null)
+            bool isHost = bootstrap.Manager != null && bootstrap.Manager.IsServer;
+            if (m_RoomAddress != null)
             {
-                m_RoomCode.text = "MÃ PHÒNG // " + (string.IsNullOrEmpty(NetRelayService.LobbyCode) ? "—" : NetRelayService.LobbyCode);
+                m_RoomAddress.text = isHost ? BuildHostAddress() : m_JoinedHostAddress;
+            }
+
+            if (m_RoomNote != null)
+            {
+                m_RoomNote.text = isHost ? BuildHostAddressList() : "ĐANG KẾT NỐI TỚI HOST\n" + m_JoinedHostAddress;
             }
 
             bool allReady = flow.PlayerCount > 0;
@@ -767,15 +865,6 @@ namespace IronWasteland.Net
             if (Application.CanStreamedLevelBeLoaded(m_BackSceneName))
             {
                 SceneManager.LoadScene(m_BackSceneName);
-            }
-        }
-
-        private void OnLobbyChanged()
-        {
-            if (!m_Shown || m_GarageOpen) return;
-            if (m_RoomView != null && m_RoomView.activeSelf)
-            {
-                RefreshRoom();
             }
         }
 

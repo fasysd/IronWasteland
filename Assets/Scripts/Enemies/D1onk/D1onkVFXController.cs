@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using IronWasteland.Core;
 using IronWasteland.Enemies;
 using IronWasteland.Enemies.D1onk.VFX;
+using IronWasteland.Net;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace IronWasteland.Enemies.D1onk
@@ -222,7 +224,7 @@ namespace IronWasteland.Enemies.D1onk
             if (muzzleFlashPrefab != null)
             {
                 float angle = Mathf.Atan2(fireDir.y, fireDir.x) * Mathf.Rad2Deg;
-                Instantiate(muzzleFlashPrefab, spawnPos, Quaternion.Euler(0f, 0f, angle));
+                SpawnVfx(muzzleFlashPrefab, spawnPos, Quaternion.Euler(0f, 0f, angle));
             }
 
             if (missileProjectilePrefab == null)
@@ -231,7 +233,7 @@ namespace IronWasteland.Enemies.D1onk
                 return null;
             }
 
-            GameObject go = Instantiate(missileProjectilePrefab, spawnPos, Quaternion.identity);
+            GameObject go = SpawnProjectileVfx(missileProjectilePrefab, spawnPos, Quaternion.identity, fireDir.normalized * 12f, target, 60f);
             D1onkMissileProjectile projectile = go.GetComponent<D1onkMissileProjectile>();
             if (projectile != null)
             {
@@ -256,7 +258,7 @@ namespace IronWasteland.Enemies.D1onk
                 return null;
             }
 
-            GameObject go = Instantiate(trungPhatLightningPrefab, targetPosition, Quaternion.identity);
+            GameObject go = SpawnVfx(trungPhatLightningPrefab, targetPosition, Quaternion.identity);
             D1onkTrungPhatVFX vfx = go.GetComponent<D1onkTrungPhatVFX>();
             if (vfx != null)
             {
@@ -282,7 +284,7 @@ namespace IronWasteland.Enemies.D1onk
             {
                 Vector2 offset = UnityEngine.Random.insideUnitCircle * radius;
                 Vector3 pos = center + new Vector3(offset.x, offset.y, 0f);
-                GameObject go = Instantiate(trungPhatLightningPrefab, pos, Quaternion.identity);
+                GameObject go = SpawnVfx(trungPhatLightningPrefab, pos, Quaternion.identity);
                 D1onkTrungPhatVFX vfx = go.GetComponent<D1onkTrungPhatVFX>();
                 if (vfx != null)
                 {
@@ -311,12 +313,9 @@ namespace IronWasteland.Enemies.D1onk
             }
 
             Vector3 spawnPos = laserEmitterPoint != null ? laserEmitterPoint.position : transform.position;
-            GameObject go = Instantiate(lazeNguyenToPrefab, spawnPos, Quaternion.identity);
-            if (laserEmitterPoint != null)
-            {
-                go.transform.SetParent(laserEmitterPoint);
-                go.transform.localPosition = Vector3.zero;
-            }
+            GameObject go = laserEmitterPoint != null
+                ? SpawnVfx(lazeNguyenToPrefab, laserEmitterPoint)
+                : SpawnVfx(lazeNguyenToPrefab, spawnPos, Quaternion.identity);
 
             D1onkLazeNguyenToVFX vfx = go.GetComponent<D1onkLazeNguyenToVFX>();
             if (vfx != null)
@@ -347,7 +346,7 @@ namespace IronWasteland.Enemies.D1onk
                 return null;
             }
 
-            GameObject go = Instantiate(toaNhietDienRongPrefab, transform.position, Quaternion.identity);
+            GameObject go = SpawnVfx(toaNhietDienRongPrefab, transform.position, Quaternion.identity);
             D1onkToaNhietDienRongVFX vfx = go.GetComponent<D1onkToaNhietDienRongVFX>();
             if (vfx != null)
             {
@@ -402,7 +401,7 @@ namespace IronWasteland.Enemies.D1onk
                 int rndIdx = UnityEngine.Random.Range(0, normalEnemyPrefabs.Length);
                 GameObject enemyPrefab = normalEnemyPrefabs[rndIdx];
 
-                GameObject summonGo = Instantiate(vienBinhSummonVFXPrefab, spawnPos, Quaternion.identity);
+                GameObject summonGo = SpawnVfx(vienBinhSummonVFXPrefab, spawnPos, Quaternion.identity);
                 D1onkVienBinhSummonVFX summonVFX = summonGo.GetComponent<D1onkVienBinhSummonVFX>();
                 if (summonVFX != null)
                 {
@@ -425,7 +424,7 @@ namespace IronWasteland.Enemies.D1onk
         {
             if (m_ActiveChargingAura == null && chargingAuraPrefab != null)
             {
-                GameObject go = Instantiate(chargingAuraPrefab, transform);
+                GameObject go = SpawnVfx(chargingAuraPrefab, transform);
                 go.transform.localPosition = Vector3.zero;
                 m_ActiveChargingAura = go.GetComponent<D1onkChargingAuraVFX>();
             }
@@ -462,8 +461,9 @@ namespace IronWasteland.Enemies.D1onk
             if (m_ActiveStunVFX == null && stunVFXPrefab != null)
             {
                 Vector3 headPos = headPoint != null ? headPoint.position : transform.position + new Vector3(0f, 2.5f, 0f);
-                GameObject go = Instantiate(stunVFXPrefab, headPos, Quaternion.identity);
-                if (headPoint != null) go.transform.SetParent(headPoint);
+                GameObject go = headPoint != null
+                    ? SpawnVfx(stunVFXPrefab, headPoint)
+                    : SpawnVfx(stunVFXPrefab, headPos, Quaternion.identity);
                 m_ActiveStunVFX = go.GetComponent<D1onkStunVFX>();
             }
 
@@ -564,5 +564,40 @@ namespace IronWasteland.Enemies.D1onk
             }
         }
 #endif
+
+        /// <summary>Dựng VFX tại vị trí thế giới và phát bản sao visual xuống client qua catalog.</summary>
+        private GameObject SpawnVfx(GameObject prefab, Vector3 position, Quaternion rotation)
+        {
+            GameObject go = Instantiate(prefab, position, rotation);
+            NetVisualSpawn.PlayVfx(prefab, go, GetComponentInParent<NetworkObject>(true));
+            return go;
+        }
+
+        /// <summary>Dựng VFX gắn vào một transform (aura bám boss) và phát bản sao visual xuống client.</summary>
+        private GameObject SpawnVfx(GameObject prefab, Transform parent)
+        {
+            GameObject go = Instantiate(prefab, parent);
+            go.transform.localPosition = Vector3.zero;
+            NetVisualSpawn.PlayVfx(prefab, go, GetComponentInParent<NetworkObject>(true), attachToRoot: true);
+            return go;
+        }
+
+        /// <summary>Dựng đạn VFX và gửi vận tốc/bám mục tiêu để client tự bay giống host.</summary>
+        private GameObject SpawnProjectileVfx(GameObject prefab, Vector3 position, Quaternion rotation,
+            Vector2 velocity, Transform target, float turnSpeed)
+        {
+            GameObject go = Instantiate(prefab, position, rotation);
+            NetworkObject targetNetwork = target != null ? target.GetComponentInParent<NetworkObject>() : null;
+            NetVisualSpawn.PlayVfx(
+                prefab,
+                go,
+                GetComponentInParent<NetworkObject>(true),
+                attachToRoot: false,
+                velocity: velocity,
+                homingTargetId: targetNetwork != null ? targetNetwork.NetworkObjectId : 0UL,
+                turnSpeed: turnSpeed);
+            return go;
+        }
+
     }
 }

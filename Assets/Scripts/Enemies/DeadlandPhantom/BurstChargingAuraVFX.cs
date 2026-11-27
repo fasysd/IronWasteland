@@ -10,7 +10,7 @@ namespace IronWasteland.Enemies.DeadlandPhantom
     /// và vòng cảnh báo đỏ tím mở rộng dưới chân, báo hiệu đòn hủy diệt sắp xảy ra.
     /// </summary>
     [DisallowMultipleComponent]
-    public class BurstChargingAuraVFX : MonoBehaviour
+    public class BurstChargingAuraVFX : MonoBehaviour, IronWasteland.Net.INetVisualGhostDriver
     {
         [Header("Charging Settings")]
         [Tooltip("Thời gian vận sức (giây). Chuẩn GDD là 2 giây.")]

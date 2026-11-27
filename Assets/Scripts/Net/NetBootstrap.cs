@@ -6,7 +6,7 @@ using IronWasteland.Stages;
 using IronWasteland.Tanks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
-using Unity.Networking.Transport.Relay;
+using IronWasteland.Net.Models;
 using UnityEngine;
 
 namespace IronWasteland.Net
@@ -40,6 +40,9 @@ namespace IronWasteland.Net
         [Tooltip("Điều phối vòng đời phiên chơi (lobby → vào trận → thắng/thua).")]
         [SerializeField] private MatchFlow matchFlow;
 
+        [Tooltip("Dịch vụ quảng bá/tìm phòng LAN; để trống sẽ tự gắn vào cùng GameObject.")]
+        [SerializeField] private LanDiscoveryService discovery;
+
         [Header("Prefab mạng")]
         [Tooltip("Các TankDefinition có prefab sẽ được dùng làm roster khi spawn người chơi.")]
         [SerializeField] private TankDefinition[] networkTankDefinitions;
@@ -51,15 +54,21 @@ namespace IronWasteland.Net
         [SerializeField] private int optionSkill1;
         [SerializeField] private int optionSkill2;
 
-        [Header("Kết nối trực tiếp (chưa có Relay)")]
-        [Tooltip("Địa chỉ IP của host khi bấm Join.")]
+        [Header("Kết nối LAN trực tiếp")]
+        [Tooltip("Địa chỉ IP (hoặc IP:cổng) của host khi bấm vào phòng.")]
         [SerializeField] private string joinAddress = "127.0.0.1";
 
         [Tooltip("Cổng UDP của host khi bấm Join.")]
-        [SerializeField] private ushort joinPort = 7777;
+        [SerializeField] private ushort joinPort = DefaultHostPort;
 
-        [Tooltip("Cổng UDP host sẽ mở phòng (mặc định 7777; đổi khi test nhiều phòng trên một máy).")]
-        [SerializeField] private ushort hostPort = 7777;
+        [Tooltip("Cổng UDP host sẽ mở phòng (mặc định 7777; chỉ đổi bằng tham số dòng lệnh khi test).")]
+        [SerializeField, HideInInspector] private ushort hostPort = DefaultHostPort;
+
+        /// <summary>Cổng ưu tiên khi mở phòng LAN.</summary>
+        public const ushort DefaultHostPort = 7777;
+
+        /// <summary>Số cổng liên tiếp thử mở khi cổng ưu tiên đang bị ứng dụng khác chiếm.</summary>
+        public const int HostPortFallbackCount = 10;
 
         private readonly Dictionary<ulong, NetLoadout> m_Loadouts = new Dictionary<ulong, NetLoadout>();
 
@@ -105,12 +114,18 @@ namespace IronWasteland.Net
         /// </summary>
         public string LastDisconnectReason { get; private set; }
 
-        /// <summary>Đang tạo/join phiên (Relay/Lobby) — UI dùng để khoá nút và tránh bấm hai lần.</summary>
-        public bool IsStartingSession { get; private set; }
+        /// <summary>Cổng host đang mở (dùng để hiển thị địa chỉ cho đồng đội).</summary>
+        public ushort HostPort => hostPort > 0 ? hostPort : joinPort;
 
-        /// <summary>Thông báo tiến trình cho UI (rỗng khi không có gì đang chạy).</summary>
-        public string SessionStatus { get; private set; }
+        /// <summary>Địa chỉ host client đã dùng để vào phòng, giữ lại khi scene lobby được load lại.</summary>
+        public string JoinAddress => joinAddress;
 
+        /// <summary>Mã ải host đang chọn, ghi vào gói quảng bá LAN.</summary>
+        public string LanStageCode => m_LanStageCode;
+
+        private string m_LanStageCode = "1-1";
+        private int m_LastLanPlayers = -1;
+        private bool m_LastLanInMatch;
         private bool m_HadRemoteClient;
 
         public static NetBootstrap Instance { get; private set; }
@@ -119,21 +134,20 @@ namespace IronWasteland.Net
         {
             if (Instance != null && Instance != this)
             {
-                if (!Instance.IsRunning)
-                {
-                    Destroy(Instance.gameObject);
-                    Instance = this;
-                }
-                else
-                {
-                    Destroy(gameObject);
-                    return;
-                }
+                // Bản sao nằm trong scene mới (PHÒNG LAN, CHỌN ẢI) phải tự huỷ.
+                // TUYỆT ĐỐI không Destroy bản persistent cũ dù nó đang không chạy: huỷ NetworkManager
+                // trước khi ShutdownInternal sẽ bỏ lại toàn bộ xe/đối tượng mạng mồ côi, và trận sau
+                // hai NetworkManager cùng spawn xe cho một client — đúng lỗi hai xe chồng nhau.
+                Destroy(gameObject);
+                return;
             }
 
             Instance = this;
             transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
+
+            if (discovery == null) discovery = GetComponent<LanDiscoveryService>();
+            if (discovery == null) discovery = gameObject.AddComponent<LanDiscoveryService>();
 
             if (networkManager == null) networkManager = GetComponent<NetworkManager>();
             if (spawnService == null) spawnService = GetComponent<NetSpawnService>();
@@ -159,10 +173,63 @@ namespace IronWasteland.Net
             networkManager.OnClientDisconnectCallback += HandleClientDisconnected;
         }
 
+        private void Update()
+        {
+            if (discovery == null || !discovery.IsHosting) return;
+
+            int players = networkManager != null && networkManager.IsListening
+                ? Mathf.Max(1, networkManager.ConnectedClientsIds.Count)
+                : 1;
+            bool inMatch = matchFlow != null && matchFlow.Phase == MatchPhase.Playing;
+            if (players == m_LastLanPlayers && inMatch == m_LastLanInMatch) return;
+
+            m_LastLanPlayers = players;
+            m_LastLanInMatch = inMatch;
+            discovery.UpdateHost(players, inMatch);
+        }
+
         private void OnDestroy()
         {
             if (Instance == this) Instance = null;
+            discovery?.EndHost();
+
+            // Dọn xe trước khi NetworkManager chết. Nếu để ShutdownInternal lo, nó chỉ dọn object
+            // còn trỏ đúng NetworkManager hiện tại; manager bị huỷ trước sẽ để xe nằm lại DDOL.
+            if (spawnService != null) spawnService.DespawnAll();
+
             if (networkManager == null) return;
+
+            // NetworkManager.Shutdown() chỉ hẹn giờ ở Update kế tiếp. Thoát Play mode ngay sau đó
+            // khiến Update không chạy và driver UDP vẫn giữ cổng, lần chơi sau không mở được phòng.
+            // Đóng thẳng transport ở đây để nhả cổng ngay khi object bị huỷ.
+            if (networkManager.IsListening)
+            {
+                // NetworkManager có thể ném lỗi cấu hình khi đang huỷ (ví dụ NetworkConfig chưa có transport).
+                // OnDestroy không được để exception thoát ra, nếu không object phía sau sẽ không được dọn.
+                try
+                {
+                    networkManager.Shutdown(true);
+                }
+                catch (System.Exception exception)
+                {
+                    Debug.LogWarning("[NetBootstrap] Lỗi khi đóng NetworkManager: " + exception.Message);
+                }
+
+                UnityTransport transport = networkManager.NetworkConfig != null
+                    ? networkManager.NetworkConfig.NetworkTransport as UnityTransport
+                    : null;
+                if (transport != null)
+                {
+                    try
+                    {
+                        transport.Shutdown();
+                    }
+                    catch (System.Exception exception)
+                    {
+                        Debug.LogWarning("[NetBootstrap] Lỗi khi đóng transport: " + exception.Message);
+                    }
+                }
+            }
 
             networkManager.ConnectionApprovalCallback -= HandleConnectionApproval;
             networkManager.OnClientConnectedCallback -= HandleClientConnected;
@@ -170,7 +237,8 @@ namespace IronWasteland.Net
         }
 
         /// <summary>Mở phòng (host vừa là server vừa là người chơi).</summary>
-        public bool StartHost()
+        /// <param name="advertise">Có quảng bá phòng lên LAN hay không; chơi đơn truyền false.</param>
+        public bool StartHost(bool advertise = true)
         {
             if (networkManager == null) return false;
 
@@ -187,23 +255,64 @@ namespace IronWasteland.Net
             // callback OnClientConnected của host mới sẽ spawn xe ngay trong lobby.
             matchFlow?.PrepareNewSession();
 
-            // Mở phòng trên cổng đã cấu hình (mặc định 7777). Đổi cổng giúp tránh đụng cổng khi
-            // chạy nhiều phòng trên cùng một máy hoặc khi cổng cũ còn bị giữ.
+            // Mở phòng trên cổng đã cấu hình (mặc định 7777). Chỉ nghe trên mọi card mạng nội bộ.
+            // Nếu cổng ưu tiên đang bị ứng dụng khác (hoặc phiên test cũ) chiếm, thử các cổng kế tiếp
+            // để người chơi vẫn tạo được phòng; cổng thực tế được ghi lại vào hostPort để quảng bá.
             UnityTransport hostTransport = networkManager.NetworkConfig.NetworkTransport as UnityTransport;
-            if (hostTransport != null && hostPort > 0 && hostTransport.Protocol != UnityTransport.ProtocolType.RelayUnityTransport)
-            {
-                hostTransport.SetConnectionData(joinAddress, hostPort, "0.0.0.0");
-            }
-
+            ushort preferredPort = HostPort;
+            ushort chosenPort = preferredPort;
             NetLoadout loadout = BuildLocalLoadout();
             m_Loadouts[ServerClientId] = loadout;
 
-            bool started = networkManager.StartHost();
-            if (!started) m_Loadouts.Remove(ServerClientId);
+            int attempts = hostTransport != null ? HostPortFallbackCount : 1;
+            bool started = false;
+            for (int i = 0; i < attempts; i++)
+            {
+                int candidate = preferredPort + i;
+                if (candidate > ushort.MaxValue) break;
+
+                if (hostTransport != null) hostTransport.SetConnectionData("127.0.0.1", (ushort)candidate, "0.0.0.0");
+
+                // StartHost trả false khi cổng bận, nhưng cũng có thể ném exception khi NetworkConfig
+                // sai (Editor từng báo "Allowed types ..." rồi lỗi dây chuyền trong ShutdownInternal).
+                // Bắt lại để UI nhận false và báo lỗi, thay vì exception thoát ra ngoài vòng fallback.
+                try
+                {
+                    started = networkManager.StartHost();
+                }
+                catch (System.Exception exception)
+                {
+                    Debug.LogError("[NetBootstrap] StartHost lỗi ở cổng " + candidate + ": " + exception.Message, this);
+                    started = false;
+                    break;
+                }
+
+                if (started)
+                {
+                    chosenPort = (ushort)candidate;
+                    break;
+                }
+
+                Debug.LogWarning("[NetBootstrap] Không mở được cổng " + candidate + ", thử cổng tiếp theo.");
+            }
+
+            if (!started)
+            {
+                m_Loadouts.Remove(ServerClientId);
+                return false;
+            }
+
+            hostPort = chosenPort;
 
             // Vòng đời trận (lobby, chọn màn, vào trận) do MatchFlow quyết định; trước đây chỗ này
             // tự StartStage() nên vào phòng là quái lao vào ngay, không kịp chọn tank/màn.
-            if (started) matchFlow?.OnHostStarted();
+            if (started)
+            {
+                matchFlow?.OnHostStarted();
+                m_LastLanPlayers = -1;
+                m_LastLanInMatch = false;
+                if (advertise) discovery?.BeginHost(m_LanStageCode, HostPort, 1);
+            }
 
             return started;
         }
@@ -222,8 +331,14 @@ namespace IronWasteland.Net
             DestroyLocalOfflineTank();
             EnsureTransport();
             matchFlow?.PrepareNewSession();
+            if (!LanAddress.TryParse(joinAddress, joinPort, out string host, out ushort port))
+            {
+                Debug.LogWarning("[NetBootstrap] Địa chỉ host không hợp lệ: " + joinAddress, this);
+                return false;
+            }
+
             UnityTransport transport = networkManager.NetworkConfig.NetworkTransport as UnityTransport;
-            if (transport != null) transport.SetConnectionData(joinAddress, joinPort);
+            if (transport != null) transport.SetConnectionData(host, port);
 
             networkManager.NetworkConfig.ConnectionData = BuildLocalLoadout().ToPayload();
             return networkManager.StartClient();
@@ -240,6 +355,12 @@ namespace IronWasteland.Net
         public void SetHostPort(ushort port)
         {
             if (port > 0) hostPort = port;
+        }
+
+        /// <summary>Ghi mã ải đang chọn vào gói quảng bá trước khi mở phòng.</summary>
+        public void SetLanStageCode(string stageCode)
+        {
+            if (!string.IsNullOrWhiteSpace(stageCode)) m_LanStageCode = stageCode.Trim();
         }
 
         /// <summary>Đổi tank máy này chọn trước khi vào phòng (lobby cho phép đổi xe).</summary>
@@ -336,104 +457,6 @@ namespace IronWasteland.Net
             return m_Loadouts.TryGetValue(clientId, out NetLoadout loadout) ? loadout.TankIndex : (byte)0;
         }
 
-        /// <summary>Mở phòng qua Relay của Unity Services: tạo allocation, gắn transport rồi StartHost.</summary>
-        public async void StartHostWithRelay(string region = null, string stageCode = "1-1")
-        {
-            if (networkManager == null || networkManager.IsListening) return;
-            if (IsStartingSession)
-            {
-                Debug.LogWarning("[NetBootstrap] Đang tạo phiên khác — bỏ qua yêu cầu mở phòng Relay.");
-                return;
-            }
-
-            IsStartingSession = true;
-            SessionStatus = "Đang tạo phòng Relay…";
-            try
-            {
-            ConnectionLost = false;
-            LastDisconnectReason = null;
-            m_ReservedClients.Clear();
-            SessionEnded = false;
-            m_HadRemoteClient = false;
-            RelayServerData? relayData = await NetRelayService.CreateHostAllocationAsync(region);
-            if (relayData == null)
-            {
-                Debug.LogError("[NetBootstrap] Không tạo được Relay: " + NetRelayService.LastError, this);
-                return;
-            }
-
-            EnsureTransport();
-            UnityTransport transport = networkManager.NetworkConfig.NetworkTransport as UnityTransport;
-            if (transport == null)
-            {
-                Debug.LogError("[NetBootstrap] Thiếu UnityTransport để gắn Relay.", this);
-                return;
-            }
-
-            transport.SetRelayServerData(relayData.Value);
-            if (!StartHost())
-            {
-                Debug.LogError("[NetBootstrap] StartHost qua Relay thất bại.", this);
-                return;
-            }
-
-            bool lobbyCreated = await NetRelayService.CreateLobbyAsync("IronWasteland", stageCode);
-            Debug.Log($"[NetBootstrap] Relay code={NetRelayService.RelayJoinCode} lobby={lobbyCreated} lobbyCode={NetRelayService.LobbyCode} err={NetRelayService.LastError}");
-            }
-            finally
-            {
-                IsStartingSession = false;
-                SessionStatus = string.Empty;
-            }
-        }
-
-        /// <summary>Vào phòng Relay bằng mã join code (không dùng địa chỉ IP).</summary>
-        public async void StartClientWithRelay(string relayJoinCode)
-        {
-            if (networkManager == null || networkManager.IsListening) return;
-            if (IsStartingSession)
-            {
-                Debug.LogWarning("[NetBootstrap] Đang vào phòng khác — bỏ qua yêu cầu join Relay.");
-                return;
-            }
-
-            IsStartingSession = true;
-            SessionStatus = "Đang vào phòng Relay…";
-            try
-            {
-            ConnectionLost = false;
-            LastDisconnectReason = null;
-            m_ReservedClients.Clear();
-            SessionEnded = false;
-            m_HadRemoteClient = false;
-            RelayServerData? relayData = await NetRelayService.JoinAllocationAsync(relayJoinCode);
-            if (relayData == null)
-            {
-                Debug.LogError("[NetBootstrap] Không join được Relay: " + NetRelayService.LastError, this);
-                return;
-            }
-
-            ClearSceneEnemies();
-            DestroyLocalOfflineTank();
-            EnsureTransport();
-            UnityTransport transport = networkManager.NetworkConfig.NetworkTransport as UnityTransport;
-            if (transport == null)
-            {
-                Debug.LogError("[NetBootstrap] Thiếu UnityTransport để gắn Relay.", this);
-                return;
-            }
-
-            transport.SetRelayServerData(relayData.Value);
-            networkManager.NetworkConfig.ConnectionData = BuildLocalLoadout().ToPayload();
-            networkManager.StartClient();
-            }
-            finally
-            {
-                IsStartingSession = false;
-                SessionStatus = string.Empty;
-            }
-        }
-
         /// <summary>Đóng phòng ở cả hai phía.</summary>
         public void Shutdown()
         {
@@ -446,18 +469,17 @@ namespace IronWasteland.Net
             // Rời phiên: dọn trạng thái trận ngay trên máy này trước khi tắt mạng, để menu không
             // còn Phase Playing/kills cũ và không spawn quái offline khi quay về.
             matchFlow?.PrepareNewSession();
+            // Phòng khi MatchFlow chưa kịp gán hoặc đã bị huỷ: vẫn phải dọn xe trước khi đóng transport,
+            // nếu không các NetworkObject cũ sẽ sống tiếp vào phiên sau.
+            if (spawnService != null) spawnService.DespawnAll();
 
-            // Rời lobby trước khi tắt mạng: host xoá phòng, client tự gỡ mình khỏi danh sách thành viên.
-            // LeaveSession chạy bất đồng bộ nên không chặn thao tác đóng NetworkManager bên dưới.
-            NetRelayService.LeaveSession();
+            // Ngừng phát phòng trước khi tắt mạng để đồng đội không thấy phòng đã chết.
+            discovery?.EndHost();
             if (networkManager != null && networkManager.IsListening) networkManager.Shutdown();
         }
 
-        /// <summary>
-        /// Tạo lại phòng khi phiên cũ đã chết (host hết client hoặc client mất host).
-        /// Đường Relay sẽ tạo allocation + lobby mới; đường IP mở lại host trên cổng cũ.
-        /// </summary>
-        public void Rehost(bool useRelay)
+        /// <summary>Tạo lại phòng khi phiên cũ đã chết (host hết client hoặc client mất host).</summary>
+        public void Rehost()
         {
             if (!isActiveAndEnabled)
             {
@@ -465,36 +487,18 @@ namespace IronWasteland.Net
                 return;
             }
 
-            StartCoroutine(RehostRoutine(useRelay));
+            StartCoroutine(RehostRoutine());
         }
 
-        private System.Collections.IEnumerator RehostRoutine(bool useRelay)
+        private System.Collections.IEnumerator RehostRoutine()
         {
-            Debug.Log($"[NetBootstrap] Tạo lại phòng ({(useRelay ? "Relay" : "IP")})…");
+            Debug.Log("[NetBootstrap] Tạo lại phòng LAN…");
             Shutdown();
 
             // Chờ NGO dọn transport + callback xong rồi mới dựng phiên mới.
             yield return null;
-
-            // Chờ LeaveSessionAsync xoá/Leave lobby cũ xong trước khi tạo lobby mới — nếu không,
-            // finally của lần Leave cũ có thể ResetSession() đè lên phiên vừa tạo.
-            float wait = 0f;
-            while (NetRelayService.IsLeavingSession && wait < 3f)
-            {
-                wait += Time.unscaledDeltaTime;
-                yield return null;
-            }
-
             yield return new WaitForSecondsRealtime(0.6f);
-
-            if (useRelay)
-            {
-                StartHostWithRelay();
-            }
-            else
-            {
-                StartHost();
-            }
+            StartHost();
         }
 
         private void EnsureTransport()
@@ -629,8 +633,20 @@ namespace IronWasteland.Net
             // Người mới vào cần thấy aura/khiên của MỌI xe đang có, không chỉ xe mình.
             SendEffectSnapshotTo(clientId);
 
-            // Người vào giữa trận cần biết ải đang ở trạng thái nào.
-            if (stageManager != null && stageManager.State != StageState.Idle)
+            // Người vào giữa trận cần biết ải đang ở trạng thái nào. Scene ải hiện dùng
+            // StageDirector (không có StageManager), nên phải gửi từ director trước.
+            StageDirector director = FindAnyObjectByType<StageDirector>();
+            if (director != null && director.State != StageRunState.Idle)
+            {
+                byte state = director.State == StageRunState.Cleared
+                    ? NetStageEvents.StateCleared
+                    : director.State == StageRunState.Failed
+                        ? NetStageEvents.StateFailed
+                        : NetStageEvents.StateStarted;
+                string reason = director.State == StageRunState.Failed ? director.FailReason : null;
+                NetStageEvents.Instance?.Broadcast(director, state, reason);
+            }
+            else if (stageManager != null && stageManager.State != StageState.Idle)
             {
                 byte state = stageManager.State == StageState.Cleared
                     ? NetStageEvents.StateCleared
@@ -667,9 +683,6 @@ namespace IronWasteland.Net
                 LastDisconnectReason = networkManager.DisconnectReason;
                 ConnectionLost = true;
                 Debug.LogWarning($"[NetBootstrap] Mất kết nối tới host (clientId={clientId}). Lý do: {LastDisconnectReason}.");
-
-                // Host đã đóng phòng: gỡ mình khỏi lobby để lần sau tạo/join phòng mới sạch.
-                NetRelayService.LeaveSession();
 
                 // Nếu đang trong màn chơi thì kích hoạt trận đấu thất bại vì host đã rời phòng.
                 StageDirector director = FindAnyObjectByType<StageDirector>();
