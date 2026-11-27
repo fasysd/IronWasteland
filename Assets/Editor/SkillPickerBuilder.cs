@@ -3,8 +3,10 @@ using System.IO;
 using IronWasteland.UI;
 using TMPro;
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.TextCore.LowLevel;
 using UnityEngine.UI;
@@ -168,8 +170,8 @@ namespace IronWasteland.EditorTools
             AddImage(root, new LayerRect("Background", 0f, 0f, DesignWidth, DesignHeight), LoadSprite("bg"));
             AddImage(root, new LayerRect("Panel", 396f, 190f, 1128f, 700f), LoadSprite("panel"));
             Image tabsBackground = AddImage(root, new LayerRect("Tabs", 432f, 306f, 482f, 48f), LoadSprite("tabs_left"));
-            AddImage(root, new LayerRect("CloseButton", 1444f, 214f, 44f, 44f), LoadSprite("close_btn"));
-            AddImage(root, new LayerRect("FooterButton", 1318f, 812f, 170f, 52f), LoadSprite("footer_btn"));
+            Image closeButton = AddImage(root, new LayerRect("CloseButton", 1444f, 214f, 44f, 44f), LoadSprite("close_btn"));
+            Image footerButton = AddImage(root, new LayerRect("FooterButton", 1318f, 812f, 170f, 52f), LoadSprite("footer_btn"));
 
             // Ba thẻ: nền theo đúng vị trí, viền cam và nhãn LỰA CHỌN bật/tắt theo lựa chọn.
             Image[] cardBases = new Image[SkillCatalog.OptionCount];
@@ -288,6 +290,18 @@ namespace IronWasteland.EditorTools
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            UIHit.EnsureEventSystem(scene);
+            UnityEventTools.AddPersistentListener(UIHit.Attach(closeButton).onClick, controller.PressClose);
+            UnityEventTools.AddPersistentListener(UIHit.Attach(footerButton).onClick, controller.PressClose);
+            Button tab1Button = UIHit.AddZone(root, "HitTab1", 432f, 306f, 236f, 48f);
+            UnityEventTools.AddPersistentListener(tab1Button.onClick, controller.PressTab1);
+            Button tab2Button = UIHit.AddZone(root, "HitTab2", 678f, 306f, 236f, 48f);
+            UnityEventTools.AddPersistentListener(tab2Button.onClick, controller.PressTab2);
+            for (int i = 0; i < cardBases.Length; i++)
+            {
+                UnityEventTools.AddIntPersistentListener(UIHit.Attach(cardBases[i]).onClick, controller.Choose, i);
+            }
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);

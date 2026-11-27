@@ -81,10 +81,6 @@ namespace IronWasteland.UI
         private int m_DraggingSlider = -1;
         private bool m_IsLeaving;
 
-        private Rect BackArea => new Rect(72f, 100f, 158f, 48f);
-        private Rect ResetArea => new Rect(1292f, 890f, 200f, 86f);
-        private Rect ApplyArea => new Rect(1504f, 890f, 344f, 86f);
-
         private void Awake()
         {
             LoadValues();
@@ -244,17 +240,41 @@ namespace IronWasteland.UI
                 }
             }
 
-            if (BackArea.Contains(point) || ApplyArea.Contains(point))
+        }
+
+        /// <summary>Nút QUAY LẠI gọi vào đây, lưu cấu hình rồi về sảnh chính.</summary>
+        public void PressBack()
+        {
+            if (m_IsLeaving)
             {
-                SaveValues();
-                LoadScene(m_BackSceneName);
                 return;
             }
 
-            if (ResetArea.Contains(point))
+            SaveValues();
+            LoadScene(m_BackSceneName);
+        }
+
+        /// <summary>Nút MẶC ĐỊNH gọi vào đây, đưa toàn bộ âm lượng về giá trị gốc.</summary>
+        public void PressReset()
+        {
+            if (m_IsLeaving)
             {
-                ResetToDefaults();
+                return;
             }
+
+            ResetToDefaults();
+        }
+
+        /// <summary>Nút ÁP DỤNG gọi vào đây, lưu cấu hình rồi đóng màn.</summary>
+        public void PressApply()
+        {
+            if (m_IsLeaving)
+            {
+                return;
+            }
+
+            SaveValues();
+            LoadScene(m_BackSceneName);
         }
 
         /// <summary>Đổi âm lượng tổng theo góc chuột tính từ đỉnh vòng tròn, chiều kim đồng hồ.</summary>

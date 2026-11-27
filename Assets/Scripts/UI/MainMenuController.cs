@@ -413,21 +413,21 @@ namespace IronWasteland.UI
                 m_PressTimer -= Time.unscaledDeltaTime;
             }
 
-            if (PointerUpThisFrame && m_PressedIndex >= 0)
+            // Việc kích hoạt đã chuyển cho Button.onClick; ở đây chỉ còn hiệu ứng nhún khi nhấn.
+            if (PointerUpThisFrame)
             {
-                int released = m_HoveredIndex;
-                int pressed = m_PressedIndex;
                 m_PressedIndex = -1;
-                if (released == pressed && released >= 0)
-                {
-                    ActivateSection(released);
-                }
             }
         }
 
         /// <summary>Chuyển trạng thái chọn sang mục được bấm.</summary>
-        private void ActivateSection(int index)
+        public void ActivateSection(int index)
         {
+            if (m_IsLeaving)
+            {
+                return;
+            }
+
             ApplySelection(index);
 
             switch (index)
@@ -450,6 +450,11 @@ namespace IronWasteland.UI
         /// <summary>Cập nhật khu trưng bày theo xe đang chọn trong Garage, đọc thẳng TankRoster + PlayerProgress.</summary>
         private void ApplyTankPreview(int index)
         {
+            if (m_Roster == null)
+            {
+                m_Roster = Resources.Load<TankRoster>("TankRoster");
+            }
+
             if (m_Roster == null)
             {
                 return;

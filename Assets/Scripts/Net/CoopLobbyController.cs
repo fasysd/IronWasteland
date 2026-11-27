@@ -32,7 +32,6 @@ namespace IronWasteland.Net
         [Header("Danh sách phòng")]
         [SerializeField] private TextMeshProUGUI[] m_RoomNames = new TextMeshProUGUI[6];
         [SerializeField] private TextMeshProUGUI[] m_RoomDetails = new TextMeshProUGUI[6];
-        [SerializeField] private Rect[] m_RoomRowAreas = new Rect[6];
         [SerializeField] private GameObject m_EmptyHint;
 
         [Header("Phòng chờ")]
@@ -41,17 +40,6 @@ namespace IronWasteland.Net
         [SerializeField] private TextMeshProUGUI m_ReadyLabel;
         [SerializeField] private TextMeshProUGUI m_StartLabel;
         [SerializeField] private TextMeshProUGUI m_RoomHint;
-
-        [Header("Vùng bấm theo toạ độ thiết kế 1920x1080")]
-        [SerializeField] private Rect m_BackArea = new Rect(72f, 72f, 168f, 50f);
-        [SerializeField] private Rect m_CreateArea = new Rect(140f, 866f, 320f, 68f);
-        [SerializeField] private Rect m_RefreshArea = new Rect(482f, 866f, 240f, 68f);
-        [SerializeField] private Rect m_ReadyArea = new Rect(140f, 690f, 300f, 62f);
-        [SerializeField] private Rect m_StartArea = new Rect(140f, 770f, 420f, 76f);
-        [SerializeField] private Rect m_LeaveArea = new Rect(140f, 862f, 260f, 54f);
-        [SerializeField] private Rect m_GarageArea = new Rect(520f, 690f, 300f, 62f);
-        [SerializeField] private Rect m_JoinCodeArea = new Rect(740f, 866f, 332f, 68f);
-        [SerializeField] private Rect m_JoinCodeButtonArea = new Rect(1092f, 866f, 180f, 68f);
 
         [Header("Nhập mã phòng")]
         [SerializeField] private TextMeshProUGUI m_JoinCodeText;
@@ -62,13 +50,7 @@ namespace IronWasteland.Net
         private const float DesignHeight = 1080f;
 
         private readonly List<NetRelayService.LobbyRoom> m_Rooms = new List<NetRelayService.LobbyRoom>();
-        private Canvas m_Canvas;
         private GameController m_GameController;
-        private Vector2 m_PointerScreen;
-        private bool m_HasGuiPointer;
-        private bool m_GuiPointerDown;
-        private bool m_GuiPointerUp;
-        private bool m_Pressed;
         private bool m_Busy;
         private float m_LastQueryTime;
         private bool m_Shown;
@@ -81,16 +63,13 @@ namespace IronWasteland.Net
 
         private void Awake()
         {
-            m_Canvas = GetComponent<Canvas>();
-            if (m_Canvas == null) m_Canvas = GetComponentInParent<Canvas>();
-
             if (bootstrap == null) bootstrap = FindAnyObjectByType<NetBootstrap>();
             if (flow == null) flow = FindAnyObjectByType<MatchFlow>();
             if (m_LegacyPanel == null) m_LegacyPanel = FindAnyObjectByType<NetLobbyUI>();
             if (m_GameController == null) m_GameController = FindAnyObjectByType<GameController>();
 
             if (m_Root == null) m_Root = GetComponent<CanvasGroup>();
-            if (m_Root != null) m_Root.alpha = 0f;
+            SetRootVisible(false);
 
             if (flow != null) flow.Changed += OnFlowChanged;
             NetRelayService.LobbyChanged += OnLobbyChanged;
@@ -151,7 +130,7 @@ namespace IronWasteland.Net
             m_Shown = true;
             m_JoinCodeFocused = false;
             RefreshJoinCode();
-            if (m_Root != null) m_Root.alpha = 1f;
+            SetRootVisible(true);
             SetView(true);
             if (m_LegacyPanel != null) m_LegacyPanel.PanelVisible = false;
             SetStageCaption();
@@ -168,7 +147,7 @@ namespace IronWasteland.Net
         {
             m_Shown = true;
             m_JoinCodeFocused = false;
-            if (m_Root != null) m_Root.alpha = 1f;
+            SetRootVisible(true);
             SetView(false);
             if (m_LegacyPanel != null) m_LegacyPanel.PanelVisible = false;
             SetStatus("PHÒNG ĐÃ MỞ  ·  CHỜ ĐỒNG ĐỘI");
@@ -182,8 +161,16 @@ namespace IronWasteland.Net
             m_GarageOpen = false;
             m_GarageLoading = false;
             GarageFlow.OpenedFromLobby = false;
-            if (m_Root != null) m_Root.alpha = 0f;
+            SetRootVisible(false);
             if (m_LegacyPanel != null) m_LegacyPanel.PanelVisible = false;
+        }
+
+        private void SetRootVisible(bool visible)
+        {
+            if (m_Root == null) return;
+            m_Root.alpha = visible ? 1f : 0f;
+            m_Root.interactable = visible;
+            m_Root.blocksRaycasts = visible;
         }
 
         private void StartSingle()
@@ -258,23 +245,6 @@ namespace IronWasteland.Net
             if (m_GarageOpen)
             {
                 TickGarage();
-                return;
-            }
-
-            if (m_GuiPointerDown)
-            {
-                m_GuiPointerDown = false;
-                m_Pressed = true;
-            }
-
-            if (m_GuiPointerUp)
-            {
-                m_GuiPointerUp = false;
-                if (m_Pressed)
-                {
-                    m_Pressed = false;
-                    HandleClick(DesignPointerPosition(PointerPosition));
-                }
             }
         }
 
@@ -283,117 +253,91 @@ namespace IronWasteland.Net
             if (!m_Shown || m_GarageOpen) return;
 
             Event current = Event.current;
-            if (current == null) return;
+            if (current == null || current.type != EventType.KeyDown) return;
 
-            switch (current.type)
+            if (m_JoinCodeFocused && HandleJoinCodeKey(current))
             {
-                case EventType.MouseMove:
-                case EventType.MouseDrag:
-                    m_PointerScreen = ToScreenPoint(current.mousePosition);
-                    m_HasGuiPointer = true;
-                    break;
-                case EventType.MouseDown:
-                    if (current.button == 0)
-                    {
-                        m_PointerScreen = ToScreenPoint(current.mousePosition);
-                        m_HasGuiPointer = true;
-                        m_GuiPointerDown = true;
-                    }
-
-                    break;
-                case EventType.MouseUp:
-                    if (current.button == 0)
-                    {
-                        m_PointerScreen = ToScreenPoint(current.mousePosition);
-                        m_HasGuiPointer = true;
-                        m_GuiPointerUp = true;
-                    }
-
-                    break;
-                case EventType.KeyDown:
-                    if (m_JoinCodeFocused && HandleJoinCodeKey(current))
-                    {
-                        current.Use();
-                        break;
-                    }
-
-                    if (current.keyCode == KeyCode.Escape) GoBack();
-                    break;
+                current.Use();
+                return;
             }
+
+            if (current.keyCode == KeyCode.Escape) GoBack();
         }
 
-        private void HandleClick(Vector2 designPosition)
+        /// <summary>Nút QUAY LẠI ở header.</summary>
+        public void PressBack()
         {
-            if (m_BackArea.Contains(designPosition))
-            {
-                GoBack();
-                return;
-            }
+            if (!m_Shown) return;
+            GoBack();
+        }
 
-            if (m_BrowserView != null && m_BrowserView.activeSelf)
-            {
-                if (m_JoinCodeArea.Contains(designPosition))
-                {
-                    m_JoinCodeFocused = true;
-                    RefreshJoinCode();
-                    return;
-                }
+        /// <summary>Nút TẠO PHÒNG ở màn duyệt phòng.</summary>
+        public void PressCreate()
+        {
+            if (!m_Shown || m_Busy) return;
+            m_JoinCodeFocused = false;
+            RefreshJoinCode();
+            CreateRoom();
+        }
 
-                if (m_JoinCodeButtonArea.Contains(designPosition))
-                {
-                    TryJoinByCode();
-                    return;
-                }
+        /// <summary>Nút TẢI LẠI ở màn duyệt phòng.</summary>
+        public void PressRefresh()
+        {
+            if (!m_Shown) return;
+            m_JoinCodeFocused = false;
+            RefreshJoinCode();
+            RefreshRooms();
+        }
 
-                m_JoinCodeFocused = false;
-                RefreshJoinCode();
+        /// <summary>Ô nhập mã phòng: bấm để bật chế độ gõ phím.</summary>
+        public void PressJoinCodeField()
+        {
+            if (!m_Shown || m_BrowserView == null || !m_BrowserView.activeSelf) return;
+            m_JoinCodeFocused = true;
+            RefreshJoinCode();
+        }
 
-                if (m_CreateArea.Contains(designPosition))
-                {
-                    CreateRoom();
-                    return;
-                }
+        /// <summary>Nút VÀO PHÒNG bằng mã.</summary>
+        public void PressJoinCode()
+        {
+            if (!m_Shown || m_Busy) return;
+            TryJoinByCode();
+        }
 
-                if (m_RefreshArea.Contains(designPosition))
-                {
-                    RefreshRooms();
-                    return;
-                }
+        /// <summary>Bấm một dòng phòng trong danh sách để vào phòng đó.</summary>
+        public void PressRoom(int index)
+        {
+            if (!m_Shown || m_Busy) return;
+            if (index < 0 || index >= m_Rooms.Count) return;
+            JoinRoom(m_Rooms[index]);
+        }
 
-                for (int i = 0; i < m_Rooms.Count && i < m_RoomRowAreas.Length; i++)
-                {
-                    if (m_RoomRowAreas[i].Contains(designPosition))
-                    {
-                        JoinRoom(m_Rooms[i]);
-                        return;
-                    }
-                }
+        /// <summary>Nút NHÀ XE trong phòng chờ.</summary>
+        public void PressGarage()
+        {
+            if (!m_Shown) return;
+            OpenGarage();
+        }
 
-                return;
-            }
+        /// <summary>Nút SẴN SÀNG trong phòng chờ.</summary>
+        public void PressReady()
+        {
+            if (!m_Shown) return;
+            if (flow != null) flow.RequestReady(!flow.LocalReady);
+        }
 
-            if (m_GarageArea.Contains(designPosition))
-            {
-                OpenGarage();
-                return;
-            }
+        /// <summary>Nút BẮT ĐẦU CHIẾN ĐẤU trong phòng chờ.</summary>
+        public void PressStart()
+        {
+            if (!m_Shown) return;
+            TryStartMatch();
+        }
 
-            if (m_ReadyArea.Contains(designPosition))
-            {
-                if (flow != null) flow.RequestReady(!flow.LocalReady);
-                return;
-            }
-
-            if (m_StartArea.Contains(designPosition))
-            {
-                TryStartMatch();
-                return;
-            }
-
-            if (m_LeaveArea.Contains(designPosition))
-            {
-                LeaveRoom();
-            }
+        /// <summary>Nút RỜI PHÒNG trong phòng chờ.</summary>
+        public void PressLeave()
+        {
+            if (!m_Shown) return;
+            LeaveRoom();
         }
 
         private void TryJoinByCode()
@@ -526,12 +470,7 @@ namespace IronWasteland.Net
             m_GarageLoading = true;
             m_PickerScenePrepared = false;
             GarageFlow.OpenedFromLobby = true;
-            if (m_Root != null)
-            {
-                m_Root.alpha = 0f;
-                m_Root.blocksRaycasts = false;
-                m_Root.interactable = false;
-            }
+            SetRootVisible(false);
 
             SceneManager.LoadSceneAsync("Garage", LoadSceneMode.Additive);
         }
@@ -568,12 +507,7 @@ namespace IronWasteland.Net
 
             m_GarageOpen = false;
             GarageFlow.OpenedFromLobby = false;
-            if (m_Root != null)
-            {
-                m_Root.alpha = 1f;
-                m_Root.blocksRaycasts = false;
-                m_Root.interactable = false;
-            }
+            SetRootVisible(true);
 
             PrepareLocalLoadout();
             if (flow != null && SaveSystem.Instance != null)
@@ -873,31 +807,5 @@ namespace IronWasteland.Net
             if (m_Status != null) m_Status.text = value;
         }
 
-        private static Vector2 ToScreenPoint(Vector2 guiPosition)
-        {
-            return new Vector2(guiPosition.x, Screen.height - guiPosition.y);
-        }
-
-        private Vector2 DesignPointerPosition(Vector2 screenPosition)
-        {
-            float scale = m_Canvas != null ? m_Canvas.scaleFactor : 1f;
-            if (scale <= 0f) scale = 1f;
-            return new Vector2(screenPosition.x / scale, (Screen.height - screenPosition.y) / scale);
-        }
-
-        private Vector2 PointerPosition
-        {
-            get
-            {
-                if (m_HasGuiPointer) return m_PointerScreen;
-
-#if ENABLE_INPUT_SYSTEM
-                UnityEngine.InputSystem.Mouse mouse = UnityEngine.InputSystem.Mouse.current;
-                return mouse != null ? mouse.position.ReadValue() : Vector2.zero;
-#else
-                return Input.mousePosition;
-#endif
-            }
-        }
     }
 }

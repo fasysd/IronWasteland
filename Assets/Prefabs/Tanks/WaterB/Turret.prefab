@@ -149,7 +149,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8885936666143646659}
-  m_BodyType: 0
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -181,9 +181,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Tanks.WaterB.WaterB_WaterTurret
   attackRange: 12
-  attackRate: 1
-  damagePerHit: 20
-  turretDuration: 8
   enemyLayer:
     serializedVersion: 2
     m_Bits: 128

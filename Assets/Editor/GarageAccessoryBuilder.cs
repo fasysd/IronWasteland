@@ -7,8 +7,10 @@ using IronWasteland.Tanks;
 using IronWasteland.UI;
 using TMPro;
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -526,10 +528,10 @@ namespace IronWasteland.EditorTools
                 cards[i] = BuildCard(content, i, cardNormal, cardSelected, cardHover, iconFrame, badge, check, barlow600, barlow700, barlow800, barlow900, mono);
             }
 
-            AddImage(root, "ButtonCancel", 1210f, 900f, 290f, 52f, buttonSecondary);
+            Image buttonCancelImage = AddImage(root, "ButtonCancel", 1210f, 900f, 290f, 52f, buttonSecondary);
             AddText(root, "TextCancel", "HỦY BỎ", 1210f, 900f, 20f, new Color32(0xC4, 0xD0, 0xDC, 0xFF), barlow800, 290f, 1.8f, TextAlignmentOptions.Center, 52f, false, true);
 
-            AddImage(root, "ButtonConfirm", 1526f, 900f, 296f, 52f, buttonConfirm);
+            Image buttonConfirmImage = AddImage(root, "ButtonConfirm", 1526f, 900f, 296f, 52f, buttonConfirm);
             AddText(root, "TextConfirm", "XÁC NHẬN TRANG BỊ", 1526f, 900f, 18.5f, new Color32(0x0B, 0x0F, 0x14, 0xFF), barlow800, 296f, 1.2f, TextAlignmentOptions.Center, 52f, false, true);
             AddText(root, "TextConfirmArrow", "›", 1788f, 900f, 28f, new Color32(0x0B, 0x0F, 0x14, 0xFF), barlow800, 28f, 0f, TextAlignmentOptions.Center, 52f, false, true);
 
@@ -575,6 +577,19 @@ namespace IronWasteland.EditorTools
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            UIHit.EnsureEventSystem(scene);
+            Button closeButton = UIHit.AddZone(root, "HitClose", 1786f, 160f, 52f, 52f);
+            UnityEventTools.AddPersistentListener(closeButton.onClick, controller.PressCancel);
+            Button cancelButton = UIHit.Attach(buttonCancelImage);
+            UnityEventTools.AddPersistentListener(cancelButton.onClick, controller.PressCancel);
+            Button confirmButton = UIHit.Attach(buttonConfirmImage);
+            UnityEventTools.AddPersistentListener(confirmButton.onClick, controller.PressConfirm);
+            for (int i = 0; i < cards.Length; i++)
+            {
+                Button cardButton = UIHit.Attach(cards[i].Background);
+                UnityEventTools.AddIntPersistentListener(cardButton.onClick, controller.SelectCard, i);
+            }
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);

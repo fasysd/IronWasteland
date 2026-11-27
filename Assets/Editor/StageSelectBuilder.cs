@@ -3,8 +3,10 @@ using System.IO;
 using IronWasteland.UI;
 using TMPro;
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.TextCore.LowLevel;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -67,15 +69,15 @@ namespace IronWasteland.EditorTools
 
         private static readonly StageSpec[] Stages =
         {
-            new StageSpec { Code = "1-1", Name = "SƯƠNG MÙ TÍM", Tag = "SINH TỒN", Objective = "SINH TỒN 90 GIÂY", Description = "Sống sót 90 giây trong Sương Mù Tím. Tiêu diệt quái vật Alien và vượt qua các đợt phục kích để hoàn thành nhiệm vụ.", Reward = "+15 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 35%", Unlocked = true, DefinitionPath = "Assets/Prefabs/Stages/Stage_01.asset" },
-            new StageSpec { Code = "1-2", Name = "HANG ĐÁ GAI", Tag = "SINH TỒN", Objective = "SINH TỒN 100 GIÂY", Description = "Sống sót 100 giây trong Hang đá gai. Tiêu diệt quái vật Alien và vượt qua đợt phục kích để hoàn thành nhiệm vụ.", Reward = "+15 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 35%", Unlocked = true, DefinitionPath = "Assets/Prefabs/Stages/Stage_02.asset" },
-            new StageSpec { Code = "1-3", Name = "MỎ ĐÁ SẤM", Tag = "SINH TỒN", Objective = "SINH TỒN 120 GIÂY", Description = "Sống sót trong mỏ đá rung chuyển.", Reward = "+20 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 40%", Unlocked = false },
-            new StageSpec { Code = "1-4", Name = "LÕI TÀN TÍCH", Tag = "BOSS", Objective = "HẠ GỤC BOSS", Description = "Đối đầu với thực thể canh giữ lõi tàn tích.", Reward = "+40 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 60%", Unlocked = false },
-            new StageSpec { Code = "2-1", Name = "XƯỞNG BỤI ĐỘC", Tag = "SINH TỒN", Objective = "SINH TỒN 150 GIÂY", Description = "Sống sót trong xưởng đầy bụi độc.", Reward = "+25 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 45%", Unlocked = false },
-            new StageSpec { Code = "2-2", Name = "THUNG LŨNG TRO", Tag = "SINH TỒN", Objective = "SINH TỒN 150 GIÂY", Description = "Sống sót trong thung lũng tro tàn.", Reward = "+25 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 45%", Unlocked = false },
-            new StageSpec { Code = "2-3", Name = "ĐẦM LẦY XANH", Tag = "SINH TỒN", Objective = "SINH TỒN 160 GIÂY", Description = "Sống sót trong đầm lầy độc hại.", Reward = "+30 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 50%", Unlocked = false },
-            new StageSpec { Code = "2-4", Name = "CỔNG THÉP GỈ", Tag = "SINH TỒN", Objective = "SINH TỒN 180 GIÂY", Description = "Sống sót trước cổng thép gỉ.", Reward = "+30 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 50%", Unlocked = false },
-            new StageSpec { Code = "2-5", Name = "TRÁI TIM LÒ PHẢN ỨNG", Tag = "BOSS", Objective = "HẠ GỤC BOSS", Description = "Đối đầu với thực thể cuối cùng.", Reward = "+60 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 75%", Unlocked = false }
+            new StageSpec { Code = "1-1", Name = "SƯƠNG MÙ TÍM", Tag = "TIÊU DIỆT", Objective = "Tiêu diệt 40 quái", Description = "Tiêu diệt 40 quái vật trong màn sương mù tím để mở đường tiến quân.", Reward = "+20 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 20% (tối đa 1)", Unlocked = true, DefinitionPath = "Assets/Data/Stages/Stage_1_1.asset" },
+            new StageSpec { Code = "1-2", Name = "HANG ĐÁ GAI", Tag = "BOSS", Objective = "Tiêu diệt 40 quái & 1 Boss", Description = "Vượt qua Hang Đá Gai và hạ gục Boss canh giữ cửa hang.", Reward = "+30 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 20% (tối đa 1)", Unlocked = true, DefinitionPath = "Assets/Data/Stages/Stage_1_2.asset" },
+            new StageSpec { Code = "1-3", Name = "DẤU VẾT TỬ BINH", Tag = "HỘ TỐNG", Objective = "Kích hoạt 2 trạm radar & hộ tống xe Mones 30m", Description = "Kích hoạt 2 trạm radar và bảo vệ xe tù binh Mones đi hết lộ trình.", Reward = "+40 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 20% (tối đa 1)", Unlocked = false, DefinitionPath = "Assets/Data/Stages/Stage_1_3.asset" },
+            new StageSpec { Code = "1-4", Name = "VÒNG XOAY KHÔNG GIAN", Tag = "PHÁ HỦY", Objective = "Phá 3 lõi năng lượng", Description = "Phá hủy 3 lõi năng lượng Sao Đen để đóng vòng xoay không gian.", Reward = "+60 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 20% (tối đa 3)", Unlocked = false, DefinitionPath = "Assets/Data/Stages/Stage_1_4.asset" },
+            new StageSpec { Code = "2-1", Name = "VÀNH ĐAI BÃO LỬA", Tag = "TIÊU DIỆT", Objective = "Tiêu diệt 50 quái", Description = "Tiêu diệt 50 quái vật giữa vành đai bão lửa.", Reward = "+50 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 20% (tối đa 1)", Unlocked = false, DefinitionPath = "Assets/Data/Stages/Stage_2_1.asset" },
+            new StageSpec { Code = "2-2", Name = "ĐẦM LẦY ĐỘC KHÍ", Tag = "SINH TỒN", Objective = "Sinh tồn 120 giây", Description = "Sống sót 120 giây giữa đầm lầy độc khí và các đợt tập kích.", Reward = "+60 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 20% (tối đa 1)", Unlocked = false, DefinitionPath = "Assets/Data/Stages/Stage_2_2.asset" },
+            new StageSpec { Code = "2-3", Name = "ĐỘT KÍCH TIỀN ĐỒN", Tag = "HỘ TỐNG", Objective = "Phá 3 tháp phòng thủ & hộ tống xe phá thành 30m", Description = "Phá hủy 3 tháp phòng thủ và hộ tống xe phá thành công phá tiền đồn.", Reward = "+70 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 20% (tối đa 1)", Unlocked = false, DefinitionPath = "Assets/Data/Stages/Stage_2_3.asset" },
+            new StageSpec { Code = "2-4", Name = "PHI THUYỀN HAI MẶT", Tag = "BOSS", Objective = "Phá hủy Boss Hắc Nguyệt", Description = "Đối đầu và tiêu diệt Boss Hắc Nguyệt trên phi thuyền hai mặt.", Reward = "+90 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 20% (tối đa 2)", Unlocked = false, DefinitionPath = "Assets/Data/Stages/Stage_2_4.asset" },
+            new StageSpec { Code = "2-5", Name = "CHIẾN HẠM D1ONK", Tag = "ĐẠI BOSS", Objective = "Phá hủy Đại Boss Chiến Hạm Khải Huyền", Description = "Trận chiến cuối cùng: tiêu diệt Đại Boss Chiến Hạm Khải Huyền.", Reward = "+120 Ngọc Ma Pháp", DropRate = "Tỷ lệ rơi Phụ kiện: 20% (tối đa 3)", Unlocked = false, DefinitionPath = "Assets/Data/Stages/Stage_2_5.asset" }
         };
 
         private static readonly TankSpec[] Tanks =
@@ -369,23 +371,24 @@ namespace IronWasteland.EditorTools
                 new Rect(570.5f, 380.5f, 195f, 147f),   // 1-3
                 new Rect(794f, 380f, 196f, 148f),       // 1-4
                 new Rect(1018.5f, 380.5f, 195f, 147f),  // 2-1
-                new Rect(346f, 672f, 196f, 148f),       // 2-5
-                new Rect(570f, 672f, 196f, 148f),       // 2-4
+                new Rect(1018.5f, 672.5f, 195f, 147f),  // 2-2
                 new Rect(794.5f, 672.5f, 195f, 147f),   // 2-3
-                new Rect(1018.5f, 672.5f, 195f, 147f)   // 2-2
+                new Rect(570f, 672f, 196f, 148f),       // 2-4
+                new Rect(346f, 672f, 196f, 148f)        // 2-5
             };
 
             Image card12Border = AddImage(root, new LayerRect("Card12Border", cardRects[1].x, cardRects[1].y, cardRects[1].width, cardRects[1].height), LoadUiSprite("card_border_neutral"));
             card12Border.raycastTarget = false;
 
-            Image[] statusCovers = new Image[2];
-            TextMeshProUGUI[] statusTexts = new TextMeshProUGUI[2];
-            for (int i = 0; i < 2; i++)
+            Image[] statusCovers = new Image[cardRects.Length];
+            TextMeshProUGUI[] statusTexts = new TextMeshProUGUI[cardRects.Length];
+            for (int i = 0; i < cardRects.Length; i++)
             {
                 Rect card = cardRects[i];
                 statusCovers[i] = AddImage(root, new LayerRect("StatusCover" + (i + 1), card.x + 3.5f, card.y + 3.5f, card.width - 7f, 30f), null);
                 statusCovers[i].color = i == 0 ? new Color32(11, 17, 24, 255) : new Color32(18, 21, 25, 255);
-                statusTexts[i] = AddText(root, "StatusText" + (i + 1), i == 0 ? "ĐÃ HOÀN THÀNH" : "ĐANG CHỌN", card.x + 3.5f, 400f, 10.4f, new Color32(0x2F, 0xE8, 0xE0, 0xFF), barlow, card.width - 7f, false);
+                string initialText = i == 0 ? "ĐÃ HOÀN THÀNH" : (i == 1 ? "ĐANG CHỌN" : "CHƯA MỞ KHÓA");
+                statusTexts[i] = AddText(root, "StatusText" + (i + 1), initialText, card.x + 3.5f, card.y + 19.5f, 10.4f, new Color32(0x2F, 0xE8, 0xE0, 0xFF), barlow, card.width - 7f, false);
                 statusTexts[i].alignment = TextAlignmentOptions.Center;
                 statusTexts[i].characterSpacing = 0.2f / 10.4f * 100f;
             }
@@ -431,10 +434,10 @@ namespace IronWasteland.EditorTools
             }
 
             SerializedProperty coversProperty = serialized.FindProperty("m_StatusCovers");
-            coversProperty.arraySize = 2;
+            coversProperty.arraySize = statusCovers.Length;
             SerializedProperty statusTextsProperty = serialized.FindProperty("m_StatusTexts");
-            statusTextsProperty.arraySize = 2;
-            for (int i = 0; i < 2; i++)
+            statusTextsProperty.arraySize = statusTexts.Length;
+            for (int i = 0; i < statusTexts.Length; i++)
             {
                 coversProperty.GetArrayElementAtIndex(i).objectReferenceValue = statusCovers[i];
                 statusTextsProperty.GetArrayElementAtIndex(i).objectReferenceValue = statusTexts[i];
@@ -511,6 +514,23 @@ namespace IronWasteland.EditorTools
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            UIHit.EnsureEventSystem(scene);
+            Button backButton = UIHit.AddZone(root, "HitBack", 72f, 94f, 168f, 50f);
+            UnityEventTools.AddPersistentListener(backButton.onClick, controller.PressBack);
+            Button startButton = UIHit.AddZone(root, "HitStart", 1293f, 939f, 536f, 136f);
+            UnityEventTools.AddPersistentListener(startButton.onClick, controller.PressStart);
+            Button singleButton = UIHit.AddZone(root, "HitModeSingle", 1295f, 472f, 253f, 48f);
+            UnityEventTools.AddPersistentListener(singleButton.onClick, controller.PressModeSingle);
+            Button coopButton = UIHit.AddZone(root, "HitModeCoop", 1565f, 472f, 265f, 48f);
+            UnityEventTools.AddPersistentListener(coopButton.onClick, controller.PressModeCoop);
+            for (int i = 0; i < cardRects.Length; i++)
+            {
+                Rect card = cardRects[i];
+                Button cardButton = UIHit.AddZone(root, "HitCard" + (i + 1).ToString("00"), card.x, card.y, card.width, card.height);
+                UnityEventTools.AddIntPersistentListener(cardButton.onClick, controller.SelectStage, i);
+            }
+
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();

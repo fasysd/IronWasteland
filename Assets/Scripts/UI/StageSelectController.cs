@@ -177,12 +177,12 @@ namespace IronWasteland.UI
         private GameObject m_CurrentCardDim;
 
         [SerializeField]
-        [Tooltip("Nền che trạng thái tĩnh của hai thẻ ải đã mở khoá.")]
-        private Image[] m_StatusCovers = new Image[2];
+        [Tooltip("Nền che trạng thái tĩnh của các thẻ ải.")]
+        private Image[] m_StatusCovers = new Image[9];
 
         [SerializeField]
-        [Tooltip("Chữ trạng thái động của hai thẻ ải đã mở khoá.")]
-        private TextMeshProUGUI[] m_StatusTexts = new TextMeshProUGUI[2];
+        [Tooltip("Chữ trạng thái động của các thẻ ải.")]
+        private TextMeshProUGUI[] m_StatusTexts = new TextMeshProUGUI[9];
 
         [Header("Chọn chế độ chơi")]
         [SerializeField]
@@ -255,9 +255,6 @@ namespace IronWasteland.UI
         private Canvas m_Canvas;
         private Vector2 m_PointerScreen;
         private bool m_HasGuiPointer;
-        private bool m_GuiPointerDown;
-        private bool m_GuiPointerUp;
-        private bool m_Pressed;
 
         /// <summary>Xe đang hiển thị trên thẻ.</summary>
         public int SelectedIndex { get; private set; }
@@ -315,22 +312,6 @@ namespace IronWasteland.UI
         private void Update()
         {
             RefreshGemCount();
-
-            if (m_GuiPointerDown)
-            {
-                m_GuiPointerDown = false;
-                m_Pressed = true;
-            }
-
-            if (m_GuiPointerUp)
-            {
-                m_GuiPointerUp = false;
-                if (m_Pressed)
-                {
-                    m_Pressed = false;
-                    HandleClick(DesignPointerPosition(PointerPosition));
-                }
-            }
         }
 
         private void OnGUI()
@@ -353,7 +334,6 @@ namespace IronWasteland.UI
                     {
                         m_PointerScreen = ToScreenPoint(current.mousePosition);
                         m_HasGuiPointer = true;
-                        m_GuiPointerDown = true;
                     }
 
                     break;
@@ -362,7 +342,6 @@ namespace IronWasteland.UI
                     {
                         m_PointerScreen = ToScreenPoint(current.mousePosition);
                         m_HasGuiPointer = true;
-                        m_GuiPointerUp = true;
                     }
 
                     break;
@@ -380,43 +359,45 @@ namespace IronWasteland.UI
             }
         }
 
-        private void HandleClick(Vector2 designPosition)
+        /// <summary>Nút QUAY LẠI gọi vào đây.</summary>
+        public void PressBack()
         {
-            if (m_BackArea.Contains(designPosition))
+            GoBack();
+        }
+
+        /// <summary>Nút BẮT ĐẦU gọi vào đây.</summary>
+        public void PressStart()
+        {
+            EnterSelectedMode();
+        }
+
+        /// <summary>Nút CHƠI ĐƠN gọi vào đây.</summary>
+        public void PressModeSingle()
+        {
+            ApplyMode(MatchMode.Single);
+        }
+
+        /// <summary>Nút CHƠI CO-OP gọi vào đây.</summary>
+        public void PressModeCoop()
+        {
+            ApplyMode(MatchMode.Coop);
+            //EnterCoopLobby();
+        }
+
+        /// <summary>Thẻ ải gọi vào đây kèm chỉ số; ải còn khoá thì bỏ qua.</summary>
+        public void SelectStage(int index)
+        {
+            if (m_Stages == null || index < 0 || index >= m_Stages.Length)
             {
-                GoBack();
                 return;
             }
 
-            if (m_StartArea.Contains(designPosition))
+            if (m_Stages[index] == null || !m_Stages[index].Unlocked)
             {
-                EnterSelectedMode();
                 return;
             }
 
-            if (m_SingleModeArea.Contains(designPosition))
-            {
-                ApplyMode(MatchMode.Single);
-                return;
-            }
-
-            if (m_CoopModeArea.Contains(designPosition))
-            {
-                ApplyMode(MatchMode.Coop);
-                EnterCoopLobby();
-                return;
-            }
-
-            if (m_Stages == null || m_CardRects == null) return;
-
-            for (int i = 0; i < m_Stages.Length && i < m_CardRects.Length; i++)
-            {
-                if (m_Stages[i] == null || !m_Stages[i].Unlocked) continue;
-                if (!m_CardRects[i].Contains(designPosition)) continue;
-
-                ApplyStage(i);
-                return;
-            }
+            ApplyStage(index);
         }
 
         /// <summary>Cập nhật toàn bộ thẻ xe theo xe đang chọn và lựa chọn kỹ năng đã lưu.</summary>
@@ -486,16 +467,22 @@ namespace IronWasteland.UI
             StageEntry stage = m_Stages[SelectedStageIndex];
             if (stage == null) return;
 
-            CoopEntry.StageCode = stage.Code;
-            CoopEntry.StageName = stage.Name;
-            CoopEntry.SelectedDefinition = stage.Definition;
+            StageDefinition def = stage.Definition;
+            string stageName = def != null && !string.IsNullOrEmpty(def.StageName) ? def.StageName.ToUpperInvariant() : stage.Name;
+            string objectiveText = def != null && !string.IsNullOrEmpty(def.WinConditionDescription) ? def.WinConditionDescription : stage.Objective;
+            string rewardText = def != null ? $"+{def.RewardGems} Ngọc Ma Pháp" : stage.Reward;
+            string dropText = def != null ? FormatAccessoryDrop(def) : stage.DropRate;
 
-            SetText(m_MissionCode, "ẢI " + stage.Code + " / " + stage.Tag);
-            SetText(m_MissionName, stage.Name);
-            SetText(m_MissionObjective, stage.Objective);
+            CoopEntry.StageCode = def != null && !string.IsNullOrEmpty(def.StageCode) ? def.StageCode : stage.Code;
+            CoopEntry.StageName = def != null && !string.IsNullOrEmpty(def.StageName) ? def.StageName : stage.Name;
+            CoopEntry.SelectedDefinition = def;
+
+            SetText(m_MissionCode, "ẢI " + CoopEntry.StageCode + " / " + stage.Tag);
+            SetText(m_MissionName, stageName);
+            SetText(m_MissionObjective, objectiveText);
             SetText(m_MissionDescription, stage.Description);
-            SetText(m_MissionReward, stage.Reward);
-            SetText(m_MissionDrop, stage.DropRate);
+            SetText(m_MissionReward, rewardText);
+            SetText(m_MissionDrop, dropText);
 
             if (m_SelectionFrame != null && m_CardRects != null && SelectedStageIndex < m_CardRects.Length)
             {
@@ -517,17 +504,18 @@ namespace IronWasteland.UI
                 m_CurrentCardDim.SetActive(SelectedStageIndex != 1);
             }
 
-            for (int i = 0; i < 2 && m_StatusTexts != null && i < m_StatusTexts.Length; i++)
+            int statusCount = m_StatusTexts != null ? m_StatusTexts.Length : 0;
+            for (int i = 0; i < statusCount; i++)
             {
-                if (m_StatusCovers != null && i < m_StatusCovers.Length && m_StatusCovers[i] != null)
-                {
-                    m_StatusCovers[i].enabled = true;
-                }
-
                 StageEntry entry = m_Stages != null && i < m_Stages.Length ? m_Stages[i] : null;
                 bool selected = SelectedStageIndex == i;
                 bool cleared = entry != null && SaveSystem.Instance.IsStageCleared(entry.Code);
                 bool unlocked = entry != null && entry.Unlocked;
+
+                if (m_StatusCovers != null && i < m_StatusCovers.Length && m_StatusCovers[i] != null)
+                {
+                    m_StatusCovers[i].enabled = true;
+                }
 
                 string value;
                 Color color;
@@ -617,6 +605,14 @@ namespace IronWasteland.UI
             }
 
             LoadScene(targetScene);
+        }
+
+        private static string FormatAccessoryDrop(StageDefinition def)
+        {
+            if (def.RewardAccessoryCount <= 0) return "Không rơi Phụ kiện";
+            return def.GuaranteeAccessories
+                ? $"Chắc chắn rơi {def.RewardAccessoryCount} Phụ kiện"
+                : $"Tỷ lệ rơi Phụ kiện: 20% (tối đa {def.RewardAccessoryCount})";
         }
 
         private static string FormatStats(int[] stats)

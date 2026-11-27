@@ -4,8 +4,10 @@ using IronWasteland.Tanks;
 using IronWasteland.UI;
 using TMPro;
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -139,7 +141,7 @@ namespace IronWasteland.EditorTools
             AddText(root, "TextTitle", "PHÂN RÃ PHỤ KIỆN", 116f, 183f, 30f, InkBright, anton, 900f, 0.6f);
             TextMeshProUGUI subtitle = AddText(root, "TextSubtitle", "TỔNG 20 PHỤ KIỆN  ·  MỖI LẦN CHỈ PHÂN RÃ 1 LOẠI", 116f, 216f, 10.2f, new Color32(0x6F, 0x7D, 0x8C, 0xFF), barlow600, 1000f, 1.2f);
             TextMeshProUGUI gems = AddText(root, "TextGems", "NGỌC: 0", 1450f, 216f, 9.4f, InkGhost, barlow600, 300f, 1.6f, TextAlignmentOptions.TopRight);
-            AddImage(root, "Close", 1786f, 160f, 52f, 52f, close);
+            Image closeImage = AddImage(root, "Close", 1786f, 160f, 52f, 52f, close);
 
             RectTransform viewport = AddRect(root, "Viewport", ViewportX, ViewportY, ViewportWidth, ViewportHeight);
             viewport.gameObject.AddComponent<RectMask2D>();
@@ -169,7 +171,7 @@ namespace IronWasteland.EditorTools
 
             TextMeshProUGUI salvageHint = AddText(root, "SalvageHint", "NHẬN: 5 NGỌC", 740f, 906f, 13f, GoldInk, barlow600, 400f, 0.8f, TextAlignmentOptions.Left, 24f, false, true);
 
-            AddImage(root, "ButtonCancel", 1210f, 900f, 290f, 52f, buttonSecondary);
+            Image cancelButton = AddImage(root, "ButtonCancel", 1210f, 900f, 290f, 52f, buttonSecondary);
             AddText(root, "TextCancel", "HỦY BỎ", 1210f, 900f, 20f, InkSoft, barlow800, 290f, 1.8f, TextAlignmentOptions.Center, 52f, false, true);
 
             Image confirmButton = AddImage(root, "ButtonConfirm", 1526f, 900f, 296f, 52f, buttonConfirm);
@@ -218,12 +220,6 @@ namespace IronWasteland.EditorTools
             SetObject(serialized, "m_ConfirmButtonImage", confirmButton);
             SetObject(serialized, "m_ToastText", toast);
 
-            SetRect(serialized, "m_MinusArea", new Rect(478f, 898f, 36f, 36f));
-            SetRect(serialized, "m_PlusArea", new Rect(610f, 898f, 36f, 36f));
-            SetRect(serialized, "m_MaxArea", new Rect(656f, 898f, 62f, 36f));
-            SetRect(serialized, "m_CloseArea", new Rect(1786f, 160f, 52f, 52f));
-            SetRect(serialized, "m_CancelArea", new Rect(1210f, 900f, 290f, 52f));
-            SetRect(serialized, "m_ConfirmArea", new Rect(1526f, 900f, 296f, 52f));
             SetRect(serialized, "m_ViewportArea", new Rect(ViewportX, ViewportY, ViewportWidth, ViewportHeight));
 
             SerializedProperty cardArray = serialized.FindProperty("m_Cards");
@@ -243,6 +239,27 @@ namespace IronWasteland.EditorTools
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
+            UIHit.EnsureEventSystem(scene);
+            UnityEventTools.AddPersistentListener(UIHit.Attach(closeImage).onClick, BindAction(controller, "PressClose"));
+            UnityEventTools.AddPersistentListener(UIHit.Attach(cancelButton).onClick, BindAction(controller, "PressCancel"));
+            UnityEventTools.AddPersistentListener(UIHit.Attach(confirmButton).onClick, BindAction(controller, "PressConfirm"));
+            UnityEventTools.AddPersistentListener(UIHit.Attach(minus).onClick, BindAction(controller, "PressMinus"));
+            UnityEventTools.AddPersistentListener(UIHit.Attach(plus).onClick, BindAction(controller, "PressPlus"));
+            UnityEventTools.AddPersistentListener(UIHit.Attach(max).onClick, BindAction(controller, "PressMax"));
+
+            UnityAction<int> selectCard = BindIntAction(controller, "SelectCard");
+            for (int i = 0; i < CardCount; i++)
+            {
+                Transform cardRoot = content.Find("Card" + (i + 1).ToString("00"));
+                if (cardRoot == null || !cardRoot.TryGetComponent(out Image cardGraphic))
+                {
+                    continue;
+                }
+
+                Button cardButton = UIHit.Attach(cardGraphic);
+                UnityEventTools.AddIntPersistentListener(cardButton.onClick, selectCard, i);
+            }
+
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddSceneToBuildSettings();
@@ -254,6 +271,18 @@ namespace IronWasteland.EditorTools
         /// Dựng một thẻ phụ kiện và gán thẳng vào phần tử mảng m_Cards của controller.
         /// Truyền SerializedProperty thay vì kiểu CardView để file này không phụ thuộc lúc biên dịch vào controller.
         /// </summary>
+        /// <summary>Tạo delegate cho một hàm public của controller vốn được nạp động bằng kiểu.</summary>
+        private static UnityAction BindAction(Component target, string methodName)
+        {
+            return (UnityAction)System.Delegate.CreateDelegate(typeof(UnityAction), target, methodName);
+        }
+
+        /// <summary>Tạo delegate nhận chỉ số cho một hàm public của controller nạp động.</summary>
+        private static UnityAction<int> BindIntAction(Component target, string methodName)
+        {
+            return (UnityAction<int>)System.Delegate.CreateDelegate(typeof(UnityAction<int>), target, methodName);
+        }
+
         private static void BuildCard(
             RectTransform content,
             int index,

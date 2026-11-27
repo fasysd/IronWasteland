@@ -38,7 +38,7 @@ MonoBehaviour:
     ArmorPenetration: 0
     MaxHealth: 650
     MaxEnergy: 100
-    MoveSpeed: 130
+    MoveSpeed: 450
     CooldownReduction: 0
   baseStatsLevel90:
     Attack: 75
@@ -47,7 +47,7 @@ MonoBehaviour:
     ArmorPenetration: 0
     MaxHealth: 3500
     MaxEnergy: 300
-    MoveSpeed: 143
+    MoveSpeed: 450
     CooldownReduction: 0.3
   tankPrefab: {fileID: 2337791876944670423, guid: 95ecc0b7748deb645871624e4527b5b1, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
@@ -69,4 +69,3 @@ MonoBehaviour:
   - WATER WAVE
   - WATER RETURN
   skillGlyphs: []
-  portrait: {fileID: 21300000, guid: e03608bc9bc6c0743a8987f70274269b, type: 3}

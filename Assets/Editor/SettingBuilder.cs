@@ -2,8 +2,10 @@ using System.IO;
 using IronWasteland.UI;
 using TMPro;
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.TextCore.LowLevel;
 using UnityEngine.UI;
@@ -175,11 +177,11 @@ namespace IronWasteland.EditorTools
 
             AddImage(root, new LayerRect("Background", 0f, 0f, DesignWidth, DesignHeight), LoadSprite("bg"));
             AddImage(root, new LayerRect("Header", 240f, 68f, 608f, 98f), LoadSprite("header"));
-            AddImage(root, new LayerRect("BackButton", 72f, 100f, 158f, 48f), LoadSprite("back"));
+            Image backButton = AddImage(root, new LayerRect("BackButton", 72f, 100f, 158f, 48f), LoadSprite("back"));
             AddImage(root, new LayerRect("LeftPanel", 72f, 190f, 1188f, 700f), LoadSprite("left_panel"));
             AddImage(root, new LayerRect("RightPanel", 1292f, 190f, 556f, 700f), LoadSprite("right_panel"));
-            AddImage(root, new LayerRect("ResetButton", 1292f, 890f, 200f, 86f), LoadSprite("reset_btn"));
-            AddImage(root, new LayerRect("ApplyButton", 1504f, 890f, 344f, 86f), LoadSprite("apply_btn"));
+            Image resetButton = AddImage(root, new LayerRect("ResetButton", 1292f, 890f, 200f, 86f), LoadSprite("reset_btn"));
+            Image applyButton = AddImage(root, new LayerRect("ApplyButton", 1504f, 890f, 344f, 86f), LoadSprite("apply_btn"));
 
             Image ring = AddImage(root, new LayerRect("MasterRing", 236f, 372f, 240f, 240f), null);
             TextMeshProUGUI masterValue = AddText(root, "TextMasterValue", "78", 394f, 526f, 77f, Color.white, anton, TextAlignmentOptions.TopRight, 0f);
@@ -268,6 +270,11 @@ namespace IronWasteland.EditorTools
             serialized.FindProperty("m_BackSceneName").stringValue = "MainMenu";
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(controller);
+
+            UIHit.EnsureEventSystem(scene);
+            UnityEventTools.AddPersistentListener(UIHit.Attach(backButton).onClick, controller.PressBack);
+            UnityEventTools.AddPersistentListener(UIHit.Attach(resetButton).onClick, controller.PressReset);
+            UnityEventTools.AddPersistentListener(UIHit.Attach(applyButton).onClick, controller.PressApply);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();
