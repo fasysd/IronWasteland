@@ -143,11 +143,11 @@ namespace IronWasteland.Enemies.The2Face
                 TankBrain tank = ownerRef?.GetOwner<TankBrain>();
                 if (tank == null || !tank.IsAlive) continue;
 
-                // 1. Gây sát thương
+
                 DamageInfo info = new DamageInfo(
                     m_Owner,
                     tank,
-                    damage,
+                    damage * 2,
                     0f,
                     hit.bounds.center,
                     false,
@@ -156,7 +156,7 @@ namespace IronWasteland.Enemies.The2Face
                     DamageSourceType.EnemyAttack);
                 tank.TakeDamage(info);
 
-                // 2. Xử lý hiệu ứng theo trạng thái kỹ năng
+                //Xử lý hiệu ứng theo trạng thái kỹ năng
                 if (m_Mode == The2FaceVortexMode.Sad)
                 {
                     // Buồn bã: áp dụng hiệu ứng Buồn bã (-20% SPD, -10% ATK/DEF) lên mọi Tank trong phạm vi
@@ -168,12 +168,11 @@ namespace IronWasteland.Enemies.The2Face
                 }
                 else if (m_Mode == The2FaceVortexMode.Anger)
                 {
-                    // Tức giận: tăng 20% sát thương nhận vào và trừ 20% năng lượng tối đa
+                    // Tức giận: trừ 20% năng lượng tối đa
                     if (m_EnergyDrainedTanks.Add(tank))
                     {
                         tank.ApplyEffect(new The2FaceAngerEffect(
                             m_SadDuration,
-                            0.20f,
                             m_AngerEnergyDrainRatio,
                             m_Owner));
                     }

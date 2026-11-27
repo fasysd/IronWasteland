@@ -89,8 +89,11 @@ namespace IronWasteland.Enemies.The2Face
         [Tooltip("Hồi chiêu kỹ năng CamLang (giây).")]
         [SerializeField, Min(0.5f)] private float camLangCooldown = 7f;
 
-        [Tooltip("Thời gian khóa toàn bộ kỹ năng của một Tank (giây).")]
+        [Tooltip("Thời gian khóa kỹ năng thường của một Tank (giây).")]
         [SerializeField, Min(0.1f)] private float camLangSilenceDuration = 5f;
+
+        [Tooltip("Prefab VFX hiển thị trên Tank bị Câm lặng.")]
+        [SerializeField] private GameObject silenceVfxPrefab;
 
         [Header("HutVaDa - Kéo và đá")]
         [Tooltip("Hồi chiêu kỹ năng HutVaDa (giây).")]
@@ -140,29 +143,18 @@ namespace IronWasteland.Enemies.The2Face
         [Tooltip("Tốc độ di chuyển của Điểm Sáng (mét/giây).")]
         [SerializeField, Min(0f)] private float lightPointMoveSpeed = 0.8f;
 
-        [Tooltip("Bán kính Tank đứng trong để bật Điểm Sáng (mét).")]
-        [SerializeField, Min(0.1f)] private float lightPointLitRadius = 2f;
-
         [Tooltip("Bán kính đặt các Điểm Sáng quanh tâm sân (mét).")]
         [SerializeField, Min(0f)] private float lightPointSpawnRadius = 5.5f;
 
-        [Tooltip("Prefab quái đầm lầy đi phá Điểm Sáng.")]
-        [SerializeField] private GameObject swampCrawlerPrefab;
+        [Header("Burst Random Enemy Spawning")]
+        [Tooltip("Danh sách prefab quái thường bất kỳ sinh liên tục quanh các Điểm Sáng trong pha Bùng nổ.")]
+        [SerializeField] private GameObject[] burstRandomEnemyPrefabs;
 
-        [Tooltip("Số quái đầm lầy sinh ra cho mỗi Điểm Sáng.")]
-        [SerializeField, Min(0)] private int crawlerCountPerLight = 1;
+        [Tooltip("Chu kỳ sinh thêm quái thường quanh mỗi Điểm Sáng còn sống (giây).")]
+        [SerializeField, Min(0.5f)] private float burstEnemySpawnInterval = 4f;
 
-        [Tooltip("Bán kính sinh quái đầm lầy quanh tâm sân (mét).")]
-        [SerializeField, Min(1f)] private float crawlerSpawnRadius = 12f;
-
-        [Tooltip("Prefab Tinh linh sấm sét tấn công Tank trong đợt quái.")]
-        [SerializeField] private GameObject lightningMinionPrefab;
-
-        [Tooltip("Số Tinh linh sấm sét sinh ra mỗi lần bùng nổ.")]
-        [SerializeField, Min(0)] private int lightningMinionCount = 2;
-
-        [Tooltip("Bán kính sinh Tinh linh sấm sét quanh tâm sân (mét).")]
-        [SerializeField, Min(1f)] private float lightningSpawnRadius = 7f;
+        [Tooltip("Bán kính tối đa quanh mỗi Điểm Sáng để sinh quái thường (mét).")]
+        [SerializeField, Min(1f)] private float burstEnemySpawnRadius = 5f;
 
         [Tooltip("Tỷ lệ máu hồi khi bắt đầu bùng nổ (0.2 = 20% Max HP).")]
         [SerializeField, Range(0f, 1f)] private float burstHealRatio = 0.2f;
@@ -202,8 +194,8 @@ namespace IronWasteland.Enemies.The2Face
 
         private readonly List<TankBrain> m_LockedTanks = new List<TankBrain>();
         private readonly List<The2FaceLightPoint> m_LightPoints = new List<The2FaceLightPoint>();
-        private readonly List<GameObject> m_Crawlers = new List<GameObject>();
-        private readonly List<GameObject> m_LightningMinions = new List<GameObject>();
+        private readonly List<GameObject> m_BurstRandomEnemies = new List<GameObject>();
+        private float m_BurstEnemySpawnTimer;
         private int m_TotalLightPoints;
         private int m_UnlockedSlotCount = -1;
         private bool m_BurstMechanicActive;
@@ -214,7 +206,7 @@ namespace IronWasteland.Enemies.The2Face
         /// <summary>True khi cơ chế Điểm Sáng của Bùng nổ đang hoạt động.</summary>
         public bool IsBurstMechanicActive => m_BurstMechanicActive;
 
-        /// <summary>Số Điểm Sáng còn sống.</summary>
+        /// <summary>Số Điểm Sáng còn sống.</summary>L
         public int AliveLightPoints => CountAliveLights();
 
         /// <summary>Số Điểm Sáng đang được bật.</summary>
@@ -232,7 +224,6 @@ namespace IronWasteland.Enemies.The2Face
             m_Rigidbody = GetComponent<Rigidbody2D>();
             CaptureBaseStats();
             FitVisual(auraVisual, auraVisualDiameter);
-            FitVisual(shieldVisual, shieldVisualDiameter);
             if (shieldVisual != null) m_ShieldBaseScale = shieldVisual.transform.localScale;
             SetVisualActive(shieldVisual, false);
             m_AuraTimer = 0f;
@@ -526,7 +517,7 @@ namespace IronWasteland.Enemies.The2Face
             if (m_CurrentTarget == null || !m_CurrentTarget.IsAlive) return;
 
             Vector2 targetPosition = m_CurrentTarget.transform.position;
-            The2FaceVortexMode mode = Random.value < 0.5f ? The2FaceVortexMode.Sad : The2FaceVortexMode.Anger;
+            The2FaceVortexMode mode = Random.Range(0, 10) < 5f ? The2FaceVortexMode.Sad : The2FaceVortexMode.Anger;
             float damageRatio = mode == The2FaceVortexMode.Sad ? vortexSadDamageRatio : vortexAngerDamageRatio;
 
             if (vortexPrefab != null)
@@ -568,6 +559,14 @@ namespace IronWasteland.Enemies.The2Face
             {
                 SetVisualActive(shieldVisual, value > 0.5f);
             }
+            else if (key == "CamLangSilence")
+            {
+                Transform targetTransform = ResolveSilenceTargetTransform(position, value);
+                if (targetTransform != null)
+                {
+                    SpawnSilenceVfx(targetTransform, duration > 0f ? duration : camLangSilenceDuration);
+                }
+            }
         }
 
         private void CastCamLang()
@@ -575,8 +574,59 @@ namespace IronWasteland.Enemies.The2Face
             TankBrain target = FindRandomTank();
             if (target == null) return;
 
-            target.ApplyCrowdControl(CrowdControlType.Silence, camLangSilenceDuration);
-            Debug.Log("[The2Face] CamLang khóa kỹ năng " + target.name + " trong " + camLangSilenceDuration + " giây.");
+            target.LockSkillSlot(0, camLangSilenceDuration);
+            SpawnSilenceVfx(target.transform, camLangSilenceDuration);
+
+            float netIdValue = target.TryGetComponent(out Unity.Netcode.NetworkObject targetNetObj) ? targetNetObj.NetworkObjectId : 0f;
+            GetComponent<IronWasteland.Net.EnemyNetState>()?.BroadcastVfx(
+                "CamLangSilence", target.transform.position, 0f, default, camLangSilenceDuration, netIdValue);
+
+            Debug.Log("[The2Face] CamLang khóa kỹ năng thường của " + target.name + " trong " + camLangSilenceDuration + " giây.");
+        }
+
+        private void SpawnSilenceVfx(Transform targetTransform, float duration)
+        {
+            if (silenceVfxPrefab == null || targetTransform == null) return;
+
+            GameObject instance = Instantiate(silenceVfxPrefab, targetTransform.position, Quaternion.identity);
+            The2FaceSilenceVfx vfx = instance.GetComponent<The2FaceSilenceVfx>();
+            if (vfx != null)
+            {
+                vfx.Initialize(targetTransform, duration);
+            }
+            else
+            {
+                Destroy(instance, Mathf.Max(0.1f, duration));
+            }
+        }
+
+        private Transform ResolveSilenceTargetTransform(Vector2 fallbackPosition, float netIdValue)
+        {
+            ulong netId = netIdValue > 0.5f ? (ulong)Mathf.RoundToInt(netIdValue) : 0UL;
+            if (netId != 0UL &&
+                Unity.Netcode.NetworkManager.Singleton != null &&
+                Unity.Netcode.NetworkManager.Singleton.SpawnManager != null &&
+                Unity.Netcode.NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(netId, out var netObj) &&
+                netObj != null)
+            {
+                return netObj.transform;
+            }
+
+            TankBrain[] tanks = FindObjectsByType<TankBrain>();
+            Transform best = null;
+            float bestSqr = float.MaxValue;
+            for (int i = 0; i < tanks.Length; i++)
+            {
+                if (tanks[i] == null || !tanks[i].IsAlive) continue;
+                float sqr = ((Vector2)tanks[i].transform.position - fallbackPosition).sqrMagnitude;
+                if (sqr < bestSqr)
+                {
+                    bestSqr = sqr;
+                    best = tanks[i].transform;
+                }
+            }
+
+            return best;
         }
 
         private void CastHutVaDa()
@@ -676,11 +726,11 @@ namespace IronWasteland.Enemies.The2Face
             Heal(MaxHealth * burstHealRatio);
             LockAllTankSkills();
             SpawnLightPoints();
-            SpawnCrawlers();
-            SpawnLightningMinions();
+            m_BurstEnemySpawnTimer = 0f;
+            SpawnRandomEnemiesAroundLights();
             RefreshUnlockedSkills();
 
-            Debug.Log("[The2Face] Bắt đầu bùng nổ: " + m_TotalLightPoints + " Điểm Sáng, " + m_Crawlers.Count + " quái đầm lầy, " + m_LightningMinions.Count + " tinh linh sấm sét.");
+            Debug.Log("[The2Face] Bắt đầu bùng nổ: " + m_TotalLightPoints + " Điểm Sáng, sinh " + m_BurstRandomEnemies.Count + " quái thường quanh Điểm Sáng.");
         }
 
         protected override void OnBurstTick(float deltaTime)
@@ -695,6 +745,13 @@ namespace IronWasteland.Enemies.The2Face
                 m_BurstMechanicActive = false;
                 CompleteBurstFailure();
                 return;
+            }
+
+            m_BurstEnemySpawnTimer += deltaTime;
+            if (m_BurstEnemySpawnTimer >= burstEnemySpawnInterval)
+            {
+                m_BurstEnemySpawnTimer -= burstEnemySpawnInterval;
+                SpawnRandomEnemiesAroundLights();
             }
 
             if (BurstTimer <= 0f)
@@ -820,7 +877,7 @@ namespace IronWasteland.Enemies.The2Face
                     continue;
                 }
 
-                point.Initialize(this, lightPointHealth, lightPointMoveSpeed, lightPointLitRadius);
+                point.Initialize(this, lightPointHealth, lightPointMoveSpeed);
                 m_LightPoints.Add(point);
             }
         }
@@ -852,34 +909,54 @@ namespace IronWasteland.Enemies.The2Face
             return instance;
         }
 
-        private void SpawnCrawlers()
+        private void SpawnRandomEnemiesAroundLights()
         {
-            ClearCrawlers();
-            if (swampCrawlerPrefab == null) return;
+            if (burstRandomEnemyPrefabs == null || burstRandomEnemyPrefabs.Length == 0) return;
 
-            int count = m_TotalLightPoints * Mathf.Max(0, crawlerCountPerLight);
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < m_LightPoints.Count; i++)
             {
-                float angle = Mathf.PI * 2f * i / Mathf.Max(1, count);
-                Vector2 position = m_ArenaCenter + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * crawlerSpawnRadius;
-                GameObject instance = SpawnNetworkOrLocalMinion(swampCrawlerPrefab, position);
-                if (instance != null) m_Crawlers.Add(instance);
+                The2FaceLightPoint point = m_LightPoints[i];
+                if (point == null || !point.IsAlive) continue;
+
+                GameObject prefab = PickRandomBurstEnemyPrefab();
+                if (prefab == null) continue;
+
+                Vector2 dir = UnityEngine.Random.insideUnitCircle;
+                if (dir.sqrMagnitude < 0.0001f) dir = Vector2.right;
+                dir.Normalize();
+
+                float minRadius = Mathf.Min(2.5f, burstEnemySpawnRadius);
+                float dist = UnityEngine.Random.Range(minRadius, Mathf.Max(minRadius, burstEnemySpawnRadius));
+                Vector2 spawnPos = (Vector2)point.transform.position + dir * dist;
+
+                GameObject instance = SpawnNetworkOrLocalMinion(prefab, spawnPos);
+                if (instance != null)
+                {
+                    m_BurstRandomEnemies.Add(instance);
+                }
             }
         }
 
-        private void SpawnLightningMinions()
+        private GameObject PickRandomBurstEnemyPrefab()
         {
-            ClearLightningMinions();
-            if (lightningMinionPrefab == null) return;
+            if (burstRandomEnemyPrefabs == null || burstRandomEnemyPrefabs.Length == 0) return null;
 
-            int count = Mathf.Max(0, lightningMinionCount);
-            for (int i = 0; i < count; i++)
+            int validCount = 0;
+            for (int i = 0; i < burstRandomEnemyPrefabs.Length; i++)
             {
-                float angle = Mathf.PI * 2f * i / Mathf.Max(1, count) + Mathf.PI * 0.25f;
-                Vector2 position = m_ArenaCenter + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * lightningSpawnRadius;
-                GameObject instance = SpawnNetworkOrLocalMinion(lightningMinionPrefab, position);
-                if (instance != null) m_LightningMinions.Add(instance);
+                if (burstRandomEnemyPrefabs[i] != null) validCount++;
             }
+            if (validCount == 0) return null;
+
+            int pick = UnityEngine.Random.Range(0, validCount);
+            for (int i = 0; i < burstRandomEnemyPrefabs.Length; i++)
+            {
+                if (burstRandomEnemyPrefabs[i] == null) continue;
+                if (pick == 0) return burstRandomEnemyPrefabs[i];
+                pick--;
+            }
+
+            return null;
         }
 
         private void RefreshUnlockedSkills()
@@ -895,25 +972,18 @@ namespace IronWasteland.Enemies.The2Face
             if (unlocked == m_UnlockedSlotCount) return;
             m_UnlockedSlotCount = unlocked;
 
+            byte lockMask = 0;
+            for (int slot = unlocked; slot < TankBrain.SkillCount; slot++)
+            {
+                lockMask |= (byte)(1 << slot);
+            }
+
             for (int t = 0; t < m_LockedTanks.Count; t++)
             {
                 TankBrain tank = m_LockedTanks[t];
                 if (tank == null || !tank.IsAlive) continue;
 
-                for (int slot = 0; slot < TankBrain.SkillCount; slot++)
-                {
-                    if (slot < unlocked)
-                    {
-                        if (tank.GetSkillCooldown(slot) >= SkillLockCooldown - 1f)
-                        {
-                            tank.SetSkillCooldown(slot, 0f);
-                        }
-                    }
-                    else if (tank.GetSkillCooldown(slot) < SkillLockCooldown - 1f)
-                    {
-                        tank.SetSkillCooldown(slot, SkillLockCooldown);
-                    }
-                }
+                tank.SetExternalSkillLockMask(lockMask);
             }
         }
 
@@ -928,10 +998,7 @@ namespace IronWasteland.Enemies.The2Face
                 if (tank == null || !tank.IsAlive) continue;
 
                 m_LockedTanks.Add(tank);
-                for (int slot = 0; slot < TankBrain.SkillCount; slot++)
-                {
-                    tank.SetSkillCooldown(slot, SkillLockCooldown);
-                }
+                tank.SetExternalSkillLockMask((1 << TankBrain.SkillCount) - 1);
             }
         }
 
@@ -942,13 +1009,7 @@ namespace IronWasteland.Enemies.The2Face
                 TankBrain tank = m_LockedTanks[t];
                 if (tank == null) continue;
 
-                for (int slot = 0; slot < TankBrain.SkillCount; slot++)
-                {
-                    if (tank.GetSkillCooldown(slot) >= SkillLockCooldown - 1f)
-                    {
-                        tank.SetSkillCooldown(slot, 0f);
-                    }
-                }
+                tank.SetExternalSkillLockMask(0);
             }
 
             m_LockedTanks.Clear();
@@ -958,8 +1019,7 @@ namespace IronWasteland.Enemies.The2Face
         private void CleanupBurstObjects()
         {
             ClearLightPoints();
-            ClearCrawlers();
-            ClearLightningMinions();
+            ClearBurstRandomEnemies();
         }
 
         private void ClearLightPoints()
@@ -968,7 +1028,7 @@ namespace IronWasteland.Enemies.The2Face
             {
                 if (m_LightPoints[i] != null)
                 {
-                    Destroy(m_LightPoints[i].gameObject);
+                    DespawnNetworkOrDestroy(m_LightPoints[i].gameObject);
                 }
             }
 
@@ -977,30 +1037,33 @@ namespace IronWasteland.Enemies.The2Face
             m_UnlockedSlotCount = -1;
         }
 
-        private void ClearCrawlers()
+        private void ClearBurstRandomEnemies()
         {
-            for (int i = 0; i < m_Crawlers.Count; i++)
+            for (int i = 0; i < m_BurstRandomEnemies.Count; i++)
             {
-                if (m_Crawlers[i] != null)
+                if (m_BurstRandomEnemies[i] != null)
                 {
-                    Destroy(m_Crawlers[i]);
+                    DespawnNetworkOrDestroy(m_BurstRandomEnemies[i]);
                 }
             }
 
-            m_Crawlers.Clear();
+            m_BurstRandomEnemies.Clear();
         }
 
-        private void ClearLightningMinions()
+        private static void DespawnNetworkOrDestroy(GameObject obj)
         {
-            for (int i = 0; i < m_LightningMinions.Count; i++)
+            if (obj == null) return;
+
+            if (obj.TryGetComponent(out Unity.Netcode.NetworkObject netObj) && netObj.IsSpawned)
             {
-                if (m_LightningMinions[i] != null)
+                if (Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsServer)
                 {
-                    Destroy(m_LightningMinions[i]);
+                    netObj.Despawn(true);
+                    return;
                 }
             }
 
-            m_LightningMinions.Clear();
+            Destroy(obj);
         }
 
         private void RemoveRewardBuffs()

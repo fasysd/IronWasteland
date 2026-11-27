@@ -149,24 +149,26 @@ namespace IronWasteland.Enemies.Normal
             currentCooldownTimer = skillCooldown;
         }
 
-        private void HandleSkillTargetFound(Skill_KIenLuaKhongLo sender, TankBrain target)
+        private void HandleSkillTargetFound(Skill_KIenLuaKhongLo sender, Component target)
         {
-            if (target == null || !target.IsAlive) return;
+            if (!EnemyTargetUtility.IsTargetAlive(target)) return;
 
             float damage = Stats != null ? Stats.Attack : 10f;
-            DamageInfo damageInfo = new DamageInfo(this, target, damage, 0f, target.transform.position, sourceType: DamageSourceType.EnemyAttack);
-            target.TakeDamage(damageInfo);
+            EnemyTargetUtility.TryDealDamage(this, target, damage, target.transform.position);
 
-            // GDD: Hiệu ứng thiêu đốt gây 15% Tấn công mỗi 1s, duy trì 5s. Gán lại sẽ đặt lại thời gian duy trì.
-            float burnDamagePerSecond = damage * 0.15f;
-            target.ApplyEffect(new IronWasteland.Core.Effects.BurnEffect(
-                this,
-                duration: 5.0f,
-                damagePerSecondPerStack: burnDamagePerSecond,
-                maxStacks: 1,
-                tickInterval: 1.0f,
-                stackPolicy: IronWasteland.Core.Effects.EffectStackPolicy.RefreshDuration
-            ));
+            if (target is TankBrain tank)
+            {
+                // GDD: Hiệu ứng thiêu đốt gây 15% Tấn công mỗi 1s, duy trì 5s. Gán lại sẽ đặt lại thời gian duy trì.
+                float burnDamagePerSecond = damage * 0.15f;
+                tank.ApplyEffect(new IronWasteland.Core.Effects.BurnEffect(
+                    this,
+                    duration: 5.0f,
+                    damagePerSecondPerStack: burnDamagePerSecond,
+                    maxStacks: 1,
+                    tickInterval: 1.0f,
+                    stackPolicy: IronWasteland.Core.Effects.EffectStackPolicy.RefreshDuration
+                ));
+            }
         }
     }
 }

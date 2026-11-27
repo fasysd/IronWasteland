@@ -300,17 +300,16 @@ namespace IronWasteland.Enemies.Normal
             m_ActiveZones.Add(zone);
         }
 
-        private void HandleZoneTargetsDetected(SwampZone_QuaiVatDamLay zone, HashSet<TankBrain> targets)
+        private void HandleZoneTargetsDetected(SwampZone_QuaiVatDamLay zone, HashSet<Component> targets)
         {
             if (targets == null || targets.Count == 0) return;
 
             float damage = Stats != null ? Stats.Attack : 10f;
-            foreach (TankBrain tank in targets)
+            foreach (Component target in targets)
             {
-                if (tank != null && tank.IsAlive)
+                if (EnemyTargetUtility.IsTargetAlive(target))
                 {
-                    DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
-                    tank.TakeDamage(damageInfo);
+                    EnemyTargetUtility.TryDealDamage(this, target, damage, target.transform.position);
                 }
             }
         }

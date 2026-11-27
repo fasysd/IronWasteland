@@ -16,7 +16,7 @@ namespace IronWasteland.Enemies.Normal
     [DisallowMultipleComponent]
     public class Skill_MatTrangDen : MonoBehaviour
     {
-        public event Action<Skill_MatTrangDen, List<TankBrain>> OnDamageDealt;
+        public event Action<Skill_MatTrangDen, List<Component>> OnDamageDealt;
 
         [Header("Aura Timings")]
         [Tooltip("Thời gian tồn tại của trường bức xạ mỗi lần kích hoạt (giây).")]
@@ -132,17 +132,16 @@ namespace IronWasteland.Enemies.Normal
 
         private void TriggerDamageTick()
         {
-            var targets = new HashSet<TankBrain>();
+            var targets = new HashSet<Component>();
 
             if (m_OwnerRef != null)
             {
                 foreach (Collider2D col in m_OwnerRef.GetTriggerColliders())
                 {
                     if (col == null) continue;
-                    TankBrain tank = ResolveTankBrain(col);
-                    if (tank != null && tank.IsAlive)
+                    if (EnemyTargetUtility.TryResolveTargetComponent(col, out Component target, out bool isAlive) && isAlive)
                     {
-                        targets.Add(tank);
+                        targets.Add(target);
                     }
                 }
             }
@@ -153,17 +152,16 @@ namespace IronWasteland.Enemies.Normal
                 Collider2D[] cols = Physics2D.OverlapCircleAll(transform.position, auraRadius, tankLayer);
                 for (int i = 0; i < cols.Length; i++)
                 {
-                    TankBrain tank = ResolveTankBrain(cols[i]);
-                    if (tank != null && tank.IsAlive)
+                    if (EnemyTargetUtility.TryResolveTargetComponent(cols[i], out Component target, out bool isAlive) && isAlive)
                     {
-                        targets.Add(tank);
+                        targets.Add(target);
                     }
                 }
             }
 
             if (targets.Count > 0)
             {
-                var result = new List<TankBrain>(targets);
+                var result = new List<Component>(targets);
                 OnDamageDealt?.Invoke(this, result);
             }
         }

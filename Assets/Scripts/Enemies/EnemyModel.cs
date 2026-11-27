@@ -22,7 +22,7 @@ namespace IronWasteland.Enemies
         [SerializeField] private SpriteRenderer spriteRenderer;
 
         [Tooltip("Collider va cham cua ke dich. Nam tren Model nhung attach vao Rigidbody2D cua cha.")]
-        [SerializeField] private BoxCollider2D bodyCollider;
+        [SerializeField] private Collider2D bodyCollider;
 
         [Tooltip("ColliderOwnerRef cung GameObject - cho phep ben ngoai tra chu va dang ky event va cham.")]
         [SerializeField] private ColliderOwnerRef ownerRef;
@@ -48,7 +48,7 @@ namespace IronWasteland.Enemies
         public EnemyBrain Owner => owner;
         public bool HasOwner => owner != null;
         public SpriteRenderer SpriteRenderer => spriteRenderer;
-        public BoxCollider2D BodyCollider => bodyCollider;
+        public Collider2D BodyCollider => bodyCollider;
         public ColliderOwnerRef OwnerRef => ownerRef;
         public Animator Animator
         {
@@ -128,7 +128,7 @@ namespace IronWasteland.Enemies
         {
             // Tu noi neu designer khong keo tay (giong OnValidate cua TankView).
             if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-            if (bodyCollider == null) bodyCollider = GetComponent<BoxCollider2D>();
+            if (bodyCollider == null) bodyCollider = GetComponent<Collider2D>();
             if (ownerRef == null) ownerRef = GetComponent<ColliderOwnerRef>();
             if (animator == null) animator = GetComponent<Animator>() ?? GetComponentInChildren<Animator>();
 

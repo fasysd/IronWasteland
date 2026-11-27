@@ -86,6 +86,41 @@ namespace IronWasteland.Enemies.Normal
         /// Thu thập tất cả các Tank đang có mặt trong vùng quét của scanner.
         /// Sử dụng 100% ColliderOwnerRef để định danh mục tiêu.
         /// </summary>
+        public void CollectNearbyTargets(HashSet<Component> results)
+        {
+            if (results == null || m_OwnerRef == null) return;
+
+            foreach (Collider2D col in m_OwnerRef.GetTriggerColliders())
+            {
+                ProcessCollider(col, results);
+            }
+
+            if (m_Collider != null)
+            {
+                m_OverlapBuffer.Clear();
+                int hitCount = m_Collider.Overlap(m_ContactFilter, m_OverlapBuffer);
+                for (int i = 0; i < hitCount; i++)
+                {
+                    ProcessCollider(m_OverlapBuffer[i], results);
+                }
+            }
+        }
+
+        private void ProcessCollider(Collider2D col, HashSet<Component> results)
+        {
+            if (col == null || !col.enabled || !col.gameObject.activeInHierarchy) return;
+
+            if (tankLayer.value != 0 && (tankLayer.value & (1 << col.gameObject.layer)) == 0)
+            {
+                return;
+            }
+
+            if (EnemyTargetUtility.TryResolveTargetComponent(col, out Component target, out bool isAlive) && isAlive)
+            {
+                results.Add(target);
+            }
+        }
+
         public void CollectNearbyTanks(HashSet<TankBrain> results)
         {
             if (results == null || m_OwnerRef == null) return;

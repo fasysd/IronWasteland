@@ -197,6 +197,44 @@ namespace IronWasteland.Tanks
         public bool CanUseSkill => IsAlive && !HasCC(CrowdControlType.Stun) && !HasCC(CrowdControlType.Silence);
         public bool CanLook => IsAlive && !HasCC(CrowdControlType.Stun);
 
+        private readonly float[] m_SkillLockTimers = new float[SkillCount];
+        private byte m_ExternalLockedMask;
+        public byte RemoteLockedSlotMask { get; set; }
+
+        public bool IsSkillSlotLocked(int index)
+        {
+            if (index < 0 || index >= SkillCount) return true;
+            byte combined = (byte)(m_ExternalLockedMask | RemoteLockedSlotMask);
+            return (combined & (1 << index)) != 0 || m_SkillLockTimers[index] > 0f;
+        }
+
+        public byte LockedSlotMask
+        {
+            get
+            {
+                byte mask = m_ExternalLockedMask;
+                for (int i = 0; i < SkillCount; i++)
+                {
+                    if (m_SkillLockTimers[i] > 0f) mask |= (byte)(1 << i);
+                }
+                return mask;
+            }
+        }
+
+        /// <summary>Khóa riêng một slot kỹ năng (ví dụ Câm lặng chỉ khóa đánh thường slot 0) trong duration giây.</summary>
+        public void LockSkillSlot(int index, float duration)
+        {
+            if (!HasGameplayAuthority || index < 0 || index >= SkillCount || duration <= 0f) return;
+            m_SkillLockTimers[index] = Mathf.Max(m_SkillLockTimers[index], duration);
+        }
+
+        /// <summary>Đặt bitmask khóa kỹ năng từ cơ chế bên ngoài (vd. Bùng nổ của The2Face).</summary>
+        public void SetExternalSkillLockMask(byte mask)
+        {
+            if (!HasGameplayAuthority) return;
+            m_ExternalLockedMask = mask;
+        }
+
         public IReadOnlyList<StatusEffect> ActiveEffects => m_ActiveEffects;
 
         /// <summary>
@@ -260,7 +298,12 @@ namespace IronWasteland.Tanks
 
             currentHealth = m_FinalStats.MaxHealth;
             currentEnergy = m_FinalStats.MaxEnergy;
-            for (int i = 0; i < skillCooldowns.Length; i++) skillCooldowns[i] = 0f;
+            for (int i = 0; i < skillCooldowns.Length; i++)
+            {
+                skillCooldowns[i] = 0f;
+                m_SkillLockTimers[i] = 0f;
+            }
+            m_ExternalLockedMask = 0;
         }
 
         protected virtual void RecalculateStats()
@@ -759,6 +802,7 @@ namespace IronWasteland.Tanks
             if (!IsRemoteFxReplay)
             {
                 if (!CanUseSkill) return;
+                if (IsSkillSlotLocked(index)) return;
                 if (skillCooldowns[index] > 0f) return;
 
                 if (index == 0)
@@ -1303,6 +1347,10 @@ namespace IronWasteland.Tanks
                 if (skillCooldowns[i] > 0f)
                 {
                     skillCooldowns[i] = Mathf.Max(0f, skillCooldowns[i] - deltaTime);
+                }
+                if (m_SkillLockTimers[i] > 0f)
+                {
+                    m_SkillLockTimers[i] = Mathf.Max(0f, m_SkillLockTimers[i] - deltaTime);
                 }
             }
         }

@@ -101,6 +101,24 @@ namespace IronWasteland.Enemies.Normal
         /// Thu thập tất cả các xe tăng đang đứng trong phạm vi của vùng vào HashSet chung.
         /// Sử dụng HashSet để đảm bảo xe tăng đứng trên nhiều vùng cùng lúc chỉ xuất hiện duy nhất 1 lần.
         /// </summary>
+        public void CollectTargetsInZone(HashSet<Component> results)
+        {
+            if (!m_IsActive || results == null) return;
+
+            // 1. Quét từ ColliderOwnerRef trigger tracking
+            if (m_OwnerRef != null)
+            {
+                foreach (Collider2D col in m_OwnerRef.GetTriggerColliders())
+                {
+                    if (col == null) continue;
+                    if (EnemyTargetUtility.TryResolveTargetComponent(col, out Component target, out bool isAlive) && isAlive)
+                    {
+                        results.Add(target);
+                    }
+                }
+            }
+        }
+
         public void CollectTanksInZone(HashSet<TankBrain> results)
         {
             if (!m_IsActive || results == null) return;

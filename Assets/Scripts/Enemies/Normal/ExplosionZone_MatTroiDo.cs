@@ -40,7 +40,7 @@ namespace IronWasteland.Enemies.Normal
         /// Kích hoạt khi vùng phát nổ: trả về (zone, danh sách Tank trong vùng, vị trí tâm nổ, bán kính nổ).
         /// EnemyBrain đăng ký sự kiện này để kích hoạt sát thương và spawn Ký Sinh Thiên Thạch.
         /// </summary>
-        public event Action<ExplosionZone_MatTroiDo, HashSet<TankBrain>, Vector2, float> OnExploded;
+        public event Action<ExplosionZone_MatTroiDo, HashSet<Component>, Vector2, float> OnExploded;
 
         private Collider2D m_Collider;
         private ColliderOwnerRef m_OwnerRef;
@@ -144,7 +144,7 @@ namespace IronWasteland.Enemies.Normal
 
         private void TriggerExplosion()
         {
-            HashSet<TankBrain> targets = GetCurrentTargets();
+            HashSet<Component> targets = GetCurrentTargets();
             Vector2 explosionPos = transform.position;
             float radius = GetExplosionRadius();
 
@@ -154,20 +154,20 @@ namespace IronWasteland.Enemies.Normal
         }
 
         /// <summary>
-        /// Quét và trả về danh sách các xe tăng đang có mặt trong trigger của ColliderOwnerRef tại thời điểm nổ.
+        /// Quét và trả về danh sách các mục tiêu đang có mặt trong trigger của ColliderOwnerRef tại thời điểm nổ.
         /// Sử dụng 100% ColliderOwnerRef. Không chứa logic gây sát thương.
         /// </summary>
-        public HashSet<TankBrain> GetCurrentTargets()
+        public HashSet<Component> GetCurrentTargets()
         {
-            var targets = new HashSet<TankBrain>();
-            CollectTanksInZone(targets);
+            var targets = new HashSet<Component>();
+            CollectTargetsInZone(targets);
             return targets;
         }
 
         /// <summary>
-        /// Thu thập các xe tăng đang có mặt trong trigger của ColliderOwnerRef nạp vào tập kết quả.
+        /// Thu thập các mục tiêu (Tank và Điểm Sáng) đang có mặt trong trigger của ColliderOwnerRef nạp vào tập kết quả.
         /// </summary>
-        public void CollectTanksInZone(HashSet<TankBrain> results)
+        public void CollectTargetsInZone(HashSet<Component> results)
         {
             if (results == null || m_OwnerRef == null) return;
 
@@ -180,10 +180,9 @@ namespace IronWasteland.Enemies.Normal
                     continue;
                 }
 
-                TankBrain tank = ResolveTankBrain(col);
-                if (tank != null && tank.IsAlive)
+                if (EnemyTargetUtility.TryResolveTargetComponent(col, out Component target, out bool isAlive) && isAlive)
                 {
-                    results.Add(tank);
+                    results.Add(target);
                 }
             }
         }

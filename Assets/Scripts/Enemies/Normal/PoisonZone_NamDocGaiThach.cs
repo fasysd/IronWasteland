@@ -42,7 +42,7 @@ namespace IronWasteland.Enemies.Normal
         /// Kích hoạt định kỳ mỗi damageTickInterval khi quét được mục tiêu.
         /// EnemyBrain đăng ký sự kiện này để kích hoạt sát thương.
         /// </summary>
-        public event Action<PoisonZone_NamDocGaiThach, HashSet<TankBrain>> OnTargetsDetected;
+        public event Action<PoisonZone_NamDocGaiThach, HashSet<Component>> OnTargetsDetected;
 
         private Collider2D m_Collider;
         private ColliderOwnerRef m_OwnerRef;
@@ -156,7 +156,7 @@ namespace IronWasteland.Enemies.Normal
 
         private void TriggerDamageTick()
         {
-            HashSet<TankBrain> targets = GetCurrentTargets();
+            HashSet<Component> targets = GetCurrentTargets();
             if (targets.Count > 0)
             {
                 OnTargetsDetected?.Invoke(this, targets);
@@ -164,19 +164,39 @@ namespace IronWasteland.Enemies.Normal
         }
 
         /// <summary>
-        /// Quét và trả về danh sách các xe tăng đang có mặt trong trigger của ColliderOwnerRef tại thời điểm hiện tại.
+        /// Quét và trả về danh sách các mục tiêu đang có mặt trong trigger của ColliderOwnerRef tại thời điểm hiện tại.
         /// Sử dụng 100% ColliderOwnerRef. Không chứa logic gây sát thương.
         /// </summary>
-        public HashSet<TankBrain> GetCurrentTargets()
+        public HashSet<Component> GetCurrentTargets()
         {
-            var targets = new HashSet<TankBrain>();
-            CollectTanksInZone(targets);
+            var targets = new HashSet<Component>();
+            CollectTargetsInZone(targets);
             return targets;
         }
 
         /// <summary>
-        /// Thu thập các xe tăng đang có mặt trong trigger của ColliderOwnerRef nạp vào tập kết quả đã cấp.
+        /// Thu thập các mục tiêu (Tank và Điểm Sáng) đang có mặt trong trigger của ColliderOwnerRef nạp vào tập kết quả đã cấp.
         /// </summary>
+        public void CollectTargetsInZone(HashSet<Component> results)
+        {
+            if (results == null || m_OwnerRef == null) return;
+
+            foreach (Collider2D col in m_OwnerRef.GetTriggerColliders())
+            {
+                if (col == null || !col.enabled || !col.gameObject.activeInHierarchy) continue;
+
+                if (tankLayer.value != 0 && (tankLayer.value & (1 << col.gameObject.layer)) == 0)
+                {
+                    continue;
+                }
+
+                if (EnemyTargetUtility.TryResolveTargetComponent(col, out Component target, out bool isAlive) && isAlive)
+                {
+                    results.Add(target);
+                }
+            }
+        }
+
         public void CollectTanksInZone(HashSet<TankBrain> results)
         {
             if (results == null || m_OwnerRef == null) return;

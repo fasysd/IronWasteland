@@ -202,7 +202,7 @@ namespace IronWasteland.Enemies.Normal
         /// 1. Gây sát thương 100% tấn công của Mặt Trời Đỏ lên các Tank trong vùng nổ.
         /// 2. Sinh ngẫu nhiên từ 2-5 con Ký Sinh Thiên Thạch từ template riêng lưu trong Prefab.
         /// </summary>
-        private void HandleZoneExploded(ExplosionZone_MatTroiDo zone, HashSet<TankBrain> targets, Vector2 explosionPos, float radius)
+        private void HandleZoneExploded(ExplosionZone_MatTroiDo zone, HashSet<Component> targets, Vector2 explosionPos, float radius)
         {
             // 1. Gây sát thương 100% tấn công của Mặt Trời Đỏ
             if (targets != null && targets.Count > 0)
@@ -210,12 +210,11 @@ namespace IronWasteland.Enemies.Normal
                 float baseAtk = Stats != null ? Stats.Attack : 10f;
                 float damage = baseAtk * explosionDamageMultiplier;
 
-                foreach (TankBrain tank in targets)
+                foreach (Component target in targets)
                 {
-                    if (tank == null || !tank.IsAlive) continue;
+                    if (!EnemyTargetUtility.IsTargetAlive(target)) continue;
 
-                    DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
-                    tank.TakeDamage(damageInfo);
+                    EnemyTargetUtility.TryDealDamage(this, target, damage, target.transform.position);
                 }
             }
 

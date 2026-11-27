@@ -52,6 +52,20 @@ namespace IronWasteland.Enemies.Normal
             m_CurrentTurnSpeed = homingTurnSpeed;
         }
 
+        public void InitializeHoming(
+            Vector2 direction,
+            float damageAmount,
+            Transform target,
+            int volleyId,
+            System.Action<EnemyProjectileBase, Component> onAnyTargetHit,
+            System.Action<EnemyProjectileBase> onFinished = null)
+        {
+            Initialize(direction, damageAmount, onAnyTargetHit, onFinished);
+            m_HomingTarget = target;
+            m_VolleyId = volleyId;
+            m_CurrentTurnSpeed = homingTurnSpeed;
+        }
+
         public override void Clear()
         {
             m_HomingTarget = null;
@@ -94,13 +108,25 @@ namespace IronWasteland.Enemies.Normal
             m_Body.linearVelocity = m_Direction * speed;
         }
 
+        protected override void OnAnyTargetsHit(HashSet<Component> targets)
+        {
+            foreach (Component target in targets)
+            {
+                if (!EnemyTargetUtility.IsTargetAlive(target)) continue;
+
+                NotifyAnyTargetHit(target);
+                Despawn();
+                return;
+            }
+        }
+
         protected override void OnTanksHit(HashSet<TankBrain> tanks)
         {
             foreach (TankBrain tank in tanks)
             {
                 if (tank == null || !tank.IsAlive) continue;
 
-                // Gây sát thương và biến mất ngay lập tức khi trúng xe tăng
+                // Gây sát thương và biến mất ngay lập tức khi trúng mục tiêu
                 NotifyTargetHit(tank);
                 Despawn();
                 return;

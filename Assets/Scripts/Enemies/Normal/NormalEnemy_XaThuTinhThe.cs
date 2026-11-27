@@ -135,13 +135,12 @@ namespace IronWasteland.Enemies.Normal
             }
         }
 
-        private void OnProjectileHit(EnemyProjectileBase sender, TankBrain tank)
+        private void OnProjectileHit(EnemyProjectileBase sender, Component target)
         {
-            if (tank == null || !tank.IsAlive) return;
+            if (!EnemyTargetUtility.IsTargetAlive(target)) return;
 
             float damage = Stats != null ? Stats.Attack : 10f;
-            DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
-            tank.TakeDamage(damageInfo);
+            EnemyTargetUtility.TryDealDamage(this, target, damage, target.transform.position);
         }
     }
 }

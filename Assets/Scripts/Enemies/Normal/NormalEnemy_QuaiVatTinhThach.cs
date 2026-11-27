@@ -29,7 +29,7 @@ namespace IronWasteland.Enemies.Normal
         [SerializeField, ReadOnly] private float attackCooldownTimer;
         [SerializeField, ReadOnly] private int currentVolleyId;
 
-        private readonly Dictionary<TankBrain, int> m_VolleyHitCounts = new Dictionary<TankBrain, int>();
+        private readonly Dictionary<Component, int> m_VolleyHitCounts = new Dictionary<Component, int>();
 
         public Projectile_QuaiVatTinhThach ProjectilePrefab => projectilePrefab;
         public float AttackCooldown => attackCooldown;
@@ -166,21 +166,21 @@ namespace IronWasteland.Enemies.Normal
             }
         }
 
-        private void OnHomingProjectileHit(EnemyProjectileBase sender, TankBrain tank)
+        private void OnHomingProjectileHit(EnemyProjectileBase sender, Component target)
         {
-            if (tank == null || !tank.IsAlive) return;
+            if (!EnemyTargetUtility.IsTargetAlive(target)) return;
 
             if (sender is Projectile_QuaiVatTinhThach homingProj)
             {
                 // Kiểm tra xem đạn có thuộc loạt bắn hiện tại hay không
                 if (homingProj.VolleyId != currentVolleyId) return;
 
-                if (!m_VolleyHitCounts.TryGetValue(tank, out int hitCount))
+                if (!m_VolleyHitCounts.TryGetValue(target, out int hitCount))
                 {
                     hitCount = 0;
                 }
                 hitCount++;
-                m_VolleyHitCounts[tank] = hitCount;
+                m_VolleyHitCounts[target] = hitCount;
 
                 // Công thức sát thương tăng tiến:
                 // Viên 1: 100% (multiplier = 1.0)
@@ -192,8 +192,7 @@ namespace IronWasteland.Enemies.Normal
                 float baseAtk = Stats != null ? Stats.Attack : 10f;
                 float finalDamage = baseAtk * multiplier;
 
-                DamageInfo damageInfo = new DamageInfo(this, tank, finalDamage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
-                tank.TakeDamage(damageInfo);
+                EnemyTargetUtility.TryDealDamage(this, target, finalDamage, target.transform.position);
             }
         }
     }

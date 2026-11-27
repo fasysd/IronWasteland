@@ -345,59 +345,7 @@ namespace IronWasteland.Enemies.Normal
         /// </summary>
         protected virtual Transform ScanAndValidateTarget()
         {
-            int mask = tankLayer.value != 0 ? tankLayer.value : LayerMask.GetMask("Tank");
-
-            Collider2D[] hits = Physics2D.OverlapCircleAll(anchorPointD, radiusC, mask);
-            if (hits == null || hits.Length == 0) return null;
-
-            Vector2 currentPos = transform.position;
-            Transform bestTarget = null;
-            float closestDistance = float.MaxValue;
-
-            for (int i = 0; i < hits.Length; i++)
-            {
-                Collider2D hit = hits[i];
-                if (hit == null) continue;
-
-                ColliderOwnerRef ownerRef = hit.GetComponent<ColliderOwnerRef>() ?? hit.GetComponentInParent<ColliderOwnerRef>();
-                if (ownerRef == null) continue;
-
-                TankBrain tankBrain = null;
-                if (ownerRef.Owner is TankBrain tb)
-                {
-                    tankBrain = tb;
-                }
-                else if (ownerRef.Owner is GameObject go)
-                {
-                    tankBrain = go.GetComponent<TankBrain>() ?? go.GetComponentInParent<TankBrain>();
-                }
-                else if (ownerRef.Owner is Component comp)
-                {
-                    tankBrain = comp.GetComponent<TankBrain>() ?? comp.GetComponentInParent<TankBrain>();
-                }
-
-                if (tankBrain == null)
-                {
-                    tankBrain = hit.GetComponentInParent<TankBrain>();
-                }
-
-                if (tankBrain == null) continue;
-                if (!tankBrain.IsAlive) continue;
-
-                Vector2 tankPos = tankBrain.transform.position;
-                Vector2 closestPoint = hit.bounds.ClosestPoint(anchorPointD);
-                if (Vector2.Distance(tankPos, anchorPointD) > radiusC && Vector2.Distance(closestPoint, anchorPointD) > radiusC)
-                    continue;
-
-                float dist = Vector2.Distance(currentPos, tankPos);
-                if (dist < closestDistance)
-                {
-                    closestDistance = dist;
-                    bestTarget = tankBrain.transform;
-                }
-            }
-
-            return bestTarget;
+            return EnemyTargetUtility.ScanNearestTarget(transform.position, anchorPointD, radiusC, tankLayer.value);
         }
 
         protected override void OnDeath()

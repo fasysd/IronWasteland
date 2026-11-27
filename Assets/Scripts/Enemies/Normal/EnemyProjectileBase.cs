@@ -17,6 +17,7 @@ namespace IronWasteland.Enemies.Normal
     public abstract class EnemyProjectileBase : MonoBehaviour
     {
         public event Action<EnemyProjectileBase, TankBrain> TargetHit;
+        public event Action<EnemyProjectileBase, Component> AnyTargetHit;
 
         [Header("Projectile Settings")]
         [Tooltip("Tốc độ bay của viên đạn.")]
@@ -97,6 +98,7 @@ namespace IronWasteland.Enemies.Normal
             m_HasHit = false;
             m_OnFinished = null;
             TargetHit = null;
+            AnyTargetHit = null;
         }
 
         public virtual void Initialize(
@@ -114,6 +116,29 @@ namespace IronWasteland.Enemies.Normal
             {
                 TargetHit += onTargetHit;
             }
+            SetupMovementAndTrigger();
+        }
+
+        public virtual void Initialize(
+            Vector2 direction,
+            float damageAmount,
+            Action<EnemyProjectileBase, Component> onAnyTargetHit,
+            Action<EnemyProjectileBase> onFinished = null)
+        {
+            Clear();
+
+            m_Direction = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector2.right;
+            baseDamage = damageAmount;
+            m_OnFinished = onFinished;
+            if (onAnyTargetHit != null)
+            {
+                AnyTargetHit += onAnyTargetHit;
+            }
+            SetupMovementAndTrigger();
+        }
+
+        private void SetupMovementAndTrigger()
+        {
             m_Initialized = true;
             m_ElapsedTime = 0f;
 
@@ -133,7 +158,7 @@ namespace IronWasteland.Enemies.Normal
 
         public virtual void Initialize(Vector2 direction, float damageAmount, Action<EnemyProjectileBase> onFinished)
         {
-            Initialize(direction, damageAmount, null, onFinished);
+            Initialize(direction, damageAmount, (Action<EnemyProjectileBase, TankBrain>)null, onFinished);
         }
 
         protected virtual void Update()
@@ -166,13 +191,12 @@ namespace IronWasteland.Enemies.Normal
         {
             if (!m_Initialized) return;
 
-            // Xử lý tức thì nếu collider va chạm trực tiếp trúng xe tăng
+            // Xử lý tức thì nếu collider va chạm trực tiếp trúng mục tiêu (Tank hoặc Điểm Sáng)
             if (other != null)
             {
-                TankBrain tank = ResolveTankBrain(other);
-                if (tank != null && tank.IsAlive)
+                if (EnemyTargetUtility.TryResolveTargetComponent(other, out Component target, out bool isAlive) && isAlive)
                 {
-                    OnTanksHit(new HashSet<TankBrain> { tank });
+                    OnAnyTargetsHit(new HashSet<Component> { target });
                     return;
                 }
             }
@@ -196,7 +220,7 @@ namespace IronWasteland.Enemies.Normal
                 yield break;
             }
 
-            var tanks = new HashSet<TankBrain>();
+            var targets = new HashSet<Component>();
 
             // 1. Quét từ ColliderOwnerRef
             if (m_OwnerRef != null)
@@ -204,10 +228,9 @@ namespace IronWasteland.Enemies.Normal
                 foreach (Collider2D col in m_OwnerRef.GetTriggerColliders())
                 {
                     if (col == null) continue;
-                    TankBrain tank = ResolveTankBrain(col);
-                    if (tank != null && tank.IsAlive)
+                    if (EnemyTargetUtility.TryResolveTargetComponent(col, out Component target, out bool isAlive) && isAlive)
                     {
-                        tanks.Add(tank);
+                        targets.Add(target);
                     }
                 }
             }
@@ -215,16 +238,15 @@ namespace IronWasteland.Enemies.Normal
             // 2. Kiểm tra trực tiếp collider va chạm nếu có
             if (directCollider != null)
             {
-                TankBrain tank = ResolveTankBrain(directCollider);
-                if (tank != null && tank.IsAlive)
+                if (EnemyTargetUtility.TryResolveTargetComponent(directCollider, out Component target, out bool isAlive) && isAlive)
                 {
-                    tanks.Add(tank);
+                    targets.Add(target);
                 }
             }
 
-            if (tanks.Count > 0)
+            if (targets.Count > 0)
             {
-                OnTanksHit(tanks);
+                OnAnyTargetsHit(targets);
             }
         }
 
@@ -255,6 +277,25 @@ namespace IronWasteland.Enemies.Normal
             return col.GetComponentInParent<TankBrain>();
         }
 
+        protected virtual void OnAnyTargetsHit(HashSet<Component> targets)
+        {
+            if (targets == null || targets.Count == 0) return;
+
+            var tanks = new HashSet<TankBrain>();
+            foreach (Component target in targets)
+            {
+                if (target is TankBrain tank && tank.IsAlive)
+                {
+                    tanks.Add(tank);
+                }
+            }
+
+            if (tanks.Count > 0)
+            {
+                OnTanksHit(tanks);
+            }
+        }
+
         protected abstract void OnTanksHit(HashSet<TankBrain> tanks);
 
         protected void NotifyTargetHit(TankBrain tank)
@@ -262,6 +303,19 @@ namespace IronWasteland.Enemies.Normal
             if (tank != null)
             {
                 TargetHit?.Invoke(this, tank);
+                AnyTargetHit?.Invoke(this, tank);
+            }
+        }
+
+        protected void NotifyAnyTargetHit(Component target)
+        {
+            if (target != null)
+            {
+                AnyTargetHit?.Invoke(this, target);
+                if (target is TankBrain tank)
+                {
+                    TargetHit?.Invoke(this, tank);
+                }
             }
         }
 

@@ -55,7 +55,7 @@ namespace IronWasteland.Enemies.Normal
 
         private Coroutine m_ChargeCoroutine;
         private Rigidbody2D m_Rigidbody;
-        private TankBrain m_HitTank;
+        private Component m_HitTarget;
         private bool m_HitTerrain;
 
         public ColliderOwnerRef ChargeColliderRef { get => chargeColliderRef; set => chargeColliderRef = value; }
@@ -96,7 +96,7 @@ namespace IronWasteland.Enemies.Normal
         private void OnDisable()
         {
             UnregisterColliderEvents();
-            m_HitTank = null;
+            m_HitTarget = null;
             m_HitTerrain = false;
         }
 
@@ -141,13 +141,12 @@ namespace IronWasteland.Enemies.Normal
         {
             if (!isCharging || col == null) return;
 
-            // 1. Kiểm tra va chạm Xe Tăng
-            if (m_HitTank == null)
+            // 1. Kiểm tra va chạm mục tiêu (Xe Tăng hoặc Điểm Sáng)
+            if (m_HitTarget == null)
             {
-                TankBrain tank = ResolveTankBrain(col);
-                if (tank != null && tank.IsAlive)
+                if (EnemyTargetUtility.TryResolveTargetComponent(col, out Component target, out bool isAlive) && isAlive)
                 {
-                    m_HitTank = tank;
+                    m_HitTarget = target;
                     return;
                 }
             }
@@ -239,7 +238,7 @@ namespace IronWasteland.Enemies.Normal
         {
             isCharging = true;
             isRecoiling = false;
-            m_HitTank = null;
+            m_HitTarget = null;
             m_HitTerrain = false;
 
             movementAgent?.Stop();
@@ -287,11 +286,11 @@ namespace IronWasteland.Enemies.Normal
                 // Quét va chạm liên tục qua ColliderOwnerRef
                 CheckRealtimeColliders();
 
-                // Trường hợp A: Trúng Xe Tăng
-                if (m_HitTank != null && m_HitTank.IsAlive)
+                // Trường hợp A: Trúng mục tiêu
+                if (EnemyTargetUtility.IsTargetAlive(m_HitTarget))
                 {
                     hitObstacle = true;
-                    HandleHitTank(m_HitTank, chargeDirection);
+                    HandleHitTarget(m_HitTarget, chargeDirection);
                     break;
                 }
 
@@ -327,24 +326,26 @@ namespace IronWasteland.Enemies.Normal
 
             // 4. Kết thúc toàn bộ cú lao và kích hoạt hồi chiêu
             currentCooldownTimer = skillCooldown;
-            m_HitTank = null;
+            m_HitTarget = null;
             m_HitTerrain = false;
             m_ChargeCoroutine = null;
         }
 
         /// <summary>
-        /// Xử lý khi đâm trúng Xe Tăng: gây sát thương và ghi nhận log đẩy lùi.
+        /// Xử lý khi đâm trúng mục tiêu: gây sát thương và đẩy lùi nếu là Xe Tăng.
         /// </summary>
-        private void HandleHitTank(TankBrain tank, Vector2 chargeDirection)
+        private void HandleHitTarget(Component target, Vector2 chargeDirection)
         {
             float baseAtk = Stats != null ? Stats.Attack : 10f;
             float damage = baseAtk * damageMultiplier;
 
-            DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
-            tank.TakeDamage(damageInfo);
+            EnemyTargetUtility.TryDealDamage(this, target, damage, target.transform.position);
 
-            // GDD: Tong trung gay 100% Tan cong va day lui tank
-            tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Knockback, 0.3f, knockbackDistance);
+            if (target is TankBrain tank)
+            {
+                // GDD: Tong trung gay 100% Tan cong va day lui tank
+                tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Knockback, 0.3f, knockbackDistance);
+            }
         }
 
         /// <summary>
@@ -416,14 +417,14 @@ namespace IronWasteland.Enemies.Normal
             {
                 if (col == null || !col.enabled || !col.gameObject.activeInHierarchy) continue;
                 ProcessHitCollider(col);
-                if (m_HitTank != null || m_HitTerrain) return;
+                if (m_HitTarget != null || m_HitTerrain) return;
             }
 
             foreach (Collider2D col in colRef.GetCollisionColliders())
             {
                 if (col == null || !col.enabled || !col.gameObject.activeInHierarchy) continue;
                 ProcessHitCollider(col);
-                if (m_HitTank != null || m_HitTerrain) return;
+                if (m_HitTarget != null || m_HitTerrain) return;
             }
         }
 
@@ -490,7 +491,7 @@ namespace IronWasteland.Enemies.Normal
 
             isCharging = false;
             isRecoiling = false;
-            m_HitTank = null;
+            m_HitTarget = null;
             m_HitTerrain = false;
 
             base.OnDeath();

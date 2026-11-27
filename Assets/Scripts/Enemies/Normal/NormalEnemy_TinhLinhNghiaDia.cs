@@ -146,15 +146,15 @@ namespace IronWasteland.Enemies.Normal
             m_ActiveZones.RemoveAll(z => z == null || !z.IsActive);
             if (m_ActiveZones.Count == 0) return;
 
-            // Tổng hợp tất cả các xe tăng từ tất cả các vùng vào HashSet
-            // HashSet đảm bảo mỗi xe tăng chỉ được lưu 1 lần duy nhất kể cả đứng trên nhiều vùng giao nhau
-            var targetBatch = new HashSet<TankBrain>();
+            // Tổng hợp tất cả các mục tiêu từ tất cả các vùng vào HashSet
+            // HashSet đảm bảo mỗi mục tiêu chỉ được lưu 1 lần duy nhất kể cả đứng trên nhiều vùng giao nhau
+            var targetBatch = new HashSet<Component>();
             for (int i = 0; i < m_ActiveZones.Count; i++)
             {
                 DamageZone_TinhLinhNghiaDia zone = m_ActiveZones[i];
                 if (zone != null && zone.IsActive)
                 {
-                    zone.CollectTanksInZone(targetBatch);
+                    zone.CollectTargetsInZone(targetBatch);
                 }
             }
 
@@ -164,15 +164,17 @@ namespace IronWasteland.Enemies.Normal
             float baseAtk = Stats != null ? Stats.Attack : 10f;
             float damage = baseAtk * damageMultiplierPerTick;
 
-            foreach (TankBrain tank in targetBatch)
+            foreach (Component target in targetBatch)
             {
-                if (tank == null || !tank.IsAlive) continue;
+                if (!EnemyTargetUtility.IsTargetAlive(target)) continue;
 
-                DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
-                tank.TakeDamage(damageInfo);
+                EnemyTargetUtility.TryDealDamage(this, target, damage, target.transform.position);
 
-                // GDD: Giảm 20% Tốc độ trong 2s, kích hoạt lại sẽ đặt lại thời gian duy trì
-                tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Slow, 2.0f, 0.20f);
+                if (target is TankBrain tank)
+                {
+                    // GDD: Giảm 20% Tốc độ trong 2s, kích hoạt lại sẽ đặt lại thời gian duy trì
+                    tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Slow, 2.0f, 0.20f);
+                }
             }
         }
 

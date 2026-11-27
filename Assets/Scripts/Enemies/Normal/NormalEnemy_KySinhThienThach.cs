@@ -214,7 +214,7 @@ namespace IronWasteland.Enemies.Normal
             else
             {
                 // Fallback nếu chưa gắn Skill component
-                HandleSkillTargetFound(null, new List<TankBrain>());
+                HandleSkillTargetFound(null, new List<Component>());
             }
         }
 
@@ -223,7 +223,7 @@ namespace IronWasteland.Enemies.Normal
             isCastingSkill = false;
         }
 
-        private void HandleSkillTargetFound(Skill_KySinhThienThach sender, IReadOnlyList<TankBrain> targets)
+        private void HandleSkillTargetFound(Skill_KySinhThienThach sender, IReadOnlyList<Component> targets)
         {
             hasDetonated = true;
 
@@ -232,16 +232,18 @@ namespace IronWasteland.Enemies.Normal
             m_AffectedTanks.Clear();
             if (targets != null)
             {
-                foreach (TankBrain tank in targets)
+                foreach (Component target in targets)
                 {
-                    if (tank == null || !tank.IsAlive) continue;
+                    if (!EnemyTargetUtility.IsTargetAlive(target)) continue;
 
-                    // 1. Gây sát thương 100% tấn công chuẩn DamageInfo
-                    DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
-                    tank.TakeDamage(damageInfo);
+                    // 1. Gây sát thương 100% tấn công
+                    EnemyTargetUtility.TryDealDamage(this, target, damage, target.transform.position);
 
                     // 2. Làm chậm tốc độ di chuyển của Tank qua CrowdControl
-                    tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Slow, slowDuration, slowPercent);
+                    if (target is TankBrain tank)
+                    {
+                        tank.ApplyCrowdControl(IronWasteland.Core.CrowdControlType.Slow, slowDuration, slowPercent);
+                    }
                 }
             }
 

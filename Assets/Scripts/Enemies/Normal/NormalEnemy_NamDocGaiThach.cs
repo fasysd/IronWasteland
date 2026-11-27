@@ -250,19 +250,18 @@ namespace IronWasteland.Enemies.Normal
         /// Xử lý sát thương khi vùng độc phát hiện mục tiêu theo từng chu kỳ tick.
         /// EnemyBrain chịu trách nhiệm tính toán và kích hoạt sát thương theo chỉ số Attack của quái.
         /// </summary>
-        private void HandleZoneTargetsDetected(PoisonZone_NamDocGaiThach zone, HashSet<TankBrain> targets)
+        private void HandleZoneTargetsDetected(PoisonZone_NamDocGaiThach zone, HashSet<Component> targets)
         {
             if (targets == null || targets.Count == 0) return;
 
             float baseAtk = Stats != null ? Stats.Attack : 10f;
             float damage = baseAtk * damageMultiplierPerTick;
 
-            foreach (TankBrain tank in targets)
+            foreach (Component target in targets)
             {
-                if (tank != null && tank.IsAlive)
+                if (EnemyTargetUtility.IsTargetAlive(target))
                 {
-                    DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
-                    tank.TakeDamage(damageInfo);
+                    EnemyTargetUtility.TryDealDamage(this, target, damage, target.transform.position);
                 }
             }
         }

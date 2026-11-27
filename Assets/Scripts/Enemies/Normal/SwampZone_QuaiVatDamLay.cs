@@ -45,17 +45,17 @@ namespace IronWasteland.Enemies.Normal
         /// Kích hoạt khi tìm được mục tiêu (cả khi xuất hiện lẫn khi phát nổ).
         /// EnemyBrain đăng ký sự kiện này để kích hoạt sát thương.
         /// </summary>
-        public event Action<SwampZone_QuaiVatDamLay, HashSet<TankBrain>> OnTargetsDetected;
+        public event Action<SwampZone_QuaiVatDamLay, HashSet<Component>> OnTargetsDetected;
 
         /// <summary>
         /// Kích hoạt riêng khi vừa xuất hiện (sau hitCheckDelay).
         /// </summary>
-        public event Action<SwampZone_QuaiVatDamLay, HashSet<TankBrain>> OnAppearTargets;
+        public event Action<SwampZone_QuaiVatDamLay, HashSet<Component>> OnAppearTargets;
 
         /// <summary>
         /// Kích hoạt riêng khi hết thời gian và phát nổ (trước khi Despawn).
         /// </summary>
-        public event Action<SwampZone_QuaiVatDamLay, HashSet<TankBrain>> OnExplodeTargets;
+        public event Action<SwampZone_QuaiVatDamLay, HashSet<Component>> OnExplodeTargets;
 
         private Collider2D m_Collider;
         private ColliderOwnerRef m_OwnerRef;
@@ -165,7 +165,7 @@ namespace IronWasteland.Enemies.Normal
             if (!m_IsActive) yield break;
 
             // Quét target tại thời điểm xuất hiện (chỉ gây sát thương khi phát nổ sau 3s theo GDD)
-            HashSet<TankBrain> targets = GetCurrentTargets();
+            HashSet<Component> targets = GetCurrentTargets();
             OnAppearTargets?.Invoke(this, targets);
 
             m_AppearCoroutine = null;
@@ -195,20 +195,20 @@ namespace IronWasteland.Enemies.Normal
         }
 
         /// <summary>
-        /// Quét và trả về danh sách các xe tăng đang có mặt trong trigger của ColliderOwnerRef tại thời điểm hiện tại.
+        /// Quét và trả về danh sách các mục tiêu đang có mặt trong trigger của ColliderOwnerRef tại thời điểm hiện tại.
         /// Sử dụng 100% ColliderOwnerRef. Không chứa logic gây sát thương.
         /// </summary>
-        public HashSet<TankBrain> GetCurrentTargets()
+        public HashSet<Component> GetCurrentTargets()
         {
-            var targets = new HashSet<TankBrain>();
-            CollectTanksInZone(targets);
+            var targets = new HashSet<Component>();
+            CollectTargetsInZone(targets);
             return targets;
         }
 
         /// <summary>
-        /// Thu thập các xe tăng đang có mặt trong trigger của ColliderOwnerRef nạp vào tập kết quả đã cấp.
+        /// Thu thập các mục tiêu (Tank và Điểm Sáng) đang có mặt trong trigger của ColliderOwnerRef nạp vào tập kết quả đã cấp.
         /// </summary>
-        public void CollectTanksInZone(HashSet<TankBrain> results)
+        public void CollectTargetsInZone(HashSet<Component> results)
         {
             if (results == null || m_OwnerRef == null) return;
 
@@ -221,10 +221,9 @@ namespace IronWasteland.Enemies.Normal
                     continue;
                 }
 
-                TankBrain tank = ResolveTankBrain(col);
-                if (tank != null && tank.IsAlive)
+                if (EnemyTargetUtility.TryResolveTargetComponent(col, out Component target, out bool isAlive) && isAlive)
                 {
-                    results.Add(tank);
+                    results.Add(target);
                 }
             }
         }
@@ -232,7 +231,7 @@ namespace IronWasteland.Enemies.Normal
         private void ExplodeAndDespawn()
         {
             // Quét lại target độc lập từ ColliderOwnerRef tại thời điểm nổ và kích hoạt event trả về EnemyBrain
-            HashSet<TankBrain> targets = GetCurrentTargets();
+            HashSet<Component> targets = GetCurrentTargets();
             OnExplodeTargets?.Invoke(this, targets);
             OnTargetsDetected?.Invoke(this, targets);
 

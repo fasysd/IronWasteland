@@ -15,7 +15,7 @@ namespace IronWasteland.Enemies.Normal
     [RequireComponent(typeof(ColliderOwnerRef))]
     public class Skill_KIenLuaKhongLo : MonoBehaviour
     {
-        public event Action<Skill_KIenLuaKhongLo, TankBrain> OnFound;
+        public event Action<Skill_KIenLuaKhongLo, Component> OnFound;
 
         [Header("Hit Detection")]
         [SerializeField, Min(0f)] private float hitCheckDelay = 0.1f;
@@ -80,22 +80,21 @@ namespace IronWasteland.Enemies.Normal
             if (m_OwnerRef != null)
             {
                 IEnumerable<Collider2D> colliders = m_OwnerRef.GetTriggerColliders();
-                var targets = new HashSet<TankBrain>();
+                var targets = new HashSet<Component>();
 
                 foreach (Collider2D col in colliders)
                 {
                     if (col == null) continue;
 
-                    TankBrain tank = ResolveTankBrain(col);
-                    if (tank != null && tank.IsAlive)
+                    if (EnemyTargetUtility.TryResolveTargetComponent(col, out Component target, out bool isAlive) && isAlive)
                     {
-                        targets.Add(tank);
+                        targets.Add(target);
                     }
                 }
 
-                foreach (TankBrain tank in targets)
+                foreach (Component target in targets)
                 {
-                    OnFound?.Invoke(this, tank);
+                    OnFound?.Invoke(this, target);
                 }
             }
 

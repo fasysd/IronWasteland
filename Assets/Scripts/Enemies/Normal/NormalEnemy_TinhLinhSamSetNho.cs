@@ -300,9 +300,7 @@ namespace IronWasteland.Enemies.Normal
 
 
 
-            TankBrain initialTarget = ResolveTargetTank(currentTarget);
-
-            if (initialTarget == null || !initialTarget.IsAlive)
+            if (!EnemyTargetUtility.TryResolveTargetComponent(currentTarget, out Component initialTarget, out bool isAlive) || !isAlive)
 
             {
 
@@ -320,9 +318,9 @@ namespace IronWasteland.Enemies.Normal
 
             float damage = (Stats != null ? Stats.Attack : 10f) * damageMultiplier;
 
-            var hitTanks = new HashSet<TankBrain>();
+            var hitTanks = new HashSet<Component>();
 
-            var chainQueue = new Queue<TankBrain>();
+            var chainQueue = new Queue<Component>();
 
 
 
@@ -350,9 +348,9 @@ namespace IronWasteland.Enemies.Normal
 
             int chainedCount = 0;
 
-            var nearbyBuffer = new HashSet<TankBrain>();
+            var nearbyBuffer = new HashSet<Component>();
 
-            var sortedNeighbors = new List<TankBrain>();
+            var sortedNeighbors = new List<Component>();
 
 
 
@@ -360,7 +358,7 @@ namespace IronWasteland.Enemies.Normal
 
             {
 
-                TankBrain currentSource = chainQueue.Dequeue();
+                Component currentSource = chainQueue.Dequeue();
 
                 if (currentSource == null) continue;
 
@@ -394,7 +392,7 @@ namespace IronWasteland.Enemies.Normal
 
                     nearbyBuffer.Clear();
 
-                    m_ActiveScanner.CollectNearbyTanks(nearbyBuffer);
+                    m_ActiveScanner.CollectNearbyTargets(nearbyBuffer);
 
 
 
@@ -402,11 +400,11 @@ namespace IronWasteland.Enemies.Normal
 
                     sortedNeighbors.Clear();
 
-                    foreach (TankBrain neighbor in nearbyBuffer)
+                    foreach (Component neighbor in nearbyBuffer)
 
                     {
 
-                        if (neighbor != null && neighbor.IsAlive && !hitTanks.Contains(neighbor))
+                        if (EnemyTargetUtility.IsTargetAlive(neighbor) && !hitTanks.Contains(neighbor))
 
                         {
 
@@ -440,9 +438,9 @@ namespace IronWasteland.Enemies.Normal
 
                     {
 
-                        TankBrain nextTarget = sortedNeighbors[i];
+                        Component nextTarget = sortedNeighbors[i];
 
-                        if (nextTarget == null || !nextTarget.IsAlive || hitTanks.Contains(nextTarget))
+                        if (!EnemyTargetUtility.IsTargetAlive(nextTarget) || hitTanks.Contains(nextTarget))
 
                         {
 
@@ -510,19 +508,17 @@ namespace IronWasteland.Enemies.Normal
 
 
 
-        private void DealDamageToTarget(TankBrain tank, float damage)
+        private void DealDamageToTarget(Component target, float damage)
 
         {
 
-            if (tank == null || !tank.IsAlive) return;
+            if (!EnemyTargetUtility.IsTargetAlive(target)) return;
 
 
 
-            Vector2 hitPos = tank.transform.position;
+            Vector2 hitPos = target.transform.position;
 
-            DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, hitPos, sourceType: DamageSourceType.EnemyAttack);
-            tank.TakeDamage(damageInfo);
-
+            EnemyTargetUtility.TryDealDamage(this, target, damage, hitPos);
 
         }
 

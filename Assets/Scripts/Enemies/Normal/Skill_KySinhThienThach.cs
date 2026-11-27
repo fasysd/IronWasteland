@@ -17,7 +17,7 @@ namespace IronWasteland.Enemies.Normal
     [RequireComponent(typeof(ColliderOwnerRef))]
     public class Skill_KySinhThienThach : MonoBehaviour
     {
-        public event Action<Skill_KySinhThienThach, IReadOnlyList<TankBrain>> OnFound;
+        public event Action<Skill_KySinhThienThach, IReadOnlyList<Component>> OnFound;
 
         [Header("Explosion Settings")]
         [Tooltip("Thời gian trễ (X giây) trước khi kích nổ.")]
@@ -91,7 +91,7 @@ namespace IronWasteland.Enemies.Normal
                 yield return new WaitForSeconds(hitCheckDelay);
             }
 
-            var targets = new HashSet<TankBrain>();
+            var targets = new HashSet<Component>();
 
             // 1. Quét từ ColliderOwnerRef trigger tracking
             if (m_OwnerRef != null)
@@ -99,15 +99,14 @@ namespace IronWasteland.Enemies.Normal
                 foreach (Collider2D col in m_OwnerRef.GetTriggerColliders())
                 {
                     if (col == null) continue;
-                    TankBrain tank = ResolveTankBrain(col);
-                    if (tank != null && tank.IsAlive)
+                    if (EnemyTargetUtility.TryResolveTargetComponent(col, out Component target, out bool isAlive) && isAlive)
                     {
-                        targets.Add(tank);
+                        targets.Add(target);
                     }
                 }
             }
 
-            var result = new List<TankBrain>(targets);
+            var result = new List<Component>(targets);
             OnFound?.Invoke(this, result);
 
             m_CastCoroutine = null;

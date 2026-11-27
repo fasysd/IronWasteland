@@ -43,6 +43,10 @@ namespace IronWasteland.Net
         private readonly NetworkVariable<bool> m_MovementBlocked = new(
             false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+        /// <summary>Bitmask 4 slot kỹ năng đang bị khóa (Câm lặng đánh thường / Bùng nổ The2Face).</summary>
+        private readonly NetworkVariable<byte> m_LockedSlotMask = new(
+            0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
         /// <summary>Tổng khiên hiện tại do host ghi; client chỉ hiển thị (không tự tạo khiên trên brain).</summary>
         private readonly NetworkVariable<float> m_Shield = new(
             0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -66,6 +70,7 @@ namespace IronWasteland.Net
         private float m_SentAimAngle;
         private float m_SentSlowFactor = 1f;
         private bool m_SentBlocked;
+        private byte m_SentLockedSlotMask;
         private float m_SentShield;
         private float m_SentMaxHealth;
         private float m_SentMoveSpeed;
@@ -87,6 +92,7 @@ namespace IronWasteland.Net
             m_Loadout.OnValueChanged += HandleLoadoutChanged;
             m_SlowSpeedFactor.OnValueChanged += HandleSlowChanged;
             m_MovementBlocked.OnValueChanged += HandleBlockedChanged;
+            m_LockedSlotMask.OnValueChanged += HandleLockedSlotMaskChanged;
             m_MaxHealth.OnValueChanged += HandleMaxHealthChanged;
             m_MoveSpeed.OnValueChanged += HandleMoveSpeedChanged;
 
@@ -104,6 +110,8 @@ namespace IronWasteland.Net
                 m_SlowSpeedFactor.Value = m_SentSlowFactor;
                 m_SentBlocked = m_Brain.IsMovementBlocked;
                 m_MovementBlocked.Value = m_SentBlocked;
+                m_SentLockedSlotMask = m_Brain.LockedSlotMask;
+                m_LockedSlotMask.Value = m_SentLockedSlotMask;
                 m_SentShield = m_Brain.CurrentShield;
                 m_Shield.Value = m_SentShield;
 
@@ -130,6 +138,7 @@ namespace IronWasteland.Net
                 ApplyCooldowns(m_Cooldowns.Value);
                 ApplySlow(m_SlowSpeedFactor.Value);
                 ApplyBlocked(m_MovementBlocked.Value);
+                ApplyLockedSlotMask(m_LockedSlotMask.Value);
             }
 
             FindAnyObjectByType<GameController>()?.ApplySpawnFacing(m_Brain);
@@ -150,6 +159,7 @@ namespace IronWasteland.Net
             m_Loadout.OnValueChanged -= HandleLoadoutChanged;
             m_SlowSpeedFactor.OnValueChanged -= HandleSlowChanged;
             m_MovementBlocked.OnValueChanged -= HandleBlockedChanged;
+            m_LockedSlotMask.OnValueChanged -= HandleLockedSlotMaskChanged;
             m_MaxHealth.OnValueChanged -= HandleMaxHealthChanged;
             m_MoveSpeed.OnValueChanged -= HandleMoveSpeedChanged;
 
@@ -216,6 +226,23 @@ namespace IronWasteland.Net
             // khi HP/EN/cooldown đứng yên, góc nòng cũng không được gửi và nòng xe người khác kẹt.
             if (IsOwner) UpdateAim();
 
+            if (IsServer)
+            {
+                bool blocked = m_Brain.IsMovementBlocked;
+                if (blocked != m_SentBlocked)
+                {
+                    m_SentBlocked = blocked;
+                    m_MovementBlocked.Value = blocked;
+                }
+
+                byte lockedMask = m_Brain.LockedSlotMask;
+                if (lockedMask != m_SentLockedSlotMask)
+                {
+                    m_SentLockedSlotMask = lockedMask;
+                    m_LockedSlotMask.Value = lockedMask;
+                }
+            }
+
             m_SyncTimer += Time.deltaTime;
             if (m_SyncTimer < SyncInterval) return;
             m_SyncTimer = 0f;
@@ -256,13 +283,6 @@ namespace IronWasteland.Net
             {
                 m_SentSlowFactor = slow;
                 m_SlowSpeedFactor.Value = slow;
-            }
-
-            bool blocked = m_Brain.IsMovementBlocked;
-            if (blocked != m_SentBlocked)
-            {
-                m_SentBlocked = blocked;
-                m_MovementBlocked.Value = blocked;
             }
 
             float shield = m_Brain.CurrentShield;
@@ -424,6 +444,17 @@ namespace IronWasteland.Net
         {
             if (m_Brain == null || IsServer) return;
             m_Brain.RemoteMovementBlocked = blocked;
+        }
+
+        private void HandleLockedSlotMaskChanged(byte previousValue, byte newValue)
+        {
+            ApplyLockedSlotMask(newValue);
+        }
+
+        private void ApplyLockedSlotMask(byte mask)
+        {
+            if (m_Brain == null || IsServer) return;
+            m_Brain.RemoteLockedSlotMask = mask;
         }
 
         /// <summary>

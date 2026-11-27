@@ -7,15 +7,12 @@ namespace IronWasteland.Enemies.The2Face
 {
     /// <summary>
     /// Viên đá hội tụ về Boss do HutVaDa của The2Face bắn ra.
-    /// Gây sát thương và choáng cho Tank trên đường bay.
+    /// Gây sát thương và choáng cho Tank khi chạm Collider2D Trigger.
     /// </summary>
     public class The2FaceRock : MonoBehaviour
     {
         [Tooltip("Layer của Tank để quét va chạm.")]
         [SerializeField] private LayerMask tankLayer;
-
-        [Tooltip("Bán kính va chạm với Tank (mét).")]
-        [SerializeField, Min(0.1f)] private float hitRadius = 1.1f;
 
         [Tooltip("Tốc độ xoay hình ảnh (độ/giây).")]
         [SerializeField] private float rotateSpeed = 540f;
@@ -25,7 +22,17 @@ namespace IronWasteland.Enemies.The2Face
         private float m_Damage;
         private float m_StunDuration;
         private float m_Speed;
+        private Collider2D m_Collider;
         private readonly HashSet<TankBrain> m_HitTanks = new HashSet<TankBrain>();
+
+        private void Awake()
+        {
+            m_Collider = GetComponent<Collider2D>();
+            if (m_Collider != null)
+            {
+                m_Collider.isTrigger = true;
+            }
+        }
 
         /// <summary>Khởi tạo viên đá.</summary>
         public void Initialize(EnemyBrain owner, Vector2 target, float damage, float stunDuration, float speed)
@@ -51,45 +58,45 @@ namespace IronWasteland.Enemies.The2Face
             transform.position = next;
             transform.Rotate(0f, 0f, rotateSpeed * Time.deltaTime);
 
-            DamageTanksInRange(next);
-
             if (Vector2.Distance(next, m_Target) <= 0.35f)
             {
                 Destroy(gameObject);
             }
         }
 
-        private void DamageTanksInRange(Vector2 position)
+        private void OnTriggerEnter2D(Collider2D other)
         {
-            if (m_Damage <= 0f) return;
+            TryHitTarget(other);
+        }
 
-            Collider2D[] hits = Physics2D.OverlapCircleAll(position, hitRadius, tankLayer);
-            for (int i = 0; i < hits.Length; i++)
+        private void TryHitTarget(Collider2D hit)
+        {
+            if (hit == null || m_Damage <= 0f || m_Owner == null || !m_Owner.IsAlive) return;
+
+            if (tankLayer.value != 0 && (tankLayer.value & (1 << hit.gameObject.layer)) == 0)
             {
-                Collider2D hit = hits[i];
-                if (hit == null) continue;
+                return;
+            }
 
-                ColliderOwnerRef ownerRef = hit.GetComponent<ColliderOwnerRef>() ?? hit.GetComponentInParent<ColliderOwnerRef>();
-                TankBrain tank = ownerRef?.GetOwner<TankBrain>();
-                if (tank == null || !tank.IsAlive || m_HitTanks.Contains(tank)) continue;
+            ColliderOwnerRef ownerRef = ColliderOwnerRef.FromCollider(hit);
+            TankBrain tank = ownerRef?.GetOwner<TankBrain>() ?? hit.GetComponentInParent<TankBrain>();
+            if (tank == null || !tank.IsAlive || !m_HitTanks.Add(tank)) return;
 
-                m_HitTanks.Add(tank);
-                DamageInfo info = new DamageInfo(
-                    m_Owner,
-                    tank,
-                    m_Damage,
-                    0f,
-                    hit.bounds.center,
-                    false,
-                    false,
-                    false,
-                    DamageSourceType.EnemyAttack);
-                tank.TakeDamage(info);
+            DamageInfo info = new DamageInfo(
+                m_Owner,
+                tank,
+                m_Damage,
+                0f,
+                hit.bounds.center,
+                false,
+                false,
+                false,
+                DamageSourceType.EnemyAttack);
+            tank.TakeDamage(info);
 
-                if (m_StunDuration > 0f)
-                {
-                    tank.ApplyCrowdControl(CrowdControlType.Stun, m_StunDuration);
-                }
+            if (m_StunDuration > 0f)
+            {
+                tank.ApplyCrowdControl(CrowdControlType.Stun, m_StunDuration);
             }
         }
     }

@@ -124,17 +124,16 @@ namespace IronWasteland.Enemies.Normal
             currentCooldownTimer = skillCooldown;
         }
 
-        private void HandleSkillDamageDealt(Skill_MatTrangDen sender, List<TankBrain> targets)
+        private void HandleSkillDamageDealt(Skill_MatTrangDen sender, List<Component> targets)
         {
             if (targets == null || targets.Count == 0) return;
 
             // GDD: Sát thương mỗi nhịp 0.5s bằng 100% Tấn công
             float damage = Stats != null ? Stats.Attack : 15f;
-            foreach (TankBrain tank in targets)
+            foreach (Component target in targets)
             {
-                if (tank == null || !tank.IsAlive) continue;
-                DamageInfo damageInfo = new DamageInfo(this, tank, damage, 0f, tank.transform.position, sourceType: DamageSourceType.EnemyAttack);
-                tank.TakeDamage(damageInfo);
+                if (!EnemyTargetUtility.IsTargetAlive(target)) continue;
+                EnemyTargetUtility.TryDealDamage(this, target, damage, target.transform.position);
             }
         }
 

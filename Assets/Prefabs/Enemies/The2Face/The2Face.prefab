@@ -88,31 +88,40 @@ MonoBehaviour:
   sadAttackReduction: 0.1
   sadDefenseReduction: 0.1
   angerEnergyDrainRatio: 0.2
-  camLangCooldown: 7
-  camLangSilenceDuration: 5
+  camLangCooldown: 10
+  camLangSilenceDuration: 2
+  silenceVfxPrefab: {fileID: 5888446098043692971, guid: b24cdbdd9b13d5f49bf99a05c9b0116a, type: 3}
   hutVaDaCooldown: 12
   pullDuration: 1.2
   pullSpeed: 8
   rockPrefab: {fileID: 7200000000000000011, guid: d2face00000000000000000000000003, type: 3}
   rockCount: 8
   rockDamageRatio: 0.2
-  rockStunDuration: 0.8
+  rockStunDuration: 2
   rockSpeed: 14
   rockSpawnRadius: 16
   stopDistance: 2.6
   turnSharpness: 5
   moveSpeedDivisor: 100
   lightPointPrefab: {fileID: 6832236212718609908, guid: d2face00000000000000000000000004, type: 3}
-  lightPointHealth: 4000
+  lightPointHealth: 3000
   lightPointMoveSpeed: 0.8
-  lightPointLitRadius: 2
-  lightPointSpawnRadius: 5.5
-  swampCrawlerPrefab: {fileID: 1219376077449480298, guid: d2face00000000000000000000000005, type: 3}
-  crawlerCountPerLight: 1
-  crawlerSpawnRadius: 12
-  lightningMinionPrefab: {fileID: 46436049341597291, guid: fa914b93d15fd4d41920d832034cf707, type: 3}
-  lightningMinionCount: 2
-  lightningSpawnRadius: 7
+  lightPointSpawnRadius: 10
+  burstRandomEnemyPrefabs:
+  - {fileID: 1031078827579660911, guid: 97e171ca3a01b3d40a49e4a3727b3bae, type: 3}
+  - {fileID: 1206802647992198267, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
+  - {fileID: 8529011875415925671, guid: dd03dff10e04c7847a6ca5bc5d1dae1d, type: 3}
+  - {fileID: 8718103148031551493, guid: 68e51485bfa081c4c8cd7ac60d5639cb, type: 3}
+  - {fileID: 5180357702814489762, guid: 77900bee80658ae47b33d0cbc8e38e67, type: 3}
+  - {fileID: 1219376077449480298, guid: 9217f7f00f5831a4980db46f30f162e8, type: 3}
+  - {fileID: 2217499507354383179, guid: 56632388536e92747835f0a208002653, type: 3}
+  - {fileID: 6100468257158417488, guid: b6ed689b45e5ea9459d4f520cf9423c8, type: 3}
+  - {fileID: 773281319276612513, guid: dc8cd304e186d3d4cb5b4ae517da1477, type: 3}
+  - {fileID: 46436049341597291, guid: fa914b93d15fd4d41920d832034cf707, type: 3}
+  - {fileID: 7692010306268881268, guid: 3d7a3d53f4ad62449ad228d3ead96c34, type: 3}
+  - {fileID: 2191416951487824985, guid: dd67fd1da0bc9f34eb67cc48121a0809, type: 3}
+  burstEnemySpawnInterval: 3.5
+  burstEnemySpawnRadius: 8
   burstHealRatio: 0.2
   rewardBossWeakenMultiplier: 0.5
   rewardTankAttackBonus: 0.5
@@ -249,7 +258,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7400000000000000012
 Transform:
   m_ObjectHideFlags: 0
@@ -260,7 +269,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 3.8461, y: 3.8461, z: 3.8461}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8657597288793346402}
@@ -314,8 +323,8 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: -1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 80abf58f7c454ce8976644dd962fc41a, type: 3}
-  m_Color: {r: 0.3, g: 0.85, b: 1, a: 0.35}
+  m_Sprite: {fileID: 21300000, guid: 2ed87f49dfde7dc43a814aa408e5586e, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -341,7 +350,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &7500000000000000012
 Transform:
   m_ObjectHideFlags: 0
@@ -352,7 +361,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2.591, y: 2.591, z: 2.591}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8657597288793346402}
@@ -406,7 +415,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 6
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 6020ac8fd5dbf0b45ba2ff910cd75f1e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: b36ee97452d940b408b7a8a6de8439f7, type: 3}
   m_Color: {r: 0.25, g: 0.55, b: 1, a: 0.5}
   m_FlipX: 0
   m_FlipY: 0
@@ -427,9 +436,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1910718092571899764}
   - component: {fileID: 1088524875281837083}
-  - component: {fileID: 7149780004547090252}
   - component: {fileID: 2866841465632675977}
   - component: {fileID: 1805891303938877128}
+  - component: {fileID: 5442566183972847748}
   m_Layer: 7
   m_Name: EnemyModel
   m_TagString: Untagged
@@ -512,8 +521,38 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
---- !u!61 &7149780004547090252
-BoxCollider2D:
+--- !u!114 &2866841465632675977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7581365742607466364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
+  owner: {fileID: 0}
+--- !u!114 &1805891303938877128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7581365742607466364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c8844ea6213030498913f116120d1cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.EnemyModel
+  spriteRenderer: {fileID: 1088524875281837083}
+  bodyCollider: {fileID: 0}
+  ownerRef: {fileID: 2866841465632675977}
+  animator: {fileID: 0}
+  owner: {fileID: 0}
+--- !u!58 &5442566183972847748
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -542,49 +581,9 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 20.48, y: 20.48}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 18.08, y: 18.38}
-  m_EdgeRadius: 0
---- !u!114 &2866841465632675977
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7581365742607466364}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e5b9c1d7a2f4e6b8c0d1e2f3a4b5c6d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.ColliderOwnerRef
-  owner: {fileID: 0}
---- !u!114 &1805891303938877128
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7581365742607466364}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c8844ea6213030498913f116120d1cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Enemies.EnemyModel
-  spriteRenderer: {fileID: 1088524875281837083}
-  bodyCollider: {fileID: 7149780004547090252}
-  ownerRef: {fileID: 2866841465632675977}
-  animator: {fileID: 0}
-  owner: {fileID: 0}
+  m_Radius: 9.24

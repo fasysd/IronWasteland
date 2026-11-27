@@ -11,12 +11,27 @@ namespace IronWasteland.Enemies.Normal
     [DisallowMultipleComponent]
     public class Projectile_XaThuTinhThe : EnemyProjectileBase
     {
-        private readonly HashSet<TankBrain> m_DamagedTanks = new HashSet<TankBrain>();
+        private readonly HashSet<Component> m_DamagedTargets = new HashSet<Component>();
 
         public override void Clear()
         {
-            m_DamagedTanks.Clear();
+            m_DamagedTargets.Clear();
             base.Clear();
+        }
+
+        protected override void OnAnyTargetsHit(HashSet<Component> targets)
+        {
+            foreach (Component target in targets)
+            {
+                if (!EnemyTargetUtility.IsTargetAlive(target)) continue;
+
+                // Mỗi mục tiêu chỉ nhận sát thương đúng 1 lần từ viên đạn xuyên thấu này
+                if (m_DamagedTargets.Add(target))
+                {
+                    // Phát event va chạm để Brain xử lý trừ máu; đạn KHÔNG biến mất, tiếp tục bay xuyên qua
+                    NotifyAnyTargetHit(target);
+                }
+            }
         }
 
         protected override void OnTanksHit(HashSet<TankBrain> tanks)
@@ -25,11 +40,8 @@ namespace IronWasteland.Enemies.Normal
             {
                 if (tank == null || !tank.IsAlive) continue;
 
-                // Mỗi xe tăng chỉ nhận sát thương đúng 1 lần từ viên đạn xuyên thấu này
-                if (m_DamagedTanks.Add(tank))
+                if (m_DamagedTargets.Add(tank))
                 {
-                    // Phát event va chạm để Brain xử lý trừ máu và hiển thị TextDamage
-                    // Lưu ý: Đạn KHÔNG biến mất (không gọi Despawn), tiếp tục bay xuyên qua
                     NotifyTargetHit(tank);
                 }
             }
