@@ -255,9 +255,6 @@ namespace IronWasteland.UI
         private Canvas m_Canvas;
         private Vector2 m_PointerScreen;
         private bool m_HasGuiPointer;
-        private bool m_GuiPointerDown;
-        private bool m_GuiPointerUp;
-        private bool m_Pressed;
 
         /// <summary>Xe đang hiển thị trên thẻ.</summary>
         public int SelectedIndex { get; private set; }
@@ -315,22 +312,6 @@ namespace IronWasteland.UI
         private void Update()
         {
             RefreshGemCount();
-
-            if (m_GuiPointerDown)
-            {
-                m_GuiPointerDown = false;
-                m_Pressed = true;
-            }
-
-            if (m_GuiPointerUp)
-            {
-                m_GuiPointerUp = false;
-                if (m_Pressed)
-                {
-                    m_Pressed = false;
-                    HandleClick(DesignPointerPosition(PointerPosition));
-                }
-            }
         }
 
         private void OnGUI()
@@ -353,7 +334,6 @@ namespace IronWasteland.UI
                     {
                         m_PointerScreen = ToScreenPoint(current.mousePosition);
                         m_HasGuiPointer = true;
-                        m_GuiPointerDown = true;
                     }
 
                     break;
@@ -362,7 +342,6 @@ namespace IronWasteland.UI
                     {
                         m_PointerScreen = ToScreenPoint(current.mousePosition);
                         m_HasGuiPointer = true;
-                        m_GuiPointerUp = true;
                     }
 
                     break;
@@ -380,43 +359,45 @@ namespace IronWasteland.UI
             }
         }
 
-        private void HandleClick(Vector2 designPosition)
+        /// <summary>Nút QUAY LẠI gọi vào đây.</summary>
+        public void PressBack()
         {
-            if (m_BackArea.Contains(designPosition))
+            GoBack();
+        }
+
+        /// <summary>Nút BẮT ĐẦU gọi vào đây.</summary>
+        public void PressStart()
+        {
+            EnterSelectedMode();
+        }
+
+        /// <summary>Nút CHƠI ĐƠN gọi vào đây.</summary>
+        public void PressModeSingle()
+        {
+            ApplyMode(MatchMode.Single);
+        }
+
+        /// <summary>Nút CHƠI CO-OP gọi vào đây.</summary>
+        public void PressModeCoop()
+        {
+            ApplyMode(MatchMode.Coop);
+            EnterCoopLobby();
+        }
+
+        /// <summary>Thẻ ải gọi vào đây kèm chỉ số; ải còn khoá thì bỏ qua.</summary>
+        public void SelectStage(int index)
+        {
+            if (m_Stages == null || index < 0 || index >= m_Stages.Length)
             {
-                GoBack();
                 return;
             }
 
-            if (m_StartArea.Contains(designPosition))
+            if (m_Stages[index] == null || !m_Stages[index].Unlocked)
             {
-                EnterSelectedMode();
                 return;
             }
 
-            if (m_SingleModeArea.Contains(designPosition))
-            {
-                ApplyMode(MatchMode.Single);
-                return;
-            }
-
-            if (m_CoopModeArea.Contains(designPosition))
-            {
-                ApplyMode(MatchMode.Coop);
-                EnterCoopLobby();
-                return;
-            }
-
-            if (m_Stages == null || m_CardRects == null) return;
-
-            for (int i = 0; i < m_Stages.Length && i < m_CardRects.Length; i++)
-            {
-                if (m_Stages[i] == null || !m_Stages[i].Unlocked) continue;
-                if (!m_CardRects[i].Contains(designPosition)) continue;
-
-                ApplyStage(i);
-                return;
-            }
+            ApplyStage(index);
         }
 
         /// <summary>Cập nhật toàn bộ thẻ xe theo xe đang chọn và lựa chọn kỹ năng đã lưu.</summary>

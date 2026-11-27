@@ -1,20 +1,22 @@
 using IronWasteland.Net;
 using TMPro;
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace IronWasteland.EditorTools
 {
     /// <summary>
-    /// Dựng giao diện lobby co-op trong SampleScene theo phong cách các màn menu đã có.
+    /// Dựng giao diện lobby co-op trong CoopLobby.unity theo phong cách các màn menu đã có.
     /// Chạy lại bằng menu Tools/Iron Wasteland/Rebuild Coop Lobby.
     /// </summary>
     public static class CoopLobbyBuilder
     {
-        private const string ScenePath = "Assets/Scenes/SampleScene.unity";
+        private const string ScenePath = "Assets/Scenes/CoopLobby.unity";
         private const string SpriteDir = "Assets/Art/UI/CoopLobby";
         private const string FontDir = "Assets/Art/Fonts";
         private const string GeneratedFontDir = "Assets/Art/Fonts/Generated";
@@ -209,10 +211,9 @@ namespace IronWasteland.EditorTools
 
             TextMeshProUGUI[] roomNames = new TextMeshProUGUI[6];
             TextMeshProUGUI[] roomDetails = new TextMeshProUGUI[6];
-            Rect[] roomAreas = new Rect[6];
             GameObject emptyHint;
             TextMeshProUGUI joinCodeText;
-            BuildBrowser(browserRect, anton, barlow, roomNames, roomDetails, roomAreas, out emptyHint, out joinCodeText);
+            BuildBrowser(browserRect, anton, barlow, roomNames, roomDetails, out emptyHint, out joinCodeText);
 
             TextMeshProUGUI[] slotTitles = new TextMeshProUGUI[4];
             TextMeshProUGUI[] slotDetails = new TextMeshProUGUI[4];
@@ -246,13 +247,10 @@ namespace IronWasteland.EditorTools
             names.arraySize = roomNames.Length;
             SerializedProperty details = serialized.FindProperty("m_RoomDetails");
             details.arraySize = roomDetails.Length;
-            SerializedProperty areas = serialized.FindProperty("m_RoomRowAreas");
-            areas.arraySize = roomAreas.Length;
             for (int i = 0; i < roomNames.Length; i++)
             {
                 names.GetArrayElementAtIndex(i).objectReferenceValue = roomNames[i];
                 details.GetArrayElementAtIndex(i).objectReferenceValue = roomDetails[i];
-                areas.GetArrayElementAtIndex(i).rectValue = roomAreas[i];
             }
 
             SerializedProperty titles = serialized.FindProperty("m_SlotTitles");
@@ -267,9 +265,63 @@ namespace IronWasteland.EditorTools
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(controller);
+
+            IronWasteland.EditorTools.UIHit.EnsureEventSystem(scene);
+
+            Button backZone = IronWasteland.EditorTools.UIHit.AddZone(root, "HitBack", 72f, 72f, 168f, 50f);
+            UnityEventTools.AddPersistentListener(backZone.onClick, controller.PressBack);
+
+            BindButton(root, "ButtonCreate", controller.PressCreate);
+            BindButton(root, "ButtonRefresh", controller.PressRefresh);
+            BindButton(root, "JoinCodeBox", controller.PressJoinCodeField);
+            BindButton(root, "ButtonJoinCode", controller.PressJoinCode);
+            BindButton(root, "ButtonReady", controller.PressReady);
+            BindButton(root, "ButtonGarage", controller.PressGarage);
+            BindButton(root, "ButtonStart", controller.PressStart);
+            BindButton(root, "ButtonLeave", controller.PressLeave);
+
+            for (int i = 0; i < 6; i++)
+            {
+                Button row = BindButton(root, "RoomRow" + (i + 1), null);
+                UnityEventTools.AddIntPersistentListener(row.onClick, controller.PressRoom, i);
+            }
         }
 
-        private static void BuildBrowser(RectTransform parent, TMP_FontAsset anton, TMP_FontAsset barlow, TextMeshProUGUI[] names, TextMeshProUGUI[] details, Rect[] areas, out GameObject emptyHint, out TextMeshProUGUI joinCodeText)
+        /// <summary>Gắn Button lên Image sẵn có và nối một hành động không tham số.</summary>
+        private static Button BindButton(RectTransform root, string name, UnityAction action)
+        {
+            Image image = FindImage(root, name);
+            if (image == null)
+            {
+                Debug.LogError("[CoopLobbyBuilder] Không tìm thấy Image để gắn Button: " + name);
+                return null;
+            }
+
+            Button button = IronWasteland.EditorTools.UIHit.Attach(image);
+            if (action != null)
+            {
+                UnityEventTools.AddPersistentListener(button.onClick, action);
+            }
+
+            return button;
+        }
+
+        /// <summary>Tìm Image con theo tên, kể cả object đang ẩn.</summary>
+        private static Image FindImage(RectTransform root, string name)
+        {
+            Image[] images = root.GetComponentsInChildren<Image>(true);
+            for (int i = 0; i < images.Length; i++)
+            {
+                if (images[i].name == name)
+                {
+                    return images[i];
+                }
+            }
+
+            return null;
+        }
+
+        private static void BuildBrowser(RectTransform parent, TMP_FontAsset anton, TMP_FontAsset barlow, TextMeshProUGUI[] names, TextMeshProUGUI[] details, out GameObject emptyHint, out TextMeshProUGUI joinCodeText)
         {
             AddBox(parent, "BrowserListPanel", 72f, 208f, 1188f, 632f, PanelFill, Border, 2f);
             AddText(parent, "TextListTitle", "DANH SÁCH PHÒNG", 100f, 252f, 22f, TextMain, anton, 500f, false);
@@ -308,7 +360,6 @@ namespace IronWasteland.EditorTools
                 details[i] = AddText(rowRect, "TextRoomDetail" + (i + 1), string.Empty, 122f, y + 55f, 9.5f, TextMuted, barlow, 900f, false);
                 TextMeshProUGUI enter = AddText(rowRect, "TextRoomEnter" + (i + 1), "VÀO  ›", 1048f, y + 45f, 13f, Orange, barlow, 160f, false);
                 enter.alignment = TextAlignmentOptions.TopRight;
-                areas[i] = new Rect(96f, y, 1140f, 74f);
             }
 
             AddBox(parent, "BrowserInfoPanel", 1288f, 208f, 560f, 632f, PanelFill, Border, 2f);

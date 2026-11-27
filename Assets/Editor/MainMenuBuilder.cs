@@ -4,6 +4,7 @@ using IronWasteland.Tanks;
 using IronWasteland.UI;
 using TMPro;
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -141,6 +142,9 @@ namespace IronWasteland.EditorTools
             camera.transform.position = new Vector3(0f, 0f, -10f);
             SceneManager.MoveGameObjectToScene(cameraObject, scene);
 
+            // Scene có Button bắt buộc phải có EventSystem, thiếu là chuột không tới nút.
+            UIHit.EnsureEventSystem(scene);
+
             GameObject canvasObject = new GameObject("MainMenuCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster), typeof(CanvasGroup));
             SceneManager.MoveGameObjectToScene(canvasObject, scene);
             Canvas canvas = canvasObject.GetComponent<Canvas>();
@@ -234,6 +238,13 @@ namespace IronWasteland.EditorTools
             {
                 normalProperty.GetArrayElementAtIndex(i).objectReferenceValue = navNormal[i];
                 selectedProperty.GetArrayElementAtIndex(i).objectReferenceValue = navSelected[i];
+            }
+
+            // Bốn mục điều hướng trở thành Button thật, vẫn giữ nguyên ảnh và hiệu ứng hover của controller.
+            for (int i = 0; i < navItems.Length; i++)
+            {
+                Button navButton = UIHit.Attach(navItems[i]);
+                UnityEventTools.AddIntPersistentListener(navButton.onClick, controller.ActivateSection, i);
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();

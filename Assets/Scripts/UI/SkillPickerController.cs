@@ -74,24 +74,12 @@ namespace IronWasteland.UI
         [Tooltip("3 thẻ lựa chọn từ trái sang phải.")]
         [SerializeField] private CardView[] m_Cards = new CardView[SkillCatalog.OptionCount];
 
-        [Header("Vùng bấm theo toạ độ thiết kế (gốc trên-trái, hệ 1920x1080)")]
-        [Tooltip("Vùng bấm tab TÙY CHỌN 1.")]
-        [SerializeField] private Rect m_TabArea1 = new Rect(432f, 306f, 236f, 48f);
-
-        [Tooltip("Vùng bấm tab TÙY CHỌN 2.")]
-        [SerializeField] private Rect m_TabArea2 = new Rect(678f, 306f, 236f, 48f);
-
-        [Tooltip("Vùng bấm 3 thẻ lựa chọn, cách nhau 360 px theo trục ngang.")]
+        [Header("Vùng rê chuột của thẻ (gốc trên-trái, hệ 1920x1080)")]
+        [Tooltip("Vùng của thẻ đầu tiên, dùng để bật viền sáng khi rê chuột.")]
         [SerializeField] private Rect m_CardArea = new Rect(432f, 380f, 336f, 400f);
 
         [Tooltip("Khoảng cách ngang giữa hai thẻ lựa chọn.")]
         [SerializeField] private float m_CardPitch = 360f;
-
-        [Tooltip("Vùng bấm nút ĐÓNG ở góc trên phải.")]
-        [SerializeField] private Rect m_CloseArea = new Rect(1444f, 214f, 44f, 44f);
-
-        [Tooltip("Vùng bấm nút ĐÓNG ở chân panel.")]
-        [SerializeField] private Rect m_FooterArea = new Rect(1318f, 812f, 170f, 52f);
 
         [Header("Scene đích")]
         [Tooltip("Scene quay lại khi đóng màn chọn kỹ năng.")]
@@ -108,9 +96,6 @@ namespace IronWasteland.UI
         private int m_HoveredCard = -1;
         private Vector2 m_PointerScreen;
         private bool m_HasGuiPointer;
-        private bool m_GuiPointerDown;
-        private bool m_GuiPointerUp;
-        private bool m_Pressed;
 
         /// <summary>Xe đang được chọn kỹ năng (chỉ đọc).</summary>
         public int TankIndex => m_TankIndex;
@@ -133,22 +118,6 @@ namespace IronWasteland.UI
 
         private void Update()
         {
-            if (m_GuiPointerDown)
-            {
-                m_GuiPointerDown = false;
-                m_Pressed = true;
-            }
-
-            if (m_GuiPointerUp)
-            {
-                m_GuiPointerUp = false;
-                if (m_Pressed)
-                {
-                    m_Pressed = false;
-                    HandleClick(DesignPointerPosition(PointerPosition));
-                }
-            }
-
             UpdateHover(DesignPointerPosition(PointerPosition));
         }
 
@@ -166,24 +135,6 @@ namespace IronWasteland.UI
                 case EventType.MouseDrag:
                     m_PointerScreen = ToScreenPoint(current.mousePosition);
                     m_HasGuiPointer = true;
-                    break;
-                case EventType.MouseDown:
-                    if (current.button == 0)
-                    {
-                        m_PointerScreen = ToScreenPoint(current.mousePosition);
-                        m_HasGuiPointer = true;
-                        m_GuiPointerDown = true;
-                    }
-
-                    break;
-                case EventType.MouseUp:
-                    if (current.button == 0)
-                    {
-                        m_PointerScreen = ToScreenPoint(current.mousePosition);
-                        m_HasGuiPointer = true;
-                        m_GuiPointerUp = true;
-                    }
-
                     break;
                 case EventType.KeyDown:
                     if (current.keyCode == KeyCode.Escape)
@@ -296,40 +247,27 @@ namespace IronWasteland.UI
             }
         }
 
-        /// <summary>Xử lý cú bấm chuột tại một điểm trong hệ toạ độ thiết kế.</summary>
-        private void HandleClick(Vector2 designPosition)
-        {
-            if (m_CloseArea.Contains(designPosition) || m_FooterArea.Contains(designPosition))
-            {
-                Close();
-                return;
-            }
-
-            if (m_TabArea1.Contains(designPosition))
-            {
-                SwitchTab(0);
-                return;
-            }
-
-            if (m_TabArea2.Contains(designPosition))
-            {
-                SwitchTab(1);
-                return;
-            }
-
-            for (int i = 0; i < SkillCatalog.OptionCount; i++)
-            {
-                if (GetCardArea(i).Contains(designPosition))
-                {
-                    Choose(i);
-                    return;
-                }
-            }
-        }
-
         private Rect GetCardArea(int index)
         {
             return new Rect(m_CardArea.x + m_CardPitch * index, m_CardArea.y, m_CardArea.width, m_CardArea.height);
+        }
+
+        /// <summary>Nút ĐÓNG góc trên phải gọi vào đây.</summary>
+        public void PressClose()
+        {
+            Close();
+        }
+
+        /// <summary>Tab TÙY CHỌN 1 gọi vào đây.</summary>
+        public void PressTab1()
+        {
+            SwitchTab(0);
+        }
+
+        /// <summary>Tab TÙY CHỌN 2 gọi vào đây.</summary>
+        public void PressTab2()
+        {
+            SwitchTab(1);
         }
 
         /// <summary>Đổi tab và giữ nguyên xe đang mở.</summary>

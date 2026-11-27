@@ -136,26 +136,8 @@ namespace IronWasteland.UI
         [Tooltip("Toạ độ Y của thanh cuộn.")]
         [SerializeField] private float m_ScrollTrackY = 882f;
 
-        [Header("Vùng bấm theo toạ độ thiết kế (gốc trên-trái, hệ 1920x1080)")]
-        [Tooltip("Vùng bấm nút X ở góc trên phải.")]
-        [SerializeField] private Rect m_CloseArea = new Rect(1786f, 160f, 52f, 52f);
-
-        [Tooltip("Vùng bấm nút HỦY BỎ ở chân panel.")]
-        [SerializeField] private Rect m_CancelArea = new Rect(1210f, 900f, 290f, 52f);
-
-        [Tooltip("Vùng bấm nút XÁC NHẬN PHÂN RÃ.")]
-        [SerializeField] private Rect m_ConfirmArea = new Rect(1526f, 900f, 296f, 52f);
-
-        [Tooltip("Vùng bấm nút trừ số lượng.")]
-        [SerializeField] private Rect m_MinusArea = new Rect(478f, 898f, 36f, 36f);
-
-        [Tooltip("Vùng bấm nút cộng số lượng.")]
-        [SerializeField] private Rect m_PlusArea = new Rect(610f, 898f, 36f, 36f);
-
-        [Tooltip("Vùng bấm nút MAX.")]
-        [SerializeField] private Rect m_MaxArea = new Rect(656f, 898f, 62f, 36f);
-
-        [Tooltip("Vùng nhìn thấy của danh sách, dùng để bắt đầu kéo và bấm thẻ.")]
+        [Header("Vùng kéo và cuộn danh sách (gốc trên-trái, hệ 1920x1080)")]
+        [Tooltip("Vùng nhìn thấy của danh sách, dùng để bắt đầu kéo và cuộn.")]
         [SerializeField] private Rect m_ViewportArea = new Rect(96f, 276f, 1728f, 596f);
 
         [Header("Scene đích")]
@@ -167,9 +149,6 @@ namespace IronWasteland.UI
         private int m_SelectedIndex;
         private int m_Quantity = 1;
         private int m_HoveredIndex = -1;
-        private int m_HoldDirection;
-        private float m_HoldTime;
-        private float m_HoldNext;
         private float m_Scroll;
         private float m_MaxScroll;
         private bool m_Dragging;
@@ -178,9 +157,7 @@ namespace IronWasteland.UI
         private float m_DragStartScroll;
         private Vector2 m_PointerScreen;
         private bool m_HasGuiPointer;
-        private bool m_GuiPointerDown;
-        private bool m_GuiPointerUp;
-        private bool m_Pressed;
+        private bool m_SuppressCardClick;
         private float m_ToastTimer;
 
         /// <summary>Mép trên gốc của khối mô tả trong thẻ, chốt ở lần đầu để không bị đẩy dần xuống.</summary>
@@ -220,45 +197,9 @@ namespace IronWasteland.UI
 
         private void Update()
         {
-            if (m_GuiPointerDown)
-            {
-                m_GuiPointerDown = false;
-                m_Pressed = true;
-            }
-
-            if (m_GuiPointerUp)
-            {
-                m_GuiPointerUp = false;
-                m_HoldDirection = 0;
-                if (m_Pressed)
-                {
-                    m_Pressed = false;
-                    HandleClick(DesignPointerPosition(PointerPosition));
-                }
-            }
-
-            UpdateHold();
             UpdateHover(DesignPointerPosition(PointerPosition));
             UpdateToast();
             RefreshGems();
-        }
-
-        /// <summary>Lặp lại thao tác khi người chơi giữ nút trừ hoặc cộng.</summary>
-        private void UpdateHold()
-        {
-            if (m_HoldDirection == 0)
-            {
-                return;
-            }
-
-            float now = Time.unscaledTime;
-            if (now - m_HoldTime < 0.45f || now < m_HoldNext)
-            {
-                return;
-            }
-
-            m_HoldNext = now + 0.06f;
-            ChangeQuantity(m_HoldDirection);
         }
 
         private void OnGUI()
@@ -281,14 +222,7 @@ namespace IronWasteland.UI
                         Vector2 design = DesignPointerPosition(ToScreenPoint(current.mousePosition));
                         m_PointerScreen = ToScreenPoint(current.mousePosition);
                         m_HasGuiPointer = true;
-                        m_GuiPointerDown = true;
-                        if (m_MinusArea.Contains(design) || m_PlusArea.Contains(design))
-                        {
-                            m_HoldDirection = m_MinusArea.Contains(design) ? -1 : 1;
-                            m_HoldTime = Time.unscaledTime;
-                            m_HoldNext = m_HoldTime + 0.45f;
-                        }
-
+                        m_SuppressCardClick = false;
                         if (m_ViewportArea.Contains(design))
                         {
                             m_Dragging = true;
@@ -309,7 +243,7 @@ namespace IronWasteland.UI
                         if (Mathf.Abs(delta) > 6f)
                         {
                             m_DragMoved = true;
-                            m_HoldDirection = 0;
+                            m_SuppressCardClick = true;
                         }
 
                         SetScroll(m_DragStartScroll - delta, true);
@@ -321,15 +255,7 @@ namespace IronWasteland.UI
                     {
                         m_PointerScreen = ToScreenPoint(current.mousePosition);
                         m_HasGuiPointer = true;
-                        m_HoldDirection = 0;
-                        if (m_Dragging && m_DragMoved)
-                        {
-                            m_Pressed = false;
-                            m_GuiPointerDown = false;
-                        }
-
                         m_Dragging = false;
-                        m_GuiPointerUp = true;
                     }
 
                     break;
@@ -755,6 +681,53 @@ namespace IronWasteland.UI
             }
         }
 
+        /// <summary>Nút X ở góc trên phải gọi vào đây.</summary>
+        public void PressClose()
+        {
+            Close();
+        }
+
+        /// <summary>Nút HỦY BỎ gọi vào đây.</summary>
+        public void PressCancel()
+        {
+            Close();
+        }
+
+        /// <summary>Nút XÁC NHẬN PHÂN RÃ gọi vào đây.</summary>
+        public void PressConfirm()
+        {
+            ConfirmSalvage();
+        }
+
+        /// <summary>Nút trừ số lượng gọi vào đây.</summary>
+        public void PressMinus()
+        {
+            ChangeQuantity(-1);
+        }
+
+        /// <summary>Nút cộng số lượng gọi vào đây.</summary>
+        public void PressPlus()
+        {
+            ChangeQuantity(1);
+        }
+
+        /// <summary>Nút MAX gọi vào đây.</summary>
+        public void PressMax()
+        {
+            SelectMaxQuantity();
+        }
+
+        /// <summary>Thẻ phụ kiện gọi vào đây kèm chỉ số; bỏ qua nếu vừa kéo danh sách.</summary>
+        public void SelectCard(int index)
+        {
+            if (m_SuppressCardClick)
+            {
+                return;
+            }
+
+            Select(index);
+        }
+
         /// <summary>Đóng màn phân rã, quay về Nhà xe.</summary>
         private void Close()
         {
@@ -771,59 +744,6 @@ namespace IronWasteland.UI
             }
 
             SceneManager.LoadScene(m_BackSceneName);
-        }
-
-        /// <summary>Xử lý cú bấm tại một điểm trong hệ toạ độ thiết kế.</summary>
-        private void HandleClick(Vector2 designPosition)
-        {
-            if (m_CloseArea.Contains(designPosition) || m_CancelArea.Contains(designPosition))
-            {
-                Close();
-                return;
-            }
-
-            if (m_ConfirmArea.Contains(designPosition))
-            {
-                ConfirmSalvage();
-                return;
-            }
-
-            if (m_MinusArea.Contains(designPosition))
-            {
-                ChangeQuantity(-1);
-                return;
-            }
-
-            if (m_PlusArea.Contains(designPosition))
-            {
-                ChangeQuantity(1);
-                return;
-            }
-
-            if (m_MaxArea.Contains(designPosition))
-            {
-                SelectMaxQuantity();
-                return;
-            }
-
-            if (!m_ViewportArea.Contains(designPosition))
-            {
-                return;
-            }
-
-            float localX = designPosition.x - m_ViewportArea.x + m_Scroll;
-            int index = Mathf.FloorToInt(localX / m_CardPitch);
-            if (index < 0 || index >= m_Cards.Length)
-            {
-                return;
-            }
-
-            if (localX - index * m_CardPitch > m_CardWidth)
-            {
-                return;
-            }
-
-            Select(index);
         }
 
         /// <summary>Cập nhật viền sáng của thẻ đang rê chuột.</summary>
