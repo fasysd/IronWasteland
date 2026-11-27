@@ -3,8 +3,10 @@ using System.IO;
 using IronWasteland.UI;
 using TMPro;
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.TextCore.LowLevel;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -511,6 +513,23 @@ namespace IronWasteland.EditorTools
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            UIHit.EnsureEventSystem(scene);
+            Button backButton = UIHit.AddZone(root, "HitBack", 72f, 94f, 168f, 50f);
+            UnityEventTools.AddPersistentListener(backButton.onClick, controller.PressBack);
+            Button startButton = UIHit.AddZone(root, "HitStart", 1293f, 939f, 536f, 136f);
+            UnityEventTools.AddPersistentListener(startButton.onClick, controller.PressStart);
+            Button singleButton = UIHit.AddZone(root, "HitModeSingle", 1295f, 472f, 253f, 48f);
+            UnityEventTools.AddPersistentListener(singleButton.onClick, controller.PressModeSingle);
+            Button coopButton = UIHit.AddZone(root, "HitModeCoop", 1565f, 472f, 265f, 48f);
+            UnityEventTools.AddPersistentListener(coopButton.onClick, controller.PressModeCoop);
+            for (int i = 0; i < cardRects.Length; i++)
+            {
+                Rect card = cardRects[i];
+                Button cardButton = UIHit.AddZone(root, "HitCard" + (i + 1).ToString("00"), card.x, card.y, card.width, card.height);
+                UnityEventTools.AddIntPersistentListener(cardButton.onClick, controller.SelectStage, i);
+            }
+
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();
