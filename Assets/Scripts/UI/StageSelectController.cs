@@ -381,7 +381,7 @@ namespace IronWasteland.UI
         public void PressModeCoop()
         {
             ApplyMode(MatchMode.Coop);
-            EnterCoopLobby();
+            //EnterCoopLobby();
         }
 
         /// <summary>Thẻ ải gọi vào đây kèm chỉ số; ải còn khoá thì bỏ qua.</summary>

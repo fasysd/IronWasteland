@@ -143,6 +143,8 @@ namespace IronWasteland.Tanks.WaterB
                 {
                     enemy.TakeDamage(m_PowerAmount);
                 }
+
+                m_OnSuccess?.Invoke(m_PowerAmount);
             }
 
             SpawnHitEffect(hitPos);

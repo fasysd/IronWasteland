@@ -38,7 +38,7 @@ MonoBehaviour:
     ArmorPenetration: 0
     MaxHealth: 700
     MaxEnergy: 100
-    MoveSpeed: 100
+    MoveSpeed: 450
     CooldownReduction: 0
   baseStatsLevel90:
     Attack: 85
@@ -47,7 +47,7 @@ MonoBehaviour:
     ArmorPenetration: 0.05
     MaxHealth: 3600
     MaxEnergy: 300
-    MoveSpeed: 100
+    MoveSpeed: 450
     CooldownReduction: 0
   tankPrefab: {fileID: 6588680580327770301, guid: cd61d42d3ce833c438f6c22fc83ae54c, type: 3}
   equipmentDatabase: {fileID: 11400000, guid: b7a04baa94ea6e14f885bc40cdff0f71, type: 2}
@@ -69,4 +69,3 @@ MonoBehaviour:
   - FOX FIRE
   - FOX STORM
   skillGlyphs: []
-  portrait: {fileID: 21300000, guid: 7088acb490698674cb50f31e833571d2, type: 3}
