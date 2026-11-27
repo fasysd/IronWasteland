@@ -2245,29 +2245,12 @@ MonoBehaviour:
   waves:
   - Label: W1
     StartTime: 0
+    StartRadar: {fileID: 0}
     Spawns:
-    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
-      Count: 15
+    - Enemy: {fileID: 4382231180120962163, guid: c8ad534541a70474b9318b6dede3e535, type: 3}
+      Count: 1
       SpeedMultiplier: 1
       ZoneId: Khu1
-  - Label: W2
-    StartTime: 60
-    Spawns:
-    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
-      Count: 15
-      SpeedMultiplier: 1
-      ZoneId: Khu2
-    - Enemy: {fileID: 8420907976510360087, guid: dd03dff10e04c7847a6ca5bc5d1dae1d, type: 3}
-      Count: 5
-      SpeedMultiplier: 1
-      ZoneId: Khu2
-  - Label: W3
-    StartTime: 120
-    Spawns:
-    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
-      Count: 10
-      SpeedMultiplier: 1.5
-      ZoneId: 
   spawnZones:
   - {fileID: 1183980472}
   - {fileID: 0}
@@ -3681,7 +3664,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2117666661
 Transform:
   m_ObjectHideFlags: 0

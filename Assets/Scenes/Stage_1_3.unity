@@ -274,7 +274,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.RadarStation
   radarId: radar_1
   displayName: Radar 1
-  locationHint: góc trên trái
+  locationHint: "g\xF3c tr\xEAn tr\xE1i"
   radius: 3
   holdTime: 5
   requireNoEnemies: 1
@@ -910,7 +910,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.RadarStation
   radarId: radar_2
   displayName: Radar 2
-  locationHint: Khu 2 phía Bắc
+  locationHint: "Khu 2 ph\xEDa B\u1EAFc"
   radius: 3
   holdTime: 5
   requireNoEnemies: 1
@@ -1537,7 +1537,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1063473455
 Transform:
   m_ObjectHideFlags: 0
@@ -2553,39 +2553,14 @@ MonoBehaviour:
     StartTime: 0
     StartRadar: {fileID: 343699219}
     Spawns:
-    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
-      Count: 8
+    - Enemy: {fileID: 8414142585299926360, guid: 3415185e6e7671543a1254d57a6b8885, type: 3}
+      Count: 1
       SpeedMultiplier: 1
       ZoneId: A
     - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
       Count: 8
       SpeedMultiplier: 1
       ZoneId: B
-  - Label: W2
-    StartTime: 30
-    Spawns:
-    - Enemy: {fileID: 3897099387530954697, guid: 3d7a3d53f4ad62449ad228d3ead96c34, type: 3}
-      Count: 4
-      SpeedMultiplier: 1
-      ZoneId: Khu2_A
-  - Label: W3
-    StartTime: 60
-    Spawns:
-    - Enemy: {fileID: 6438814824446025724, guid: 56632388536e92747835f0a208002653, type: 3}
-      Count: 4
-      SpeedMultiplier: 1
-      ZoneId: Khu2_A
-    - Enemy: {fileID: 8420907976510360087, guid: dd03dff10e04c7847a6ca5bc5d1dae1d, type: 3}
-      Count: 3
-      SpeedMultiplier: 1
-      ZoneId: Khu2_B
-  - Label: W4
-    StartTime: 90
-    Spawns:
-    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
-      Count: 8
-      SpeedMultiplier: 1
-      ZoneId: Khu2_A
   spawnZones:
   - {fileID: 1183980472}
   - {fileID: 1740843148}

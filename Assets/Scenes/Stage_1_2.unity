@@ -1682,22 +1682,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IronWasteland.Stages.EnemySpawner
   waves:
-  - Label: W1 - phuc kich hai canh
-    StartTime: 0
-    Spawns:
-    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
-      Count: 10
-      SpeedMultiplier: 1
-      ZoneId: A
-    - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
-      Count: 10
-      SpeedMultiplier: 1
-      ZoneId: B
   - Label: W2 - xa thu tinh the
-    StartTime: 40
+    StartTime: 0
+    StartRadar: {fileID: 0}
     Spawns:
-    - Enemy: {fileID: 3897099387530954697, guid: 3d7a3d53f4ad62449ad228d3ead96c34, type: 3}
-      Count: 3
+    - Enemy: {fileID: 4382231180120962163, guid: 3d3c6e517857da448ada899477541f30, type: 3}
+      Count: 1
       SpeedMultiplier: 1
       ZoneId: A
     - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
@@ -1710,25 +1700,6 @@ MonoBehaviour:
       ZoneId: B
     - Enemy: {fileID: 5345802734854479554, guid: 3711aff292a921a45b967cf563d9f278, type: 3}
       Count: 5
-      SpeedMultiplier: 1
-      ZoneId: B
-  - Label: W3 - thach anh & tinh linh
-    StartTime: 70
-    Spawns:
-    - Enemy: {fileID: 6438814824446025724, guid: 56632388536e92747835f0a208002653, type: 3}
-      Count: 3
-      SpeedMultiplier: 1
-      ZoneId: A
-    - Enemy: {fileID: 6086734558255793529, guid: dc8cd304e186d3d4cb5b4ae517da1477, type: 3}
-      Count: 3
-      SpeedMultiplier: 1
-      ZoneId: A
-    - Enemy: {fileID: 6438814824446025724, guid: 56632388536e92747835f0a208002653, type: 3}
-      Count: 3
-      SpeedMultiplier: 1
-      ZoneId: B
-    - Enemy: {fileID: 6086734558255793529, guid: dc8cd304e186d3d4cb5b4ae517da1477, type: 3}
-      Count: 3
       SpeedMultiplier: 1
       ZoneId: B
   spawnZones:
@@ -1860,7 +1831,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1552943973
 Transform:
   m_ObjectHideFlags: 0
