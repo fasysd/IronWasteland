@@ -305,22 +305,6 @@ namespace IronWasteland.Save
             return tank != null ? tank.Level : 0;
         }
 
-        public bool IsTankOwned(int tankIndex)
-        {
-            return GetTankLevel(tankIndex) > 0;
-        }
-
-        public void UnlockTank(int tankIndex)
-        {
-            EnsureTanksInitialized();
-            var tank = GetTankSave(tankIndex);
-            if (tank != null && tank.Level == 0)
-            {
-                tank.Level = 1;
-                SaveGameData();
-            }
-        }
-
         public void SetTankLevel(int tankIndex, int level)
         {
             EnsureTanksInitialized();
@@ -599,11 +583,10 @@ namespace IronWasteland.Save
             {
                 if (i >= Data.Tanks.Count)
                 {
-                    int defaultLevel = (i == 0 || i == 1) ? 1 : 0;
                     Data.Tanks.Add(new TankSaveData
                     {
                         TankId = tankIds[i],
-                        Level = defaultLevel,
+                        Level = 1,
                         EquippedAccessoryIndex = -1,
                         OptionSkill1 = 0,
                         OptionSkill2 = 0
